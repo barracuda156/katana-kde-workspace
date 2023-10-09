@@ -41,9 +41,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "screenedge.h"
 #endif
 #include "screens.h"
-#ifdef KWIN_BUILD_TABBOX
-#include "tabbox.h"
-#endif
 #include "unmanaged.h"
 #include "useractions.h"
 #include "virtualdesktops.h"
@@ -178,14 +175,8 @@ Workspace::Workspace(bool restore)
 #endif
 
     // VirtualDesktopManager needs to be created prior to init shortcuts
-    // and prior to TabBox, due to TabBox connecting to signals
-    // actual initialization happens in init()
+    // due to actual initialization happening in init()
     VirtualDesktopManager::create(this);
-
-#ifdef KWIN_BUILD_TABBOX
-    // need to create the tabbox before compositing scene is setup
-    TabBox::TabBox::create(this);
-#endif
 
     m_compositor = Compositor::create(this);
     connect(this, SIGNAL(currentDesktopChanged(int,KWin::Client*)), m_compositor, SLOT(addRepaintFull()));
@@ -497,10 +488,6 @@ void Workspace::addClient(Client* c)
     if (c->isUtility() || c->isMenu() || c->isToolbar())
         updateToolWindows(true);
     checkNonExistentClients();
-#ifdef KWIN_BUILD_TABBOX
-    if (TabBox::TabBox::self()->isDisplayed())
-        TabBox::TabBox::self()->reset(true);
-#endif
 }
 
 void Workspace::addUnmanaged(Unmanaged* c)
@@ -531,12 +518,6 @@ void Workspace::removeClient(Client* c)
         clientShortcutUpdated(c);   // Needed, since this is otherwise delayed by setShortcut() and wouldn't run
     }
 
-#ifdef KWIN_BUILD_TABBOX
-    TabBox::TabBox *tabBox = TabBox::TabBox::self();
-    if (tabBox->isDisplayed() && tabBox->currentClient() == c)
-        tabBox->nextPrev(true);
-#endif
-
     Q_ASSERT(clients.contains(c) || desktops.contains(c));
     // TODO: if marked client is removed, notify the marked list
     clients.removeAll(c);
@@ -560,11 +541,6 @@ void Workspace::removeClient(Client* c)
         cancelDelayFocus();
 
     updateStackingOrder(true);
-
-#ifdef KWIN_BUILD_TABBOX
-    if (tabBox->isDisplayed())
-        tabBox->reset(true);
-#endif
 
     updateClientArea();
 }

@@ -1,11 +1,6 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
   <interface name="local.PlasmaApp">
-    <method name="showInteractiveConsole">
-    </method>
-    <method name="loadScriptInInteractiveConsole">
-      <arg name="script" type="s" direction="in"/>
-    </method>
     <method name="quit">
     </method>
     <method name="createWaitingPanels">

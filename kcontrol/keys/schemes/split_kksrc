@@ -29,7 +29,6 @@ foreach my $file( @ARGV )
     my $process = 0;
     my @kwin;
     my @krunner;
-    my @klipper;
     my @kxkb;
     for( <$FILEHD> )
         {
@@ -65,10 +64,6 @@ foreach my $file( @ARGV )
 
             /Switch to Next Keyboard Layout/ and do { push @kxkb, $_; next; };
 
-            /clipboard_action/ and do { push @klipper, $_; next; };
-            /repeat_action/ and do { push @klipper, $_; next; };
-            /show_klipper_popup/ and do { push @klipper, $_; next; };
-
             /Halt without Confirmation/ and do { s/Halt without Confirmation/Halt Without Confirmation/; push @krunner, $_; next; };
             /Lock Session/ and do { push @krunner, $_; next; };
             /Log Out/ and do { push @krunner, $_; next; };
@@ -82,8 +77,6 @@ foreach my $file( @ARGV )
         print $OLDHD $_;
         }
 
-    print $NEWHD "\n[klipper][Global Shortcuts]\n";
-    print $NEWHD sort @klipper;
     print $NEWHD "\n[krunner][Global Shortcuts]\n";
     print $NEWHD sort @krunner;
     print $NEWHD "\n[kwin][Global Shortcuts]\n";

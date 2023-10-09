@@ -61,7 +61,6 @@ public:
     Atom kde_net_wm_shadow;
     Atom net_wm_opaque_region;
     Atom kde_net_wm_tab_group;
-    Atom kde_first_in_window_list;
     Atom kde_skip_close_animation;
 };
 

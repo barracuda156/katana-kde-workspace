@@ -133,7 +133,6 @@ bool Client::manage(xcb_window_t w, bool isMapped)
 
     original_skip_taskbar = skip_taskbar = (info->state() & NET::SkipTaskbar) != 0;
     skip_pager = (info->state() & NET::SkipPager) != 0;
-    updateFirstInTabBox();
 
     setupCompositing();
 

@@ -66,9 +66,7 @@ private:
         PresentWindowsAll = ELECTRIC_ACTION_COUNT, // Start at the end of built in actions
         PresentWindowsCurrent = 4,
         PresentWindowsClass = 5,
-        DesktopGrid = 6,
-        TabBox = 7,
-        TabBoxAlternative = 8
+        DesktopGrid = 6
     };
 
     bool effectEnabled(const QString& effect, const KConfigGroup& cfg) const;

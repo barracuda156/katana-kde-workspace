@@ -188,4 +188,3 @@ MimeType=inode/directory;
 InitialPreference=10
 StartupNotify=true
 X-KDE-MediaPlayer=informationpanel
-X-KDE-HasTrayOption=true

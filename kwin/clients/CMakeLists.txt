@@ -1,4 +1,1 @@
-add_subdirectory( aurorae )
-if(KWIN_BUILD_OXYGEN)
-    add_subdirectory( oxygen )
-endif()
+add_subdirectory( oxygen )

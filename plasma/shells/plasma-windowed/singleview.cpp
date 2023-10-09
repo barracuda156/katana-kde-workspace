@@ -21,14 +21,11 @@
 
 #include <QAction>
 #include <QDir>
-#include <QFileInfo>
 
 #include <KDebug>
 #include <KStandardAction>
 #include <KAction>
 #include <KIconLoader>
-
-
 #include <Plasma/Applet>
 #include <Plasma/Containment>
 #include <Plasma/Corona>
@@ -42,21 +39,10 @@ SingleView::SingleView(Plasma::Corona *corona, Plasma::Containment *containment,
       m_corona(corona)
 {
     setScene(m_corona);
-    QFileInfo info(pluginName);
-    if (!info.isAbsolute()) {
-        info = QFileInfo(QDir::currentPath() + '/' + pluginName);
-    }
 
-    if (info.exists()) {
-        m_applet = Plasma::Applet::loadPlasmoid(info.absoluteFilePath(), appletId, appletArgs);
-    }
-
+    m_applet = Plasma::Applet::load(pluginName, appletId, appletArgs);
     if (!m_applet) {
-        m_applet = Plasma::Applet::load(pluginName, appletId, appletArgs);
-    }
-
-    if (!m_applet) {
-        kDebug() << "failed to load" << pluginName;
+        kWarning() << "failed to load" << pluginName;
         return;
     }
 

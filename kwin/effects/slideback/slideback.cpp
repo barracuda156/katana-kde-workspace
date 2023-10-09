@@ -25,14 +25,11 @@ namespace KWin
 
 SlideBackEffect::SlideBackEffect()
 {
-    m_tabboxActive = 0;
     m_justMapped = m_upmostWindow = NULL;
     connect(effects, SIGNAL(windowAdded(KWin::EffectWindow*)), SLOT(slotWindowAdded(KWin::EffectWindow*)));
     connect(effects, SIGNAL(windowDeleted(KWin::EffectWindow*)), SLOT(slotWindowDeleted(KWin::EffectWindow*)));
     connect(effects, SIGNAL(windowUnminimized(KWin::EffectWindow*)), SLOT(slotWindowUnminimized(KWin::EffectWindow*)));
-    connect(effects, SIGNAL(tabBoxAdded(int)), SLOT(slotTabBoxAdded()));
     connect(effects, SIGNAL(stackingOrderChanged()), SLOT(slotStackingOrderChanged()));
-    connect(effects, SIGNAL(tabBoxClosed()), SLOT(slotTabBoxClosed()));
 }
 
 static inline bool windowsShareDesktop(EffectWindow *w1, EffectWindow *w2)
@@ -43,7 +40,7 @@ static inline bool windowsShareDesktop(EffectWindow *w1, EffectWindow *w2)
 
 void SlideBackEffect::slotStackingOrderChanged()
 {
-    if (effects->activeFullScreenEffect() || m_tabboxActive) {
+    if (effects->activeFullScreenEffect()) {
         oldStackingOrder = effects->stackingOrder();
         usableOldStackingOrder = usableWindows(oldStackingOrder);
         return;
@@ -276,16 +273,6 @@ void SlideBackEffect::slotWindowUnminimized(EffectWindow* w)
 {
     // SlideBack should not be triggered on an unminimized window. For this we need to store the last unminimized window.
     m_justMapped = w;
-}
-
-void SlideBackEffect::slotTabBoxAdded()
-{
-    ++m_tabboxActive;
-}
-
-void SlideBackEffect::slotTabBoxClosed()
-{
-    m_tabboxActive = qMax(m_tabboxActive-1, 0);
 }
 
 bool SlideBackEffect::isWindowUsable(EffectWindow* w)

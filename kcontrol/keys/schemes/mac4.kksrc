@@ -89,11 +89,6 @@ Name[zh_CN]=Mac 方案
 Name[zh_TW]=Mac 機制
 Uses Win Modifier=true
 
-[klipper][Global Shortcuts]
-clipboard_action=Ctrl+Alt+X
-repeat_action=Ctrl+Alt+R
-show-on-mouse-pos=Ctrl+Alt+V
-
 [krunner][Global Shortcuts]
 Run Command=Alt+F2
 Show System Activity=Ctrl+Esc
@@ -133,8 +128,8 @@ Walk Through Desktop List (Reverse)=none
 Walk Through Desktop List=none
 Walk Through Desktops (Reverse)=Alt+Shift+Tab
 Walk Through Desktops=Alt+Tab
-Walk Through Windows (Reverse)=Ctrl+Shift+Tab
-Walk Through Windows=Ctrl+Tab
+Toggle Present Windows (Current desktop)=Ctrl+Tab
+Toggle Present Windows (Window class)=Ctrl+Shift+Tab
 Window Close=Alt+F4
 Window Lower=none
 Window Maximize Horizontal=none

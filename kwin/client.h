@@ -50,11 +50,6 @@ class KStartupInfoId;
 
 namespace KWin
 {
-namespace TabBox
-{
-
-class TabBoxClientImpl;
-}
 
 class Bridge;
 class PaintRedirector;
@@ -609,17 +604,6 @@ public:
     };
     void layoutDecorationRects(QRect &left, QRect &top, QRect &right, QRect &bottom, CoordinateMode mode) const;
 
-    QWeakPointer<TabBox::TabBoxClientImpl> tabBoxClient() const {
-        return m_tabBoxClient.toWeakRef();
-    }
-    bool isFirstInTabBox() const {
-        return m_firstInTabBox;
-    }
-    void setFirstInTabBox(bool enable) {
-        m_firstInTabBox = enable;
-    }
-    void updateFirstInTabBox();
-
     //sets whether the client should be treated as a SessionInteract window
     void setSessionInteract(bool needed);
     virtual bool isClient() const;
@@ -935,8 +919,6 @@ private:
     friend struct ResetupRulesProcedure;
     friend class GeometryUpdatesBlocker;
     PaintRedirector* paintRedirector;
-    QSharedPointer<TabBox::TabBoxClientImpl> m_tabBoxClient;
-    bool m_firstInTabBox;
 
     bool electricMaximizing;
     QuickTileMode electricMode;

@@ -36,9 +36,9 @@ class Client;
  * A focus chain is a list of Clients containing information on which Client should be activated.
  *
  * Internally this FocusChain holds multiple independent chains. There is one chain of most recently
- * used Clients which is primarily used by TabBox to build up the list of Clients for navigation.
- * The chains are organized as a normal QList of Clients with the most recently used Client being the
- * last item of the list, that is a LIFO like structure.
+ * used Clients which is primarily used to build up the list of Clients for navigation. The chains
+ * are organized as a normal QList of Clients with the most recently used Client being the last item
+ * of the list, that is a LIFO like structure.
  *
  * In addition there is one chain for each virtual desktop which is used to determine which Client
  * should get activated when the user switches to another virtual desktop.

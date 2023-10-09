@@ -7,7 +7,6 @@ StartupNotify=true
 Implements=org.kde.systemsettings
 SingleMainWindow=true
 OnlyShowIn=KDE;
-X-KDE-HasTrayOption=true
 
 GenericName=System Settings
 GenericName[ar]=إعدادات النظام

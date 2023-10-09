@@ -1,8 +1,6 @@
 ########### configure tests ###############
 
-option(KWIN_BUILD_OXYGEN "Enable building of default decoration Oxygen" ON)
 option(KWIN_BUILD_KCMS "Enable building of KWin configuration modules." ON)
-option(KWIN_BUILD_TABBOX "Enable building of KWin Tabbox functionality" ON)
 option(KWIN_BUILD_SCREENEDGES "Enable building of KWin with screen edge support" ON)
 option(KWIN_BUILD_COMPOSITE "Enable building of KWin with XRender Compositing support" ON)
 
@@ -23,7 +21,6 @@ include_directories(BEFORE
     ${CMAKE_CURRENT_SOURCE_DIR}/libkwineffects
     ${CMAKE_CURRENT_SOURCE_DIR}/libkdecorations
     ${CMAKE_CURRENT_SOURCE_DIR}/effects
-    ${CMAKE_CURRENT_SOURCE_DIR}/tabbox
 )
 
 add_subdirectory( libkdecorations )
@@ -34,7 +31,6 @@ if(KWIN_BUILD_KCMS)
 endif()
 
 add_subdirectory( clients )
-add_subdirectory( tabbox )
 
 
 # Install the KWin/Effect service type
@@ -113,7 +109,6 @@ set(kwin_SRCS
    unmanaged.cpp
    scene.cpp
    scene_xrender.cpp
-   thumbnailitem.cpp
    deleted.cpp
    effects.cpp
    compositingprefs.cpp
@@ -121,19 +116,6 @@ set(kwin_SRCS
    virtualdesktops.cpp
    xcbutils.cpp
 )
-
-if(KWIN_BUILD_TABBOX)
-    set(kwin_SRCS
-        ${kwin_SRCS}
-        tabbox/tabbox.cpp
-        tabbox/clientmodel.cpp
-        tabbox/declarative.cpp
-        tabbox/desktopchain.cpp
-        tabbox/desktopmodel.cpp
-        tabbox/tabboxconfig.cpp
-        tabbox/tabboxhandler.cpp
-  )
-endif()
 
 if(KWIN_BUILD_SCREENEDGES)
     set(kwin_SRCS
@@ -167,7 +149,6 @@ add_executable(kwin ${kwin_SRCS} ${kwin4_effect_builtins_sources})
 
 target_link_libraries(kwin
     KDE4::kdeui
-    KDE4::kdeclarative
     ${X11_X11_LIB}
     ${X11_Xext_LIB}
     ${X11_ICE_LIB}

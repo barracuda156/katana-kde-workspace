@@ -1,2 +1,4 @@
-#! /usr/bin/env bash
-$XGETTEXT `find . -name \*.qml` -o $podir/plasma_applet_calculator.pot
+#!/bin/bash
+$EXTRACTRC `find . -name \*.rc -o -name \*.ui -o -name \*.kcfg` >> rc.cpp
+$XGETTEXT `find . -name \*.cpp` -o $podir/plasma_applet_calculator.pot
+rm -f rc.cpp

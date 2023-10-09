@@ -34,9 +34,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "netinfo.h"
 #include "workspace.h"
 #include "atoms.h"
-#ifdef KWIN_BUILD_TABBOX
-#include "tabbox.h"
-#endif
 #include "group.h"
 #include "overlaywindow.h"
 #include "rules.h"
@@ -96,14 +93,6 @@ bool Workspace::workspaceEvent(XEvent * e)
         was_user_interaction = true;
         // fallthrough
     case MotionNotify:
-#ifdef KWIN_BUILD_TABBOX
-        if (TabBox::TabBox::self()->isGrabbed()) {
-#ifdef KWIN_BUILD_SCREENEDGES
-            ScreenEdges::self()->check(QPoint(e->xbutton.x_root, e->xbutton.y_root), QDateTime::fromMSecsSinceEpoch(xTime()), true);
-#endif
-            return TabBox::TabBox::self()->handleMouseEvent(e);
-        }
-#endif
         if (effects && static_cast<EffectsHandlerImpl*>(effects)->checkInputWindowEvent(e)) {
             return true;
         }
@@ -122,22 +111,10 @@ bool Workspace::workspaceEvent(XEvent * e)
             movingClient->keyPressEvent(keyQt);
             return true;
         }
-#ifdef KWIN_BUILD_TABBOX
-        if (TabBox::TabBox::self()->isGrabbed()) {
-            TabBox::TabBox::self()->keyPress(keyQt);
-            return true;
-        }
-#endif
         break;
     }
     case KeyRelease:
         was_user_interaction = true;
-#ifdef KWIN_BUILD_TABBOX
-        if (TabBox::TabBox::self()->isGrabbed()) {
-            TabBox::TabBox::self()->keyRelease(e->xkey);
-            return true;
-        }
-#endif
         break;
     case ConfigureNotify:
         if (e->xconfigure.event == rootWindow())
@@ -715,8 +692,6 @@ void Client::propertyNotifyEvent(XPropertyEvent* e)
             getSyncCounter();
         else if (e->atom == atoms->kde_net_wm_block_compositing)
             updateCompositeBlocking(true);
-        else if (e->atom == atoms->kde_first_in_window_list)
-            updateFirstInTabBox();
         break;
     }
 }
@@ -865,7 +840,7 @@ void Client::updateMouseGrab()
             grabButton(None);
         return;
     }
-    if (isActive() && !workspace()->forcedGlobalMouseGrab()) { // see Workspace::establishTabBoxGrab()
+    if (isActive() && !workspace()->forcedGlobalMouseGrab()) {
         // first grab all modifier combinations
         XGrabButton(display(), AnyButton, AnyModifier, wrapperId(), false,
                     ButtonPressMask,

@@ -17,7 +17,6 @@
 #include <QFile>
 #include <QPainter>
 #include <QStandardItemModel>
-#include <QUiLoader>
 
 #include <KColorScheme>
 #include <KDebug>
@@ -79,30 +78,6 @@ public:
     KPageWidgetItem *appearanceItem;
     KPageWidgetItem *mouseItem;
     bool modified;
-
-    void createConfigurationInterfaceForPackage()
-    {
-        const QString uiFile = containment.data()->package()->filePath("mainconfigui");
-        if (uiFile.isEmpty()) {
-            kWarning() << "No ui file found for containment";
-            return;
-        }
-        Plasma::ConfigLoader *configScheme = containment.data()->configScheme();
-        if (!configScheme) {
-            kWarning() << "No configuration scheme found for containment";
-            return;
-        }
-
-        QFile f(uiFile);
-        QUiLoader loader;
-        QWidget *widget = loader.load(&f);
-        if (widget) {
-            q->addPage(widget, configScheme,
-                i18n("Settings"), containment.data()->icon(), i18n("%1 Settings", containment.data()->name()));
-        } else {
-            kWarning() << "Failed to load widget from" << uiFile;
-        }
-    }
 };
 
 BackgroundDialog::BackgroundDialog(const QSize& res, Plasma::Containment *c, Plasma::View* view,
@@ -148,11 +123,7 @@ BackgroundDialog::BackgroundDialog(const QSize& res, Plasma::Containment *c, Pla
     d->mouseItem = addPage(m, i18n("Mouse Actions"), "input-mouse");
 
     if (d->containment && d->containment.data()->hasConfigurationInterface()) {
-        if (d->containment.data()->package()) {
-            d->createConfigurationInterfaceForPackage();
-        } else {
-            d->containment.data()->createConfigurationInterface(this);
-        }
+        d->containment.data()->createConfigurationInterface(this);
         connect(this, SIGNAL(applyClicked()), d->containment.data(), SLOT(configDialogFinished()));
         connect(this, SIGNAL(okClicked()), d->containment.data(), SLOT(configDialogFinished()));
     }
@@ -460,11 +431,7 @@ void BackgroundDialog::saveConfig()
 
             //add the new containment's config
             if (d->containment.data()->hasConfigurationInterface()) {
-                if (d->containment.data()->package()) {
-                    d->createConfigurationInterfaceForPackage();
-                } else {
-                    d->containment.data()->createConfigurationInterface(this);
-                }
+                d->containment.data()->createConfigurationInterface(this);
                 connect(this, SIGNAL(applyClicked()), d->containment.data(), SLOT(configDialogFinished()));
                 connect(this, SIGNAL(okClicked()), d->containment.data(), SLOT(configDialogFinished()));
             }

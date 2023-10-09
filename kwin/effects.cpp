@@ -31,14 +31,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "group.h"
 #include "scene_xrender.h"
 #include "unmanaged.h"
-#ifdef KWIN_BUILD_TABBOX
-#include "tabbox.h"
-#endif
 #ifdef KWIN_BUILD_SCREENEDGES
 #include "screenedge.h"
 #endif
 #include "screens.h"
-#include "thumbnailitem.h"
 #include "virtualdesktops.h"
 #include "workspace.h"
 #include "composite.h"
@@ -68,9 +64,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "effects/zoom/zoom.h"
 #include "effects/startupfeedback/startupfeedback.h"
 
-#include <QFile>
+#include <QMetaProperty>
 #include <QDBusServiceWatcher>
-#include <QtDBus/qdbuspendingcall.h>
+#include <QDBusPendingCallWatcher>
 
 #include <KDebug>
 #include <KDesktopFile>
@@ -218,13 +214,6 @@ EffectsHandlerImpl::EffectsHandlerImpl(Compositor *compositor, Scene *scene)
             SIGNAL(mouseChanged(QPoint,QPoint,Qt::MouseButtons,Qt::MouseButtons,Qt::KeyboardModifiers,Qt::KeyboardModifiers)));
     connect(ws, SIGNAL(propertyNotify(long)), this, SLOT(slotPropertyNotify(long)));
     connect(ws, SIGNAL(stackingOrderChanged()), SIGNAL(stackingOrderChanged()));
-#ifdef KWIN_BUILD_TABBOX
-    TabBox::TabBox *tabBox = TabBox::TabBox::self();
-    connect(tabBox, SIGNAL(tabBoxAdded(int)), SIGNAL(tabBoxAdded(int)));
-    connect(tabBox, SIGNAL(tabBoxUpdated()), SIGNAL(tabBoxUpdated()));
-    connect(tabBox, SIGNAL(tabBoxClosed()), SIGNAL(tabBoxClosed()));
-    connect(tabBox, SIGNAL(tabBoxKeyEvent(QKeyEvent*)), SIGNAL(tabBoxKeyEvent(QKeyEvent*)));
-#endif
 #ifdef KWIN_BUILD_SCREENEDGES
     connect(ScreenEdges::self(), SIGNAL(approaching(ElectricBorder,qreal,QRect)), SIGNAL(screenEdgeApproaching(ElectricBorder,qreal,QRect)));
 #endif
@@ -569,21 +558,6 @@ void EffectsHandlerImpl::slotClientUnminimized(Client* c, bool animate)
 void EffectsHandlerImpl::slotClientModalityChanged()
 {
     emit windowModalityChanged(static_cast<Client*>(sender())->effectWindow());
-}
-
-void EffectsHandlerImpl::slotCurrentTabAboutToChange(EffectWindow *from, EffectWindow *to)
-{
-    emit currentTabAboutToChange(from, to);
-}
-
-void EffectsHandlerImpl::slotTabAdded(EffectWindow* w, EffectWindow* to)
-{
-    emit tabAdded(w, to);
-}
-
-void EffectsHandlerImpl::slotTabRemoved(EffectWindow *w, EffectWindow* leaderOfFormerGroup)
-{
-    emit tabRemoved(w, leaderOfFormerGroup);
 }
 
 void EffectsHandlerImpl::slotDesktopChanged(int old, Client *c)
@@ -1013,87 +987,6 @@ void EffectsHandlerImpl::setElevatedWindow(EffectWindow* w, bool set)
     elevated_windows.removeAll(w);
     if (set)
         elevated_windows.append(w);
-}
-
-void EffectsHandlerImpl::setTabBoxWindow(EffectWindow* w)
-{
-#ifdef KWIN_BUILD_TABBOX
-    if (Client* c = qobject_cast< Client* >(static_cast< EffectWindowImpl* >(w)->window())) {
-        TabBox::TabBox::self()->setCurrentClient(c);
-    }
-#else
-    Q_UNUSED(w)
-#endif
-}
-
-void EffectsHandlerImpl::setTabBoxDesktop(int desktop)
-{
-#ifdef KWIN_BUILD_TABBOX
-    TabBox::TabBox::self()->setCurrentDesktop(desktop);
-#else
-    Q_UNUSED(desktop)
-#endif
-}
-
-EffectWindowList EffectsHandlerImpl::currentTabBoxWindowList() const
-{
-#ifdef KWIN_BUILD_TABBOX
-    EffectWindowList ret;
-    ClientList clients;
-    clients = TabBox::TabBox::self()->currentClientList();
-    foreach (Client *client, clients) {
-        ret.append(client->effectWindow());
-    }
-    return ret;
-#else
-    return EffectWindowList();
-#endif
-}
-
-void EffectsHandlerImpl::refTabBox()
-{
-#ifdef KWIN_BUILD_TABBOX
-    TabBox::TabBox::self()->reference();
-#endif
-}
-
-void EffectsHandlerImpl::unrefTabBox()
-{
-#ifdef KWIN_BUILD_TABBOX
-    TabBox::TabBox::self()->unreference();
-#endif
-}
-
-void EffectsHandlerImpl::closeTabBox()
-{
-#ifdef KWIN_BUILD_TABBOX
-    TabBox::TabBox::self()->close();
-#endif
-}
-
-QList< int > EffectsHandlerImpl::currentTabBoxDesktopList() const
-{
-#ifdef KWIN_BUILD_TABBOX
-    return TabBox::TabBox::self()->currentDesktopList();
-#endif
-    return QList< int >();
-}
-
-int EffectsHandlerImpl::currentTabBoxDesktop() const
-{
-#ifdef KWIN_BUILD_TABBOX
-    return TabBox::TabBox::self()->currentDesktop();
-#endif
-    return -1;
-}
-
-EffectWindow* EffectsHandlerImpl::currentTabBoxWindow() const
-{
-#ifdef KWIN_BUILD_TABBOX
-    if (Client* c = TabBox::TabBox::self()->currentClient())
-        return c->effectWindow();
-#endif
-    return NULL;
 }
 
 void EffectsHandlerImpl::addRepaintFull()
@@ -1661,47 +1554,6 @@ EffectWindow* effectWindow(Scene::Window* w)
 void EffectWindowImpl::elevate(bool elevate)
 {
     effects->setElevatedWindow(this, elevate);
-}
-
-void EffectWindowImpl::registerThumbnail(AbstractThumbnailItem *item)
-{
-    if (WindowThumbnailItem *thumb = qobject_cast<WindowThumbnailItem*>(item)) {
-        insertThumbnail(thumb);
-        connect(thumb, SIGNAL(destroyed(QObject*)), SLOT(thumbnailDestroyed(QObject*)));
-        connect(thumb, SIGNAL(wIdChanged(qulonglong)), SLOT(thumbnailTargetChanged()));
-    } else if (DesktopThumbnailItem *desktopThumb = qobject_cast<DesktopThumbnailItem*>(item)) {
-        m_desktopThumbnails.append(desktopThumb);
-        connect(desktopThumb, SIGNAL(destroyed(QObject*)), SLOT(desktopThumbnailDestroyed(QObject*)));
-    }
-}
-
-void EffectWindowImpl::thumbnailDestroyed(QObject *object)
-{
-    // we know it is a ThumbnailItem
-    m_thumbnails.remove(static_cast<WindowThumbnailItem*>(object));
-}
-
-void EffectWindowImpl::thumbnailTargetChanged()
-{
-    if (WindowThumbnailItem *item = qobject_cast<WindowThumbnailItem*>(sender())) {
-        insertThumbnail(item);
-    }
-}
-
-void EffectWindowImpl::insertThumbnail(WindowThumbnailItem *item)
-{
-    EffectWindow *w = effects->findWindow(item->wId());
-    if (w) {
-        m_thumbnails.insert(item, QWeakPointer<EffectWindowImpl>(static_cast<EffectWindowImpl*>(w)));
-    } else {
-        m_thumbnails.insert(item, QWeakPointer<EffectWindowImpl>());
-    }
-}
-
-void EffectWindowImpl::desktopThumbnailDestroyed(QObject *object)
-{
-    // we know it is a DesktopThumbnailItem
-    m_desktopThumbnails.removeAll(static_cast<DesktopThumbnailItem*>(object));
 }
 
 void EffectWindowImpl::referencePreviousWindowPixmap()

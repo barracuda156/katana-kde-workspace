@@ -78,7 +78,6 @@ BasicTab::BasicTab( QWidget *parent )
                                 "%c - the caption"));
 
     _launchCB = new QCheckBox(i18n("Enable &launch feedback"), general_group);
-    _systrayCB = new QCheckBox(i18n("&Place in system tray"), general_group);
     _onlyShowInKdeCB = new QCheckBox( i18n( "Only show in KDE" ), general_group );
     _hiddenEntryCB = new QCheckBox( i18n( "Hidden entry" ), general_group );
     _hiddenEntryCB->hide();
@@ -109,7 +108,6 @@ BasicTab::BasicTab( QWidget *parent )
     connect(_execEdit, SIGNAL(urlSelected(KUrl)),
             SLOT(slotExecSelected()));
     connect(_launchCB, SIGNAL(clicked()), SLOT(launchcb_clicked()));
-    connect(_systrayCB, SIGNAL(clicked()), SLOT(systraycb_clicked()));
     connect(_onlyShowInKdeCB, SIGNAL(clicked()), SLOT(onlyshowcb_clicked()) );
     connect( _hiddenEntryCB, SIGNAL(clicked()), SLOT(hiddenentrycb_clicked()) );
     // add line inputs to the grid
@@ -118,9 +116,8 @@ BasicTab::BasicTab( QWidget *parent )
     grid->addWidget(_commentEdit, 2, 1, 1, 2);
     grid->addWidget(_execEdit, 3, 1, 1, 2);
     grid->addWidget(_launchCB, 4, 0, 1, 3 );
-    grid->addWidget(_systrayCB, 5, 0, 1, 3 );
-    grid->addWidget(_onlyShowInKdeCB, 6, 0, 1, 3 );
-    grid->addWidget(_hiddenEntryCB, 7, 0, 1, 3 );
+    grid->addWidget(_onlyShowInKdeCB, 5, 0, 1, 3 );
+    grid->addWidget(_hiddenEntryCB, 6, 0, 1, 3 );
 
     // setup icon button
     _iconButton = new KIconButton(general_group);
@@ -226,7 +223,6 @@ void BasicTab::slotDisableAction()
     _commentEdit->setEnabled(false);
     _execEdit->setEnabled(false);
     _launchCB->setEnabled(false);
-    _systrayCB->setEnabled(false);
     _onlyShowInKdeCB->setEnabled( false );
     _hiddenEntryCB->setEnabled( false );
     _nameLabel->setEnabled(false);
@@ -248,7 +244,6 @@ void BasicTab::enableWidgets(bool isDF, bool isDeleted)
     _iconButton->setEnabled(!isDeleted);
     _execEdit->setEnabled(isDF && !isDeleted);
     _launchCB->setEnabled(isDF && !isDeleted);
-    // _systrayCB->setEnabled(isDF && !isDeleted);
     _onlyShowInKdeCB->setEnabled(isDF && !isDeleted);
     _hiddenEntryCB->setEnabled(isDF && !isDeleted);
     _nameLabel->setEnabled(!isDeleted);
@@ -286,7 +281,6 @@ void BasicTab::setFolderInfo(MenuFolderInfo *folderInfo)
     _termOptEdit->clear();
     _uidEdit->clear();
     _launchCB->setChecked(false);
-    _systrayCB->setChecked(false);
     _terminalCB->setChecked(false);
     _onlyShowInKdeCB->setChecked( false );
     _hiddenEntryCB->setChecked( false );
@@ -310,7 +304,6 @@ void BasicTab::setEntryInfo(MenuEntryInfo *entryInfo)
        _iconButton->setIcon( QString() );
 
        _execEdit->lineEdit()->clear();
-       _systrayCB->setChecked(false);
        _onlyShowInKdeCB->setChecked( false );
        _hiddenEntryCB->setChecked( false );
 
@@ -335,18 +328,7 @@ void BasicTab::setEntryInfo(MenuEntryInfo *entryInfo)
     _commentEdit->setCursorPosition(0);
     _iconButton->setIcon(df->readIcon());
 
-    QString temp = df->desktopGroup().readEntry("Exec");
-    if (temp.endsWith(QLatin1String(" -tray")))
-    {
-      _execEdit->lineEdit()->setText(temp.left(temp.length()-6));
-      _systrayCB->setChecked(true);
-    }
-    else
-    {
-      _execEdit->lineEdit()->setText(temp);
-      _systrayCB->setChecked(false);
-    }
-    _systrayCB->setEnabled(df->desktopGroup().readEntry("X-KDE-HasTrayOption", false));
+    _execEdit->lineEdit()->setText(df->desktopGroup().readEntry("Exec"));
 
     _pathEdit->lineEdit()->setText(df->readPath());
     _termOptEdit->setText(df->desktopGroup().readEntry("TerminalOptions"));
@@ -385,10 +367,7 @@ void BasicTab::apply()
         KDesktopFile *df = _menuEntryInfo->desktopFile();
         KConfigGroup dg = df->desktopGroup();
         dg.writeEntry("Comment", _commentEdit->text());
-        if (_systrayCB->isEnabled() && _systrayCB->isChecked())
-          dg.writeEntry("Exec", _execEdit->lineEdit()->text().append(" -tray"));
-        else
-          dg.writeEntry("Exec", _execEdit->lineEdit()->text());
+        dg.writeEntry("Exec", _execEdit->lineEdit()->text());
 
         dg.writePathEntry("Path", _pathEdit->lineEdit()->text());
 
@@ -438,11 +417,6 @@ void BasicTab::slotChanged()
 }
 
 void BasicTab::launchcb_clicked()
-{
-    slotChanged();
-}
-
-void BasicTab::systraycb_clicked()
 {
     slotChanged();
 }

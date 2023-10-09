@@ -47,8 +47,6 @@ public Q_SLOTS:
     void slotWindowDeleted(KWin::EffectWindow *w);
     void slotWindowUnminimized(KWin::EffectWindow *w);
     void slotStackingOrderChanged();
-    void slotTabBoxAdded();
-    void slotTabBoxClosed();
 
 private:
 
@@ -59,7 +57,6 @@ private:
     EffectWindowList elevatedList;
     EffectWindow *m_justMapped, *m_upmostWindow;
     QHash<EffectWindow *, QRect> destinationList;
-    int m_tabboxActive;
     QList <QRegion> clippedRegions;
 
     QRect getSlideDestination(const QRect &windowUnderGeometry, const QRect &windowOverGeometry);

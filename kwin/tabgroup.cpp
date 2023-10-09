@@ -102,10 +102,6 @@ bool TabGroup::add(Client* c, Client *other, bool after, bool becomeVisible)
 
     // Actually add to new group ----------------------------------------
 
-    // Notify effects of merge
-    if (effects)
-        static_cast<EffectsHandlerImpl*>(effects)->slotTabAdded(c->effectWindow(), other->effectWindow());
-
     // next: aling the client states BEFORE adding it to the group
     // otherwise the caused indirect state changes would be taken as the dominating ones and break
     // the main client
@@ -171,14 +167,7 @@ bool TabGroup::remove(Client* c)
     if (c == m_current) {
         m_current = index < m_clients.count() ? m_clients.at(index) : m_clients.last();
         m_current->setClientShown(true);
-
-        if (effects) // "c -> m_current" because c was m_current
-            static_cast<EffectsHandlerImpl*>(effects)->slotCurrentTabAboutToChange(c->effectWindow(), m_current->effectWindow());
     }
-
-    // Notify effects of removal
-    if (effects)
-        static_cast<EffectsHandlerImpl*>(effects)->slotTabRemoved(c->effectWindow(), m_current->effectWindow());
 
     m_current->triggerDecorationRepaint();
     return true;
@@ -231,10 +220,6 @@ void TabGroup::setCurrent(Client* c, bool force)
 {
     if ((c == m_current && !force) || !contains(c))
         return;
-
-    // Notify effects of switch
-    if (effects)
-        static_cast<EffectsHandlerImpl*>(effects)->slotCurrentTabAboutToChange(m_current->effectWindow(), c->effectWindow());
 
     m_current = c;
     c->setClientShown(true); // reduce flicker?

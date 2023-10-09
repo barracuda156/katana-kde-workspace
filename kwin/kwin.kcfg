@@ -252,42 +252,4 @@
             <max>6</max>
         </entry>
     </group>
-    <group name="TabBox">
-        <entry name="ShowDelay" type="Bool">
-            <default>true</default>
-        </entry>
-        <entry name="DelayTime" type="Int">
-            <default>90</default>
-        </entry>
-        <entry name="DesktopMode" type="UInt">
-            <default>1</default>
-        </entry>
-        <entry name="ApplicationsMode" type="UInt">
-            <default>0</default>
-        </entry>
-        <entry name="MinimizedMode" type="UInt">
-            <default>0</default>
-        </entry>
-        <entry name="ShowDesktopMode" type="UInt">
-            <default>0</default>
-        </entry>
-        <entry name="MultiScreenMode" type="UInt">
-            <default>0</default>
-        </entry>
-        <entry name="SwitchingMode" type="UInt">
-            <default>0</default>
-        </entry>
-        <entry name="ShowOutline" type="Bool">
-            <default>true</default>
-        </entry>
-        <entry name="ShowTabBox" type="Bool">
-            <default>true</default>
-        </entry>
-        <entry name="HighlightWindows" type="Bool">
-            <default>true</default>
-        </entry>
-        <entry name="LayoutName" type="String">
-            <default>thumbnails</default>
-        </entry>
-    </group>
 </kcfg>

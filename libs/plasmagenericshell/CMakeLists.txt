@@ -12,14 +12,6 @@ set(plasmagenericshell_LIB_SRCS
     panelshadows.cpp
     toolbutton.cpp
     wallpaperpreview.cpp
-    scripting/appinterface.cpp
-    scripting/applet.cpp
-    scripting/containment.cpp
-    scripting/configgroup.cpp
-    scripting/i18n.cpp
-    scripting/rect.cpp
-    scripting/scriptengine.cpp
-    scripting/widget.cpp
     widgetsexplorer/widgetexplorer.cpp
     BackgroundDialog.ui
     MousePlugins.ui
@@ -32,9 +24,6 @@ target_link_libraries(plasmagenericshell PUBLIC
     KDE4::kdeui
     KDE4::kfile
     KDE4::solid
-    ${QT_QTSCRIPT_LIBRARY}
-    ${QT_QTDECLARATIVE_LIBRARY}
-    ${QT_QTUITOOLS_LIBRARY}
     kworkspace
 )
 target_link_libraries(plasmagenericshell PRIVATE ${X11_LIBRARIES})

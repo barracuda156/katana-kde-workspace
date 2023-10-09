@@ -88,11 +88,6 @@ Name[zh_CN]=Windows 方案(无 Win 键)
 Name[zh_TW]=Windows 機制（沒有 Win 鍵）
 Uses Win Modifier=false
 
-[klipper][Global Shortcuts]
-clipboard_action=none
-repeat_action=none
-show-on-mouse-pos=none
-
 [krunner][Global Shortcuts]
 Run Command=none
 Show System Activity=Ctrl+Alt+Del
@@ -132,8 +127,8 @@ Walk Through Desktop List (Reverse)=none
 Walk Through Desktop List=none
 Walk Through Desktops (Reverse)=Ctrl+Alt+Shift+Tab
 Walk Through Desktops=Ctrl+Alt+Tab
-Walk Through Windows (Reverse)=Alt+Shift+Tab
-Walk Through Windows=Alt+Tab
+Toggle Present Windows (Current desktop)=Alt+Tab
+Toggle Present Windows (Window class)=Alt+Shift+Tab
 Window Close=Alt+F4
 Window Lower=none
 Window Maximize Horizontal=none

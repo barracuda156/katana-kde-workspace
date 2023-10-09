@@ -89,11 +89,6 @@ Name[zh_CN]=Unix 方案
 Name[zh_TW]=UNIX 機制
 Uses Win Modifier=false
 
-[klipper][Global Shortcuts]
-clipboard_action=none
-repeat_action=Ctrl+Alt+R
-show-on-mouse-pos=none
-
 [krunner][Global Shortcuts]
 Run Command=Alt+F2
 Show System Activity=Ctrl+Esc
@@ -133,8 +128,8 @@ Walk Through Desktop List (Reverse)=Ctrl+Shift+Tab
 Walk Through Desktop List=none
 Walk Through Desktops (Reverse)=none
 Walk Through Desktops=Ctrl+Tab
-Walk Through Windows (Reverse)=Alt+Shift+Tab
-Walk Through Windows=Alt+F11
+Toggle Present Windows (Current desktop)=Alt+F11
+Toggle Present Windows (Window class)=Alt+Shift+Tab
 Window Close=none
 Window Lower=none
 Window Maximize Horizontal=none

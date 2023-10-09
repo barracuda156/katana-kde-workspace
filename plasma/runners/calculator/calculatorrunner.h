@@ -21,12 +21,9 @@
 #define CALCULATORRUNNER_H
 
 #include <QMimeData>
-
-#ifdef ENABLE_QALCULATE
-class QalculateEngine;
-#endif
-
 #include <Plasma/AbstractRunner>
+
+class QalculateEngine;
 
 /**
  * This class evaluates the basic expressions given in the interface.
@@ -50,9 +47,7 @@ class CalculatorRunner : public Plasma::AbstractRunner
         void powSubstitutions(QString& cmd);
         void hexSubstitutions(QString& cmd);
 
-#ifdef ENABLE_QALCULATE
         QalculateEngine* m_engine;
-#endif
 };
 
 K_EXPORT_PLASMA_RUNNER(calculatorrunner, CalculatorRunner)

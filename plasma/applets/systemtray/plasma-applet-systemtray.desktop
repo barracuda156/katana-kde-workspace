@@ -165,8 +165,8 @@ Type=Service
 X-KDE-ServiceTypes=Plasma/Applet
 
 X-KDE-Library=plasma_applet_systemtray
-X-KDE-PluginInfo-Author=Alexander Rodin
-X-KDE-PluginInfo-Email=rodin.alexander@gmail.com
+X-KDE-PluginInfo-Author=Ivailo Monev
+X-KDE-PluginInfo-Email=xakepa10@gmail.com
 X-KDE-PluginInfo-Name=systemtray
 X-KDE-PluginInfo-Version=1.0
 X-KDE-PluginInfo-Website=

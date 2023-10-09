@@ -83,11 +83,6 @@ Name[x-test]=xxWindowMaker (3 Modifier Keys)xx
 Name[zh_CN]=WindowMaker (三个修饰键)
 Name[zh_TW]=WindowMaker（3 個變更鍵）
 
-[klipper][Global Shortcuts]
-clipboard_action=Ctrl+Alt+X
-repeat_action=Ctrl+Alt+R
-show-on-mouse-pos=Ctrl+Alt+V
-
 [krunner][Global Shortcuts]
 Run Command=Alt+F2
 Show System Activity=Ctrl+Esc
@@ -127,8 +122,8 @@ Walk Through Desktop List (Reverse)=Ctrl+Shift+Tab
 Walk Through Desktop List=Ctrl+Tab
 Walk Through Desktops (Reverse)=none
 Walk Through Desktops=none
-Walk Through Windows (Reverse)=Alt+Shift+Tab
-Walk Through Windows=Alt+Tab
+Toggle Present Windows (Current desktop)=Alt+Tab
+Toggle Present Windows (Window class)=Alt+Shift+Tab
 Window Close=Alt+Esc
 Window Lower=none
 Window Maximize Horizontal=none

@@ -248,23 +248,6 @@ void KWinScreenEdgesConfig::monitorLoad()
     foreach (const int i, list) {
         monitorChangeEdge(ElectricBorder(i), PresentWindowsClass);
     }
-
-    // TabBox
-    KConfigGroup tabBoxConfig(m_config, "TabBox");
-    list.clear();
-    // TabBox
-    list.append(ElectricNone);
-    list = tabBoxConfig.readEntry("BorderActivate", list);
-    foreach (const int i, list) {
-        monitorChangeEdge(ElectricBorder(i), TabBox);
-    }
-    // Alternative TabBox
-    list.clear();
-    list.append(ElectricNone);
-    list = tabBoxConfig.readEntry("BorderAlternativeActivate", list);
-    foreach (const int i, list) {
-        monitorChangeEdge(ElectricBorder(i), TabBoxAlternative);
-    }
 }
 
 void KWinScreenEdgesConfig::monitorSaveAction(int edge, const QString& configName)
@@ -301,13 +284,6 @@ void KWinScreenEdgesConfig::monitorSave()
                                     monitorCheckEffectHasEdge(PresentWindowsCurrent));
     presentWindowsConfig.writeEntry("BorderActivateClass",
                                     monitorCheckEffectHasEdge(PresentWindowsClass));
-
-    // TabBox
-    KConfigGroup tabBoxConfig(m_config, "TabBox");
-    tabBoxConfig.writeEntry("BorderActivate",
-                                monitorCheckEffectHasEdge(TabBox));
-    tabBoxConfig.writeEntry("BorderAlternativeActivate",
-                                monitorCheckEffectHasEdge(TabBoxAlternative));
 }
 
 void KWinScreenEdgesConfig::monitorDefaults()
@@ -336,12 +312,6 @@ void KWinScreenEdgesConfig::monitorShowEvent()
         monitorItemSetEnabled(PresentWindowsCurrent, false);
         monitorItemSetEnabled(PresentWindowsAll, false);
     }
-    // tabbox, depends on reasonable focus policy.
-    KConfigGroup config2(m_config, "Windows");
-    QString focusPolicy = config2.readEntry("FocusPolicy", QString());
-    bool reasonable = focusPolicy != "FocusStrictlyUnderMouse" && focusPolicy != "FocusUnderMouse";
-    monitorItemSetEnabled(TabBox, reasonable);
-    monitorItemSetEnabled(TabBoxAlternative, reasonable);
 }
 
 void KWinScreenEdgesConfig::monitorChangeEdge(ElectricBorder border, int index)

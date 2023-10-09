@@ -23,25 +23,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KWIN_EFFECTSIMPL_H
 
 #include "kwineffects.h"
-
 #include "scene.h"
 #include "xcbutils.h"
 
 #include <QStack>
 #include <QHash>
-
 #include <QDBusPendingCallWatcher>
 #include <QDBusServiceWatcher>
+
 class KService;
 class OrgFreedesktopScreenSaverInterface;
 
-
 namespace KWin
 {
-
-class AbstractThumbnailItem;
-class DesktopThumbnailItem;
-class WindowThumbnailItem;
 
 class Client;
 class Compositor;
@@ -118,16 +112,6 @@ public:
     virtual EffectWindowList stackingOrder() const;
     virtual void setElevatedWindow(EffectWindow* w, bool set);
 
-    virtual void setTabBoxWindow(EffectWindow*);
-    virtual void setTabBoxDesktop(int);
-    virtual EffectWindowList currentTabBoxWindowList() const;
-    virtual void refTabBox();
-    virtual void unrefTabBox();
-    virtual void closeTabBox();
-    virtual QList< int > currentTabBoxDesktopList() const;
-    virtual int currentTabBoxDesktop() const;
-    virtual EffectWindow* currentTabBoxWindow() const;
-
     virtual void setActiveFullScreenEffect(Effect* e);
     virtual Effect* activeFullScreenEffect() const;
 
@@ -193,10 +177,6 @@ public:
     }
 
 public Q_SLOTS:
-    void slotCurrentTabAboutToChange(EffectWindow* from, EffectWindow* to);
-    void slotTabAdded(EffectWindow* from, EffectWindow* to);
-    void slotTabRemoved(EffectWindow* c, EffectWindow* newActiveWindow);
-
     // slots for D-Bus interface
     Q_SCRIPTABLE void reconfigureEffect(const QString& name);
     Q_SCRIPTABLE bool loadEffect(const QString& name, bool checkDefault = false);
@@ -304,24 +284,10 @@ public:
     void setData(int role, const QVariant &data);
     QVariant data(int role) const;
 
-    void registerThumbnail(AbstractThumbnailItem *item);
-    QHash<WindowThumbnailItem*, QWeakPointer<EffectWindowImpl> > const &thumbnails() const {
-        return m_thumbnails;
-    }
-    QList<DesktopThumbnailItem*> const &desktopThumbnails() const {
-        return m_desktopThumbnails;
-    }
-private Q_SLOTS:
-    void thumbnailDestroyed(QObject *object);
-    void thumbnailTargetChanged();
-    void desktopThumbnailDestroyed(QObject *object);
 private:
-    void insertThumbnail(WindowThumbnailItem *item);
     Toplevel* toplevel;
     Scene::Window* sw; // This one is used only during paint pass.
     QHash<int, QVariant> dataMap;
-    QHash<WindowThumbnailItem*, QWeakPointer<EffectWindowImpl> > m_thumbnails;
-    QList<DesktopThumbnailItem*> m_desktopThumbnails;
 };
 
 class EffectWindowGroupImpl

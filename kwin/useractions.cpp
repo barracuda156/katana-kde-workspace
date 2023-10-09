@@ -72,9 +72,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <kaction.h>
 
 #include "killwindow.h"
-#ifdef KWIN_BUILD_TABBOX
-#include "tabbox.h"
-#endif
 
 namespace KWin
 {
@@ -215,9 +212,6 @@ static QStringList configModules()
     args << "kwindecoration";
     args << "kwinactions" << "kwinfocus" <<  "kwinmoving" << "kwinadvanced"
          << "kwinrules" << "kwincompositing"
-#ifdef KWIN_BUILD_TABBOX
-         << "kwintabbox"
-#endif
 #ifdef KWIN_BUILD_SCREENEDGES
          << "kwinscreenedges"
 #endif
@@ -827,9 +821,6 @@ void Workspace::initShortcuts()
     //disable_shortcuts_keys->disableBlocking( true );
 #define IN_KWIN
 #include "kwinbindings.cpp"
-#ifdef KWIN_BUILD_TABBOX
-    TabBox::TabBox::self()->initShortcuts(actionCollection);
-#endif
     VirtualDesktopManager::self()->initShortcuts(actionCollection);
     m_userActionsMenu->discard(); // so that it's recreated next time
 }

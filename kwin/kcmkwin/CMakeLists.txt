@@ -1,12 +1,7 @@
 add_subdirectory( kwinoptions )
-add_subdirectory( kwindecoration )
 add_subdirectory( kwinrules )
 add_subdirectory( kwincompositing )
 if(KWIN_BUILD_SCREENEDGES)
     add_subdirectory( kwinscreenedges )
 endif()
 add_subdirectory( kwindesktop )
-
-if( KWIN_BUILD_TABBOX )
-    add_subdirectory( kwintabbox )
-endif()

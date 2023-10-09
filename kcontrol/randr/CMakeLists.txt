@@ -42,34 +42,8 @@ install(
 
 ########### next target ###############
 
-set(krandrtray_SRCS
-    ${randrinternal_PART_SRCS}
-    main.cpp
-    krandrtray.cpp
-    krandrapp.cpp
-)
-
-add_executable(krandrtray ${krandrtray_SRCS})
-
-target_link_libraries(krandrtray
-    KDE4::kcmutils
-    ${X11_Xrandr_LIB}
-    ${X11_LIBRARIES}
-)
-
-install(
-    TARGETS krandrtray
-    DESTINATION ${KDE4_BIN_INSTALL_DIR}
-)
-
-########### next target ###############
-
 install(
     FILES randr.desktop
     DESTINATION ${KDE4_SERVICES_INSTALL_DIR}
 )
 
-install(
-    PROGRAMS krandrtray.desktop
-    DESTINATION ${KDE4_XDG_APPS_INSTALL_DIR}
-)

@@ -39,9 +39,6 @@ DecorationPlugin::DecorationPlugin(QObject *parent)
     , m_disabled(false)
 {
     defaultPlugin = "kwin3_oxygen";
-#ifndef KWIN_BUILD_OXYGEN
-    defaultPlugin = "kwin3_aurorae";
-#endif
     loadPlugin("");   // load the plugin specified in cfg file
 }
 

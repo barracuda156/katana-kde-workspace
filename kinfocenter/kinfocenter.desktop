@@ -5,7 +5,6 @@ Type=Application
 X-DocPath=kinfocenter/index.html
 StartupNotify=true
 OnlyShowIn=KDE;
-X-KDE-HasTrayOption=true
 
 Name=KInfoCenter
 Name[af]=Inligting Sentrum

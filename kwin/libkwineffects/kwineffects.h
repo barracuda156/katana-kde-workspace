@@ -718,16 +718,6 @@ public:
     // window will be temporarily painted as if being at the top of the stack
     virtual void setElevatedWindow(EffectWindow* w, bool set) = 0;
 
-    virtual void setTabBoxWindow(EffectWindow*) = 0;
-    virtual void setTabBoxDesktop(int) = 0;
-    virtual EffectWindowList currentTabBoxWindowList() const = 0;
-    virtual void refTabBox() = 0;
-    virtual void unrefTabBox() = 0;
-    virtual void closeTabBox() = 0;
-    virtual QList< int > currentTabBoxDesktopList() const = 0;
-    virtual int currentTabBoxDesktop() const = 0;
-    virtual EffectWindow* currentTabBoxWindow() const = 0;
-
     virtual void setActiveFullScreenEffect(Effect* e) = 0;
     virtual Effect* activeFullScreenEffect() const = 0;
 
@@ -1005,48 +995,6 @@ Q_SIGNALS:
      * @since 4.7
      **/
     void windowDamaged(KWin::EffectWindow *w, const QRect &r);
-    /**
-     * Signal emitted when a tabbox is added.
-     * An effect who wants to replace the tabbox with itself should use @link refTabBox.
-     * @param mode The TabBoxMode.
-     * @see refTabBox
-     * @see tabBoxClosed
-     * @see tabBoxUpdated
-     * @see tabBoxKeyEvent
-     * @since 4.7
-     **/
-    void tabBoxAdded(int mode);
-    /**
-     * Signal emitted when the TabBox was closed by KWin core.
-     * An effect which referenced the TabBox should use @link unrefTabBox to unref again.
-     * @see unrefTabBox
-     * @see tabBoxAdded
-     * @since 4.7
-     **/
-    void tabBoxClosed();
-    /**
-     * Signal emitted when the selected TabBox window changed or the TabBox List changed.
-     * An effect should only response to this signal if it referenced the TabBox with @link refTabBox.
-     * @see refTabBox
-     * @see currentTabBoxWindowList
-     * @see currentTabBoxDesktopList
-     * @see currentTabBoxWindow
-     * @see currentTabBoxDesktop
-     * @since 4.7
-     **/
-    void tabBoxUpdated();
-    /**
-     * Signal emitted when a key event, which is not handled by TabBox directly is, happens while
-     * TabBox is active. An effect might use the key event to e.g. change the selected window.
-     * An effect should only response to this signal if it referenced the TabBox with @link refTabBox.
-     * @param event The key event not handled by TabBox directly
-     * @see refTabBox
-     * @since 4.7
-     **/
-    void tabBoxKeyEvent(QKeyEvent* event);
-    void currentTabAboutToChange(KWin::EffectWindow* from, KWin::EffectWindow* to);
-    void tabAdded(KWin::EffectWindow* from, KWin::EffectWindow* to);   // from merged with to
-    void tabRemoved(KWin::EffectWindow* c, KWin::EffectWindow* group);   // c removed from group
     /**
      * Signal emitted when mouse changed.
      * If an effect needs to get updated mouse positions, it needs to first call @link startMousePolling.

@@ -26,29 +26,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <kwineffects.h>
 #include <kshortcut.h>
-#include <QDeclarativeView>
-
 #include <QTimer>
+#include <QGraphicsView>
 
 namespace KWin
 {
-class CloseWindowView : public QDeclarativeView
-{
-    Q_OBJECT
-public:
-    explicit CloseWindowView(QWidget *parent = 0);
-    void windowInputMouseEvent(QMouseEvent* e);
-    void disarm();
-
-Q_SIGNALS:
-    void close();
-
-protected:
-    void hideEvent(QHideEvent *event);
-
-private:
-    QTimer* m_armTimer;
-};
 
 /**
  * Expose-like effect which shows all windows on current desktop side-by-side,
@@ -61,7 +43,6 @@ class PresentWindowsEffect
     Q_PROPERTY(int layoutMode READ layoutMode)
     Q_PROPERTY(bool showCaptions READ isShowCaptions)
     Q_PROPERTY(bool showIcons READ isShowIcons)
-    Q_PROPERTY(bool doNotCloseWindows READ isDoNotCloseWindows)
     Q_PROPERTY(bool ignoreMinimized READ isIgnoreMinimized)
     Q_PROPERTY(int accuracy READ accuracy)
     Q_PROPERTY(bool fillGaps READ isFillGaps)
@@ -147,9 +128,6 @@ public:
     bool isShowIcons() const {
         return m_showIcons;
     }
-    bool isDoNotCloseWindows() const {
-        return m_doNotCloseWindows;
-    }
     bool isIgnoreMinimized() const {
         return m_ignoreMinimized;
     }
@@ -212,8 +190,6 @@ public slots:
     void slotPropertyNotify(KWin::EffectWindow* w, long atom);
 
 private slots:
-    void closeWindow();
-    void elevateCloseWindow();
     void screenCountChanged();
 
 protected:
@@ -249,7 +225,6 @@ protected:
     void setHighlightedWindow(EffectWindow *w);
     EffectWindow* relativeWindow(EffectWindow *w, int xdiff, int ydiff, bool wrap) const;
     EffectWindow* findFirstWindow() const;
-    void updateCloseWindow();
 
     // Helper functions for mouse actions
     void mouseActionWindow(WindowMouseAction& action);
@@ -266,7 +241,6 @@ private:
     int m_layoutMode;
     bool m_showCaptions;
     bool m_showIcons;
-    bool m_doNotCloseWindows;
     int m_accuracy;
     bool m_fillGaps;
     double m_fadeDuration;
@@ -315,10 +289,6 @@ private:
     DesktopMouseAction m_leftButtonDesktop;
     DesktopMouseAction m_middleButtonDesktop;
     DesktopMouseAction m_rightButtonDesktop;
-
-    CloseWindowView* m_closeView;
-    EffectWindow* m_closeWindow;
-    Qt::Corner m_closeButtonCorner;
 
     // drag to close
     QPoint m_dragStart;

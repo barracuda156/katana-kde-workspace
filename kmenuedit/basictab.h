@@ -58,7 +58,6 @@ public Q_SLOTS:
 protected Q_SLOTS:
     void slotChanged();
     void launchcb_clicked();
-    void systraycb_clicked();
     void termcb_clicked();
     void uidcb_clicked();
     void slotExecSelected();
@@ -74,7 +73,7 @@ protected:
     KLineEdit   *_descriptionEdit;
     KUrlRequester *_execEdit, *_pathEdit;
     KLineEdit    *_termOptEdit, *_uidEdit;
-    QCheckBox    *_terminalCB, *_uidCB, *_launchCB, *_systrayCB, *_onlyShowInKdeCB, *_hiddenEntryCB;
+    QCheckBox    *_terminalCB, *_uidCB, *_launchCB, *_onlyShowInKdeCB, *_hiddenEntryCB;
     KIconButton  *_iconButton;
     QGroupBox    *_path_group, *_term_group, *_uid_group;
     QLabel *_termOptLabel, *_uidLabel, *_pathLabel, *_nameLabel, *_commentLabel, *_execLabel;

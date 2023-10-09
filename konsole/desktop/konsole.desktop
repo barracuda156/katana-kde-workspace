@@ -8,7 +8,6 @@ Categories=Qt;KDE;System;TerminalEmulator;
 Actions=NewWindow;
 X-DocPath=konsole/index.html
 StartupNotify=true
-X-KDE-HasTrayOption=true
 
 Name=Konsole
 Name[af]=Konsole

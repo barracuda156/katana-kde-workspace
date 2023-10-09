@@ -455,8 +455,6 @@ void LockoutApplet::createConfigurationInterface(KConfigDialog *parent)
     connect(parent, SIGNAL(okClicked()), this, SLOT(slotConfigAccepted()));
 }
 
-// NOTE: keep in sync with:
-// plasma/applets/pager/pager.cpp
 void LockoutApplet::updateSizes()
 {
     switch (m_layout->orientation()) {

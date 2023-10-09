@@ -233,7 +233,6 @@ _KDE_NET_WM_USER_CREATION_TIME          window property
 _KDE_NET_WM_BLOCK_COMPOSITING           window property
 _KDE_NET_WM_SHADOW                      window property
 _KDE_NET_WM_TAB_GROUP                   window property
-_KDE_FIRST_IN_WINDOWLIST                window property
 _KDE_NET_WM_TEMPORARY_RULES             window property
 _NET_WM_CONTEXT_HELP
     - Katie extension

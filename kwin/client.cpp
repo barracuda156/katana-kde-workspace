@@ -32,9 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "group.h"
 #include "paintredirector.h"
 #include "shadow.h"
-#ifdef KWIN_BUILD_TABBOX
-#include "tabbox.h"
-#endif
 #include "workspace.h"
 // KDE
 #include <KIconLoader>
@@ -119,7 +116,6 @@ Client::Client()
     , padding_bottom(0)
     , sm_stacking_order(-1)
     , paintRedirector(0)
-    , m_firstInTabBox(false)
     , electricMaximizing(false)
     , needsSessionInteract(false)
     , needsXWindowMove(false)
@@ -177,11 +173,6 @@ Client::Client()
 
     //Client to workspace connections require that each
     //client constructed be connected to the workspace wrapper
-
-#ifdef KWIN_BUILD_TABBOX
-    // TabBoxClient
-    m_tabBoxClient = QSharedPointer<TabBox::TabBoxClientImpl>(new TabBox::TabBoxClientImpl(this));
-#endif
 
     geom = QRect(0, 0, 100, 100);   // So that decorations don't start with size being (0,0)
     client_size = QSize(100, 100);
@@ -2199,24 +2190,6 @@ KDecorationDefines::Position Client::titlebarPosition() const
         QMetaObject::invokeMethod(decoration, "titlebarPosition", Qt::DirectConnection,
                                             Q_RETURN_ARG(KDecorationDefines::Position, titlePos));
     return titlePos;
-}
-
-void Client::updateFirstInTabBox()
-{
-    // TODO: move into KWindowInfo
-    Atom type;
-    int format, status;
-    unsigned long nitems = 0;
-    unsigned long extra = 0;
-    unsigned char *data = 0;
-    status = XGetWindowProperty(display(), window(), atoms->kde_first_in_window_list, 0, 1, false, atoms->kde_first_in_window_list, &type, &format, &nitems, &extra, &data);
-    if (status == Success && format == 32 && nitems == 1) {
-        setFirstInTabBox(true);
-    } else {
-        setFirstInTabBox(false);
-    }
-    if (data)
-        XFree(data);
 }
 
 bool Client::isClient() const

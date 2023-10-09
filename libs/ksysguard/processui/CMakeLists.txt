@@ -20,7 +20,6 @@ if(X11_XRes_FOUND)
     include_directories(${X11_XRes_INCLUDE_PATH})
 endif()
 
-target_link_libraries(processui PRIVATE ${QT_QTSCRIPT_LIBRARY})
 target_link_libraries(processui PUBLIC KDE4::kdeui processcore)
 
 set_target_properties(processui

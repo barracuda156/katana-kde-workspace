@@ -26,25 +26,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <kaction.h>
 #include <KGlobal>
 #include <KIcon>
+#include <KIconLoader>
 #include <KLocalizedString>
 #include <KStandardDirs>
 #include <kdebug.h>
 #include <kglobalsettings.h>
-#include <kdeclarative.h>
 
+#include <QStyleOption>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QVector2D>
 #include <QtGui/qevent.h>
 #include <netwm_def.h>
 
 #include <math.h>
 #include <assert.h>
 #include <limits.h>
-#include <QApplication>
-#include <QDeclarativeContext>
-#include <QDeclarativeEngine>
-#include <QDesktopWidget>
-#include <QtGui/qgraphicsitem.h>
-#include <QTimer>
-#include <QVector2D>
 
 namespace KWin
 {
@@ -60,8 +57,6 @@ PresentWindowsEffect::PresentWindowsEffect()
     , m_needInitialSelection(false)
     , m_highlightedWindow(NULL)
     , m_filterFrame(NULL)
-    , m_closeView(NULL)
-    , m_closeWindow(NULL)
     , m_dragInProgress(false)
     , m_dragWindow(NULL)
     , m_highlightedDropTarget(NULL)
@@ -73,19 +68,19 @@ PresentWindowsEffect::PresentWindowsEffect()
     KActionCollection* actionCollection = new KActionCollection(this);
     KAction* a = (KAction*)actionCollection->addAction("Expose");
     a->setText(i18n("Toggle Present Windows (Current desktop)"));
-    a->setGlobalShortcut(KShortcut(Qt::CTRL + Qt::Key_F9));
+    a->setGlobalShortcut(KShortcut(Qt::ALT + Qt::Key_Tab));
     shortcut = a->globalShortcut();
     connect(a, SIGNAL(triggered(bool)), this, SLOT(toggleActive()));
     connect(a, SIGNAL(globalShortcutChanged(QKeySequence)), this, SLOT(globalShortcutChanged(QKeySequence)));
     KAction* b = (KAction*)actionCollection->addAction("ExposeAll");
     b->setText(i18n("Toggle Present Windows (All desktops)"));
-    b->setGlobalShortcut(KShortcut(Qt::CTRL + Qt::Key_F10));
+    // b->setGlobalShortcut(KShortcut(Qt::ALT + Qt::CTRL + Qt::Key_Tab));
     shortcutAll = b->globalShortcut();
     connect(b, SIGNAL(triggered(bool)), this, SLOT(toggleActiveAllDesktops()));
     connect(b, SIGNAL(globalShortcutChanged(QKeySequence)), this, SLOT(globalShortcutChangedAll(QKeySequence)));
     KAction* c = (KAction*)actionCollection->addAction("ExposeClass");
     c->setText(i18n("Toggle Present Windows (Window class)"));
-    c->setGlobalShortcut(KShortcut(Qt::CTRL + Qt::Key_F7));
+    c->setGlobalShortcut(KShortcut(Qt::ALT + Qt::SHIFT + Qt::Key_Tab));
     connect(c, SIGNAL(triggered(bool)), this, SLOT(toggleActiveClass()));
     connect(c, SIGNAL(globalShortcutChanged(QKeySequence)), this, SLOT(globalShortcutChangedClass(QKeySequence)));
     shortcutClass = c->globalShortcut();
@@ -102,7 +97,6 @@ PresentWindowsEffect::PresentWindowsEffect()
 PresentWindowsEffect::~PresentWindowsEffect()
 {
     delete m_filterFrame;
-    delete m_closeView;
 }
 
 void PresentWindowsEffect::reconfigure(ReconfigureFlags)
@@ -131,7 +125,6 @@ void PresentWindowsEffect::reconfigure(ReconfigureFlags)
     m_layoutMode = PresentWindowsConfig::layoutMode();
     m_showCaptions = PresentWindowsConfig::drawWindowCaptions();
     m_showIcons = PresentWindowsConfig::drawWindowIcons();
-    m_doNotCloseWindows = !PresentWindowsConfig::allowClosingWindows();
     m_ignoreMinimized = PresentWindowsConfig::ignoreMinimized();
     m_accuracy = PresentWindowsConfig::accuracy() * 20;
     m_fillGaps = PresentWindowsConfig::fillGaps();
@@ -198,7 +191,7 @@ void PresentWindowsEffect::postPaintScreen()
 {
     if (m_motionManager.areWindowsMoving())
         effects->addRepaintFull();
-    else if (!m_activated && m_motionManager.managingWindows() && !m_closeWindow) {
+    else if (!m_activated && m_motionManager.managingWindows()) {
         // We have finished moving them back, stop processing
         m_motionManager.unmanageAll();
 
@@ -246,7 +239,7 @@ void PresentWindowsEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &d
 {
     // TODO: We should also check to see if any windows are fading just in case fading takes longer
     //       than moving the windows when the effect is deactivated.
-    if (m_activated || m_motionManager.areWindowsMoving() || m_closeWindow) {
+    if (m_activated || m_motionManager.areWindowsMoving()) {
         DataHash::iterator winData = m_windowData.find(w);
         if (winData == m_windowData.end()) {
             effects->prePaintWindow(w, data, time);
@@ -276,7 +269,7 @@ void PresentWindowsEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &d
 
         const bool isInMotion = m_motionManager.isManaging(w);
         // Calculate window's brightness
-        if (w == m_highlightedWindow || w == m_closeWindow || !m_activated)
+        if (w == m_highlightedWindow || !m_activated)
             winData->highlight = qMin(1.0, winData->highlight + time / m_fadeDuration);
         else if (!isInMotion && w->isDesktop())
             winData->highlight = 0.3;
@@ -291,9 +284,6 @@ void PresentWindowsEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &d
                 // we have to keep the window in the list to prevent flickering
                 winData->referenced = false;
                 w->unrefWindow();
-                if (w == m_closeWindow) {
-                    m_closeWindow = NULL;
-                }
             } else
                 w->enablePainting(EffectWindow::PAINT_DISABLED_BY_DELETE);
         }
@@ -416,21 +406,6 @@ void PresentWindowsEffect::slotWindowAdded(EffectWindow *w)
         m_motionManager.manage(w);
         rearrangeWindows();
     }
-    if (m_closeView && w == effects->findWindow(m_closeView->winId())) {
-        if (m_closeWindow != w) {
-            DataHash::iterator winDataIt = m_windowData.find(m_closeWindow);
-            if (winDataIt != m_windowData.end()) {
-                if (winDataIt->referenced) {
-                    m_closeWindow->unrefWindow();
-                }
-                m_windowData.erase(winDataIt);
-            }
-        }
-        winData->visible = true;
-        winData->highlight = 1.0;
-        m_closeWindow = w;
-        w->setData(WindowForceBlurRole, QVariant(true));
-    }
 }
 
 void PresentWindowsEffect::slotWindowClosed(EffectWindow *w)
@@ -447,9 +422,6 @@ void PresentWindowsEffect::slotWindowClosed(EffectWindow *w)
     }
     if (m_highlightedWindow == w)
         setHighlightedWindow(findFirstWindow());
-    if (m_closeWindow == w) {
-        return; // don't rearrange, get's nulled when unref'd
-    }
     rearrangeWindows();
 
     foreach (EffectWindow *w, m_motionManager.managedWindows()) {
@@ -509,18 +481,6 @@ bool PresentWindowsEffect::borderActivated(ElectricBorder border)
 void PresentWindowsEffect::windowInputMouseEvent(QEvent *e)
 {
     QMouseEvent* me = static_cast< QMouseEvent* >(e);
-    if (m_closeView && m_closeView->geometry().contains(me->pos())) {
-        if (!m_closeView->isVisible()) {
-            updateCloseWindow();
-        }
-        if (m_closeView->isVisible()) {
-            const QPoint widgetPos = m_closeView->mapFromGlobal(me->pos());
-//             const QPointF scenePos = m_closeView->mapToScene(widgetPos);
-            QMouseEvent event(me->type(), widgetPos, me->pos(), me->button(), me->buttons(), me->modifiers());
-            m_closeView->windowInputMouseEvent(&event);
-            return;
-        }
-    }
     // Which window are we hovering over? Always trigger as we don't always get move events before clicking
     // We cannot use m_motionManager.windowAtPoint() as the window might not be visible
     EffectWindowList windows = m_motionManager.managedWindows();
@@ -540,10 +500,6 @@ void PresentWindowsEffect::windowInputMouseEvent(QEvent *e)
     }
     if (!hovering)
         setHighlightedWindow(NULL);
-    if (m_highlightedWindow && m_motionManager.transformedGeometry(m_highlightedWindow).contains(me->pos()))
-        updateCloseWindow();
-    else if (m_closeView)
-        m_closeView->hide();
 
     if (e->type() == QEvent::MouseButtonRelease) {
         if (highlightCandidate)
@@ -868,8 +824,6 @@ void PresentWindowsEffect::rearrangeWindows()
         return;
 
     effects->addRepaintFull(); // Trigger the first repaint
-    if (m_closeView)
-        m_closeView->hide();
 
     // Work out which windows are on which screens
     EffectWindowList windowlist;
@@ -1470,15 +1424,9 @@ void PresentWindowsEffect::setActive(bool active)
     m_activated = active;
     if (m_activated) {
         m_needInitialSelection = true;
-        m_closeButtonCorner = (Qt::Corner)effects->kwinOption(KWin::CloseButtonCorner).toInt();
         m_decalOpacity = 0.0;
         m_highlightedWindow = NULL;
         m_windowFilter.clear();
-
-        if (!m_doNotCloseWindows) {
-            m_closeView = new CloseWindowView();
-            connect(m_closeView, SIGNAL(close()), SLOT(closeWindow()));
-        }
 
         // Add every single window to m_windowData (Just calling [w] creates it)
         foreach (EffectWindow * w, effects->stackingOrder()) {
@@ -1558,8 +1506,6 @@ void PresentWindowsEffect::setActive(bool active)
                 winData->visible = (w->isOnDesktop(desktop) || w->isOnAllDesktops()) &&
                                     !w->isMinimized() && (w->isCurrentTab() || winData->visible);
         }
-        delete m_closeView;
-        m_closeView = 0;
         while (!m_dropTargets.empty()) {
             delete m_dropTargets.takeFirst();
         }
@@ -1622,8 +1568,6 @@ bool PresentWindowsEffect::isSelectableWindow(EffectWindow *w)
         return false;
     if (w->isSkipSwitcher())
         return false;
-    if (m_closeView && w == effects->findWindow(m_closeView->winId()))
-        return false;
     if (m_ignoreMinimized && w->isMinimized())
         return false;
     switch(m_mode) {
@@ -1653,8 +1597,6 @@ void PresentWindowsEffect::setHighlightedWindow(EffectWindow *w)
     if (w == m_highlightedWindow || (w != NULL && !m_motionManager.isManaging(w)))
         return;
 
-    if (m_closeView)
-        m_closeView->hide();
     if (m_highlightedWindow) {
         effects->setElevatedWindow(m_highlightedWindow, false);
         m_highlightedWindow->addRepaintFull(); // Trigger the first repaint
@@ -1664,64 +1606,6 @@ void PresentWindowsEffect::setHighlightedWindow(EffectWindow *w)
         effects->setElevatedWindow(m_highlightedWindow, true);
         m_highlightedWindow->addRepaintFull(); // Trigger the first repaint
     }
-
-    updateCloseWindow();
-}
-
-void PresentWindowsEffect::elevateCloseWindow()
-{
-    if (!m_closeView)
-        return;
-    if (EffectWindow *cw = effects->findWindow(m_closeView->winId()))
-        effects->setElevatedWindow(cw, true);
-}
-
-void PresentWindowsEffect::updateCloseWindow()
-{
-    if (!m_closeView || m_doNotCloseWindows)
-        return;
-    if (!m_highlightedWindow || m_highlightedWindow->isDesktop()) {
-        m_closeView->hide();
-        return;
-    }
-    if (m_closeView->isVisible())
-        return;
-
-    const QRectF rect(m_motionManager.targetGeometry(m_highlightedWindow));
-    if (2*m_closeView->sceneRect().width() > rect.width() && 2*m_closeView->sceneRect().height() > rect.height()) {
-        // not for tiny windows (eg. with many windows) - they might become unselectable
-        m_closeView->hide();
-        return;
-    }
-    QRect cvr(QPoint(0,0), m_closeView->sceneRect().size().toSize());
-    switch (m_closeButtonCorner)
-    {
-    case Qt::TopLeftCorner:
-    default:
-        cvr.moveTopLeft(rect.topLeft().toPoint()); break;
-    case Qt::TopRightCorner:
-        cvr.moveTopRight(rect.topRight().toPoint()); break;
-    case Qt::BottomLeftCorner:
-        cvr.moveBottomLeft(rect.bottomLeft().toPoint()); break;
-    case Qt::BottomRightCorner:
-        cvr.moveBottomRight(rect.bottomRight().toPoint()); break;
-    }
-    m_closeView->setGeometry(cvr);
-    if (rect.contains(effects->cursorPos())) {
-        m_closeView->show();
-        m_closeView->disarm();
-        // to wait for the next event cycle (or more if the show takes more time)
-        // TODO: make the closeWindow a graphicsviewitem? why should there be an extra scene to be used in an exiting scene??
-        QTimer::singleShot(50, this, SLOT(elevateCloseWindow()));
-    }
-    else
-        m_closeView->hide();
-}
-
-void PresentWindowsEffect::closeWindow()
-{
-    if (m_highlightedWindow)
-        m_highlightedWindow->closeWindow();
 }
 
 EffectWindow* PresentWindowsEffect::relativeWindow(EffectWindow *w, int xdiff, int ydiff, bool wrap) const
@@ -1933,64 +1817,6 @@ void PresentWindowsEffect::screenCountChanged()
         }
     }
     rearrangeWindows();
-}
-
-/************************************************
-* CloseWindowView
-************************************************/
-CloseWindowView::CloseWindowView(QWidget *parent)
-    : QDeclarativeView(parent)
-    , m_armTimer(new QTimer(this))
-{
-    setWindowFlags(Qt::X11BypassWindowManagerHint);
-    setAttribute(Qt::WA_TranslucentBackground);
-    QPalette pal = palette();
-    pal.setColor(backgroundRole(), Qt::transparent);
-    setPalette(pal);
-    foreach (const QString &importPath, KGlobal::dirs()->findDirs("module", "imports")) {
-        engine()->addImportPath(importPath);
-    }
-    KDeclarative kdeclarative;
-    kdeclarative.setDeclarativeEngine(engine());
-    kdeclarative.initialize();
-    kdeclarative.setupBindings();
-
-    setSource(QUrl(KStandardDirs::locate("data", QLatin1String("kwin/effects/presentwindows/main.qml"))));
-    if (QObject *item = rootObject()->findChild<QObject*>("closeButton")) {
-        connect(item, SIGNAL(clicked()), SIGNAL(close()));
-    }
-
-    // setup the timer - attempt to prevent accidental clicks
-    m_armTimer->setSingleShot(true);
-    m_armTimer->setInterval(350); // 50ms until the window is elevated (seen!) and 300ms more to be "realized" by the user.
-}
-
-void CloseWindowView::windowInputMouseEvent(QMouseEvent *e)
-{
-    if (e->type() == QEvent::MouseMove) {
-        mouseMoveEvent(e);
-    } else if (m_armTimer->isActive()) {
-        return;
-    } else if (e->type() == QEvent::MouseButtonPress) {
-        mousePressEvent(e);
-    } else if (e->type() == QEvent::MouseButtonDblClick) {
-        mouseDoubleClickEvent(e);
-    } else if (e->type() == QEvent::MouseButtonRelease) {
-        mouseReleaseEvent(e);
-    }
-}
-
-void CloseWindowView::disarm()
-{
-    m_armTimer->start();
-}
-
-void CloseWindowView::hideEvent(QHideEvent *event)
-{
-    const QPoint globalPos = mapToGlobal(QPoint(-1,-1));
-    QMouseEvent me(QEvent::MouseMove, QPoint(-1,-1), globalPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
-    mouseMoveEvent(&me);
-    QDeclarativeView::hideEvent(event);
 }
 
 } // namespace

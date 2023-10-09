@@ -42,6 +42,7 @@
 #include <KStandardDirs>
 #include <KActionCollection>
 #include <KToolInvocation>
+#include <KConfigSkeleton>
 
 #include <Plasma/AbstractToolBox>
 #include <Plasma/Containment>
@@ -56,7 +57,6 @@
 #include "controllerwindow.h"
 #include "desktopcorona.h"
 #include "desktopview.h"
-#include "interactiveconsole.h"
 #include "panelshadows.h"
 #include "panelview.h"
 #include "toolbutton.h"
@@ -77,14 +77,6 @@ static void addInformationForApplet(QTextStream &stream, Plasma::Applet *applet)
 
     stream << "Plugin Name: " << applet->pluginName() << '\n';
     stream << "Category: " << applet->category() << '\n';
-
-
-    if (applet->package()) {
-        stream << "API: " << applet->package()->metadata().implementationApi() << '\n';
-        stream << "Type: " << applet->package()->metadata().type() << '\n';
-        stream << "Version: " << applet->package()->metadata().version() << '\n';
-        stream << "Author: " << applet->package()->metadata().author() << '\n';
-    }
 
     // runtime info
     stream << "Failed To Launch: " << applet->hasFailedToLaunch() << '\n';
@@ -176,7 +168,6 @@ PlasmaApp::~PlasmaApp()
         m_panels.clear();
         qDeleteAll(panels);
 
-        delete m_console.data();
         delete m_corona;
         m_corona = 0;
 
@@ -232,31 +223,6 @@ void PlasmaApp::setupDesktop()
 void PlasmaApp::syncConfig()
 {
     KGlobal::config()->sync();
-}
-
-void PlasmaApp::showInteractiveConsole()
-{
-    if (KGlobal::config()->isImmutable()) {
-        return;
-    }
-
-    InteractiveConsole *console = m_console.data();
-    if (!console) {
-        m_console = console = new InteractiveConsole(m_corona);
-    }
-
-    KWindowSystem::setOnDesktop(console->winId(), KWindowSystem::currentDesktop());
-    console->show();
-    console->raise();
-    KWindowSystem::forceActiveWindow(console->winId());
-}
-
-void PlasmaApp::loadScriptInInteractiveConsole(const QString &script)
-{
-    showInteractiveConsole();
-    if (m_console) {
-        m_console.data()->loadScript(script);
-    }
 }
 
 void PlasmaApp::panelHidden(bool hidden)

@@ -48,7 +48,6 @@ namespace Plasma
 class ControllerWindow;
 class DesktopView;
 class DesktopCorona;
-class InteractiveConsole;
 class PanelShadows;
 class PanelView;
 
@@ -92,9 +91,6 @@ public:
 public Q_SLOTS:
     // DBUS interface. if you change these methods, you MUST run:
     // qdbuscpp2xml plasmaapp.h -o dbus/org.kde.plasma.App.xml
-    void showInteractiveConsole();
-    void loadScriptInInteractiveConsole(const QString &script);
-
     void createWaitingPanels();
     void createWaitingDesktops();
     void createView(Plasma::Containment *containment);
@@ -143,7 +139,6 @@ private:
 
     QTimer m_panelViewCreationTimer;
     QTimer m_desktopViewCreationTimer;
-    QWeakPointer<InteractiveConsole> m_console;
     int m_panelHidden;
     QSignalMapper *m_mapper;
     QHash<int, QWeakPointer<ControllerWindow> > m_widgetExplorers;

@@ -77,18 +77,6 @@ enum ElectricBorderAction {
     ELECTRIC_ACTION_COUNT = 3
 };
 
-// DesktopMode and WindowsMode are based on the order in which the desktop
-//  or window were viewed.
-// DesktopListMode lists them in the order created.
-enum TabBoxMode {
-    TabBoxDesktopMode,                      // Focus chain of desktops
-    TabBoxDesktopListMode,                  // Static desktop order
-    TabBoxWindowsMode,                      // Primary window switching mode
-    TabBoxWindowsAlternativeMode,           // Secondary window switching mode
-    TabBoxCurrentAppWindowsMode,            // Same as primary window switching mode but only for windows of current application
-    TabBoxCurrentAppWindowsAlternativeMode  // Same as secondary switching mode but only for windows of current application
-};
-
 enum KWinOption {
     CloseButtonCorner,
     SwitchDesktopOnScreenEdge,

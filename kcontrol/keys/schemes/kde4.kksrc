@@ -84,11 +84,6 @@ Name[zh_CN]=四个修饰键的 KDE 默认值
 Name[zh_TW]=KDE 預設 4 個變更鍵
 Uses Win Modifier=true
 
-[klipper][Global Shortcuts]
-clipboard_action=Meta+Ctrl+X
-repeat_action=Meta+Ctrl+R
-show-on-mouse-pos=Meta+Ctrl+V
-
 [krunner][Global Shortcuts]
 Run Command=Meta+Return; Alt+F2
 Show System Activity=Meta+Ctrl+Pause
@@ -128,8 +123,8 @@ Walk Through Desktop List (Reverse)=none
 Walk Through Desktop List=none
 Walk Through Desktops (Reverse)=Meta+Shift+Tab
 Walk Through Desktops=Meta+Tab
-Walk Through Windows (Reverse)=Alt+Shift+Tab
-Walk Through Windows=Alt+Tab
+Toggle Present Windows (Current desktop)=Alt+Tab
+Toggle Present Windows (Window class)=Alt+Shift+Tab
 Window Close=Alt+Esc; Alt+F4
 Window Lower=none
 Window Maximize Horizontal=Meta+=

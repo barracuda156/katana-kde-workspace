@@ -44,7 +44,6 @@ set_package_properties(X11 PROPERTIES
     TYPE REQUIRED
 )
 
-add_feature_info("libXcomposite" X11_Xcomposite_FOUND "The X11 Composite extension library may be used by Plasma and KWin")
 add_feature_info("libXSync" X11_XSync_FOUND "The X11 synchronization may be used by KWin")
 add_feature_info("libXinput" X11_Xinput_FOUND "The X11 XINPUT extension library may be used by touchpad handler")
 add_feature_info("libXRes" X11_XRes_FOUND "The X Resource library may be used by ksysguard")
@@ -217,12 +216,6 @@ add_feature_info(wrestool
     "ICO thumbnails support in KIO slave"
 )
 
-find_program(QRENCODE_EXECUTABLE qrencode)
-add_feature_info(qrencode
-    QRENCODE_EXECUTABLE
-    "QR Code support in klipper"
-)
-
 find_program(CTAGS_EXECUTABLE ctags ctags-universal ctags-exuberant exctags uctags)
 add_feature_info(ctags
     CTAGS_EXECUTABLE
@@ -291,7 +284,6 @@ add_subdirectory(qguiplatformplugin_kde)
 add_subdirectory(ksysguard)
 
 add_subdirectory(kcontrol)
-add_subdirectory(klipper)
 add_subdirectory(kmenuedit)
 add_subdirectory(krunner)
 add_subdirectory(kinfocenter)
@@ -306,7 +298,6 @@ endif(LightDM_FOUND)
 add_subdirectory(cursors)
 
 add_subdirectory(plasma)
-add_subdirectory(statusnotifierwatcher)
 add_subdirectory(kstyles)
 
 # Imported from kde-runtime and other sub-projects

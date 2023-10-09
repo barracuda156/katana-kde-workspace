@@ -20,12 +20,7 @@
  */
 
 #include "calculatorrunner.h"
-
-#ifdef ENABLE_QALCULATE
 #include "qalculate_engine.h"
-#else
-#include <QScriptEngine>
-#endif
 
 #include <KIcon>
 #include <KDebug>
@@ -35,12 +30,8 @@
 CalculatorRunner::CalculatorRunner( QObject* parent, const QVariantList &args )
     : Plasma::AbstractRunner(parent, args)
 {
-    Q_UNUSED(args)
-
-#ifdef ENABLE_QALCULATE
     m_engine = new QalculateEngine();
     setSpeed(SlowSpeed);
-#endif
 
     setObjectName( QLatin1String("Calculator" ));
     setIgnoredTypes(Plasma::RunnerContext::Directory | Plasma::RunnerContext::File |
@@ -56,9 +47,7 @@ CalculatorRunner::CalculatorRunner( QObject* parent, const QVariantList &args )
 
 CalculatorRunner::~CalculatorRunner()
 {
-#ifdef ENABLE_QALCULATE
     delete m_engine;
-#endif
 }
 
 void CalculatorRunner::powSubstitutions(QString& cmd)
@@ -177,24 +166,8 @@ void CalculatorRunner::userFriendlySubstitutions(QString& cmd)
 {
     const QChar decimalSymbol = KGlobal::locale()->toLocale().decimalPoint();
     if (cmd.contains(decimalSymbol, Qt::CaseInsensitive)) {
-         cmd=cmd.replace(decimalSymbol, QChar('.'), Qt::CaseInsensitive);
+         cmd = cmd.replace(decimalSymbol, QChar('.'), Qt::CaseInsensitive);
     }
-
-    // the following substitutions are not needed with libqalculate
-#ifndef ENABLE_QALCULATE
-    hexSubstitutions(cmd);
-    powSubstitutions(cmd);
-
-    if (cmd.contains(QRegExp("\\d+and\\d+"))) {
-         cmd = cmd.replace(QRegExp("(\\d+)and(\\d+)"), "\\1&\\2");
-    }
-    if (cmd.contains(QRegExp("\\d+or\\d+"))) {
-         cmd = cmd.replace(QRegExp("(\\d+)or(\\d+)"), "\\1|\\2");
-    }
-    if (cmd.contains(QRegExp("\\d+xor\\d+"))) {
-         cmd = cmd.replace(QRegExp("(\\d+)xor(\\d+)"), "\\1^\\2");
-    }
-#endif
 }
 
 
@@ -239,9 +212,6 @@ void CalculatorRunner::match(Plasma::RunnerContext &context)
     }
 
     userFriendlySubstitutions(cmd);
-#ifndef ENABLE_QALCULATE
-    cmd.replace(QRegExp("([a-zA-Z]+)"), "Math.\\1"); //needed for accessing math functions like sin(),....
-#endif
 
     QString result = calculate(cmd);
     if (!result.isEmpty() && result != cmd) {
@@ -262,37 +232,8 @@ void CalculatorRunner::match(Plasma::RunnerContext &context)
 QString CalculatorRunner::calculate(const QString& term)
 {
     const QChar decimalSymbol = KGlobal::locale()->toLocale().decimalPoint();
-#ifdef ENABLE_QALCULATE
     QString result = m_engine->evaluate(term);
     return result.replace('.', decimalSymbol, Qt::CaseInsensitive);
-#else
-    //kDebug() << "calculating" << term;
-    QScriptEngine eng;
-    QScriptValue result = eng.evaluate(" var result ="+term+"; result");
-
-    if (result.isError()) {
-        return QString();
-    }
-
-    const QString resultString = result.toString();
-    if (resultString.isEmpty()) {
-        return QString();
-    }
-
-    if (!resultString.contains('.')) {
-        return resultString;
-    }
-
-    //ECMAScript has issues with the last digit in simple rational computations
-    //This script rounds off the last digit; see bug 167986
-    QString roundedResultString = eng.evaluate("var exponent = 14-(1+Math.floor(Math.log(Math.abs(result))/Math.log(10)));\
-                                                var order=Math.pow(10,exponent);\
-                                                (order > 0? Math.round(result*order)/order : 0)").toString();
-
-    roundedResultString.replace('.', decimalSymbol, Qt::CaseInsensitive);
-
-    return roundedResultString;
-#endif // ENABLE_QALCULATE
 }
 
 QMimeData * CalculatorRunner::mimeDataForMatch(const Plasma::QueryMatch *match)
