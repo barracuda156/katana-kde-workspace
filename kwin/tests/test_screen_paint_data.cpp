@@ -152,11 +152,6 @@ void TestScreenPaintData::testSetScale()
     QCOMPARE(data.xScale(), 2.0);
     QCOMPARE(data.yScale(), 3.0);
     QCOMPARE(data.zScale(), 4.0);
-    // setting a vector2d should affect x and y components
-    data.setScale(QVector2D(0.5, 2.0));
-    QCOMPARE(data.xScale(), 0.5);
-    QCOMPARE(data.yScale(), 2.0);
-    QCOMPARE(data.zScale(), 4.0);
     // setting a vector3d should affect all components
     data.setScale(QVector3D(1.5, 2.5, 3.5));
     QCOMPARE(data.xScale(), 1.5);

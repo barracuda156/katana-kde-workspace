@@ -65,10 +65,22 @@ void WindowPrePaintData::setTransformed()
 
 class PaintDataPrivate {
 public:
-    QGraphicsScale scale;
+    PaintDataPrivate();
+
+    qreal xScale;
+    qreal yScale;
+    qreal zScale;
     QVector3D translation;
-    QGraphicsRotation rotation;
+    QVector3D rotationOrigin;
+    qreal rotationAngle;
+    QVector3D rotationAxis;
 };
+
+PaintDataPrivate::PaintDataPrivate()
+    : xScale(1.0), yScale(1.0), zScale(1.0),
+    rotationAngle(0), rotationAxis(0.0, 0.0, 1.0)
+{
+}
 
 PaintData::PaintData()
     : d(new PaintDataPrivate())
@@ -82,50 +94,44 @@ PaintData::~PaintData()
 
 qreal PaintData::xScale() const
 {
-    return d->scale.xScale();
+    return d->xScale;
 }
 
 qreal PaintData::yScale() const
 {
-    return d->scale.yScale();
+    return d->yScale;
 }
 
 qreal PaintData::zScale() const
 {
-    return d->scale.zScale();
-}
-
-void PaintData::setScale(const QVector2D &scale)
-{
-    d->scale.setXScale(scale.x());
-    d->scale.setYScale(scale.y());
+    return d->zScale;
 }
 
 void PaintData::setScale(const QVector3D &scale)
 {
-    d->scale.setXScale(scale.x());
-    d->scale.setYScale(scale.y());
-    d->scale.setZScale(scale.z());
+    d->xScale = scale.x();
+    d->yScale = scale.y();
+    d->zScale = scale.z();
 }
 
 void PaintData::setXScale(qreal scale)
 {
-    d->scale.setXScale(scale);
+    d->xScale = scale;
 }
 
 void PaintData::setYScale(qreal scale)
 {
-    d->scale.setYScale(scale);
+    d->yScale = scale;
 }
 
 void PaintData::setZScale(qreal scale)
 {
-    d->scale.setZScale(scale);
+    d->zScale = scale;
 }
 
-const QGraphicsScale &PaintData::scale() const
+QVector3D PaintData::scale() const
 {
-    return d->scale;
+    return QVector3D(d->xScale, d->yScale, d->zScale);
 }
 
 void PaintData::setXTranslation(qreal translate)
@@ -175,37 +181,50 @@ const QVector3D &PaintData::translation() const
 
 qreal PaintData::rotationAngle() const
 {
-    return d->rotation.angle();
+    return d->rotationAngle;
 }
 
 QVector3D PaintData::rotationAxis() const
 {
-    return d->rotation.axis();
+    return d->rotationAxis;
 }
 
 QVector3D PaintData::rotationOrigin() const
 {
-    return d->rotation.origin();
+    return d->rotationOrigin;
 }
 
 void PaintData::setRotationAngle(qreal angle)
 {
-    d->rotation.setAngle(angle);
+    d->rotationAngle = angle;
 }
 
 void PaintData::setRotationAxis(Qt::Axis axis)
 {
-    d->rotation.setAxis(axis);
+    switch (axis) {
+        case Qt::XAxis: {
+            d->rotationAxis = QVector3D(1.0, 0.0, 0.0);
+            break;
+        }
+        case Qt::YAxis: {
+            d->rotationAxis = QVector3D(0.0, 1.0, 0.0);
+            break;
+        }
+        case Qt::ZAxis: {
+            d->rotationAxis = QVector3D(0.0, 0.0, 1.0);
+            break;
+        }
+    }
 }
 
 void PaintData::setRotationAxis(const QVector3D &axis)
 {
-    d->rotation.setAxis(axis);
+    d->rotationAxis = axis;
 }
 
 void PaintData::setRotationOrigin(const QVector3D &origin)
 {
-    d->rotation.setOrigin(origin);
+    d->rotationOrigin = origin;
 }
 
 class WindowPaintDataPrivate {

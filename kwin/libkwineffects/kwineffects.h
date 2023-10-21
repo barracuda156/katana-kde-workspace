@@ -32,7 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QVector2D>
 #include <QVector3D>
 #include <QFont>
-#include <QGraphicsScale>
 #include <QKeyEvent>
 #include <QVector>
 #include <QList>
@@ -1686,18 +1685,12 @@ public:
      **/
     void setZScale(qreal scale);
     /**
-     * Sets the scale factor in X and Y direction.
-     * @param scale The scale factor for X and Y direction
-     * @since 4.10
-     **/
-    void setScale(const QVector2D &scale);
-    /**
      * Sets the scale factor in X, Y and Z direction
      * @param scale The scale factor for X, Y and Z direction
      * @since 4.10
      **/
     void setScale(const QVector3D &scale);
-    const QGraphicsScale &scale() const;
+    QVector3D scale() const;
     const QVector3D &translation() const;
     /**
      * @returns the translation in X direction.
