@@ -48,6 +48,12 @@ static QString kElementForArrow(const Qt::Orientation orientation, const bool re
     return QString();
 }
 
+static void kSaveApplet(Plasma::Applet *plasmaapplet)
+{
+    KConfigGroup dummy;
+    plasmaapplet->save(dummy);
+}
+
 SystemTrayApplet::SystemTrayApplet(QObject *parent, const QVariantList &args)
     : Plasma::Applet(parent, args),
     m_layout(nullptr),
@@ -71,8 +77,7 @@ SystemTrayApplet::~SystemTrayApplet()
 {
     QMutexLocker locker(&m_mutex);
     foreach (Plasma::Applet* plasmaapplet, m_applets) {
-        KConfigGroup dummy;
-        plasmaapplet->save(dummy);
+        kSaveApplet(plasmaapplet);
     }
 }
 
@@ -147,6 +152,7 @@ void SystemTrayApplet::slotUpdateLayout()
     QMutexLocker locker(&m_mutex);
     foreach (Plasma::Applet* plasmaapplet, m_applets) {
         disconnect(plasmaapplet, 0, this, 0);
+        kSaveApplet(plasmaapplet);
         m_layout->removeItem(plasmaapplet);
     }
     qDeleteAll(m_applets);
