@@ -40,12 +40,11 @@ protected:
     void constraintsEvent(Plasma::Constraints constraints) final;
 
 private Q_SLOTS:
-    void slotAppletDestroyed(Plasma::Applet *plasmaapplet);
+    void slotUpdateLayout();
     void slotUpdateVisibility();
     void slotShowHidden();
 
 private:
-    void updateLayout();
     void updateApplets(const Plasma::Constraints constraints);
 
     QMutex m_mutex;
