@@ -586,19 +586,19 @@ void TestVirtualDesktops::load()
     // no config yet, load should not change anything
     vds->load();
     QCOMPARE(vds->count(), (uint)0);
-    // empty config should create one desktop
+    // empty config should create two desktop
     KSharedConfig::Ptr config = KSharedConfig::openConfig(QString(), KConfig::SimpleConfig);
     vds->setConfig(config);
     vds->load();
-    QCOMPARE(vds->count(), (uint)1);
+    QCOMPARE(vds->count(), (uint)2);
     // setting a sensible number
     config->group("Desktops").writeEntry("Number", 4);
     vds->load();
     QCOMPARE(vds->count(), (uint)4);
-    // setting the screen number should reset to one desktop as config value is missing
+    // setting the screen number should reset to two desktop as config value is missing
     screen_number = 2;
     vds->load();
-    QCOMPARE(vds->count(), (uint)1);
+    QCOMPARE(vds->count(), (uint)2);
     // creating the respective group should properly load
     config->group("Desktops-screen-2").writeEntry("Number", 5);
     vds->load();
