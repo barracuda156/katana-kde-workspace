@@ -146,6 +146,7 @@ void SystemTrayApplet::slotUpdateLayout()
     m_popuptimer->stop();
     QMutexLocker locker(&m_mutex);
     foreach (Plasma::Applet* plasmaapplet, m_applets) {
+        disconnect(plasmaapplet, 0, this, 0);
         m_layout->removeItem(plasmaapplet);
     }
     qDeleteAll(m_applets);
