@@ -24,16 +24,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "kwineffects.h"
 #include "kwinxrenderutils.h"
 
-#include <QtDBus/QtDBus>
+#include <QDBusMessage>
+#include <QDBusConnection>
 #include <QVariant>
 #include <QList>
 #include <QTimeLine>
-#include <QtGui/QFontMetrics>
-#include <QtGui/QPainter>
-#include <QtGui/QPixmap>
-#include <QtGui/QVector2D>
-#include <QtGui/qgraphicstransform.h>
-#include <QtCore/qmath.h>
+#include <QFontMetrics>
+#include <QPainter>
+#include <QPixmap>
+#include <qmath.h>
 
 #include <kdebug.h>
 #include <ksharedconfig.h>

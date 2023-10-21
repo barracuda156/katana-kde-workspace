@@ -21,8 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <kwineffects.h>
 
 #include <QtGui/QVector2D>
-#include <QtGui/qgraphicstransform.h>
-#include <QtGui/qgraphicstransform.h>
+#include <QtGui/QVector3D>
 
 #include <QtTest/QtTest>
 
