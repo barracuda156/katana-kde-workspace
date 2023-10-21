@@ -24,6 +24,8 @@
 // standard issue margin/spacing
 static const int s_margin = 4;
 static const int s_spacing = 2;
+// there is no signal for when the popup is shown so it has to be checked on timer
+static const int s_popuptimeout = 500;
 
 static QString kElementForArrow(const Qt::Orientation orientation, const bool reverse)
 {
@@ -52,11 +54,19 @@ SystemTrayApplet::SystemTrayApplet(QObject *parent, const QVariantList &args)
     : Plasma::Applet(parent, args),
     m_layout(nullptr),
     m_arrowicon(nullptr),
-    m_showinghidden(false)
+    m_showinghidden(false),
+    m_popuptimer(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_systemtray");
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    m_popuptimer = new QTimer(this);
+    m_popuptimer->setInterval(s_popuptimeout);
+    connect(
+        m_popuptimer, SIGNAL(timeout()),
+        this, SLOT(slotUpdateVisibility())
+    );
 }
 
 SystemTrayApplet::~SystemTrayApplet()
@@ -81,6 +91,7 @@ void SystemTrayApplet::init()
 
 void SystemTrayApplet::updateLayout()
 {
+    m_popuptimer->stop();
     QMutexLocker locker(&m_mutex);
     foreach (Plasma::Applet* plasmaapplet, m_applets) {
         m_layout->removeItem(plasmaapplet);
@@ -131,6 +142,7 @@ void SystemTrayApplet::updateLayout()
     }
     locker.unlock();
     slotUpdateVisibility();
+    m_popuptimer->start();
 }
 
 void SystemTrayApplet::updateApplets(const Plasma::Constraints constraints)
@@ -200,7 +212,7 @@ void SystemTrayApplet::slotUpdateVisibility()
     bool hashidden = false;
     QMutexLocker locker(&m_mutex);
     foreach (Plasma::Applet* plasmaapplet, m_applets) {
-        if (plasmaapplet->status() == Plasma::PassiveStatus) {
+        if (plasmaapplet->status() == Plasma::PassiveStatus && !plasmaapplet->isPopupShowing()) {
             hashidden = true;
             plasmaapplet->setVisible(false);
             // move hidden items to the front

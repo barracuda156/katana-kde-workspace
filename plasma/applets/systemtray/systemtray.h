@@ -20,6 +20,7 @@
 #define SYSTEMTRAY_H
 
 #include <QMutex>
+#include <QTimer>
 #include <QGraphicsLinearLayout>
 #include <Plasma/Applet>
 #include <Plasma/IconWidget>
@@ -52,6 +53,7 @@ private:
     QList<Plasma::Applet*> m_applets;
     Plasma::IconWidget* m_arrowicon;
     bool m_showinghidden;
+    QTimer* m_popuptimer;
 };
 
 #endif // SYSTEMTRAY_H
