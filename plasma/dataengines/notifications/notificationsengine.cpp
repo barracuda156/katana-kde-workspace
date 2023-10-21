@@ -21,12 +21,13 @@
 #include "notificationservice.h"
 #include "notificationsadaptor.h"
 
-#include <KDebug>
+#include <KUrl>
 #include <KConfigGroup>
 #include <KGlobal>
 #include <KNotificationConfigWidget>
 #include <KStandardDirs>
 #include <KIconLoader>
+#include <KDebug>
 
 #include <Plasma/DataContainer>
 #include <Plasma/Service>
