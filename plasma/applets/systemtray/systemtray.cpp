@@ -88,6 +88,15 @@ void SystemTrayApplet::updateLayout()
     qDeleteAll(m_applets);
     m_applets.clear();
 
+    if (!m_arrowicon) {
+        m_arrowicon = new Plasma::IconWidget(this);
+        connect(
+            m_arrowicon, SIGNAL(clicked()),
+            this, SLOT(slotShowHidden())
+        );
+        m_layout->insertItem(0, m_arrowicon);
+    }
+
     foreach (const KPluginInfo &appletinfo, Plasma::Applet::listAppletInfo()) {
         KService::Ptr appletservice = appletinfo.service();
         const bool notificationarea = appletservice->property("X-Plasma-NotificationArea", QVariant::Bool).toBool();
@@ -204,19 +213,10 @@ void SystemTrayApplet::slotUpdateVisibility()
         }
     }
     if (!hashidden) {
-        if (m_arrowicon) {
-            m_arrowicon->setVisible(false);
-        }
+        m_arrowicon->setVisible(false);
     } else {
-        if (!m_arrowicon) {
-            m_arrowicon = new Plasma::IconWidget(this);
-            connect(
-                m_arrowicon, SIGNAL(clicked()),
-                this, SLOT(slotShowHidden())
-            );
-        }
+        m_arrowicon->setVisible(true);
         m_arrowicon->setSvg("widgets/arrows", kElementForArrow(m_layout->orientation(), m_showinghidden));
-        m_layout->insertItem(0, m_arrowicon);
     }
 }
 
