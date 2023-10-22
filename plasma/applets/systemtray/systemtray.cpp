@@ -25,8 +25,6 @@
 // standard issue margin/spacing
 static const int s_margin = 4;
 static const int s_spacing = 2;
-// there is no signal for when the popup is shown so it has to be checked on timer
-static const int s_popuptimeout = 500;
 
 static QString kElementForArrow(const Qt::Orientation orientation, const bool reverse)
 {
@@ -58,19 +56,11 @@ SystemTrayApplet::SystemTrayApplet(QObject *parent, const QVariantList &args)
     : Plasma::Applet(parent, args),
     m_layout(nullptr),
     m_arrowicon(nullptr),
-    m_showinghidden(false),
-    m_popuptimer(nullptr)
+    m_showinghidden(false)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_systemtray");
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-    m_popuptimer = new QTimer(this);
-    m_popuptimer->setInterval(s_popuptimeout);
-    connect(
-        m_popuptimer, SIGNAL(timeout()),
-        this, SLOT(slotUpdateVisibility())
-    );
 }
 
 SystemTrayApplet::~SystemTrayApplet()
@@ -148,7 +138,6 @@ void SystemTrayApplet::constraintsEvent(Plasma::Constraints constraints)
 
 void SystemTrayApplet::slotUpdateLayout()
 {
-    m_popuptimer->stop();
     QMutexLocker locker(&m_mutex);
     foreach (Plasma::Applet* plasmaapplet, m_applets) {
         disconnect(plasmaapplet, 0, this, 0);
@@ -192,6 +181,10 @@ void SystemTrayApplet::slotUpdateLayout()
                 this, SLOT(slotUpdateLayout())
             );
             connect(
+                plasmaapplet, SIGNAL(activate()),
+                this, SLOT(slotUpdateVisibility())
+            );
+            connect(
                 plasmaapplet, SIGNAL(newStatus(Plasma::ItemStatus)),
                 this, SLOT(slotUpdateVisibility())
             );
@@ -201,7 +194,6 @@ void SystemTrayApplet::slotUpdateLayout()
     }
     locker.unlock();
     slotUpdateVisibility();
-    m_popuptimer->start();
 }
 
 void SystemTrayApplet::slotUpdateVisibility()
