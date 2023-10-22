@@ -196,7 +196,7 @@ QSizeF PagerSvg::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
             }
             textwidth = qMax(textwidth, fontmetricsf.width(desktoptext));
         }
-        // the applet layout spacing + the text spacing + s_spacing for good measure
+        // the applet layout spacing + the text spacing
         static const int spacingx4 = (s_spacing * 4);
         QSizeF result;
         if (vertical) {
