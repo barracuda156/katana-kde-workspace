@@ -67,7 +67,13 @@ KCMKeyboardOptionsDialog::KCMKeyboardOptionsDialog(QWidget *parent)
     m_optionstree->header()->setMovable(false);
     m_optionstree->header()->setStretchLastSection(false);
     m_optionstree->header()->setResizeMode(0, QHeaderView::Stretch);
-    m_optionstree->header()->setResizeMode(1, QHeaderView::Interactive);
+    m_optionstree->header()->setResizeMode(1, QHeaderView::ResizeToContents);
+    const QFontMetrics fontmetrics(m_optionstree->header()->font());
+    int minsectionsize = fontmetrics.width(m_enabledi18n);
+    minsectionsize = qMax(minsectionsize, fontmetrics.width(m_disabledi18n));
+    // some space for the checkbox
+    minsectionsize = (minsectionsize + 20);
+    m_optionstree->header()->setMinimumSectionSize(minsectionsize);
     connect(
         m_optionstree, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
         this, SLOT(slotItemChanged(QTreeWidgetItem*,int))
