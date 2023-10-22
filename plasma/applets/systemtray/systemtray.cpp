@@ -18,8 +18,10 @@
 
 #include "systemtray.h"
 
+#include <Plasma/PopupApplet>
 #include <Plasma/ToolTipManager>
 #include <KSycoca>
+#include <KIconLoader>
 #include <KDebug>
 
 // standard issue margin/spacing
@@ -50,6 +52,19 @@ static void kSaveApplet(Plasma::Applet *plasmaapplet)
 {
     KConfigGroup dummy;
     plasmaapplet->save(dummy);
+}
+
+// HACK: updateGeometry() is protected thus the hack
+class PlasmaAppletHack: public Plasma::Applet
+{
+    Q_OBJECT
+public:
+    void updateGeometryHack();
+};
+
+void PlasmaAppletHack::updateGeometryHack()
+{
+    updateGeometry();
 }
 
 SystemTrayApplet::SystemTrayApplet(QObject *parent, const QVariantList &args)
@@ -97,8 +112,24 @@ void SystemTrayApplet::updateApplets(const Plasma::Constraints constraints)
             break;
         }
     }
+    // ensure the applet has a preferred size, an icon-like one which is the case for popup applets
+    // (unless applets are not shown in icon mode, that is decided by the applets minimum size) but
+    // not for non-pupup applets
+    const QSizeF appletsize = size();
+    int iconsize = qMin(appletsize.width(), appletsize.height());
+    if (iconsize <= 0) {
+        iconsize = KIconLoader::global()->currentSize(KIconLoader::Panel);
+    }
+    iconsize = (iconsize - s_margin * 2);
     QMutexLocker locker(&m_mutex);
     foreach (Plasma::Applet* plasmaapplet, m_applets) {
+        Plasma::PopupApplet* plasmapopupapplet = qobject_cast<Plasma::PopupApplet*>(plasmaapplet);
+        const QSizeF plasmaappletsize = plasmaapplet->preferredSize();
+        if (!plasmapopupapplet || plasmaappletsize.isNull()) {
+            plasmaapplet->setPreferredSize(iconsize, iconsize);
+            PlasmaAppletHack* plasmaapplethack = reinterpret_cast<PlasmaAppletHack*>(plasmaapplet);
+            plasmaapplethack->updateGeometryHack();
+        }
         plasmaapplet->updateConstraints(constraints);
         plasmaapplet->flushPendingConstraintsEvents();
     }
@@ -245,3 +276,4 @@ void SystemTrayApplet::slotShowHidden()
 K_EXPORT_PLASMA_APPLET(systemtray, SystemTrayApplet)
 
 #include "moc_systemtray.cpp"
+#include "systemtray.moc"

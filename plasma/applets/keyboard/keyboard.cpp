@@ -169,15 +169,6 @@ void KeyboardApplet::constraintsEvent(Plasma::Constraints constraints)
         }
         setMinimumSize(iconsize, iconsize);
     }
-    // TODO: hint
-    if (constraints & Plasma::SizeConstraint) {
-        const QSizeF appletsize = size();
-        int iconsize = qMin(appletsize.width(), appletsize.height());
-        if (iconsize <= 0) {
-            iconsize = KIconLoader::global()->currentSize(KIconLoader::Panel);
-        }
-        setPreferredSize(iconsize, iconsize);
-    }
 }
 
 void KeyboardApplet::slotLayoutChanged()
