@@ -110,7 +110,7 @@ void WorkspaceOptionsModule::save()
     static const QString desktopTitleBarButtonsRight = "HIAX";
     static const QString netbookTitleBarButtonsLeft = "MS";
     static const QString netbookTitleBarButtonsRight = "HAX";
-    static const int desktopPresentWindowsLayoutMode = 0;
+    static const int desktopPresentWindowsLayoutMode = 1;
     static const int netbookPresentWindowsLayoutMode = 1;
     static const bool desktopUnredirectFullscreen = true;
     static const bool netbookUnredirectFullscreen = false;
