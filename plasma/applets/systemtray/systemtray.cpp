@@ -120,7 +120,7 @@ void SystemTrayApplet::updateApplets(const Plasma::Constraints constraints)
     if (iconsize <= 0) {
         iconsize = KIconLoader::global()->currentSize(KIconLoader::Panel);
     }
-    iconsize = (iconsize - s_margin * 2);
+    iconsize = (iconsize - (s_margin * 2));
     QMutexLocker locker(&m_mutex);
     foreach (Plasma::Applet* plasmaapplet, m_applets) {
         Plasma::PopupApplet* plasmapopupapplet = qobject_cast<Plasma::PopupApplet*>(plasmaapplet);
@@ -169,14 +169,27 @@ void SystemTrayApplet::constraintsEvent(Plasma::Constraints constraints)
 
 void SystemTrayApplet::slotUpdateLayout()
 {
+    QStringList trayplugins;
+    foreach (const KPluginInfo &appletinfo, Plasma::Applet::listAppletInfo()) {
+        KService::Ptr appletservice = appletinfo.service();
+        const bool notificationarea = appletservice->property("X-Plasma-NotificationArea", QVariant::Bool).toBool();
+        if (notificationarea) {
+            trayplugins.append(appletinfo.pluginName());
+        }
+    }
     QMutexLocker locker(&m_mutex);
-    foreach (Plasma::Applet* plasmaapplet, m_applets) {
+    QMutableListIterator<Plasma::Applet*> iter(m_applets);
+    while (iter.hasNext()) {
+        Plasma::Applet* plasmaapplet = iter.next();
+        if (trayplugins.contains(plasmaapplet->pluginName())) {
+            continue;
+        }
+        kDebug() << "removing" << plasmaapplet->pluginName() << "from tray";
         disconnect(plasmaapplet, 0, this, 0);
         kSaveApplet(plasmaapplet);
-        m_layout->removeItem(plasmaapplet);
+        iter.remove();
+        plasmaapplet->destroy();
     }
-    qDeleteAll(m_applets);
-    m_applets.clear();
 
     if (!m_arrowicon) {
         m_arrowicon = new Plasma::IconWidget(this);
@@ -187,41 +200,52 @@ void SystemTrayApplet::slotUpdateLayout()
         m_layout->insertItem(0, m_arrowicon);
     }
 
-    foreach (const KPluginInfo &appletinfo, Plasma::Applet::listAppletInfo()) {
-        KService::Ptr appletservice = appletinfo.service();
-        const bool notificationarea = appletservice->property("X-Plasma-NotificationArea", QVariant::Bool).toBool();
-        if (notificationarea) {
-            Plasma::Applet* plasmaapplet = Plasma::Applet::load(appletinfo.pluginName());
-            if (!plasmaapplet) {
-                kWarning() << "Could not load applet" << appletinfo.pluginName();
-                continue;
+    foreach (const QString &appletplugin, trayplugins) {
+        bool alreadyloaded = false;
+        iter.toFront();
+        while (iter.hasNext()) {
+            Plasma::Applet* plasmaapplet = iter.next();
+            if (plasmaapplet->pluginName() == appletplugin) {
+                kDebug() << appletplugin << "already loaded into tray";
+                alreadyloaded = true;
+                break;
             }
-
-            plasmaapplet->setParent(this);
-            plasmaapplet->setParentItem(this);
-            plasmaapplet->setFlag(QGraphicsItem::ItemIsMovable, false);
-            plasmaapplet->setBackgroundHints(Plasma::Applet::NoBackground);
-            KConfigGroup plasmaappletconfig = plasmaapplet->config();
-            plasmaappletconfig = plasmaappletconfig.parent();
-            plasmaapplet->restore(plasmaappletconfig);
-            plasmaapplet->init();
-            plasmaapplet->updateConstraints(Plasma::AllConstraints);
-            plasmaapplet->flushPendingConstraintsEvents();
-            connect(
-                plasmaapplet, SIGNAL(appletDestroyed(Plasma::Applet*)),
-                this, SLOT(slotUpdateLayout())
-            );
-            connect(
-                plasmaapplet, SIGNAL(activate()),
-                this, SLOT(slotUpdateVisibility())
-            );
-            connect(
-                plasmaapplet, SIGNAL(newStatus(Plasma::ItemStatus)),
-                this, SLOT(slotUpdateVisibility())
-            );
-            m_applets.append(plasmaapplet);
-            m_layout->addItem(plasmaapplet);
         }
+        if (alreadyloaded) {
+            continue;
+        }
+
+        Plasma::Applet* plasmaapplet = Plasma::Applet::load(appletplugin);
+        if (!plasmaapplet) {
+            kWarning() << "Could not load applet" << appletplugin;
+            continue;
+        }
+
+        kDebug() << appletplugin << "loading" << appletplugin << "into tray";
+        plasmaapplet->setParent(this);
+        plasmaapplet->setParentItem(this);
+        plasmaapplet->setFlag(QGraphicsItem::ItemIsMovable, false);
+        plasmaapplet->setBackgroundHints(Plasma::Applet::NoBackground);
+        KConfigGroup plasmaappletconfig = plasmaapplet->config();
+        plasmaappletconfig = plasmaappletconfig.parent();
+        plasmaapplet->restore(plasmaappletconfig);
+        plasmaapplet->init();
+        plasmaapplet->updateConstraints(Plasma::AllConstraints);
+        plasmaapplet->flushPendingConstraintsEvents();
+        connect(
+            plasmaapplet, SIGNAL(appletDestroyed(Plasma::Applet*)),
+            this, SLOT(slotUpdateLayout())
+        );
+        connect(
+            plasmaapplet, SIGNAL(activate()),
+            this, SLOT(slotUpdateVisibility())
+        );
+        connect(
+            plasmaapplet, SIGNAL(newStatus(Plasma::ItemStatus)),
+            this, SLOT(slotUpdateVisibility())
+        );
+        m_applets.append(plasmaapplet);
+        m_layout->addItem(plasmaapplet);
     }
     locker.unlock();
     slotUpdateVisibility();
