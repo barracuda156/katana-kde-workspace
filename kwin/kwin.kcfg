@@ -235,8 +235,8 @@
         <entry name="Enabled" type="Bool">
             <default>true</default>
         </entry>
-        <entry name="XRenderSmoothScale" type="Bool">
-            <default>false</default>
+        <entry name="XRenderFilter" type="UInt">
+            <default>1</default>
         </entry>
         <entry name="HiddenPreviews" type="Int">
             <default>5</default>

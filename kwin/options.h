@@ -162,7 +162,7 @@ class Options : public QObject, public KDecorationOptions
      * 2 = try trilinear when transformed; else 1,
      * -1 = auto
      **/
-    Q_PROPERTY(bool xrenderSmoothScale READ isXrenderSmoothScale WRITE setXrenderSmoothScale NOTIFY xrenderSmoothScaleChanged)
+    Q_PROPERTY(uint xrenderFilter READ xrenderFilter WRITE setXrenderFilter NOTIFY xrenderFilterChanged)
     Q_PROPERTY(qint64 maxFpsInterval READ maxFpsInterval WRITE setMaxFpsInterval NOTIFY maxFpsIntervalChanged)
     Q_PROPERTY(uint refreshRate READ refreshRate WRITE setRefreshRate NOTIFY refreshRateChanged)
     Q_PROPERTY(qint64 vBlankTime READ vBlankTime WRITE setVBlankTime NOTIFY vBlankTimeChanged)
@@ -484,8 +484,8 @@ public:
         return m_unredirectFullscreen;
     }
     // XRender
-    bool isXrenderSmoothScale() const {
-        return m_xrenderSmoothScale;
+    uint xrenderFilter() const {
+        return m_xrenderFilter;
     }
 
     qint64 maxFpsInterval() const {
@@ -549,7 +549,7 @@ public:
     void setCompositingInitialized(bool compositingInitialized);
     void setHiddenPreviews(int hiddenPreviews);
     void setUnredirectFullscreen(bool unredirectFullscreen);
-    void setXrenderSmoothScale(bool xrenderSmoothScale);
+    void setXrenderFilter(uint xrenderFilter);
     void setMaxFpsInterval(qint64 maxFpsInterval);
     void setRefreshRate(uint refreshRate);
     void setVBlankTime(qint64 vBlankTime);
@@ -624,8 +624,8 @@ public:
     static bool defaultUnredirectFullscreen() {
         return false;
     }
-    static bool defaultXrenderSmoothScale() {
-        return false;
+    static uint defaultXrenderFilter() {
+        return 1;
     }
     static qint64 defaultMaxFpsInterval() {
         return (1 * 1000 * 1000 * 1000) /60.0; // nanoseconds / Hz
@@ -707,7 +707,7 @@ Q_SIGNALS:
     void compositingInitializedChanged();
     void hiddenPreviewsChanged();
     void unredirectFullscreenChanged();
-    void xrenderSmoothScaleChanged();
+    void xrenderFilterChanged();
     void maxFpsIntervalChanged();
     void refreshRateChanged();
     void vBlankTimeChanged();
@@ -745,7 +745,7 @@ private:
     bool m_compositingInitialized;
     HiddenPreviews m_hiddenPreviews;
     bool m_unredirectFullscreen;
-    bool m_xrenderSmoothScale;
+    uint m_xrenderFilter;
     qint64 m_maxFpsInterval;
     // Settings that should be auto-detected
     uint m_refreshRate;

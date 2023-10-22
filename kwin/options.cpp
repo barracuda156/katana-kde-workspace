@@ -99,7 +99,7 @@ Options::Options(QObject *parent)
     , m_compositingInitialized(Options::defaultCompositingInitialized())
     , m_hiddenPreviews(Options::defaultHiddenPreviews())
     , m_unredirectFullscreen(Options::defaultUnredirectFullscreen())
-    , m_xrenderSmoothScale(Options::defaultXrenderSmoothScale())
+    , m_xrenderFilter(Options::defaultXrenderFilter())
     , m_maxFpsInterval(Options::defaultMaxFpsInterval())
     , m_refreshRate(Options::defaultRefreshRate())
     , m_vBlankTime(Options::defaultVBlankTime())
@@ -602,13 +602,13 @@ void Options::setUnredirectFullscreen(bool unredirectFullscreen)
     emit unredirectFullscreenChanged();
 }
 
-void Options::setXrenderSmoothScale(bool xrenderSmoothScale)
+void Options::setXrenderFilter(uint xrenderFilter)
 {
-    if (m_xrenderSmoothScale == xrenderSmoothScale) {
+    if (m_xrenderFilter == xrenderFilter) {
         return;
     }
-    m_xrenderSmoothScale = xrenderSmoothScale;
-    emit xrenderSmoothScaleChanged();
+    m_xrenderFilter = xrenderFilter;
+    emit xrenderFilterChanged();
 }
 
 void Options::setMaxFpsInterval(qint64 maxFpsInterval)
@@ -792,7 +792,7 @@ void Options::reloadCompositingSettings(bool force)
     KSharedConfig::Ptr _config = KGlobal::config();
     KConfigGroup config(_config, "Compositing");
 
-    m_xrenderSmoothScale = config.readEntry("XRenderSmoothScale", false);
+    m_xrenderFilter = config.readEntry("XRenderFilter", 1);
 
     HiddenPreviews previews = Options::defaultHiddenPreviews();
     // 4 - off, 5 - shown, 6 - always, other are old values

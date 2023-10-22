@@ -50,6 +50,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <KPluginLoader>
 #include <KIcon>
 
+static int s_xrenderfilter = 1; // KWin::Scene::ImageFilterGood
+
 K_PLUGIN_FACTORY(KWinCompositingConfigFactory,
                  registerPlugin<KWin::KWinCompositingConfig>();
                 )
@@ -57,7 +59,6 @@ K_EXPORT_PLUGIN(KWinCompositingConfigFactory("kcmkwincompositing"))
 
 namespace KWin
 {
-
 
 ConfirmDialog::ConfirmDialog() :
     KTimerDialog(10000, KTimerDialog::CountDown, 0,
@@ -364,7 +365,7 @@ void KWinCompositingConfig::loadAdvancedTab()
         ui.windowThumbnails->setCurrentIndex(1);
     ui.unredirectFullscreen->setChecked(config.readEntry("UnredirectFullscreen", false));
 
-    ui.xrScaleFilter->setCurrentIndex((int)config.readEntry("XRenderSmoothScale", false));
+    ui.xrScaleFilter->setCurrentIndex(config.readEntry("XRenderFilter", s_xrenderfilter));
 
     alignGuiToCompositingType(ui.compositingType->currentIndex());
 }
@@ -464,7 +465,7 @@ bool KWinCompositingConfig::saveAdvancedTab()
     }
 
     if (config.readEntry("HiddenPreviews", 5) != hps[ ui.windowThumbnails->currentIndex()]
-        || (int)config.readEntry("XRenderSmoothScale", false) != ui.xrScaleFilter->currentIndex()
+        || config.readEntry("XRenderFilter", s_xrenderfilter) != ui.xrScaleFilter->currentIndex()
         || config.readEntry("Backend") != ui.compositingType->currentText()) {
         advancedChanged = true;
     }
@@ -474,7 +475,7 @@ bool KWinCompositingConfig::saveAdvancedTab()
     config.writeEntry("HiddenPreviews", hps[ ui.windowThumbnails->currentIndex()]);
     config.writeEntry("UnredirectFullscreen", ui.unredirectFullscreen->isChecked());
 
-    config.writeEntry("XRenderSmoothScale", ui.xrScaleFilter->currentIndex() == 1);
+    config.writeEntry("XRenderFilter", ui.xrScaleFilter->currentIndex());
 
     return advancedChanged;
 }
@@ -692,7 +693,7 @@ void KWinCompositingConfig::defaults()
     ui.compositingType->setCurrentIndex(XRENDER_INDEX);
     ui.windowThumbnails->setCurrentIndex(1);
     ui.unredirectFullscreen->setChecked(false);
-    ui.xrScaleFilter->setCurrentIndex(0);
+    ui.xrScaleFilter->setCurrentIndex(s_xrenderfilter);
 }
 
 QString KWinCompositingConfig::quickHelp() const

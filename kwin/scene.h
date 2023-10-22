@@ -93,7 +93,14 @@ public:
         PAINT_SCREEN_BACKGROUND_FIRST = 1 << 6,
     };
     // types of filtering available
-    enum ImageFilterType { ImageFilterFast, ImageFilterGood };
+    enum ImageFilterType {
+        ImageFilterFast,
+        ImageFilterGood,
+        ImageFilterBest,
+        ImageFilterNearest,
+        ImageFilterBilinear,
+        ImageFilterConvolution
+    };
     // there's nothing to paint (adjust time_diff later)
     virtual void idle();
     virtual OverlayWindow* overlayWindow() = 0;

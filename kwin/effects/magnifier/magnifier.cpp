@@ -155,7 +155,6 @@ void MagnifierEffect::paintScreen(int mask, QRegion region, ScreenPaintData& dat
             xcb_render_set_picture_filter(connection(), *m_picture, 4, const_cast<char*>("good"), 0, NULL);
             xcb_render_composite(connection(), XCB_RENDER_PICT_OP_SRC, *m_picture, 0, effects->xrenderBufferPicture(),
                                  0, 0, 0, 0, area.x(), area.y(), area.width(), area.height() );
-            xcb_render_set_picture_filter(connection(), *m_picture, 4, const_cast<char*>("fast"), 0, NULL);
             xcb_render_set_picture_transform(connection(), *m_picture, identity);
             const xcb_rectangle_t rects[4] = {
                 { int16_t(area.x()+FRAME_WIDTH), int16_t(area.y()), uint16_t(area.width()-FRAME_WIDTH), uint16_t(FRAME_WIDTH)},

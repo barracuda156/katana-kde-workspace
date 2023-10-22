@@ -413,16 +413,6 @@ void SceneXrender::Window::performPaint(int mask, QRegion region, WindowPaintDat
     if (pic == XCB_RENDER_PICTURE_NONE)   // The render format can be null for GL and/or Xv visuals
         return;
     toplevel->resetDamage();
-    // set picture filter
-    if (options->isXrenderSmoothScale()) { // only when forced, it's slow
-        if (mask & PAINT_WINDOW_TRANSFORMED)
-            filter = ImageFilterGood;
-        else if (mask & PAINT_SCREEN_TRANSFORMED)
-            filter = ImageFilterGood;
-        else
-            filter = ImageFilterFast;
-    } else
-        filter = ImageFilterFast;
     // do required transformations
     const QRect wr = mapToScreen(mask, data, QRect(0, 0, width(), height()));
     QRect cr = QRect(toplevel->clientPos(), toplevel->clientSize()); // Client rect (in the window)
@@ -510,9 +500,7 @@ void SceneXrender::Window::performPaint(int mask, QRegion region, WindowPaintDat
         }
     } else {
         xcb_render_set_picture_transform(connection(), pic, xform);
-        if (filter == ImageFilterGood) {
-            setPictureFilter(pic, KWin::Scene::ImageFilterGood);
-        }
+        setPictureFilter(pic, filter);
 
         //BEGIN OF STUPID RADEON HACK
         // This is needed to avoid hitting a fallback in the radeon driver.
@@ -717,8 +705,6 @@ xcb_render_composite(connection(), XCB_RENDER_PICT_OP_OVER, _PART_, decorationAl
     }
     if (scaled && !blitInTempPixmap) {
         xcb_render_set_picture_transform(connection(), pic, identity);
-        if (filter == ImageFilterGood)
-            setPictureFilter(pic, KWin::Scene::ImageFilterFast);
         if (!window()->hasAlpha()) {
             const uint32_t values[] = {XCB_RENDER_REPEAT_NONE};
             xcb_render_change_picture(connection(), pic, XCB_RENDER_CP_REPEAT, values);
@@ -732,12 +718,32 @@ void SceneXrender::Window::setPictureFilter(xcb_render_picture_t pic, Scene::Ima
 {
     QByteArray filterName;
     switch (filter) {
-    case KWin::Scene::ImageFilterFast:
-        filterName = QByteArray("fast");
-        break;
-    case KWin::Scene::ImageFilterGood:
-        filterName = QByteArray("good");
-        break;
+        case KWin::Scene::ImageFilterFast: {
+            filterName = QByteArray("fast");
+            break;
+        }
+        case KWin::Scene::ImageFilterGood: {
+            filterName = QByteArray("good");
+            break;
+        }
+        case KWin::Scene::ImageFilterBest: {
+            filterName = QByteArray("best");
+            break;
+        }
+        /* Filters included in 0.6 */
+        case KWin::Scene::ImageFilterNearest: {
+            filterName = QByteArray("nearest");
+            break;
+        }
+        case KWin::Scene::ImageFilterBilinear: {
+            filterName = QByteArray("bilinear");
+            break;
+        }
+        /* Filters included in 0.10 */
+        case KWin::Scene::ImageFilterConvolution: {
+            filterName = QByteArray("convolution");
+            break;
+        }
     }
     xcb_render_set_picture_filter(connection(), pic, filterName.length(), filterName.constData(), 0, NULL);
 }

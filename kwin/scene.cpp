@@ -444,7 +444,7 @@ void Scene::screenGeometryChanged(const QSize &size)
 
 Scene::Window::Window(Toplevel * c)
     : toplevel(c)
-    , filter(ImageFilterFast)
+    , filter(ImageFilterGood)
     , m_shadow(NULL)
     , m_currentPixmap()
     , m_previousPixmap()
