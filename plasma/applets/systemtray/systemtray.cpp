@@ -284,7 +284,7 @@ void SystemTrayApplet::slotShowHidden()
     // TODO: animation, perhaps via layout item to animate all hidden applets via single animation
     QMutexLocker locker(&m_mutex);
     foreach (Plasma::Applet* plasmaapplet, m_applets) {
-        if (plasmaapplet->status() == Plasma::PassiveStatus) {
+        if (plasmaapplet->status() == Plasma::PassiveStatus && !plasmaapplet->isPopupShowing()) {
             plasmaapplet->setVisible(!m_showinghidden);
         }
     }
