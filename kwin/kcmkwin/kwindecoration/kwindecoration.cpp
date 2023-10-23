@@ -102,7 +102,7 @@ void KWinDecorationModule::load()
             m_pluginConfigWidget = new KVBox(this);
             m_pluginObject = (QObject*)(allocatePlugin(m_pluginConfigWidget));
 
-            // connect required signals and slots together...
+            // Connect required signals and slots together...
             connect(m_pluginObject, SIGNAL(changed()), this, SLOT(slotSelectionChanged()));
         }
     }
@@ -114,12 +114,12 @@ void KWinDecorationModule::load()
 
 void KWinDecorationModule::save()
 {
-    const bool saved = QMetaObject::invokeMethod(m_pluginObject, "save");
-    if (!saved) {
+    const bool result = QMetaObject::invokeMethod(m_pluginObject, "save");
+    if (!result) {
         kWarning() << "Could not save decoration settings";
     }
 
-    // We saved, so tell kcmodule that there have been  no new user changes made.
+    // Settings saved, tell kcmodule that there have been no new user changes made.
     emit KCModule::changed(false);
 
     // Send signal to all kwin instances
@@ -129,7 +129,10 @@ void KWinDecorationModule::save()
 
 void KWinDecorationModule::defaults()
 {
-    QMetaObject::invokeMethod(m_pluginObject, "defaults");
+    const bool result = QMetaObject::invokeMethod(m_pluginObject, "defaults");
+    if (!result) {
+        kWarning() << "Could not reset decoration settings";
+    }
     emit changed(true);
 }
 
