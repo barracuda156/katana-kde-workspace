@@ -484,7 +484,6 @@ bool MixerTabWidget::setup(const QByteArray &alsacardname)
         }
         Plasma::IconWidget* iconwidget = new Plasma::IconWidget(frame);
         iconwidget->setIcon(kIconForElement(alsaelementname));
-        iconwidget->setToolTip(alsaelementname);
         iconwidget->setAcceptHoverEvents(false);
         iconwidget->setMinimumIconSize(smalliconsizef);
         iconwidget->setMaximumIconSize(smalliconsizef);
