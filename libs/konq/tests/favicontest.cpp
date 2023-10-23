@@ -92,8 +92,11 @@ void FavIconTest::testIconForURL_data()
      // NOTE: favicon.png
     QTest::newRow("https://www.wpoven.com/")
         << QString::fromLatin1("https://www.wpoven.com/") << QString::fromLatin1("favicons/www.wpoven.com");
+#if 0
+    // handshake failure (IP addresses and certificates do not get along)
     QTest::newRow("https://140.82.121.3/")
         << QString::fromLatin1("https://140.82.121.3/") << QString::fromLatin1("favicons/140.82.121.3");
+#endif
 }
 
 void FavIconTest::testIconForURL()
