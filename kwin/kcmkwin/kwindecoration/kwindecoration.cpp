@@ -38,6 +38,7 @@
 #include <KConfigGroup>
 #include <KVBox>
 #include <KLocale>
+#include <KDebug>
 
 static QString styleToConfigLib(KConfigGroup &conf)
 {
@@ -97,13 +98,12 @@ void KWinDecorationModule::load()
     if (library.load()) {
         void *alloc_ptr = library.resolve("allocate_config");
         if (alloc_ptr != nullptr) {
-            allocatePlugin = (QObject * (*)(KConfigGroup & conf, QWidget * parent))alloc_ptr;
+            allocatePlugin = (QObject * (*)(QWidget * parent))alloc_ptr;
             m_pluginConfigWidget = new KVBox(this);
-            m_pluginObject = (QObject*)(allocatePlugin(config, m_pluginConfigWidget));
+            m_pluginObject = (QObject*)(allocatePlugin(m_pluginConfigWidget));
 
             // connect required signals and slots together...
             connect(m_pluginObject, SIGNAL(changed()), this, SLOT(slotSelectionChanged()));
-            connect(this, SIGNAL(pluginSave(KConfigGroup&)), m_pluginObject, SLOT(save(KConfigGroup&)));
         }
     }
 
@@ -114,9 +114,10 @@ void KWinDecorationModule::load()
 
 void KWinDecorationModule::save()
 {
-    KConfigGroup config(m_kwinConfig, "Style");
-    emit pluginSave(config);
-    config.sync();
+    const bool saved = QMetaObject::invokeMethod(m_pluginObject, "save");
+    if (!saved) {
+        kWarning() << "Could not save decoration settings";
+    }
 
     // We saved, so tell kcmodule that there have been  no new user changes made.
     emit KCModule::changed(false);

@@ -50,7 +50,7 @@ namespace Oxygen {
         public:
 
         //! constructor
-        Config( KConfig* conf, QWidget* parent );
+        Config( QWidget* parent );
 
         //! destructor
         ~Config();
@@ -64,16 +64,6 @@ namespace Oxygen {
         void changed( bool );
 
         public slots:
-
-        //! load configuration
-        /*! although kconfiggroup argument is not used. It is required by KWin API */
-        void load( const KConfigGroup& )
-        { load(); }
-
-        //! save configuration
-        /*! although kconfiggroup argument is not used. It is required by KWin API */
-        void save( KConfigGroup& )
-        { save(); }
 
         //! load configuration
         void load( void );

@@ -52,16 +52,13 @@ public:
     virtual void save();
     virtual void defaults();
 
-Q_SIGNALS:
-    void pluginSave(KConfigGroup &conf);
-
 private slots:
     void slotSelectionChanged();
 
 private:
     KSharedConfigPtr m_kwinConfig;
     QVBoxLayout* m_layout;
-    QObject* (*allocatePlugin)(KConfigGroup& conf, QWidget* parent);
+    QObject* (*allocatePlugin)(QWidget* parent);
     QObject* m_pluginObject;
     QWidget* m_pluginConfigWidget;
 };

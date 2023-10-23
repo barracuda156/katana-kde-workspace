@@ -30,7 +30,6 @@
 #include "oxygenexceptionlist.h"
 
 #include <KSharedConfig>
-#include <KConfigGroup>
 #include <KDebug>
 #include <KGlobal>
 #include <KWindowInfo>
