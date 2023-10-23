@@ -89,11 +89,14 @@ KWinDecorationModule::~KWinDecorationModule()
 
 void KWinDecorationModule::load()
 {
+    delete m_pluginConfigWidget;
+    m_pluginConfigWidget = nullptr;
+
     KConfigGroup config(m_kwinConfig, "Style");
     QLibrary library(styleToConfigLib(config));
     if (library.load()) {
         void *alloc_ptr = library.resolve("allocate_config");
-        if (alloc_ptr != NULL) {
+        if (alloc_ptr != nullptr) {
             allocatePlugin = (QObject * (*)(KConfigGroup & conf, QWidget * parent))alloc_ptr;
             m_pluginConfigWidget = new KVBox(this);
             m_pluginObject = (QObject*)(allocatePlugin(config, m_pluginConfigWidget));
