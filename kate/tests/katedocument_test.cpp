@@ -100,7 +100,7 @@ KateDocumentTest::~KateDocumentTest()
 // see also: http://bugs.kde.org/show_bug.cgi?id=168534
 void KateDocumentTest::testWordWrap()
 {
-    KateDocument doc (false, false, false);
+    KateDocument doc (false, false);
     doc.setWordWrap(true);
     doc.setWordWrapAt(80);
 
@@ -134,7 +134,7 @@ void KateDocumentTest::testWordWrap()
 
 void KateDocumentTest::testReplaceQStringList()
 {
-    KateDocument doc(false, false, false);
+    KateDocument doc(false, false);
     doc.setWordWrap(false);
     doc.setText("asdf\n"
                 "foo\n"
@@ -149,7 +149,7 @@ void KateDocumentTest::testReplaceQStringList()
 
 void KateDocumentTest::testMovingInterfaceSignals()
 {
-    KateDocument* doc = new KateDocument(false, false, false);
+    KateDocument* doc = new KateDocument(false, false);
     QSignalSpy aboutToDeleteSpy(doc, SIGNAL(aboutToDeleteMovingInterfaceContent(KTextEditor::Document*)));
     QSignalSpy aboutToInvalidateSpy(doc, SIGNAL(aboutToInvalidateMovingInterfaceContent(KTextEditor::Document*)));
 
@@ -186,7 +186,7 @@ void KateDocumentTest::testSetTextPerformance()
 
     Q_ASSERT(columns % (rangeLength + rangeGap) == 0);
 
-    KateDocument doc(false, false, false);
+    KateDocument doc(false, false);
     MovingRangeInvalidator invalidator;
     connect(&doc, SIGNAL(aboutToInvalidateMovingInterfaceContent(KTextEditor::Document*)),
             &invalidator, SLOT(aboutToInvalidateMovingInterfaceContent()));
@@ -232,7 +232,7 @@ void KateDocumentTest::testRemoveTextPerformance()
     const int lines = 5000;
     const int columns = 80;
 
-    KateDocument doc(false, false, false);
+    KateDocument doc(false, false);
 
     QString text;
     const QString line = QString().fill('a', columns);
@@ -263,7 +263,7 @@ void KateDocumentTest::testRemoveTextPerformance()
 
 void KateDocumentTest::testForgivingApiUsage()
 {
-    KateDocument doc(false, false, false);
+    KateDocument doc(false, false);
 
     QVERIFY(doc.isEmpty());
     QVERIFY(doc.replaceText(Range(0, 0, 100, 100), "asdf"));
@@ -303,7 +303,7 @@ public slots:
 
 void KateDocumentTest::testRemoveMultipleLines()
 {
-   KateDocument doc(false, false, false);
+   KateDocument doc(false, false);
 
     doc.setText("line1\n"
         "line2\n"
@@ -317,7 +317,7 @@ void KateDocumentTest::testRemoveMultipleLines()
 
 void KateDocumentTest::testInsertNewline()
 {
-    KateDocument doc(false, false, false);
+    KateDocument doc(false, false);
 
     doc.setText("this is line\n"
         "this is line2\n");
@@ -337,7 +337,7 @@ void KateDocumentTest::testDigest()
   const QByteArray fileDigest = QByteArray::fromHex("ba8bd2ee351783dffd6bb7b750271549e1b0c356e28aced4b0480d9f262d869d");
 
   // make sure, Kate::TextBuffer and KateDocument::createDigest() equal
-  KateDocument doc(false, false, false);
+  KateDocument doc(false, false);
   doc.openUrl(QString(KDESRCDIR + QString("data/sha1checksum.txt")));
   const QByteArray bufferDigest(doc.digest());
   QVERIFY(doc.createDigest());

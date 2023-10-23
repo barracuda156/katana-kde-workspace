@@ -246,7 +246,7 @@ void RegExpSearchTest::testAnchoredRegexp()
   QFETCH(bool, backwards);
   QFETCH(Range, expected);
 
-  KateDocument doc(false, false, false);
+  KateDocument doc(false, false);
   doc.setText("fe fe fe");
 
   KateRegExpSearch searcher(&doc, Qt::CaseInsensitive);
@@ -263,7 +263,7 @@ void RegExpSearchTest::testAnchoredRegexp()
 
 void RegExpSearchTest::testSearchForward()
 {
-  KateDocument doc(false, false, false);
+  KateDocument doc(false, false);
   doc.setText("  \\piinfercong");
 
   KateRegExpSearch search(&doc, Qt::CaseSensitive);
@@ -274,7 +274,7 @@ void RegExpSearchTest::testSearchForward()
 
 void RegExpSearchTest::testSearchBackwardInSelection()
 {
-  KateDocument doc(false, false, false);
+  KateDocument doc(false, false);
   doc.setText("foobar foo bar foo bar foo");
 
   KateRegExpSearch search(&doc, Qt::CaseSensitive);
@@ -285,7 +285,7 @@ void RegExpSearchTest::testSearchBackwardInSelection()
 
 void RegExpSearchTest::test()
 {
-  KateDocument doc(false, false, false);
+  KateDocument doc(false, false);
   doc.setText("\\newcommand{\\piReductionOut}");
 
   KateRegExpSearch search(&doc, Qt::CaseSensitive);

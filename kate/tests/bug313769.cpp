@@ -54,7 +54,7 @@ void BugTest::cleanupTestCase()
 
 void BugTest::tryCrash()
 {
-  KateDocument doc(false, false, false);
+  KateDocument doc(false, false);
   QString url = KDESRCDIR + QString("data/bug313769.cpp");
   doc.openUrl(url);
   doc.discardDataRecovery();

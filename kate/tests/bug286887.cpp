@@ -52,7 +52,7 @@ void BugTest::cleanupTestCase()
 
 void BugTest::ctrlShiftLeft()
 {
-  KateDocument doc(false, false, false);
+  KateDocument doc(false, false);
 
   // view must be visible...
   KateView* view = static_cast<KateView*>(doc.createView(0));

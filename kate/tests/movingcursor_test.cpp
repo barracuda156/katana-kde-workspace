@@ -55,7 +55,7 @@ MovingCursorTest::~MovingCursorTest()
 // - MovingCursor with MoveOnInsert
 void MovingCursorTest::testMovingCursor()
 {
-  KateDocument doc (false, false, false);
+  KateDocument doc (false, false);
   MovingCursor* invalid = doc.newMovingCursor(Cursor::invalid());
   MovingCursor* moveOnInsert = doc.newMovingCursor(Cursor(0, 0), MovingCursor::MoveOnInsert);
   MovingCursor* stayOnInsert = doc.newMovingCursor(Cursor(0, 0), MovingCursor::StayOnInsert);
@@ -125,7 +125,7 @@ void MovingCursorTest::testMovingCursor()
 // - gotoPreviousLine
 void MovingCursorTest::testConvenienceApi()
 {
-  KateDocument doc (false, false, false);
+  KateDocument doc (false, false);
   doc.setText("\n"
               "1\n"
               "22\n"
@@ -185,7 +185,7 @@ void MovingCursorTest::testConvenienceApi()
 
 void MovingCursorTest::testOperators()
 {
-    KateDocument doc (false, false, false);
+    KateDocument doc (false, false);
     doc.setText("--oo--\n"
                 "--oo--\n"
                 "--oo--");
@@ -330,7 +330,7 @@ void MovingCursorTest::testOperators()
 
 void MovingCursorTest::testInvalidMovingCursor()
 {
-  KateDocument* doc = new KateDocument(false, false, false);
+  KateDocument* doc = new KateDocument(false, false);
 
   // add invalid MovingCursor. Inserts c into KateBuffer::m_invalidCursors
   MovingCursor* c = doc->newMovingCursor(Cursor(-1, -1));

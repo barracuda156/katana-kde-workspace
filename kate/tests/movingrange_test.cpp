@@ -125,7 +125,7 @@ MovingRangeTest::~MovingRangeTest()
 // - RangeFeedback::rangeEmpty
 void MovingRangeTest::testFeedbackEmptyRange()
 {
-  KateDocument doc (false, false, false);
+  KateDocument doc (false, false);
   // the range created below will span the 'x' characters
   QString text("..xxxx\n"
                "xxxx..");
@@ -193,7 +193,7 @@ void MovingRangeTest::testFeedbackEmptyRange()
 // - RangeFeedback::rangeInvalid
 void MovingRangeTest::testFeedbackInvalidRange()
 {
-  KateDocument doc (false, false, false);
+  KateDocument doc (false, false);
   // the range created below will span the 'x' characters
   QString text("..xxxx\n"
                "xxxx..");
@@ -263,7 +263,7 @@ void MovingRangeTest::testFeedbackInvalidRange()
 // - RangeFeedback::caretExitedRange
 void MovingRangeTest::testFeedbackCaret()
 {
-  KateDocument doc (false, false, false);
+  KateDocument doc (false, false);
   // the range created below will span the 'x' characters
   QString text("..xxxx\n"
                "xxxx..");
@@ -380,7 +380,7 @@ void MovingRangeTest::testFeedbackCaret()
 // - RangeFeedback::mouseExitedRange
 void MovingRangeTest::testFeedbackMouse()
 {
-  KateDocument doc (false, false, false);
+  KateDocument doc (false, false);
   // the range created below will span the 'x' characters
   QString text("..xxxx\n"
                "xxxx..");
