@@ -33,6 +33,10 @@ public:
     // Plasma::PopupApplet reimplementation
     QGraphicsWidget* graphicsWidget() final;
 
+protected:
+    // QGraphicsWidget reimplementation
+    void keyPressEvent(QKeyEvent *event) final;
+
 private:
     friend CalculatorAppletWidget;
     CalculatorAppletWidget *m_calculatorwidget;

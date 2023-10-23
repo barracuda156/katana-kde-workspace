@@ -63,7 +63,7 @@ public:
 
     CalculatorAppletWidget(QGraphicsWidget *parent);
 
-private Q_SLOTS:
+public Q_SLOTS:
     void slotClear();
     void slotDiv();
     void slotMul();
@@ -450,7 +450,7 @@ CalculatorApplet::CalculatorApplet(QObject *parent, const QVariantList &args)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_calculator");
     setAspectRatioMode(Plasma::AspectRatioMode::KeepAspectRatio);
-    setStatus(Plasma::ItemStatus::PassiveStatus);
+    setStatus(Plasma::ItemStatus::AcceptingInputStatus);
     setPopupIcon("accessories-calculator");
 
     m_calculatorwidget = new CalculatorAppletWidget(this);
@@ -464,6 +464,117 @@ CalculatorApplet::~CalculatorApplet()
 QGraphicsWidget* CalculatorApplet::graphicsWidget()
 {
     return m_calculatorwidget;
+}
+
+// TODO: two ideas come into mind:
+// 1. increment/decrement the number on mouse wheel event
+// 2. instead of calling slots directly trigger buttons press and then release as indicator why the
+// number changed (even tho it will happen very quickly)
+void CalculatorApplet::keyPressEvent(QKeyEvent *event)
+{
+    bool eventhandled = false;
+    switch (event->key()) {
+        case Qt::Key_0: {
+            m_calculatorwidget->slot0();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_1: {
+            m_calculatorwidget->slot1();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_2: {
+            m_calculatorwidget->slot2();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_3: {
+            m_calculatorwidget->slot3();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_4: {
+            m_calculatorwidget->slot4();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_5: {
+            m_calculatorwidget->slot5();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_6: {
+            m_calculatorwidget->slot6();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_7: {
+            m_calculatorwidget->slot7();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_8: {
+            m_calculatorwidget->slot8();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_9: {
+            m_calculatorwidget->slot9();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_Escape: {
+            m_calculatorwidget->slotClearAll();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_Delete: {
+            m_calculatorwidget->slotClear();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_Plus: {
+            m_calculatorwidget->slotPlus();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_Minus: {
+            m_calculatorwidget->slotMinus();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_Asterisk: {
+            m_calculatorwidget->slotMul();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_Slash: {
+            m_calculatorwidget->slotDiv();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_Period: {
+            m_calculatorwidget->slotDec();
+            eventhandled = true;
+            break;
+        }
+        case Qt::Key_Equal:
+        case Qt::Key_Return:
+        case Qt::Key_Enter: {
+            m_calculatorwidget->slotEqual();
+            eventhandled = true;
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+    if (eventhandled) {
+        event->accept();
+    } else {
+        Plasma::PopupApplet::keyPressEvent(event);
+    }
 }
 
 #include "moc_calculator.cpp"
