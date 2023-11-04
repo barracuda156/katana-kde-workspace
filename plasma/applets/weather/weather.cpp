@@ -906,14 +906,14 @@ void WeatherApplet::slotConfigAccepted()
         bool foundtimezone = false;
         const QString ktimezonename = m_locationbox->itemData(locationindex).toString();
         foreach (const KTimeZone &ktimezone, KSystemTimeZones::zones()) {
-            if (ktimezone.name() != ktimezonename) {
-                continue;
+            if (ktimezone.name() == ktimezonename) {
+                foundtimezone = true;
+                source = m_locationbox->itemText(locationindex);
+                m_location = ktimezone.name();
+                m_latitude = ktimezone.latitude();
+                m_longitude = ktimezone.longitude();
+                break;
             }
-            foundtimezone = true;
-            source = m_locationbox->itemText(locationindex);
-            m_location = ktimezone.name();
-            m_latitude = ktimezone.latitude();
-            m_longitude = ktimezone.longitude();
         }
         if (!foundtimezone) {
             kWarning() << "could not find timezone" << ktimezonename;
