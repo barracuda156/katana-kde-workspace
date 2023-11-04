@@ -4364,7 +4364,7 @@ bool KateDocument::createDigest ()
     QFile f ( url().toLocalFile() );
     if ( f.open( QIODevice::ReadOnly) )
     {
-      QCryptographicHash crypto(KATE_HASH_ALGORITHM);
+      QCryptographicHash crypto;
       crypto.addData(&f);
       sha1sum = crypto.result();
     }

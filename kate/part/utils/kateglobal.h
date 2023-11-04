@@ -33,7 +33,6 @@
 #include <ktexteditor/containerinterface.h>
 #include <ktexteditor/templateinterface.h>
 #include <QList>
-#include <QCryptographicHash>
 #include <qplatformdefs.h>
 
 class KateCmd;
@@ -61,16 +60,9 @@ namespace Kate {
 Q_DECLARE_METATYPE(KSharedConfig::Ptr)
 
 /**
- * loader block size, load 256 kb at once per default
- * if file size is smaller, fall back to file size
- * must be a multiple of 2
+ * loader block size
  */
 static const qint64 KATE_FILE_LOADER_BS = QT_BUFFSIZE;
-
-/**
- * loader hash sum algorithm
- */
-static const QCryptographicHash::Algorithm KATE_HASH_ALGORITHM = QCryptographicHash::KAT;
 
 /**
  * KateGlobal

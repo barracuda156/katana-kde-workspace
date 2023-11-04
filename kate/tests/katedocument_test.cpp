@@ -332,8 +332,7 @@ void KateDocumentTest::testInsertNewline()
 // sure, these two implementations result in the same checksum.
 void KateDocumentTest::testDigest()
 {
-  // QCryptographicHash is used, therefore we need fromHex here
-  // Katie checksum of data/sha1checksum.txt: ba8bd2ee351783dffd6bb7b750271549e1b0c356e28aced4b0480d9f262d869d
+  // QCryptographicHash is used, therefore fromHex() is used here
   const QByteArray fileDigest = QByteArray::fromHex("ba8bd2ee351783dffd6bb7b750271549e1b0c356e28aced4b0480d9f262d869d");
 
   // make sure, Kate::TextBuffer and KateDocument::createDigest() equal

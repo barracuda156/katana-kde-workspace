@@ -49,7 +49,6 @@ class TextLoader
       , m_lastLineStart (0)
       , m_eol (TextBuffer::eolUnknown) // no eol type detected atm
       , m_buffer (KATE_FILE_LOADER_BS, 0)
-      , m_digest (KATE_HASH_ALGORITHM)
       , m_converter (0)
       , m_bomFound (false)
       , m_firstRead (true)
