@@ -720,12 +720,13 @@ void WeatherWidget::slotUpdateWidgets()
     const QDate localnowdate = localnow.date();
     const QLocale locale = KGlobal::locale()->toLocale();
     const QString day0dayname = i18n("Today");
+    const QString day0nightname = i18n("Tonight");
     const QString day1dayname = locale.dayName(localnowdate.addDays(1).dayOfWeek(), QLocale::LongFormat);
     const QString day2dayname = locale.dayName(localnowdate.addDays(2).dayOfWeek(), QLocale::LongFormat);
     const QString day3dayname = locale.dayName(localnowdate.addDays(3).dayOfWeek(), QLocale::LongFormat);
     const QString day4dayname = locale.dayName(localnowdate.addDays(4).dayOfWeek(), QLocale::LongFormat);
     kUpdateIconWidget(m_day0iconwidget, m_weatherdata[0], false, m_tempunit, day0dayname);
-    kUpdateIconWidget(m_night0iconwidget, m_weatherdata[0], true, m_tempunit, day0dayname);
+    kUpdateIconWidget(m_night0iconwidget, m_weatherdata[0], true, m_tempunit, day0nightname);
     kUpdateIconWidget(m_day1iconwidget, m_weatherdata[1], false, m_tempunit, day1dayname);
     kUpdateIconWidget(m_night1iconwidget, m_weatherdata[1], true, m_tempunit, day1dayname);
     kUpdateIconWidget(m_day2iconwidget, m_weatherdata[2], false, m_tempunit, day2dayname);
