@@ -781,7 +781,7 @@ void Options::reloadCompositingSettings(bool force)
     KSharedConfig::Ptr _config = KGlobal::config();
     KConfigGroup config(_config, "Compositing");
 
-    m_xrenderFilter = config.readEntry("XRenderFilter", 1);
+    m_xrenderFilter = config.readEntry("XRenderFilter", Options::defaultXrenderFilter());
 
     HiddenPreviews previews = Options::defaultHiddenPreviews();
     // 4 - off, 5 - shown, 6 - always, other are old values
