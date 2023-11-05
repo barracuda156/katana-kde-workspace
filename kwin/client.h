@@ -82,9 +82,8 @@ class Client
      **/
     Q_PROPERTY(bool onAllDesktops READ isOnAllDesktops WRITE setOnAllDesktops NOTIFY desktopChanged)
     /**
-     * Whether this Client is fullScreen. A Client might either be fullScreen due to the _NET_WM property
-     * or through a legacy support hack. The fullScreen state can only be changed if the Client does not
-     * use the legacy hack. To be sure whether the state changed, connect to the notify signal.
+     * Whether this Client is fullScreen. A Client might either be fullScreen due to the _NET_WM property.
+     * To be sure whether the state changed, connect to the notify signal.
      **/
     Q_PROPERTY(bool fullScreen READ isFullScreen WRITE setFullScreen NOTIFY fullScreenChanged)
     /**
@@ -366,7 +365,7 @@ public:
 
     void setFullScreen(bool set, bool user = true);
     bool isFullScreen() const;
-    bool isFullScreenable(bool fullscreen_hack = false) const;
+    bool isFullScreenable() const;
     bool isActiveFullScreen() const;
     bool userCanSetFullScreen() const;
     QRect geometryFSRestore() const {
@@ -719,8 +718,7 @@ private:
     void updateAllowedActions(bool force = false);
     QRect fullscreenMonitorsArea(NETFullscreenMonitors topology) const;
     void changeMaximize(bool horizontal, bool vertical, bool adjust);
-    int checkFullScreenHack(const QRect& geom) const;   // 0 - None, 1 - One xinerama screen, 2 - Full area
-    void updateFullScreenHack(const QRect& geom);
+    void updateFullScreen();
     void getWmNormalHints();
     void getMotifHints();
     void getIcons();
@@ -868,8 +866,7 @@ private:
     // DON'T reorder - Saved to config files !!!
     enum FullScreenMode {
         FullScreenNone,
-        FullScreenNormal,
-        FullScreenHack ///< Non-NETWM fullscreen (noborder and size of desktop)
+        FullScreenNormal
     };
     FullScreenMode fullscreen_mode;
     MaximizeMode max_mode;

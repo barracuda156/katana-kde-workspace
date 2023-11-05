@@ -88,7 +88,6 @@ Options::Options(QObject *parent)
     , m_showDesktopIsMinimizeAll(false)
     , m_rollOverDesktops(false)
     , m_focusStealingPreventionLevel(0)
-    , m_legacyFullscreenSupport(false)
     , m_killPingTimeout(0)
     , m_hideUtilityWindowsForInactive(false)
     , m_inactiveTabsSkipTaskbar(false)
@@ -312,15 +311,6 @@ void Options::setFocusStealingPreventionLevel(int focusStealingPreventionLevel)
     }
     m_focusStealingPreventionLevel = qMax(0, qMin(4, focusStealingPreventionLevel));
     emit focusStealingPreventionLevelChanged();
-}
-
-void Options::setLegacyFullscreenSupport(bool legacyFullscreenSupport)
-{
-    if (m_legacyFullscreenSupport == legacyFullscreenSupport) {
-        return;
-    }
-    m_legacyFullscreenSupport = legacyFullscreenSupport;
-    emit legacyFullscreenSupportChanged();
 }
 
 void Options::setOperationTitlebarDblClick(WindowOperation operationTitlebarDblClick)
@@ -709,7 +699,6 @@ void Options::syncFromKcfgc()
     setNextFocusPrefersMouse(m_settings->nextFocusPrefersMouse());
     setSeparateScreenFocus(m_settings->separateScreenFocus());
     setRollOverDesktops(m_settings->rollOverDesktops());
-    setLegacyFullscreenSupport(m_settings->legacyFullscreenSupport());
     setFocusStealingPreventionLevel(m_settings->focusStealingPreventionLevel());
     setPlacement(m_settings->placement());
     setAutoRaise(m_settings->autoRaise());

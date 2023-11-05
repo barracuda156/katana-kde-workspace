@@ -1655,7 +1655,7 @@ void Client::configureRequest(int value_mask, int rx, int ry, int rw, int rh, in
         move(new_pos);
         plainResize(ns);
         setGeometry(QRect(calculateGravitation(false, gravity), size()));
-        updateFullScreenHack(QRect(new_pos, QSize(nw, nh)));
+        updateFullScreen();
         QRect area = workspace()->clientArea(WorkArea, this);
         if (!from_tool && (!isSpecialWindow() || isToolbar()) && !isFullScreen()
                 && area.contains(origClientGeometry))
@@ -1682,11 +1682,8 @@ void Client::configureRequest(int value_mask, int rx, int ry, int rw, int rh, in
         if (ns != size()) { // don't restore if some app sets its own size again
             QRect origClientGeometry(pos() + clientPos(), clientSize());
             GeometryUpdatesBlocker blocker(this);
-            int save_gravity = xSizeHint.win_gravity;
-            xSizeHint.win_gravity = gravity;
             resizeWithChecks(ns);
-            xSizeHint.win_gravity = save_gravity;
-            updateFullScreenHack(QRect(calculateGravitation(true, xSizeHint.win_gravity), QSize(nw, nh)));
+            updateFullScreen();
             if (!from_tool && (!isSpecialWindow() || isToolbar()) && !isFullScreen()) {
                 // try to keep the window in its xinerama screen if possible,
                 // if that fails at least keep it visible somewhere
@@ -2348,12 +2345,10 @@ void Client::changeMaximize(bool vertical, bool horizontal, bool adjust)
     updateWindowRules(Rules::MaximizeVert|Rules::MaximizeHoriz|Rules::Position|Rules::Size);
 }
 
-bool Client::isFullScreenable(bool fullscreen_hack) const
+bool Client::isFullScreenable() const
 {
     if (!rules()->checkFullScreen(true))
         return false;
-    if (fullscreen_hack)
-        return isNormalWindow();
     if (rules()->checkStrictGeometry(true)) { // allow rule to ignore geometry constraints
         QRect fsarea = workspace()->clientArea(FullScreenArea, this);
         if (sizeForClientSize(fsarea.size(), SizemodeAny, true) != fsarea.size())
@@ -2365,9 +2360,7 @@ bool Client::isFullScreenable(bool fullscreen_hack) const
 
 bool Client::userCanSetFullScreen() const
 {
-    if (fullscreen_mode == FullScreenHack)
-        return false;
-    if (!isFullScreenable(false))
+    if (!isFullScreenable())
         return false;
     return isNormalWindow() || isDialog();
 }
@@ -2375,8 +2368,6 @@ bool Client::userCanSetFullScreen() const
 void Client::setFullScreen(bool set, bool user)
 {
     if (!isFullScreen() && !set)
-        return;
-    if (fullscreen_mode == FullScreenHack)
         return;
     if (user && !userCanSetFullScreen())
         return;
@@ -2468,42 +2459,8 @@ QRect Client::fullscreenMonitorsArea(NETFullscreenMonitors requestedTopology) co
     return total;
 }
 
-
-int Client::checkFullScreenHack(const QRect& geom) const
+void Client::updateFullScreen()
 {
-    if (!options->isLegacyFullscreenSupport())
-        return 0;
-    // if it's noborder window, and has size of one screen or the whole desktop geometry, it's fullscreen hack
-    if (noBorder() && app_noborder && isFullScreenable(true)) {
-        if (geom.size() == workspace()->clientArea(FullArea, geom.center(), desktop()).size())
-            return 2; // full area fullscreen hack
-        if (geom.size() == workspace()->clientArea(ScreenArea, geom.center(), desktop()).size())
-            return 1; // xinerama-aware fullscreen hack
-    }
-    return 0;
-}
-
-void Client::updateFullScreenHack(const QRect& geom)
-{
-    int type = checkFullScreenHack(geom);
-    if (fullscreen_mode == FullScreenNone && type != 0) {
-        fullscreen_mode = FullScreenHack;
-        updateDecoration(false, false);
-        QRect geom;
-        if (rules()->checkStrictGeometry(false)) {
-            geom = type == 2 // 1 - it's xinerama-aware fullscreen hack, 2 - it's full area
-                   ? workspace()->clientArea(FullArea, geom.center(), desktop())
-                   : workspace()->clientArea(ScreenArea, geom.center(), desktop());
-        } else
-            geom = workspace()->clientArea(FullScreenArea, geom.center(), desktop());
-        setGeometry(geom);
-        emit fullScreenChanged();
-    } else if (fullscreen_mode == FullScreenHack && type == 0) {
-        fullscreen_mode = FullScreenNone;
-        updateDecoration(false, false);
-        // whoever called this must setup correct geometry
-        emit fullScreenChanged();
-    }
     StackingUpdatesBlocker blocker(workspace());
     workspace()->updateClientLayer(this);   // active fullscreens get different layer
 }

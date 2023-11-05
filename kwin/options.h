@@ -101,10 +101,6 @@ class Options : public QObject, public KDecorationOptions
      * 0 - 4 , see Workspace::allowClientActivation()
      **/
     Q_PROPERTY(int focusStealingPreventionLevel READ focusStealingPreventionLevel WRITE setFocusStealingPreventionLevel NOTIFY focusStealingPreventionLevelChanged)
-    /**
-    * support legacy fullscreen windows hack: borderless non-netwm windows with screen geometry
-    */
-    Q_PROPERTY(bool legacyFullscreenSupport READ isLegacyFullscreenSupport WRITE setLegacyFullscreenSupport NOTIFY legacyFullscreenSupportChanged)
     Q_PROPERTY(WindowOperation operationTitlebarDblClick READ operationTitlebarDblClick WRITE setOperationTitlebarDblClick NOTIFY operationTitlebarDblClickChanged)
     Q_PROPERTY(MouseCommand commandActiveTitlebar1 READ commandActiveTitlebar1 WRITE setCommandActiveTitlebar1 NOTIFY commandActiveTitlebar1Changed)
     Q_PROPERTY(MouseCommand commandActiveTitlebar2 READ commandActiveTitlebar2 WRITE setCommandActiveTitlebar2 NOTIFY commandActiveTitlebar2Changed)
@@ -313,13 +309,6 @@ public:
         return m_focusStealingPreventionLevel;
     }
 
-    /**
-    * support legacy fullscreen windows hack: borderless non-netwm windows with screen geometry
-    */
-    bool isLegacyFullscreenSupport() const {
-        return m_legacyFullscreenSupport;
-    }
-
     WindowOperation operationTitlebarDblClick() const {
         return OpTitlebarDblClick;
     }
@@ -517,7 +506,6 @@ public:
     void setShowDesktopIsMinimizeAll(bool showDesktopIsMinimizeAll);
     void setRollOverDesktops(bool rollOverDesktops);
     void setFocusStealingPreventionLevel(int focusStealingPreventionLevel);
-    void setLegacyFullscreenSupport(bool legacyFullscreenSupport);
     void setOperationTitlebarDblClick(WindowOperation operationTitlebarDblClick);
     void setCommandActiveTitlebar1(MouseCommand commandActiveTitlebar1);
     void setCommandActiveTitlebar2(MouseCommand commandActiveTitlebar2);
@@ -675,7 +663,6 @@ Q_SIGNALS:
     void showDesktopIsMinimizeAllChanged();
     void rollOverDesktopsChanged(bool enabled);
     void focusStealingPreventionLevelChanged();
-    void legacyFullscreenSupportChanged();
     void operationTitlebarDblClickChanged();
     void commandActiveTitlebar1Changed();
     void commandActiveTitlebar2Changed();
@@ -733,7 +720,6 @@ private:
     bool m_showDesktopIsMinimizeAll;
     bool m_rollOverDesktops;
     int m_focusStealingPreventionLevel;
-    bool m_legacyFullscreenSupport;
     int m_killPingTimeout;
     bool m_hideUtilityWindowsForInactive;
     bool m_inactiveTabsSkipTaskbar;
