@@ -43,8 +43,9 @@ static const QChar s_weatherdataseparator = QChar::fromLatin1('#');
 // alternatively:
 // https://location.services.mozilla.com/v1/geolocate?key=b9255e08-838f-4d4e-b270-bec2cc89719b
 // https://location.services.mozilla.com/v1/country?key=b9255e08-838f-4d4e-b270-bec2cc89719b
-static const QString s_geoname = QString::fromLatin1("geoplugin.net");
-static const QString s_geourl = QString::fromLatin1("http://www.geoplugin.net");
+static const QString s_geoname = QString::fromLatin1("geoplugin.com");
+// NOTE: http://www.geoplugin.net may be blocked (see https://groups.google.com/g/geoplugin/c/kufe67DXIgE)
+static const QString s_geourl = QString::fromLatin1("http://www.geoplugin.com");
 static const QString s_geoapiurl = QString::fromLatin1("http://www.geoplugin.net/json.gp");
 // the usual data length multiplied by 2
 static const int s_geomaxsize = 2000;
