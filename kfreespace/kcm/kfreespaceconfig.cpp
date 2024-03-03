@@ -136,7 +136,7 @@ void KFreeSpaceBox::setDefault()
 {
     m_watchbox->setChecked(s_kfreespacewatch);
     m_checktimeinput->setValue(s_kfreespacechecktime);
-    m_freespaceinput->setValue(s_kfreespacefreespace);
+    m_freespaceinput->setValue(kCalculateFreeSpace(m_soliddevice, s_kfreespacefreespace));
 }
 
 void KFreeSpaceBox::slotWatch()
@@ -229,7 +229,7 @@ void KCMFreeSpace::load()
         KFreeSpaceBox* devicebox = new KFreeSpaceBox(
             this,
             soliddevice,
-            kfreespacewatch, kfreespacechecktime, kfreespacefreespace
+            kfreespacewatch, kfreespacechecktime, kCalculateFreeSpace(soliddevice, kfreespacefreespace)
         );
         m_deviceboxes.append(devicebox);
         connect(devicebox, SIGNAL(changed()), this, SLOT(slotDeviceChanged()));

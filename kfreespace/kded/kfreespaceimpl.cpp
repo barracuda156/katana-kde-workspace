@@ -21,7 +21,6 @@
 
 #include <QDir>
 #include <klocale.h>
-#include <kdiskfreespaceinfo.h>
 #include <knotification.h>
 #include <kdebug.h>
 #include <solid/storageaccess.h>
@@ -50,7 +49,7 @@ bool KFreeSpaceImpl::watch(const Solid::Device &soliddevice,
     // NOTE: time from config is in seconds, has to be in ms here
     m_checktime = (qBound(s_kfreespacechecktimemin, checktime, s_kfreespacechecktimemax) * 1000);
     // NOTE: size from config is in MB, has to be in bytes here
-    m_freespace = (qBound(s_kfreespacefreespacemin, freespace, s_kfreespacefreespacemax) * 1024 * 1024);
+    m_freespace = (kCalculateFreeSpace(soliddevice, freespace) * 1024 * 1024);
     m_timerid = startTimer(m_checktime);
     kDebug() << "Checking" << m_soliddevice.udi()
              << "every" << (m_checktime / 1000)

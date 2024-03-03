@@ -19,12 +19,40 @@
 #ifndef KFREESPACE_H
 #define KFREESPACE_H
 
+#include <kdiskfreespaceinfo.h>
+#include <solid/device.h>
+#include <solid/storagevolume.h>
+#include <kdebug.h>
+
 static const bool s_kfreespacewatch = true;
 static const qulonglong s_kfreespacechecktime = 60; // 1 minute
 static const qulonglong s_kfreespacechecktimemin = 1;
 static const qulonglong s_kfreespacechecktimemax = 60;
-static const qulonglong s_kfreespacefreespace = 1024; // 1 GB
+static const qulonglong s_kfreespacefreespace = 0; // either the value from the config or 1/10, fallback is 1024
 static const qulonglong s_kfreespacefreespacemin = 10;
 static const qulonglong s_kfreespacefreespacemax = 1024;
+
+static qulonglong kCalculateFreeSpace(const Solid::Device &soliddevice, const qulonglong freespace)
+{
+    const Solid::StorageVolume* solidvolume = soliddevice.as<Solid::StorageVolume>();
+    Q_ASSERT(solidvolume);
+    const qulonglong totalsize = solidvolume->size();
+    if (totalsize <= 0) {
+        // if the total size of the device cannot be obtained then the space is the one passed
+        // bound to min and max, unless the passed value does not come from config (freespace
+        // variable is zero)
+        if (freespace <= 0) {
+            return 1024;
+        }
+        return qBound(s_kfreespacefreespacemin, freespace, s_kfreespacefreespacemax);
+    }
+    const qulonglong autosize = (totalsize / 1024 / 1024 / 10);
+    // the case of not being specified, 1/10 of the total space bound to min and max
+    if (freespace <= 0) {
+        return qBound(s_kfreespacefreespacemin, autosize, s_kfreespacefreespacemax);
+    }
+    // else it is the one explicitly specified bound to min and max
+    return qBound(s_kfreespacefreespacemin, freespace, s_kfreespacefreespacemax);
+}
 
 #endif // KFREESPACE_H

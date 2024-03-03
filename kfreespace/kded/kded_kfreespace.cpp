@@ -95,7 +95,7 @@ void KFreeSpaceModule::slotInit()
         KFreeSpaceImpl* kfreespaceimpl = new KFreeSpaceImpl(this);
         const bool kfreespacestatus = kfreespaceimpl->watch(
             soliddevice,
-            kfreespacechecktime, kfreespacefreespace
+            kfreespacechecktime, kCalculateFreeSpace(soliddevice, kfreespacefreespace)
         );
         if (!kfreespacestatus) {
             delete kfreespaceimpl;
