@@ -44,6 +44,7 @@ private Q_SLOTS:
     void slotShowHidden();
 
 private:
+    void updateArrow();
     void updateApplets(const Plasma::Constraints constraints);
 
     QMutex m_mutex;

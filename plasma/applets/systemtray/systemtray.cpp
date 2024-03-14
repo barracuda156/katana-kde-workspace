@@ -100,6 +100,12 @@ void SystemTrayApplet::init()
     );
 }
 
+void SystemTrayApplet::updateArrow()
+{
+    Q_ASSERT(m_arrowicon != nullptr);
+    m_arrowicon->setSvg("widgets/arrows", kElementForArrow(m_layout->orientation(), m_showinghidden));
+}
+
 void SystemTrayApplet::updateApplets(const Plasma::Constraints constraints)
 {
     switch (m_layout->orientation()) {
@@ -144,11 +150,13 @@ void SystemTrayApplet::constraintsEvent(Plasma::Constraints constraints)
         switch (formFactor()) {
             case Plasma::FormFactor::Horizontal: {
                 m_layout->setOrientation(Qt::Horizontal);
+                updateArrow();
                 updateApplets(constraints);
                 return;
             }
             case Plasma::FormFactor::Vertical: {
                 m_layout->setOrientation(Qt::Vertical);
+                updateArrow();
                 updateApplets(constraints);
                 return;
             }
@@ -164,6 +172,7 @@ void SystemTrayApplet::constraintsEvent(Plasma::Constraints constraints)
             m_layout->setOrientation(Qt::Vertical);
         }
     }
+    updateArrow();
     updateApplets(constraints);
 }
 
@@ -271,11 +280,13 @@ void SystemTrayApplet::slotUpdateVisibility()
             plasmaapplet->setVisible(true);
         }
     }
+    // should be non-null at this point
+    Q_ASSERT(m_arrowicon != nullptr);
     if (!hashidden) {
         m_arrowicon->setVisible(false);
     } else {
         m_arrowicon->setVisible(true);
-        m_arrowicon->setSvg("widgets/arrows", kElementForArrow(m_layout->orientation(), m_showinghidden));
+        updateArrow();
     }
 }
 
@@ -289,7 +300,7 @@ void SystemTrayApplet::slotShowHidden()
         }
     }
     m_showinghidden = !m_showinghidden;
-    m_arrowicon->setSvg("widgets/arrows", kElementForArrow(m_layout->orientation(), m_showinghidden));
+    updateArrow();
     Plasma::ToolTipContent plasmatooltip;
     plasmatooltip.setMainText(
         QString::fromLatin1("<center>%1</center>").arg(m_showinghidden ? i18n("Hide icons") : i18n("Show hidden icons"))
