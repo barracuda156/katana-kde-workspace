@@ -1,59 +1,71 @@
-/*
+/*  This file is part of the KDE project
+    Copyright (C) 2023 Ivailo Monev <xakepa10@gmail.com>
 
-Copyright 2008 Albert Astals Cid <aacid@kde.org>
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License version 2, as published by the Free Software Foundation.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of
-the License or (at your option) version 3 or any later version
-accepted by the membership of KDE e.V. (or its successor approved
-by the membership of KDE e.V.), which shall act as a proxy
-defined in Section 14 of version 3 of the license.
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+    You should have received a copy of the GNU Library General Public License
+    along with this library; see the file COPYING.LIB.  If not, write to
+    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+    Boston, MA 02110-1301, USA.
 */
 
 #include "spellchecking.h"
 
 #include <kpluginfactory.h>
-#include <kspellconfigwidget.h>
 
-#include <QBoxLayout>
+K_PLUGIN_FACTORY(SpellFactory, registerPlugin<SpellCheckingModule>();)
+K_EXPORT_PLUGIN(SpellFactory("kcmspellchecking"))
 
-K_PLUGIN_FACTORY(SpellFactory, registerPlugin<SonnetSpellCheckingModule>();)
-K_EXPORT_PLUGIN(SpellFactory( "kcmspellchecking" ))
-
-SonnetSpellCheckingModule::SonnetSpellCheckingModule(QWidget* parent, const QVariantList&):
-    KCModule(SpellFactory::componentData(), parent)
+SpellCheckingModule::SpellCheckingModule(QWidget *parent, const QVariantList &args)
+    : KCModule(SpellFactory::componentData(), parent, args),
+    m_layout(nullptr),
+    m_configWidget(nullptr),
+    m_config(nullptr)
 {
-    QBoxLayout *layout = new QVBoxLayout( this );
-    layout->setMargin(0);
+    Q_UNUSED(args);
+
+    m_layout = new QVBoxLayout(this);
+    m_layout->setMargin(0);
     m_config = new KConfig("kdeglobals");
-    m_configWidget = new KSpellConfigWidget( m_config, this );
-    layout->addWidget(m_configWidget);
-    connect(m_configWidget, SIGNAL(configChanged()), this, SLOT(changed()));
 }
 
-SonnetSpellCheckingModule::~SonnetSpellCheckingModule()
+SpellCheckingModule::~SpellCheckingModule()
 {
     delete m_config;
 }
 
-void SonnetSpellCheckingModule::save()
+void SpellCheckingModule::load()
 {
-    m_configWidget->save();
+    if (m_configWidget) {
+        delete m_configWidget;
+    }
+    m_configWidget = new KSpellConfigWidget(m_config, this);
+    m_layout->addWidget(m_configWidget);
+    connect(m_configWidget, SIGNAL(configChanged()), this, SLOT(slotConfigChanged()));
+    emit changed(false);
 }
 
-void SonnetSpellCheckingModule::defaults()
+void SpellCheckingModule::save()
+{
+    m_configWidget->save();
+    emit changed(false);
+}
+
+void SpellCheckingModule::defaults()
 {
     m_configWidget->slotDefault();
+}
+
+void SpellCheckingModule::slotConfigChanged()
+{
+    emit changed(true);
 }
 
 #include "moc_spellchecking.cpp"
