@@ -50,6 +50,7 @@ private:
     QLabel* m_notificationslabel;
     KComboBox* m_notificationsbox;
     KNotificationConfigWidget* m_notificationswidget;
+    bool m_firstload;
 };
 
 #endif // KNOTIFICATIONCONFIG_H

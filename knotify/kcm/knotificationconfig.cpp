@@ -38,7 +38,8 @@ KCMNotification::KCMNotification(QWidget *parent, const QVariantList &args)
     m_layout(nullptr),
     m_notificationslabel(nullptr),
     m_notificationsbox(nullptr),
-    m_notificationswidget(nullptr)
+    m_notificationswidget(nullptr),
+    m_firstload(true)
 {
     Q_UNUSED(args);
 
@@ -87,12 +88,23 @@ KCMNotification::KCMNotification(QWidget *parent, const QVariantList &args)
 
 void KCMNotification::load()
 {
-    const int kdeindex = m_notificationsbox->findData(s_kdenotification);
-    if (kdeindex >= 0) {
-        m_notificationsbox->setCurrentIndex(kdeindex);
-    } else {
-        kWarning() << "could not find the index of" << s_kdenotification;
+    if (m_firstload) {
+        m_firstload = false;
+
+        const int kdeindex = m_notificationsbox->findData(s_kdenotification);
+        if (kdeindex >= 0) {
+            m_notificationsbox->setCurrentIndex(kdeindex);
+        } else {
+            kWarning() << "could not find the index of" << s_kdenotification;
+        }
+
+        m_notificationswidget->setNotification(s_kdenotification);
+        emit changed(false);
+        return;
     }
+
+    const QString notification = m_notificationsbox->itemData(m_notificationsbox->currentIndex()).toString();
+    m_notificationswidget->setNotification(notification);
     emit changed(false);
 }
 
@@ -106,6 +118,7 @@ void KCMNotification::slotSourceIndexChanged(int index)
 {
     const QString notification = m_notificationsbox->itemData(index).toString();
     m_notificationswidget->setNotification(notification);
+    emit changed(false);
 }
 
 void KCMNotification::slotNotificationChanged(bool state)
