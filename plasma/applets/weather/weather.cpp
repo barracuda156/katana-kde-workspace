@@ -760,6 +760,7 @@ WeatherApplet::WeatherApplet(QObject *parent, const QVariantList &args)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_weather");
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
+    setHasConfigurationInterface(true);
     setPopupIcon(s_defaultweathericon);
 
     m_weatherwidget = new WeatherWidget(this);

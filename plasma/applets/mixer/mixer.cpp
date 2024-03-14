@@ -968,6 +968,7 @@ MixerApplet::MixerApplet(QObject *parent, const QVariantList &args)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_mixer");
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
+    setHasConfigurationInterface(true);
     setPopupIcon(kMixerIcon(this, 0));
 
     m_mixerwidget = new MixerWidget(this);
