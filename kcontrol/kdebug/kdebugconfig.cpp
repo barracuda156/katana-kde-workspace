@@ -27,7 +27,6 @@
 #include <QGroupBox>
 #include <QCheckBox>
 #include <QPushButton>
-#include <QtDBus/QtDBus>
 #include <QFile>
 
 #include <kdebug.h>
@@ -154,9 +153,6 @@ KCMDebug::~KCMDebug()
 
 void KCMDebug::readAreas()
 {
-    // Group 0 is not used anymore. kDebug() uses the area named after the appname.
-    //areas.insert( "      0" /*cf rightJustified below*/, "0 (generic)" );
-
     const QString confAreasFile = KStandardDirs::locate("config", "kdebug.areas");
     QFile file( confAreasFile );
     if (!file.open(QIODevice::ReadOnly)) {
@@ -178,7 +174,7 @@ void KCMDebug::readAreas()
             if (space == -1)
                 kError() << "No space:" << data;
 
-            bool longOK;
+            bool longOK = false;
             unsigned long number = data.left(space).toULong(&longOK);
             if (!longOK)
                 kError() << "The first part wasn't a number : " << data;
@@ -226,13 +222,6 @@ void KCMDebug::save()
     topGroup.writeEntry("DisableAll", m_disableAll->isChecked());
     pConfig->sync();
 
-    kClearDebugConfig();
-
-    QDBusMessage msg = QDBusMessage::createSignal("/", "org.kde.KDebug", "configChanged");
-    if (!QDBusConnection::sessionBus().send(msg))
-    {
-        kError() << "Unable to send D-BUS message";
-    }
     emit changed( false );
 }
 
