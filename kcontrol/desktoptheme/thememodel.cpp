@@ -174,7 +174,7 @@ void ThemeDelegate::paint(QPainter *painter,
     QString title = index.model()->data(index, Qt::DisplayRole).toString();
     QString package = index.model()->data(index, ThemeModel::PackageNameRole).toString();
 
-    QStyleOptionViewItemV4 opt(option);
+    QStyleOptionViewItem opt(option);
     QStyle *style = opt.widget ? opt.widget->style() : QApplication::style();
     style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter, opt.widget);
 

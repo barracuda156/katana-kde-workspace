@@ -26,7 +26,7 @@
 #include <KMimeType>
 
 
-ItemEditor::ItemEditor(QGraphicsWidget *parent, const QStyleOptionViewItemV4 &option,
+ItemEditor::ItemEditor(QGraphicsWidget *parent, const QStyleOptionViewItem &option,
                        const QModelIndex &index)
     : QGraphicsProxyWidget(parent),
       m_index(index),

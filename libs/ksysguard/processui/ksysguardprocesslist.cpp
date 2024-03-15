@@ -74,7 +74,7 @@ class ProgressBarItemDelegate : public QStyledItemDelegate
 
         virtual void paint(QPainter *painter, const QStyleOptionViewItem &opt, const QModelIndex &index) const
         {
-            QStyleOptionViewItemV4 option = opt;
+            QStyleOptionViewItem option = opt;
             initStyleOption(&option,index);
 
             float percentage = index.data(ProcessModel::PercentageRole).toFloat();
@@ -85,7 +85,7 @@ class ProgressBarItemDelegate : public QStyledItemDelegate
         }
 
     private:
-        inline void drawPercentageDisplay(QPainter *painter, QStyleOptionViewItemV4 &option, float percentage) const
+        inline void drawPercentageDisplay(QPainter *painter, QStyleOptionViewItem &option, float percentage) const
         {
             QStyle *style = option.widget ? option.widget->style() : QApplication::style();
 

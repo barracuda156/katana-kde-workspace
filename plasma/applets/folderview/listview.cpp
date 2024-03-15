@@ -181,7 +181,7 @@ void ListView::updateScrollBar()
     }
 }
 
-QSize ListView::itemSize(const QStyleOptionViewItemV4 &option, const QModelIndex &index) const
+QSize ListView::itemSize(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     qreal left, top, right, bottom;
     m_itemFrame->getMargins(left, top, right, bottom);
@@ -225,7 +225,7 @@ QRect ListView::visualRect(const QModelIndex &index) const
     return QRect(cr.left(), cr.top() + index.row() * m_rowHeight, cr.width(), m_rowHeight);
 }
 
-void ListView::paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option, const QModelIndex &index) const
+void ListView::paintItem(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     // Draw the item background
     // ========================
@@ -353,7 +353,7 @@ void ListView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     // Update the dirty region in the backbuffer
     // =========================================
     if (!m_dirtyRegion.isEmpty()) {
-        QStyleOptionViewItemV4 opt = viewOptions();
+        QStyleOptionViewItem opt = viewOptions();
         int width = m_scrollBar->isVisible() ? cr.width() - m_scrollBar->geometry().width() : cr.width();
 
         if (m_rowHeight == -1 && m_model->rowCount() > 0) {
@@ -589,7 +589,7 @@ void ListView::startDrag(const QPointF &pos, QWidget *widget)
     QPixmap pixmap(boundingRect.size());
     pixmap.fill(Qt::transparent);
 
-    QStyleOptionViewItemV4 option = viewOptions();
+    QStyleOptionViewItem option = viewOptions();
     // ### We can't draw the items as selected or hovered since Qt doesn't
     //     use an ARGB window for the drag pixmap.
     //option.state |= QStyle::State_Selected | QStyle::State_MouseOver;
@@ -622,9 +622,9 @@ void ListView::startDrag(const QPointF &pos, QWidget *widget)
     markAreaDirty(boundingRect);
 }
 
-QStyleOptionViewItemV4 ListView::viewOptions() const
+QStyleOptionViewItem ListView::viewOptions() const
 {
-    QStyleOptionViewItemV4 option;
+    QStyleOptionViewItem option;
     initStyleOption(&option);
 
     option.font                = font();
@@ -635,10 +635,10 @@ QStyleOptionViewItemV4 ListView::viewOptions() const
     option.textElideMode       = Qt::ElideMiddle;
     option.locale              = QLocale::system();
     option.widget              = m_styleWidget;
-    option.viewItemPosition    = QStyleOptionViewItemV4::OnlyOne;
+    option.viewItemPosition    = QStyleOptionViewItem::OnlyOne;
 
     if (m_wordWrap) {
-        option.features = QStyleOptionViewItemV2::WrapText;
+        option.features = QStyleOptionViewItem::WrapText;
     }
 
     return option;

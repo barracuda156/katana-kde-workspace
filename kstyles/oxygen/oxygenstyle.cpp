@@ -3102,14 +3102,14 @@ namespace Oxygen
     bool Style::drawPanelItemViewItemPrimitive( const QStyleOption* option, QPainter* painter, const QWidget* widget ) const
     {
 
-        const QStyleOptionViewItemV4 *opt = qstyleoption_cast<const QStyleOptionViewItemV4*>( option );
+        const QStyleOptionViewItem *opt = qstyleoption_cast<const QStyleOptionViewItem*>( option );
         const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>( widget );
         const bool hover = ( option->state & State_MouseOver ) && ( !view || view->selectionMode() != QAbstractItemView::NoSelection );
 
         const bool hasCustomBackground = opt->backgroundBrush.style() != Qt::NoBrush && !( option->state & State_Selected );
         const bool hasSolidBackground = !hasCustomBackground || opt->backgroundBrush.style() == Qt::SolidPattern;
 
-        if( !hover && !( option->state & State_Selected ) && !hasCustomBackground && !( opt->features & QStyleOptionViewItemV2::Alternate ) )
+        if( !hover && !( option->state & State_Selected ) && !hasCustomBackground && !( opt->features & QStyleOptionViewItem::Alternate ) )
         { return true; }
 
         QPalette::ColorGroup cg;
@@ -3126,7 +3126,7 @@ namespace Oxygen
             else color = color.lighter( 110 );
         }
 
-        if( opt && ( opt->features & QStyleOptionViewItemV2::Alternate ) )
+        if( opt && ( opt->features & QStyleOptionViewItem::Alternate ) )
         { painter->fillRect( option->rect, option->palette.brush( cg, QPalette::AlternateBase ) ); }
 
         if( !hover && !( option->state & State_Selected ) && !hasCustomBackground )
@@ -3153,10 +3153,10 @@ namespace Oxygen
             if( opt )
             {
 
-                roundedLeft  = ( opt->viewItemPosition == QStyleOptionViewItemV4::Beginning );
-                roundedRight = ( opt->viewItemPosition == QStyleOptionViewItemV4::End );
-                if( opt->viewItemPosition == QStyleOptionViewItemV4::OnlyOne ||
-                    opt->viewItemPosition == QStyleOptionViewItemV4::Invalid ||
+                roundedLeft  = ( opt->viewItemPosition == QStyleOptionViewItem::Beginning );
+                roundedRight = ( opt->viewItemPosition == QStyleOptionViewItem::End );
+                if( opt->viewItemPosition == QStyleOptionViewItem::OnlyOne ||
+                    opt->viewItemPosition == QStyleOptionViewItem::Invalid ||
                     ( view && view->selectionBehavior() != QAbstractItemView::SelectRows ) )
                 {
                     roundedLeft  = true;

@@ -57,10 +57,10 @@ protected:
     void startDrag(const QPointF &pos, QWidget *widget);
     void updateScrollBar();
     void updateSizeHint();
-    QStyleOptionViewItemV4 viewOptions() const;
+    QStyleOptionViewItem viewOptions() const;
 
-    QSize itemSize(const QStyleOptionViewItemV4 &option, const QModelIndex &index) const;
-    void paintItem(QPainter *painter, const QStyleOptionViewItemV4 &option, const QModelIndex &index) const;
+    QSize itemSize(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    void paintItem(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
     
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 

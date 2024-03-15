@@ -40,7 +40,7 @@ void BackgroundDelegate::paint(QPainter *painter,
     const QPixmap pix = index.model()->data(index, ScreenshotRole).value<QPixmap>();
 
     // Highlight selected item
-    QStyleOptionViewItemV4 opt(option);
+    QStyleOptionViewItem opt(option);
     opt.showDecorationSelected = true;
     QStyle *style = opt.widget ? opt.widget->style() : QApplication::style();
     style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter, opt.widget);

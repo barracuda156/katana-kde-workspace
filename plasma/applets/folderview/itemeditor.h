@@ -32,7 +32,7 @@ class ItemEditor : public QGraphicsProxyWidget
     Q_OBJECT
     
 public:
-    ItemEditor(QGraphicsWidget *parent, const QStyleOptionViewItemV4 &option,
+    ItemEditor(QGraphicsWidget *parent, const QStyleOptionViewItem &option,
                const QModelIndex &index);
     ~ItemEditor();
 
