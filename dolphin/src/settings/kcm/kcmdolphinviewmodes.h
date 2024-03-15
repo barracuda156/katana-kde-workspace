@@ -38,9 +38,6 @@ public:
     virtual void save();
     virtual void defaults();
 
-private:
-    void reparseConfiguration();
-
 private Q_SLOTS:
    void viewModeChanged();
 

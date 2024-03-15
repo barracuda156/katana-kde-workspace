@@ -22,9 +22,7 @@
 #include "mimetypewriter.h"
 
 // Qt
-#include <qdbusconnection.h>
-#include <qdbusmessage.h>
-#include <QtCore/QFile>
+#include <QFile>
 
 // KDE
 #include <kapplication.h>
@@ -80,10 +78,6 @@ void FileTypeDialog::save()
             MimeTypeWriter::runUpdateMimeDatabase();
         if (servicesDirty)
             KBuildSycocaProgressDialog::rebuildKSycoca(this);
-        // Trigger reparseConfiguration of filetypesrc in konqueror
-        QDBusMessage message =
-            QDBusMessage::createSignal("/KonqMain", "org.kde.Konqueror.Main", "reparseConfiguration");
-        QDBusConnection::sessionBus().send(message);
     }
 }
 

@@ -26,10 +26,8 @@
 // Qt
 #include <QLabel>
 #include <QLayout>
-#include <QtCore/QTimer>
+#include <QTimer>
 #include <QBoxLayout>
-#include <qdbusconnection.h>
-#include <qdbusmessage.h>
 
 // KDE
 #include <kbuildsycocaprogressdialog.h>
@@ -398,11 +396,9 @@ void FileTypesView::save()
 {
     bool needUpdateMimeDb = false;
     bool needUpdateSycoca = false;
-    bool didIt = false;
     // first, remove those items which we are asked to remove.
     Q_FOREACH(const QString& mime, removedList) {
         MimeTypeWriter::removeOwnMimeType(mime);
-        didIt = true;
         needUpdateMimeDb = true;
         needUpdateSycoca = true; // remove offers for this mimetype
     }
@@ -417,7 +413,6 @@ void FileTypesView::save()
       kDebug() << "Entry " << tli->name() << " is dirty. Saving.";
       if (tli->mimeTypeData().sync())
           needUpdateMimeDb = true;
-      didIt = true;
     }
     ++it1;
   }
@@ -428,7 +423,6 @@ void FileTypesView::save()
             kDebug() << "Entry " << tli->name() << " is dirty. Saving.";
             if (tli->mimeTypeData().sync())
                 needUpdateMimeDb = true;
-            didIt = true;
         }
     }
 
@@ -441,15 +435,6 @@ void FileTypesView::save()
   }
   if (needUpdateSycoca) {
       KBuildSycocaProgressDialog::rebuildKSycoca(this);
-  }
-
-  if (didIt) { // TODO make more specific: only if autoEmbed changed? Well, maybe this is useful for icon and glob changes too...
-      // Trigger reparseConfiguration of filetypesrc in konqueror
-      // TODO: the same for dolphin. Or we should probably define a global signal for this.
-      // Or a KGlobalSettings thing.
-      QDBusMessage message =
-          QDBusMessage::createSignal("/KonqMain", "org.kde.Konqueror.Main", "reparseConfiguration");
-      QDBusConnection::sessionBus().send(message);
   }
 
   updateDisplay(typesLV->currentItem());

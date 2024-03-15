@@ -315,7 +315,7 @@ void KonqPopupMenuTest::testViewDirectory()
     beflags |= KonqPopupMenu::ShowUrlOperations;
     beflags |= KonqPopupMenu::ShowProperties;
 
-    // KonqMainWindow says: doTabHandling = !openedForViewURL && ... So we don't add tabhandling here
+    // doTabHandling = !openedForViewURL && ... So we don't add tabhandling here
     KonqPopupMenu::ActionGroupMap actionGroups;
     actionGroups.insert("preview", m_previewActions->actions());
 
@@ -359,7 +359,7 @@ void KonqPopupMenuTest::testViewReadOnlyDirectory()
     beflags |= KonqPopupMenu::ShowUrlOperations;
     beflags |= KonqPopupMenu::ShowProperties;
 
-    // KonqMainWindow says: doTabHandling = !openedForViewURL && ... So we don't add tabhandling here
+    // doTabHandling = !openedForViewURL && ... So we don't add tabhandling here
     KonqPopupMenu::ActionGroupMap actionGroups;
     actionGroups.insert("preview", m_previewActions->actions());
 
@@ -430,7 +430,7 @@ void KonqPopupMenuTest::testHtmlPage()
     beflags |= KonqPopupMenu::ShowNavigationItems;
 
     KonqPopupMenu::ActionGroupMap actionGroups;
-    // KonqMainWindow says: doTabHandling = !openedForViewURL && ... So we don't add tabhandling here
+    // doTabHandling = !openedForViewURL && ... So we don't add tabhandling here
     // TODO we could just move that logic to KonqPopupMenu...
     //actionGroups.insert("tabhandling", m_tabHandlingActions->actions());
     actionGroups.insert("preview", m_previewActions->actions());

@@ -28,8 +28,6 @@
 
 #include <settings/viewmodes/viewsettingstab.h>
 
-#include <QDBusConnection>
-#include <QDBusMessage>
 #include <QDir>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -84,7 +82,6 @@ void DolphinViewModesConfigModule::save()
     foreach (ViewSettingsTab* tab, m_tabs) {
         tab->applySettings();
     }
-    reparseConfiguration();
 }
 
 void DolphinViewModesConfigModule::defaults()
@@ -92,13 +89,6 @@ void DolphinViewModesConfigModule::defaults()
     foreach (ViewSettingsTab* tab, m_tabs) {
         tab->restoreDefaultSettings();
     }
-    reparseConfiguration();
-}
-
-void DolphinViewModesConfigModule::reparseConfiguration()
-{
-    QDBusMessage message = QDBusMessage::createSignal("/KonqMain", "org.kde.Konqueror.Main", "reparseConfiguration");
-    QDBusConnection::sessionBus().send(message);
 }
 
 void DolphinViewModesConfigModule::viewModeChanged()

@@ -325,7 +325,7 @@ bool KShortUriFilter::filterUri( KUriFilterData& data ) const
     exists = ( KDE::stat( path, &buff ) == 0 );
 
     if ( !exists ) {
-      // Support for name filter (/foo/*.txt), see also KonqMainWindow::detectNameFilter
+      // Support for name filter (/foo/*.txt)
       // If the app using this filter doesn't support it, well, it'll simply error out itself
       int lastSlash = path.lastIndexOf( '/' );
       if ( lastSlash > -1 && path.indexOf( ' ', lastSlash ) == -1 ) // no space after last slash, otherwise it's more likely command-line arguments
