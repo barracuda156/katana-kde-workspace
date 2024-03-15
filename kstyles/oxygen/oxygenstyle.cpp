@@ -1455,7 +1455,7 @@ namespace Oxygen
     QRect Style::progressBarContentsRect( const QStyleOption* option, const QWidget* ) const
     {
         const QRect out( insideMargin( option->rect, ProgressBar_GrooveMargin ) );
-        const QStyleOptionProgressBarV2 *pbOpt( qstyleoption_cast<const QStyleOptionProgressBarV2 *>( option ) );
+        const QStyleOptionProgressBar *pbOpt( qstyleoption_cast<const QStyleOptionProgressBar *>( option ) );
         if( pbOpt && pbOpt->orientation == Qt::Vertical ) return out.adjusted( 0, 1, 0, -1 );
         else return out.adjusted( 1, 0, -1, 0 );
     }
@@ -1715,7 +1715,7 @@ namespace Oxygen
                 const QStyleOptionGroupBox *gbOpt = qstyleoption_cast<const QStyleOptionGroupBox *>( option );
                 if( !gbOpt ) break;
 
-                const bool isFlat( gbOpt->features & QStyleOptionFrameV2::Flat );
+                const bool isFlat( gbOpt->features & QStyleOptionFrame::Flat );
                 const int th( gbOpt->fontMetrics.height() + 8 );
                 const QRect cr( subElementRect( SE_CheckBoxIndicator, option, widget ) );
                 const int fw( pixelMetric( PM_DefaultFrameWidth, option, widget ) );
@@ -1744,7 +1744,7 @@ namespace Oxygen
                 const QStyleOptionGroupBox *gbOpt = qstyleoption_cast<const QStyleOptionGroupBox *>( option );
                 if( !gbOpt ) break;
 
-                const bool isFlat( gbOpt->features & QStyleOptionFrameV2::Flat );
+                const bool isFlat( gbOpt->features & QStyleOptionFrame::Flat );
                 QFont font;
                 if (widget) {
                     font = widget->font();
@@ -2420,8 +2420,7 @@ namespace Oxygen
         if( !fOpt ) return true;
 
         // no frame for flat groupboxes
-        QStyleOptionFrameV2 fOpt2( *fOpt );
-        if( fOpt2.features & QStyleOptionFrameV2::Flat ) return true;
+        if( fOpt->features & QStyleOptionFrame::Flat ) return true;
 
         // normal frame
         const QPalette& palette( option->palette );
@@ -3826,7 +3825,7 @@ namespace Oxygen
         if( !cbOption ) return true;
 
         // draw container
-        QStyleOptionProgressBarV2 sub_opt( *cbOption );
+        QStyleOptionProgressBar sub_opt( *cbOption );
         sub_opt.rect = subElementRect( QStyle::SE_ProgressBarGroove, cbOption, widget );
         drawProgressBarGrooveControl( &sub_opt, painter, widget );
 
@@ -3908,9 +3907,7 @@ namespace Oxygen
         const bool enabled( flags & State_Enabled );
         const bool reverseLayout( option->direction == Qt::RightToLeft );
 
-        // cast to v2 to check vertical bar
-        const QStyleOptionDockWidgetV2 *v2 = qstyleoption_cast<const QStyleOptionDockWidgetV2*>( option );
-        const bool verticalTitleBar( v2 ? v2->verticalTitleBar : false );
+        const bool verticalTitleBar( dwOpt->verticalTitleBar );
 
         const QRect btnr( subElementRect( dwOpt->floatable ? SE_DockWidgetFloatButton : SE_DockWidgetCloseButton, option, widget ) );
 
@@ -4333,7 +4330,7 @@ namespace Oxygen
         {
 
             // same as QCommonStyle::drawControl, except that it handles animations
-            QStyleOptionProgressBarV2 subopt = *pb;
+            QStyleOptionProgressBar subopt = *pb;
             subopt.rect = subElementRect( SE_ProgressBarGroove, pb, widget );
             drawProgressBarGrooveControl( &subopt, painter, widget );
 
@@ -4360,8 +4357,6 @@ namespace Oxygen
         const QStyleOptionProgressBar* pbOpt = qstyleoption_cast<const QStyleOptionProgressBar*>( option );
         if ( !pbOpt ) return true;
 
-        const QStyleOptionProgressBarV2* pbOpt2 = qstyleoption_cast<const QStyleOptionProgressBarV2*>( option );
-
         const QRect& r( option->rect );
         const QPalette& palette( option->palette );
 
@@ -4378,7 +4373,7 @@ namespace Oxygen
         if( !( progress || busyIndicator ) ) return true;
 
         const int steps = qMax( pbOpt->maximum - pbOpt->minimum, 1 );
-        const bool horizontal = !pbOpt2 || pbOpt2->orientation == Qt::Horizontal;
+        const bool horizontal = ( pbOpt->orientation == Qt::Horizontal );
 
         //Calculate width fraction
         qreal widthFrac( busyIndicator ?  ProgressBar_BusyIndicatorSize/100.0 : progress/steps );
@@ -4422,8 +4417,7 @@ namespace Oxygen
             indicatorRect.adjust( 1, 0, -1, -1 );
 
             // calculate dimension
-            int dimension( 20 );
-            if( pbOpt2 ) dimension = qMax( 5, horizontal ? indicatorRect.height() : indicatorRect.width() );
+            int dimension = qMax( 5, horizontal ? indicatorRect.height() : indicatorRect.width() );
             TileSet* tileSet( helper().progressBarIndicator( palette, dimension ) );
             tileSet->render( indicatorRect, painter, TileSet::Full );
         }
@@ -4436,7 +4430,7 @@ namespace Oxygen
     bool Style::drawProgressBarGrooveControl( const QStyleOption* option, QPainter* painter, const QWidget* ) const
     {
 
-        const QStyleOptionProgressBarV2 *pbOpt = qstyleoption_cast<const QStyleOptionProgressBarV2 *>( option );
+        const QStyleOptionProgressBar *pbOpt = qstyleoption_cast<const QStyleOptionProgressBar *>( option );
         const Qt::Orientation orientation( pbOpt? pbOpt->orientation : Qt::Horizontal );
 
         // ajust rect for alignment
@@ -4460,8 +4454,7 @@ namespace Oxygen
         const State& flags( option->state );
         const bool enabled( flags&State_Enabled );
 
-        const QStyleOptionProgressBarV2* pbOpt2 = qstyleoption_cast<const QStyleOptionProgressBarV2*>( option );
-        const bool horizontal = !pbOpt2 || pbOpt2->orientation == Qt::Horizontal;
+        const bool horizontal = ( pbOpt->orientation == Qt::Horizontal );
         const bool reverseLayout = ( option->direction == Qt::RightToLeft );
 
         // rotate label for vertical layout
@@ -5048,7 +5041,7 @@ namespace Oxygen
     {
 
         // cast option and check
-        const QStyleOptionFrameV3* frameOpt = qstyleoption_cast<const QStyleOptionFrameV3*>( option );
+        const QStyleOptionFrame* frameOpt = qstyleoption_cast<const QStyleOptionFrame*>( option );
         if( !frameOpt ) return false;
 
         switch( frameOpt->frameShape )
@@ -5089,9 +5082,6 @@ namespace Oxygen
         const QStyleOptionTab *tabOpt = qstyleoption_cast< const QStyleOptionTab* >( option );
         if( !tabOpt ) return true;
 
-        // add extra offset for selected tas
-        QStyleOptionTabV3 tabOptV3( *tabOpt );
-
         const bool selected( option->state&State_Selected );
 
         // get rect
@@ -5102,7 +5092,7 @@ namespace Oxygen
         painter is rotated and translated to deal with various orientations
         rect is translated to 0,0, and possibly transposed
         */
-        switch( tabOptV3.shape )
+        switch( tabOpt->shape )
         {
 
 
@@ -5157,32 +5147,32 @@ namespace Oxygen
         // make room for left and right widgets
         // left widget
         const bool verticalTabs( isVerticalTab( tabOpt ) );
-        const bool hasLeftButton( !( option->direction == Qt::RightToLeft ? tabOptV3.rightButtonSize.isEmpty():tabOptV3.leftButtonSize.isEmpty() ) );
-        const bool hasRightButton( !( option->direction == Qt::RightToLeft ? tabOptV3.leftButtonSize.isEmpty():tabOptV3.rightButtonSize.isEmpty() ) );
+        const bool hasLeftButton( !( option->direction == Qt::RightToLeft ? tabOpt->rightButtonSize.isEmpty():tabOpt->leftButtonSize.isEmpty() ) );
+        const bool hasRightButton( !( option->direction == Qt::RightToLeft ? tabOpt->leftButtonSize.isEmpty():tabOpt->rightButtonSize.isEmpty() ) );
 
         if( hasLeftButton )
-        { r.setLeft( r.left() + 4 + ( verticalTabs ? tabOptV3.leftButtonSize.height() : tabOptV3.leftButtonSize.width() ) ); }
+        { r.setLeft( r.left() + 4 + ( verticalTabs ? tabOpt->leftButtonSize.height() : tabOpt->leftButtonSize.width() ) ); }
 
         // make room for left and right widgets
         // left widget
         if( hasRightButton )
-        { r.setRight( r.right() - 4 - ( verticalTabs ? tabOptV3.rightButtonSize.height() : tabOptV3.rightButtonSize.width() ) ); }
+        { r.setRight( r.right() - 4 - ( verticalTabs ? tabOpt->rightButtonSize.height() : tabOpt->rightButtonSize.width() ) ); }
 
         // compute textRect and iconRect
         // now that orientation is properly dealt with, everything is handled as a 'north' orientation
         QRect textRect;
         QRect iconRect;
 
-        if( tabOptV3.icon.isNull() )
+        if( tabOpt->icon.isNull() )
         {
 
             textRect = r.adjusted( 6, 0, -6, 0 );
 
         } else {
 
-            const QSize& iconSize( tabOptV3.iconSize );
+            const QSize& iconSize( tabOpt->iconSize );
             iconRect = centerRect( r, iconSize );
-            if( !tabOptV3.text.isEmpty() )
+            if( !tabOpt->text.isEmpty() )
             {
 
                 iconRect.moveLeft( r.left() + 8 );
@@ -5204,13 +5194,13 @@ namespace Oxygen
         {
 
             // not sure why this is necessary
-            if( tabOptV3.shape == QTabBar::RoundedNorth || tabOptV3.shape == QTabBar::TriangularNorth )
+            if( tabOpt->shape == QTabBar::RoundedNorth || tabOpt->shape == QTabBar::TriangularNorth )
             { iconRect.translate( 0, -1 ); }
 
-            const QPixmap tabIcon = tabOptV3.icon.pixmap(
-                tabOptV3.iconSize,
-                ( tabOptV3.state & State_Enabled ) ? QIcon::Normal : QIcon::Disabled,
-                ( tabOptV3.state & State_Selected ) ? QIcon::On : QIcon::Off );
+            const QPixmap tabIcon = tabOpt->icon.pixmap(
+                tabOpt->iconSize,
+                ( tabOpt->state & State_Enabled ) ? QIcon::Normal : QIcon::Disabled,
+                ( tabOpt->state & State_Selected ) ? QIcon::On : QIcon::Off );
 
             painter->drawPixmap( iconRect.x(), iconRect.y(), tabIcon );
         }
@@ -5220,7 +5210,7 @@ namespace Oxygen
         {
 
             const QPalette& palette( option->palette );
-            const QString& text( tabOptV3.text );
+            const QString& text( tabOpt->text );
             const bool enabled( option->state & State_Enabled );
             const int alignment( Qt::AlignCenter|Qt::TextShowMnemonic );
             drawItemText( painter, textRect, alignment, palette, enabled, text, QPalette::WindowText );
@@ -5269,8 +5259,7 @@ namespace Oxygen
         const bool isRightOfSelected( tabOpt->selectedPosition == QStyleOptionTab::PreviousIsSelected );
 
         // document mode
-        const QStyleOptionTabV3 *tabOptV3 = qstyleoption_cast<const QStyleOptionTabV3 *>( option );
-        bool documentMode = tabOptV3 ? tabOptV3->documentMode : false;
+        bool documentMode = tabOpt->documentMode;
         const QTabWidget *tabWidget = ( widget && widget->parentWidget() ) ? qobject_cast<const QTabWidget *>( widget->parentWidget() ) : NULL;
         documentMode |= ( tabWidget ? tabWidget->documentMode() : true );
 
@@ -5877,8 +5866,7 @@ namespace Oxygen
         bool isRightOfSelected( tabOpt->selectedPosition == QStyleOptionTab::PreviousIsSelected );
 
         // document mode
-        const QStyleOptionTabV3 *tabOptV3 = qstyleoption_cast<const QStyleOptionTabV3 *>( option );
-        bool documentMode = tabOptV3 ? tabOptV3->documentMode : false;
+        bool documentMode = tabOpt->documentMode;
         const QTabWidget *tabWidget = ( widget && widget->parentWidget() ) ? qobject_cast<const QTabWidget *>( widget->parentWidget() ) : NULL;
         documentMode |= ( tabWidget ? tabWidget->documentMode() : true );
 
@@ -6532,8 +6520,7 @@ namespace Oxygen
         const bool reverseLayout( tabOpt->direction == Qt::RightToLeft );
 
         // get documentMode flag
-        const QStyleOptionTabV3 *tabOptV3 = qstyleoption_cast<const QStyleOptionTabV3 *>( tabOpt );
-        bool documentMode = tabOptV3 ? tabOptV3->documentMode : false;
+        bool documentMode = tabOpt->documentMode;
         const QTabWidget *tabWidget = ( widget && widget->parentWidget() ) ? qobject_cast<const QTabWidget *>( widget->parentWidget() ) : NULL;
         documentMode |= ( tabWidget ? tabWidget->documentMode() : true );
 
@@ -6681,9 +6668,9 @@ namespace Oxygen
         const bool reverseLayout( option->direction == Qt::RightToLeft );
 
 
-        // cast to v2 and disable paint is tab is first
-        const QStyleOptionToolBoxV2 *v2 = qstyleoption_cast<const QStyleOptionToolBoxV2 *>( option );
-        if( v2 && v2->position == QStyleOptionToolBoxV2::Beginning && selected ) return true;
+        // cast and disable paint if tab is first
+        const QStyleOptionToolBox *toolBoxOption = qstyleoption_cast<const QStyleOptionToolBox *>( option );
+        if( toolBoxOption && toolBoxOption->position == QStyleOptionToolBox::Beginning && selected ) return true;
 
         // save colors for shadow
         /* important: option returns a wrong color. We use the widget's palette when widget is set */
@@ -7001,7 +6988,7 @@ namespace Oxygen
     bool Style::drawGroupBoxComplexControl( const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget ) const
     {
         const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>( option );
-        if( groupBox && groupBox->features & QStyleOptionFrameV2::Flat )
+        if( groupBox && groupBox->features & QStyleOptionFrame::Flat )
         {
 
             // for flat groupboxes, the groupBox title is rendered bold
