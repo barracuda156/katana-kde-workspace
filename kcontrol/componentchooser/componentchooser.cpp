@@ -18,9 +18,7 @@
 
 #include "componentchooseremail.h"
 #include "componentchooserfilemanager.h"
-#ifdef Q_OS_UNIX
 #include "componentchooserterminal.h"
-#endif
 #ifdef Q_WS_X11
 #include "componentchooserwm.h"
 #endif

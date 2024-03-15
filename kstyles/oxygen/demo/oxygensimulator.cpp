@@ -47,9 +47,7 @@
 #include <QtGui/QToolButton>
 
 
-#ifdef Q_OS_UNIX
 #include <ctime>
-#endif
 
 namespace Oxygen
 {

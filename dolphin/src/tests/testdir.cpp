@@ -21,11 +21,7 @@
 
 #include <QDir>
 
-#ifdef Q_OS_UNIX
 #include <utime.h>
-#else
-#include <sys/utime.h>
-#endif
 
 TestDir::TestDir(const QString& directoryPrefix) :
     KTempDir(directoryPrefix)
@@ -44,12 +40,10 @@ KUrl TestDir::url() const
 /** The following function is taken from kdelibs/kio/tests/kiotesthelper.h, copyright (C) 2006 by David Faure */
 static void setTimeStamp(const QString& path, const QDateTime& mtime)
 {
-#ifdef Q_OS_UNIX
     struct utimbuf utbuf;
     utbuf.actime = mtime.toTime_t();
     utbuf.modtime = utbuf.actime;
     utime(QFile::encodeName(path), &utbuf);
-#endif
 }
 
 void TestDir::createFile(const QString& path, const QByteArray& data, const QDateTime& time)
