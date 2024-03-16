@@ -1,7 +1,0 @@
-DEBUGGING
-
-The best way to debug this slave is to attach to it via debugger.
-
-To enable libssh debug messages you have to set an environment variable:
-
-export KIO_SFTP_LOG_VERBOSITY=1

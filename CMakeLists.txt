@@ -131,14 +131,6 @@ set_package_properties(RAW1394 PROPERTIES
     PURPOSE "View FireWire devices in kinfocenter"
 )
 
-kde4_optional_find_package(LibSSH 0.6.0)
-set_package_properties(LibSSH PROPERTIES
-    DESCRIPTION "the SSH library with SFTP support"
-    URL "http://www.libssh.org/"
-    TYPE OPTIONAL
-    PURPOSE "Needed to build the SFTP kioslave"
-)
-
 kde4_optional_find_package(Mtp 1.1.2)
 set_package_properties(Mtp PROPERTIES
     DESCRIPTION "the library implementation of the Media Transfer Protocol"
