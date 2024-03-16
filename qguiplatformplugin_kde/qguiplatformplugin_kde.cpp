@@ -100,11 +100,12 @@ static void kde2QtFilter(const QString &orig, const QString &kde, QString *sel)
 
 class KFileDialogBridge : public KFileDialog
 {
+    Q_OBJECT
 public:
     KFileDialogBridge (const KUrl &startDir, const QString &filter, QFileDialog *original_)
      :  KFileDialog (startDir, filter, original_), original(original_)
      {
-         connect(this, SIGNAL(fileSelected(QString)), original, SIGNAL(currentChanged(QString)));
+         connect(this, SIGNAL(fileSelected(KUrl)), this, SLOT(slotFileSelected(KUrl)));
      }
 
     virtual void accept()
@@ -120,6 +121,12 @@ public:
     }
 
     QFileDialog *original;
+
+private Q_SLOTS:
+    void slotFileSelected(const KUrl &url)
+    {
+        QMetaObject::invokeMethod(original, "currentChanged", Q_ARG(QString, url.url())); //workaround protected
+    }
 };
 
 class KColorDialogBridge : public KColorDialog
