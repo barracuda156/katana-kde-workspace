@@ -77,8 +77,10 @@ QVListLayout *SolProcessorDevice::infoPanelLayout()
   if(extensions.isEmpty()) extensions << i18nc("no instruction set extensions", "None");
   
   labels << i18n("Processor Number: ")
-  << InfoPanel::friendlyString(QString::number(prodev->number())) 
-  << i18n("Max Speed: ") 
+  << InfoPanel::friendlyString(QString::number(prodev->number()))
+  << i18n("Min Speed: ")
+  << InfoPanel::friendlyString(QString::number(prodev->minSpeed()))
+  << i18n("Max Speed: ")
   << InfoPanel::friendlyString(QString::number(prodev->maxSpeed()))
   << i18n("Supported Instruction Sets: ")
   << extensions.join("\n");

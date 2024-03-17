@@ -126,6 +126,7 @@ bool SolidDeviceEngine::populateDeviceData(const QString &name)
 
         devicetypes << I18N_NOOP("Processor");
         setData(name, I18N_NOOP("Number"), processor->number());
+        setData(name, I18N_NOOP("Min Speed"), processor->minSpeed());
         setData(name, I18N_NOOP("Max Speed"), processor->maxSpeed());
         setData(name, I18N_NOOP("Can Change Frequency"), processor->canChangeFrequency());
     }

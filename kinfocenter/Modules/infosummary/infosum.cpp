@@ -83,12 +83,19 @@ void InfoSumPlugin::createCpuBox()
     if(!prodev) return;
     
     DefaultBoxWidget *cpuWidget = new DefaultBoxWidget();
-    cpuWidget->setLabelTitles(i18n("Processor"), i18n("Processor Number"), i18n("Processor Max Speed"));
+    cpuWidget->setLabelTitles(i18n("Processor"), i18n("Processor Number"), i18n("Processor Min/Max Speed"));
     cpuWidget->setIcon(KIcon("cpu"));
-    
+
+    const qreal minSpeed = prodev->minSpeed();
+    const qreal maxSpeed = prodev->maxSpeed();
     cpuWidget->setLabelOne(dev.product());
     cpuWidget->setLabelTwo(QString::number(prodev->number()));
-    cpuWidget->setLabelThree(QString::number(prodev->maxSpeed()));   
+    cpuWidget->setLabelThree(
+        i18n("%1GHz / %2GHz").arg(
+            KGlobal::locale()->formatNumber(minSpeed ? (minSpeed / 1000) : 0),
+            KGlobal::locale()->formatNumber(maxSpeed ? (maxSpeed / 1000) : 0)
+        )
+    );
     cpuWidget->setWhatsThis(i18nc("CPU whats this","This shows information about a specific CPU in your computer"));
     
     m_layout->addWidget(cpuWidget);
