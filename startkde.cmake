@@ -125,6 +125,10 @@ export XDG_CURRENT_DESKTOP
 dbus-update-activation-environment DISPLAY XAUTHORITY XDG_CURRENT_DESKTOP \
     KDE_FULL_SESSION KDE_SESSION_VERSION
 
+# Make sure the sycoca database is up-to-date in case something changed without kded4 running to
+# update it when that happens
+kbuildsycoca4
+
 # Start kcminit_startup
 kcminit_startup
 if test $? -ne 0; then
