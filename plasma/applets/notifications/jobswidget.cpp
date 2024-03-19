@@ -24,6 +24,7 @@
 #include <KRun>
 #include <KIconLoader>
 #include <KIcon>
+#include <KMimeType>
 #include <KDebug>
 
 JobFrame::JobFrame(const QString &_name, QGraphicsWidget *parent)
@@ -288,9 +289,11 @@ void JobsWidget::slotIcon1Activated()
 {
     QMutexLocker locker(&m_mutex);
     const Plasma::IconWidget* iconwidget1 = qobject_cast<Plasma::IconWidget*>(sender());
-    const QString desturl = iconwidget1->property("_k_desturl").toString();
+    const KUrl desturl = KUrl(iconwidget1->property("_k_desturl").toString());
     locker.unlock();
-    KRun::runUrl(KUrl(desturl), "inode/directory", nullptr);
+    const KMimeType::Ptr kmimetype = KMimeType::findByUrl(desturl);
+    Q_ASSERT(kmimetype);
+    KRun::runUrl(desturl, kmimetype->name(), nullptr);
 }
 
 #include "moc_jobswidget.cpp"
