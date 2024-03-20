@@ -25,7 +25,6 @@
 #include <KDebug>
 #include <KStandardDirs>
 #include <KRun>
-#include <Solid/PowerManagement>
 
 PowerDevilRunner::PowerDevilRunner(QObject *parent, const QVariantList &args)
     : Plasma::AbstractRunner(parent, args),
@@ -117,34 +116,39 @@ void PowerDevilRunner::match(Plasma::RunnerContext &context)
     }
 
     QList<Plasma::QueryMatch> matches;
+    const QSet<Solid::PowerManagement::SleepState> states = Solid::PowerManagement::supportedSleepStates();
+    const bool cansuspend = states.contains(Solid::PowerManagement::SuspendState);
+    const bool canhibernate = states.contains(Solid::PowerManagement::HibernateState);
+    const bool canhybrid = states.contains(Solid::PowerManagement::HybridSuspendState);
     if (term.compare(i18nc("Note this is a KRunner keyword", "suspend"), Qt::CaseInsensitive) == 0 ||
         term.compare(QLatin1String("suspend"), Qt::CaseInsensitive) == 0) {
-        QSet< Solid::PowerManagement::SleepState > states = Solid::PowerManagement::supportedSleepStates();
 
-        if (states.contains(Solid::PowerManagement::SuspendState)) {
+        if (cansuspend) {
             addSuspendMatch(Solid::PowerManagement::SuspendState, matches);
         }
 
-        if (states.contains(Solid::PowerManagement::HibernateState)) {
+        if (canhibernate) {
             addSuspendMatch(Solid::PowerManagement::HibernateState, matches);
         }
 
         if (states.contains(Solid::PowerManagement::HybridSuspendState)) {
             addSuspendMatch(Solid::PowerManagement::HybridSuspendState, matches);
         }
-#warning TODO: do not match these when not supported by the system
-    } else if (term.compare(i18nc("Note this is a KRunner keyword", "sleep"), Qt::CaseInsensitive) == 0 ||
+    } else if (cansuspend &&
+        (term.compare(i18nc("Note this is a KRunner keyword", "sleep"), Qt::CaseInsensitive) == 0 ||
         term.compare(QLatin1String("sleep"), Qt::CaseInsensitive) == 0 ||
         term.compare(i18nc("Note this is a KRunner keyword", "to ram"), Qt::CaseInsensitive) == 0 ||
-        term.compare(QLatin1String("to ram"), Qt::CaseInsensitive) == 0) {
+        term.compare(QLatin1String("to ram"), Qt::CaseInsensitive) == 0)) {
         addSuspendMatch(Solid::PowerManagement::SuspendState, matches);
-    } else if (term.compare(i18nc("Note this is a KRunner keyword", "hibernate"), Qt::CaseInsensitive) == 0 ||
+    } else if (canhibernate &&
+        (term.compare(i18nc("Note this is a KRunner keyword", "hibernate"), Qt::CaseInsensitive) == 0 ||
         term.compare(QLatin1String("hibernate"), Qt::CaseInsensitive) == 0 ||
         term.compare(i18nc("Note this is a KRunner keyword", "to disk"), Qt::CaseInsensitive) == 0 ||
-        term.compare(QLatin1String("to disk"), Qt::CaseInsensitive) == 0) {
+        term.compare(QLatin1String("to disk"), Qt::CaseInsensitive) == 0)) {
         addSuspendMatch(Solid::PowerManagement::HibernateState, matches);
-    } else if (term.compare(i18nc("Note this is a KRunner keyword", "hybrid"), Qt::CaseInsensitive) == 0 ||
-        term.compare(QLatin1String("hybrid"), Qt::CaseInsensitive) == 0) {
+    } else if (canhybrid &&
+        (term.compare(i18nc("Note this is a KRunner keyword", "hybrid"), Qt::CaseInsensitive) == 0 ||
+        term.compare(QLatin1String("hybrid"), Qt::CaseInsensitive) == 0)) {
         addSuspendMatch(Solid::PowerManagement::HybridSuspendState, matches);
     }
 
@@ -153,12 +157,12 @@ void PowerDevilRunner::match(Plasma::RunnerContext &context)
     }
 }
 
-void PowerDevilRunner::addSuspendMatch(int value, QList<Plasma::QueryMatch> &matches)
+void PowerDevilRunner::addSuspendMatch(const Solid::PowerManagement::SleepState value, QList<Plasma::QueryMatch> &matches)
 {
     Plasma::QueryMatch match(this);
     match.setType(Plasma::QueryMatch::ExactMatch);
 
-    switch ((Solid::PowerManagement::SleepState)value) {
+    switch (value) {
         case Solid::PowerManagement::SuspendState: {
             match.setIcon(KIcon("system-suspend"));
             match.setText(i18n("Suspend to RAM"));
@@ -179,7 +183,7 @@ void PowerDevilRunner::addSuspendMatch(int value, QList<Plasma::QueryMatch> &mat
         }
     }
 
-    match.setData(value);
+    match.setData(static_cast<int>(value));
     match.setId("Suspend");
     matches.append(match);
 }
@@ -189,7 +193,8 @@ void PowerDevilRunner::run(const Plasma::RunnerContext &context, const Plasma::Q
     Q_UNUSED(context)
 
     if (match.id().startsWith("PowerDevil_Suspend")) {
-        switch ((Solid::PowerManagement::SleepState)match.data().toInt()) {
+        const Solid::PowerManagement::SleepState matchvalue = static_cast<Solid::PowerManagement::SleepState>(match.data().toInt());
+        switch (matchvalue) {
             case Solid::PowerManagement::SuspendState: {
                 Solid::PowerManagement::requestSleep(Solid::PowerManagement::SuspendState);
                 break;

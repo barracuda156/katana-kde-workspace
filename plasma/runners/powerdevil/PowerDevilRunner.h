@@ -21,6 +21,7 @@
 #define POWERDEVILRUNNER_H
 
 #include <Plasma/AbstractRunner>
+#include <Solid/PowerManagement>
 
 class PowerDevilRunner : public Plasma::AbstractRunner
 {
@@ -37,7 +38,7 @@ private slots:
     void updateStatus();
 
 private:
-    void addSuspendMatch(int value, QList<Plasma::QueryMatch> &matches);
+    void addSuspendMatch(const Solid::PowerManagement::SleepState value, QList<Plasma::QueryMatch> &matches);
 
     int m_shortestCommand;
 };
