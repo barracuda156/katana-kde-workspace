@@ -532,7 +532,7 @@ void TrashProtocol::get( const KUrl& url )
     // But for this one we wouldn't use DCOP for every bit of data...
     KUrl fileURL;
     fileURL.setPath( physicalPath );
-    KIO::Job* job = KIO::get( fileURL, KIO::NoReload, KIO::HideProgressInfo );
+    KIO::Job* job = KIO::get( fileURL, KIO::HideProgressInfo );
     connect( job, SIGNAL( data( KIO::Job*, const QByteArray& ) ),
              this, SLOT( slotData( KIO::Job*, const QByteArray& ) ) );
     connect( job, SIGNAL( mimetype( KIO::Job*, const QString& ) ),

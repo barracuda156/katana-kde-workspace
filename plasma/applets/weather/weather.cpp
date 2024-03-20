@@ -483,7 +483,7 @@ void WeatherWidget::startGeoJob()
     }
     const KUrl geojoburl = s_geoapiurl;
     kDebug() << "starting geo job for" << geojoburl;
-    m_geojob = KIO::storedGet(geojoburl, KIO::NoReload, KIO::HideProgressInfo);
+    m_geojob = KIO::storedGet(geojoburl, KIO::HideProgressInfo);
     m_geojob->setAutoDelete(false);
     connect(
         m_geojob, SIGNAL(result(KJob*)),
@@ -505,7 +505,7 @@ void WeatherWidget::startWeatherJob(const QString &source, const float latitude,
         QString::number(longitude)
     );
     kDebug() << "starting weather job for" << weatherjoburl;
-    m_weatherjob = KIO::storedGet(weatherjoburl, KIO::NoReload, KIO::HideProgressInfo);
+    m_weatherjob = KIO::storedGet(weatherjoburl, KIO::HideProgressInfo);
     m_weatherjob->setAutoDelete(false);
     connect(
         m_weatherjob, SIGNAL(result(KJob*)),

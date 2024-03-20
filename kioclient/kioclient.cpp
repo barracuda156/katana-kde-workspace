@@ -313,7 +313,7 @@ bool ClientApp::doIt()
     else if ( command == "cat" )
     {
         checkArgumentCount(argc, 2, 2); // cat <url>
-        KIO::TransferJob* job = KIO::get(args->url(1), KIO::NoReload, s_jobFlags);
+        KIO::TransferJob* job = KIO::get(args->url(1), s_jobFlags);
         if ( !s_interactive )
             job->setUiDelegate( 0 );
         connect(job, SIGNAL(data(KIO::Job*,QByteArray) ), &app, SLOT(slotPrintData(KIO::Job*,QByteArray)));

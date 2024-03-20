@@ -84,7 +84,6 @@ FavIconsModule::FavIconsModule(QObject* parent, const QList<QVariant> &args)
 {
     Q_UNUSED(args);
 
-    d->metaData.insert(QLatin1String("cache"), "reload");
     d->metaData.insert(QLatin1String("no-www-auth"), QLatin1String("true"));
 
     new FavIconsAdaptor(this);
@@ -147,7 +146,7 @@ void FavIconsModule::forceDownloadUrlIcon(const QString &url)
 void FavIconsModule::startJob(const QString &url, const QString &faviconUrl, const QString &iconFile)
 {
     kDebug() << "Downloading" << faviconUrl << "as" << iconFile;
-    KIO::StoredTransferJob *tjob = KIO::storedGet(faviconUrl, KIO::NoReload, KIO::HideProgressInfo);
+    KIO::StoredTransferJob *tjob = KIO::storedGet(faviconUrl, KIO::HideProgressInfo);
     tjob->setAutoDelete(false);
     tjob->addMetaData(d->metaData);
     tjob->setProperty("faviconsUrl", url);

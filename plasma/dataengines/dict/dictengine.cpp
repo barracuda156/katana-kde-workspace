@@ -52,7 +52,7 @@ bool DictEngine::sourceRequestEvent(const QString &query)
     }
 
     const KUrl queryurl = QString::fromLatin1("https://api.dictionaryapi.dev/api/v2/entries/en/") + queryword;
-    KIO::StoredTransferJob *kiojob = KIO::storedGet(queryurl, KIO::Reload, KIO::HideProgressInfo);
+    KIO::StoredTransferJob *kiojob = KIO::storedGet(queryurl, KIO::HideProgressInfo);
     kiojob->setAutoDelete(false);
     kiojob->setProperty("dictquery", query);
     connect(kiojob, SIGNAL(finished(KJob*)), this, SLOT(slotFinished(KJob*)));

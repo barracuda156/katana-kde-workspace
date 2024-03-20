@@ -65,7 +65,7 @@ bool TestLinkItr::isApplicable(const KBookmark &bk) const
 void TestLinkItr::doAction()
 {
     kDebug();
-    m_job = KIO::get(currentBookmark().url(), KIO::Reload, KIO::HideProgressInfo);
+    m_job = KIO::get(currentBookmark().url(), KIO::HideProgressInfo);
 
     connect(m_job, SIGNAL(result(KJob*)),
             this, SLOT(slotJobResult(KJob*)));
