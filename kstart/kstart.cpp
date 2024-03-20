@@ -65,6 +65,7 @@ static bool fullscreen = false;
 static unsigned long state = 0;
 static unsigned long mask = 0;
 static NET::WindowType windowtype = NET::Unknown;
+static Atom wm_state_atom = None;
 
 KStart::KStart()
     : QObject()
@@ -214,21 +215,20 @@ void KStart::windowAdded(WId w)
 }
 
 
-//extern Atom qt_wm_state; // defined in qapplication_x11.cpp
 static bool wstate_withdrawn(WId winid)
 {
-    Q_UNUSED(winid);
+    if (wm_state_atom == None) {
+        wm_state_atom = XInternAtom(QX11Info::display(), "WM_STATE", False);
+    }
+    if (wm_state_atom == None) {
+        return true;
+    }
 
-#warning "Porting required."
-//Porting info: The Qt4 equivalent for qt_wm_state is qt_x11Data->atoms[QX11Data::WM_STATE]
-//which can be accessed via the macro ATOM(WM_STATE). Unfortunately, neither of these seem
-//to be exported out of the Qt environment. This value may have to be acquired from somewhere else.
-#if 0
     Atom type;
     int format;
     unsigned long length, after;
     unsigned char *data;
-    int r = XGetWindowProperty(QX11Info::display(), winid, qt_wm_state, 0, 2,
+    int r = XGetWindowProperty(QX11Info::display(), winid, wm_state_atom, 0, 2,
                                false, AnyPropertyType, &type, &format,
                                &length, &after, &data);
     bool withdrawn = true;
@@ -238,8 +238,6 @@ static bool wstate_withdrawn(WId winid)
         XFree((char *)data);
     }
     return withdrawn;
-#endif
-    return true;
 }
 
 
