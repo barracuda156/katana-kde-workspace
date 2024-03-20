@@ -24,22 +24,22 @@
 
 class PowerDevilRunner : public Plasma::AbstractRunner
 {
-        Q_OBJECT
+    Q_OBJECT
 
-    public:
-        PowerDevilRunner( QObject *parent, const QVariantList &args );
-        ~PowerDevilRunner();
+public:
+    PowerDevilRunner( QObject *parent, const QVariantList &args );
+    ~PowerDevilRunner();
 
-        void match( Plasma::RunnerContext &context );
-        void run( const Plasma::RunnerContext &context, const Plasma::QueryMatch &action );
+    void match( Plasma::RunnerContext &context );
+    void run( const Plasma::RunnerContext &context, const Plasma::QueryMatch &action );
 
-    private slots:
-        void updateStatus();
+private slots:
+    void updateStatus();
 
-    private:
-        void addSuspendMatch(int value, QList<Plasma::QueryMatch> &matches);
+private:
+    void addSuspendMatch(int value, QList<Plasma::QueryMatch> &matches);
 
-        int m_shortestCommand;
+    int m_shortestCommand;
 };
 
 K_EXPORT_PLASMA_RUNNER( powerdevil, PowerDevilRunner )

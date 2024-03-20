@@ -28,14 +28,14 @@
 #include <Solid/PowerManagement>
 
 PowerDevilRunner::PowerDevilRunner(QObject *parent, const QVariantList &args)
-        : Plasma::AbstractRunner(parent, args),
-          m_shortestCommand(1000)
+    : Plasma::AbstractRunner(parent, args),
+    m_shortestCommand(1000)
 {
-    Q_UNUSED(args)
-
-    setObjectName( QLatin1String("PowerDevil" ));
-    setIgnoredTypes(Plasma::RunnerContext::Directory | Plasma::RunnerContext::File |
-                    Plasma::RunnerContext::NetworkLocation | Plasma::RunnerContext::Help);
+    setObjectName(QLatin1String("PowerDevil"));
+    setIgnoredTypes(
+        Plasma::RunnerContext::Directory | Plasma::RunnerContext::File |
+        Plasma::RunnerContext::NetworkLocation | Plasma::RunnerContext::Help
+    );
     updateStatus();
 
     // Let's define all the words that will eventually trigger a match in the runner.
@@ -66,29 +66,38 @@ PowerDevilRunner::~PowerDevilRunner()
 void PowerDevilRunner::updateStatus()
 {
     QList<Plasma::RunnerSyntax> syntaxes;
-    syntaxes.append(Plasma::RunnerSyntax(i18nc("Note this is a KRunner keyword", "suspend"),
-                     i18n("Lists system suspend (e.g. sleep, hibernate) options "
-                          "and allows them to be activated")));
+    syntaxes.append(
+        Plasma::RunnerSyntax(
+            i18nc("Note this is a KRunner keyword", "suspend"),
+            i18n("Lists system suspend (e.g. sleep, hibernate) options and allows them to be activated")
+        )
+    );
 
     QSet< Solid::PowerManagement::SleepState > states = Solid::PowerManagement::supportedSleepStates();
 
     if (states.contains(Solid::PowerManagement::SuspendState)) {
-        Plasma::RunnerSyntax sleepSyntax(i18nc("Note this is a KRunner keyword", "sleep"),
-                                         i18n("Suspends the system to RAM"));
+        Plasma::RunnerSyntax sleepSyntax(
+            i18nc("Note this is a KRunner keyword", "sleep"),
+            i18n("Suspends the system to RAM")
+        );
         sleepSyntax.addExampleQuery(i18nc("Note this is a KRunner keyword", "to ram"));
         syntaxes.append(sleepSyntax);
     }
 
     if (states.contains(Solid::PowerManagement::HibernateState)) {
-        Plasma::RunnerSyntax hibernateSyntax(i18nc("Note this is a KRunner keyword", "hibernate"),
-                                         i18n("Suspends the system to disk"));
+        Plasma::RunnerSyntax hibernateSyntax(
+            i18nc("Note this is a KRunner keyword", "hibernate"),
+            i18n("Suspends the system to disk")
+        );
         hibernateSyntax.addExampleQuery(i18nc("Note this is a KRunner keyword", "to disk"));
         syntaxes.append(hibernateSyntax);
     }
 
     if (states.contains(Solid::PowerManagement::HybridSuspendState)) {
-        Plasma::RunnerSyntax hybridSyntax(i18nc("Note this is a KRunner keyword", "hybrid"),
-                                          i18n("Suspends the system to RAM and put the system in sleep mode"));
+        Plasma::RunnerSyntax hybridSyntax(
+            i18nc("Note this is a KRunner keyword", "hybrid"),
+            i18n("Suspends the system to RAM and put the system in sleep mode")
+        );
         syntaxes.append(hybridSyntax);
     }
 
