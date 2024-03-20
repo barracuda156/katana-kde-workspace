@@ -40,10 +40,15 @@ PowerDevilRunner::PowerDevilRunner(QObject *parent, const QVariantList &args)
 
     // Let's define all the words that will eventually trigger a match in the runner.
     QStringList commands;
-    commands << i18nc("Note this is a KRunner keyword", "suspend")
+    commands << QLatin1String("suspend")
+             << i18nc("Note this is a KRunner keyword", "suspend")
+             << QLatin1String("hibernate")
              << i18nc("Note this is a KRunner keyword", "hibernate")
+             << QLatin1String("hybrid")
              << i18nc("Note this is a KRunner keyword", "hybrid")
+             << QLatin1String("to disk")
              << i18nc("Note this is a KRunner keyword", "to disk")
+             << QLatin1String("to ram")
              << i18nc("Note this is a KRunner keyword", "to ram");
 
     foreach (const QString &command, commands) {
