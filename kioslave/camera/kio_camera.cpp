@@ -35,6 +35,7 @@
 
 #include <qfile.h>
 #include <qtextstream.h>
+#include <qcoreapplication.h>
 
 #include <kdebug.h>
 #include <kcomponentdata.h>
@@ -64,6 +65,7 @@ extern "C"
 
 int main(int argc, char **argv)
 {
+    QCoreApplication app(argc, argv);
     KComponentData componentData("kio_kamera");
 
     if (argc != 2) {
