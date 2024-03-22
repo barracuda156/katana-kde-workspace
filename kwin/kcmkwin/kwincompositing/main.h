@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <kcmodule.h>
 #include <ksharedconfig.h>
 #include <ktemporaryfile.h>
-#include <ktimerdialog.h>
 
 #include <QLabel>
 
@@ -38,13 +37,6 @@ class KActionCollection;
 namespace KWin
 {
 
-class ConfirmDialog : public KTimerDialog
-{
-    Q_OBJECT
-public:
-    ConfirmDialog();
-};
-
 class KWinCompositingConfig : public KCModule
 {
     Q_OBJECT
@@ -55,7 +47,6 @@ public:
     virtual QString quickHelp() const;
 
 public slots:
-    virtual void showConfirmDialog(bool reinitCompositing);
     void currentTabChanged(int tab);
 
     virtual void load();
@@ -77,7 +68,6 @@ public slots:
     void warn(QString message, QString details, QString dontAgainKey);
 
 private slots:
-    void confirmReInit() { showConfirmDialog(true); }
     void alignGuiToCompositingType(int compositingType);
     void toggleEffectShortcutChanged(const QKeySequence &seq);
     void updateStatusUI(bool compositingIsPossible);
@@ -93,7 +83,6 @@ private:
     QMap<QString, QString> mPreviousConfig;
     KTemporaryFile mTmpConfigFile;
     KSharedConfigPtr mTmpConfig;
-    bool m_showConfirmDialog;
     KActionCollection* m_actionCollection;
     QAction *m_showDetailedErrors;
     QAction *m_dontShowAgain;

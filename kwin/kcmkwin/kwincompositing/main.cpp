@@ -40,6 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <kservice.h>
 #include <ktitlewidget.h>
 #include <knotification.h>
+#include <kdialog.h>
 
 #include <QtDBus/QtDBus>
 #include <QPainter>
@@ -60,29 +61,9 @@ K_EXPORT_PLUGIN(KWinCompositingConfigFactory("kcmkwincompositing"))
 namespace KWin
 {
 
-ConfirmDialog::ConfirmDialog() :
-    KTimerDialog(10000, KTimerDialog::CountDown, 0,
-                 i18n("Confirm Desktop Effects Change"), KTimerDialog::Ok | KTimerDialog::Cancel,
-                 KTimerDialog::Cancel)
-{
-    setObjectName(QLatin1String("mainKTimerDialog"));
-    setButtonGuiItem(KDialog::Ok, KGuiItem(i18n("&Accept Configuration"), "dialog-ok"));
-    setButtonGuiItem(KDialog::Cancel, KGuiItem(i18n("&Return to Previous Configuration"), "dialog-cancel"));
-
-    QLabel *label = new QLabel(i18n("Desktop effects settings have changed.\n"
-                                    "Do you want to keep the new settings?\n"
-                                    "They will be automatically reverted in 10 seconds."), this);
-    label->setWordWrap(true);
-    setMainWidget(label);
-
-    setWindowIcon(KIcon("preferences-desktop-effect"));
-}
-
-
 KWinCompositingConfig::KWinCompositingConfig(QWidget *parent, const QVariantList &args)
     : KCModule(KWinCompositingConfigFactory::componentData(), parent)
     , mKWinConfig(KSharedConfig::openConfig("kwinrc"))
-    , m_showConfirmDialog(false)
     , m_showDetailedErrors(new QAction(i18nc("Action to open a dialog showing detailed information why an effect could not be loaded",
                                              "Details"), this))
     , m_dontShowAgain(new QAction(i18nc("Prevent warning from bein displayed again", "Don't show again!"), this))
@@ -202,44 +183,6 @@ KWinCompositingConfig::~KWinCompositingConfig()
 void KWinCompositingConfig::reparseConfiguration(const QByteArray& conf)
 {
     KSettings::Dispatcher::reparseConfiguration(conf);
-}
-
-void KWinCompositingConfig::showConfirmDialog(bool reinitCompositing)
-{
-    bool revert = false;
-    // Feel free to extend this to support several kwin instances (multihead) if you
-    // think it makes sense.
-    OrgKdeKWinInterface kwin("org.kde.KWin", "/KWin", QDBusConnection::sessionBus());
-    if (reinitCompositing ? !kwin.compositingActive().value() : !kwin.waitForCompositingSetup().value()) {
-        KMessageBox::sorry(this, i18n(
-                               "Failed to activate desktop effects using the given "
-                               "configuration options. Settings will be reverted to their previous values.\n\n"
-                               "Check your X configuration. You may also consider changing advanced options, "
-                               "especially changing the compositing type."));
-        revert = true;
-    } else {
-        ConfirmDialog confirm;
-        if (!confirm.exec())
-            revert = true;
-        else {
-            // compositing is enabled now
-            checkLoadedEffects();
-        }
-    }
-    if (revert) {
-        // Revert settings
-        KConfigGroup config(mKWinConfig, "Compositing");
-        config.deleteGroup();
-        QMap<QString, QString>::const_iterator it = mPreviousConfig.constBegin();
-        for (; it != mPreviousConfig.constEnd(); ++it) {
-            if (it.value().isEmpty())
-                continue;
-            config.writeEntry(it.key(), it.value());
-        }
-        // Sync with KWin and reload
-        configChanged(reinitCompositing);
-        load();
-    }
 }
 
 void KWinCompositingConfig::initEffectSelector()
@@ -519,15 +462,6 @@ void KWinCompositingConfig::save()
                                "Your settings have been saved but as KDE is currently running in failsafe "
                                "mode desktop effects cannot be enabled at this time.\n\n"
                                "Please exit failsafe mode to enable desktop effects."));
-        m_showConfirmDialog = false; // Dangerous but there is no way to test if failsafe mode
-    }
-
-    if (m_showConfirmDialog) {
-        m_showConfirmDialog = false;
-        if (advancedChanged)
-            QTimer::singleShot(1000, this, SLOT(confirmReInit()));
-        else
-            showConfirmDialog(false);
     }
 }
 
@@ -672,8 +606,7 @@ void KWinCompositingConfig::configChanged(bool reinitCompositing)
     // HACK: We can't just do this here, due to the asynchronous nature of signals.
     // We also can't change reinitCompositing into a message (which would allow
     // callWithCallbac() to do this neater) due to multiple kwin instances.
-    if (!m_showConfirmDialog)
-        QTimer::singleShot(1000, this, SLOT(checkLoadedEffects()));
+    QTimer::singleShot(1000, this, SLOT(checkLoadedEffects()));
 }
 
 
