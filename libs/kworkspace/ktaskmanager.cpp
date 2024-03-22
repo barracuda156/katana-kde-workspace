@@ -25,8 +25,6 @@
 #include <KDebug>
 #include <netwm.h>
 
-static const int s_nodesktop = -1;
-
 static bool kIsTaskWindow(const WId window)
 {
     const KWindowInfo kwindowinfo = KWindowSystem::windowInfo(window, NET::WMWindowType | NET::WMState);
