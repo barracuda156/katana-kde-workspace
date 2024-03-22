@@ -90,8 +90,7 @@ public:
     void restoreSession( const QString &sessionName );
     void startDefaultSession();
     void shutdown( KWorkSpace::ShutdownConfirm confirm,
-                   KWorkSpace::ShutdownType sdtype,
-                   KWorkSpace::ShutdownMode sdmode );
+                   KWorkSpace::ShutdownType sdtype );
 
     virtual void suspendStartup( const QString &app );
     virtual void resumeStartup( const QString &app );
@@ -171,7 +170,7 @@ private:
     // public dcop interface
 
  public Q_SLOTS: //public dcop interface
-    void logout( int, int, int );
+    void logout( int, int );
     bool canShutdown();
     QString currentSession();
     void saveCurrentSession();
@@ -205,7 +204,6 @@ private:
     QMap< QString, int > startupSuspendCount;
 
     KWorkSpace::ShutdownType shutdownType;
-    KWorkSpace::ShutdownMode shutdownMode;
 
     bool clean;
     KSMClient* clientInteracting;
@@ -224,7 +222,6 @@ private:
     QWidget* logoutEffectWidget;
     KWorkSpace::ShutdownConfirm pendingShutdown_confirm;
     KWorkSpace::ShutdownType pendingShutdown_sdtype;
-    KWorkSpace::ShutdownMode pendingShutdown_sdmode;
 
     // sequential startup
     int appsToStart;

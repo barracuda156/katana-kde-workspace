@@ -164,16 +164,15 @@ static void cleanup_sm()
 }
 #endif
 
-void requestShutDown(ShutdownConfirm confirm, ShutdownType sdtype, ShutdownMode sdmode)
+void requestShutDown(ShutdownConfirm confirm, ShutdownType sdtype)
 {
 #ifdef Q_WS_X11
     /*  use ksmserver's dcop interface if necessary  */
     if ( confirm == ShutdownConfirmYes ||
-         sdtype != ShutdownTypeDefault ||
-         sdmode != ShutdownModeDefault )
+         sdtype != ShutdownTypeDefault )
     {
         org::kde::KSMServerInterface ksmserver("org.kde.ksmserver", "/KSMServer", QDBusConnection::sessionBus());
-        ksmserver.logout((int)confirm,  (int)sdtype,  (int)sdmode);
+        ksmserver.logout((int)confirm,  (int)sdtype);
         return;
     }
 
@@ -186,14 +185,11 @@ void requestShutDown(ShutdownConfirm confirm, ShutdownType sdtype, ShutdownMode 
 #endif
 }
 
-bool canShutDown( ShutdownConfirm confirm,
-                  ShutdownType sdtype,
-                  ShutdownMode sdmode )
+bool canShutDown( ShutdownConfirm confirm, ShutdownType sdtype )
 {
 #ifdef Q_WS_X11
     if ( confirm == ShutdownConfirmYes ||
-         sdtype != ShutdownTypeDefault ||
-         sdmode != ShutdownModeDefault )
+         sdtype != ShutdownTypeDefault )
     {
         org::kde::KSMServerInterface ksmserver("org.kde.ksmserver", "/KSMServer", QDBusConnection::sessionBus());
         QDBusReply<bool> reply = ksmserver.canShutdown();
@@ -206,42 +202,6 @@ bool canShutDown( ShutdownConfirm confirm,
     return true;
 #else
     return false;
-#endif
-}
-
-static QTime smModificationTime;
-void propagateSessionManager()
-{
-#ifdef Q_WS_X11
-    QByteArray fName = QFile::encodeName(KStandardDirs::locateLocal("tmp", "KSMserver"));
-    QString display = QString::fromLocal8Bit( ::getenv(DISPLAY) );
-    // strip the screen number from the display
-    display.remove(QRegExp("\\.[0-9]+$"));
-    int i;
-    while( (i = display.indexOf(':')) >= 0)
-       display[i] = '_';
-    while( (i = display.indexOf('/')) >= 0)
-       display[i] = '_';
-
-    fName += '_';
-    fName += display.toLocal8Bit();
-    QByteArray smEnv = ::getenv("SESSION_MANAGER");
-    bool check = smEnv.isEmpty();
-    if ( !check && smModificationTime.isValid() ) {
-         QFileInfo info( fName );
-         QTime current = info.lastModified().time();
-         check = current > smModificationTime;
-    }
-    if ( check ) {
-        QFile f( fName );
-        if ( !f.open( QIODevice::ReadOnly ) )
-            return;
-        QFileInfo info ( f );
-        smModificationTime = QTime( info.lastModified().time() );
-        const QByteArray b = f.readLine().trimmed();
-        f.close();
-        ::setenv( "SESSION_MANAGER", b.constData(), true  );
-    }
 #endif
 }
 

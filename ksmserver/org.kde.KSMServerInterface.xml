@@ -4,7 +4,6 @@
     <method name="logout">
       <arg type="i" direction="in"/>
       <arg type="i" direction="in"/>
-      <arg type="i" direction="in"/>
     </method>
     <method name="canShutdown">
       <arg type="b" direction="out"/>

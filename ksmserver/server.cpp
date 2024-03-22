@@ -193,8 +193,7 @@ void KSMSaveYourselfRequestProc (
         the_server->shutdown( fast ?
                               KWorkSpace::ShutdownConfirmNo :
                               KWorkSpace::ShutdownConfirmDefault,
-                              KWorkSpace::ShutdownTypeDefault,
-                              KWorkSpace::ShutdownModeDefault );
+                              KWorkSpace::ShutdownTypeDefault );
     } else if ( !global ) {
         SmsSaveYourself( smsConn, saveType, false, interactStyle, fast );
         SmsSaveComplete( smsConn );
@@ -716,7 +715,7 @@ void KSMServer::cleanUp()
 
     FreeAuthenticationData(numTransports, authDataEntries);
 
-    KDisplayManager().shutdown( shutdownType, shutdownMode );
+    KDisplayManager().shutdown( shutdownType );
 }
 
 
@@ -1026,22 +1025,22 @@ void KSMServer::setupShortcuts()
 
 void KSMServer::defaultLogout()
 {
-    shutdown(KWorkSpace::ShutdownConfirmYes, KWorkSpace::ShutdownTypeDefault, KWorkSpace::ShutdownModeDefault);
+    shutdown(KWorkSpace::ShutdownConfirmYes, KWorkSpace::ShutdownTypeDefault);
 }
 
 void KSMServer::logoutWithoutConfirmation()
 {
-    shutdown(KWorkSpace::ShutdownConfirmNo, KWorkSpace::ShutdownTypeNone, KWorkSpace::ShutdownModeDefault);
+    shutdown(KWorkSpace::ShutdownConfirmNo, KWorkSpace::ShutdownTypeNone);
 }
 
 void KSMServer::haltWithoutConfirmation()
 {
-    shutdown(KWorkSpace::ShutdownConfirmNo, KWorkSpace::ShutdownTypeHalt, KWorkSpace::ShutdownModeDefault);
+    shutdown(KWorkSpace::ShutdownConfirmNo, KWorkSpace::ShutdownTypeHalt);
 }
 
 void KSMServer::rebootWithoutConfirmation()
 {
-    shutdown(KWorkSpace::ShutdownConfirmNo, KWorkSpace::ShutdownTypeReboot, KWorkSpace::ShutdownModeDefault);
+    shutdown(KWorkSpace::ShutdownConfirmNo, KWorkSpace::ShutdownTypeReboot);
 }
 
 #include "moc_server.cpp"

@@ -62,53 +62,23 @@ namespace KWorkSpace
     /**
      * Log out and halt the machine.
      */
-    ShutdownTypeHalt = 2,
-    /**
-     * Temporary brain damage. Don't use. Same as ShutdownTypeNone
-     */
-    // KDE5: kill this
-    ShutdownTypeLogout = 3
-  };
-
-  /**
-   * The possible values for the @p sdmode parameter of requestShutDown().
-   */
-  // KDE5: this seems fairly useless
-  enum ShutdownMode {
-    /**
-     * Select previous mode or the default if it's the first time.
-     */
-    ShutdownModeDefault = -1,
-    /**
-     * Shut down, if no sessions are active. Otherwise do nothing.
-     */
-    ShutdownModeTryNow = 1,
-    /**
-     * Force shutdown. Kill any possibly active sessions.
-     */
-    ShutdownModeForceNow = 2,
-    /**
-     * Pop up a dialog asking the user what to do if sessions are still active.
-     */
-    ShutdownModeInteractive = 3
+    ShutdownTypeHalt = 2
   };
 
   /**
    * Asks the session manager to shut the session down.
    *
-   * Using @p confirm == ShutdownConfirmYes or @p sdtype != ShutdownTypeDefault or
-   * @p sdmode != ShutdownModeDefault causes the use of ksmserver's DCOP
-   * interface. The remaining two combinations use the standard XSMP and
-   * will work with any session manager compliant with it.
+   * Using @p confirm == ShutdownConfirmYes or @p sdtype != ShutdownTypeDefault
+   * causes the use of ksmserver's D-Bus interface. The remaining two
+   * combinations use the standard XSMP and will work with any session manager
+   * compliant with it.
    *
    * @param confirm Whether to ask the user if he really wants to log out.
    * ShutdownConfirm
    * @param sdtype The action to take after logging out. ShutdownType
-   * @param sdmode If/When the action should be taken. ShutdownMode
    */
-  KWORKSPACE_EXPORT void requestShutDown( ShutdownConfirm confirm = ShutdownConfirmDefault,
-                                   ShutdownType    sdtype  = ShutdownTypeDefault,
-                                   ShutdownMode    sdmode  = ShutdownModeDefault );
+  KWORKSPACE_EXPORT void requestShutDown(ShutdownConfirm confirm = ShutdownConfirmDefault,
+                                         ShutdownType sdtype = ShutdownTypeDefault);
 
   /**
    * Used to check whether a requestShutDown call with the same arguments
@@ -121,25 +91,8 @@ namespace KWorkSpace
    * configuration may prevent the user from requesting a shutdown or
    * reboot.
    */
-  KWORKSPACE_EXPORT bool canShutDown( ShutdownConfirm confirm = ShutdownConfirmDefault,
-                               ShutdownType    sdtype  = ShutdownTypeDefault,
-                               ShutdownMode    sdmode  = ShutdownModeDefault );
-
-  /**
-   * Propagates the network address of the session manager in the
-   * SESSION_MANAGER environment variable so that child processes can
-   * pick it up.
-   *
-   * If SESSION_MANAGER isn't defined yet, the address is searched in
-   * $HOME/.KSMserver.
-   *
-   * This function is called by clients that are started outside the
-   * session ( i.e. before ksmserver is started), but want to launch
-   * other processes that should participate in the session.  Examples
-   * are kdesktop or kicker.
-   */
-   KWORKSPACE_EXPORT void propagateSessionManager();
-
+  KWORKSPACE_EXPORT bool canShutDown(ShutdownConfirm confirm = ShutdownConfirmDefault,
+                                     ShutdownType sdtype = ShutdownTypeDefault);
 }
 
 #endif

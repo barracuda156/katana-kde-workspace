@@ -106,31 +106,26 @@ bool KDisplayManager::canShutdown()
     return false;
 }
 
-void KDisplayManager::shutdown(KWorkSpace::ShutdownType shutdownType,
-                               KWorkSpace::ShutdownMode shutdownMode)
+void KDisplayManager::shutdown(KWorkSpace::ShutdownType shutdownType)
 {
-    if (shutdownType == KWorkSpace::ShutdownTypeNone || shutdownType == KWorkSpace::ShutdownTypeLogout) {
+    if (shutdownType == KWorkSpace::ShutdownTypeNone) {
         return;
     }
-    const bool interactive = (
-        shutdownMode == KWorkSpace::ShutdownModeInteractive
-        || shutdownMode == KWorkSpace::ShutdownModeForceNow
-    );
 
     if (d->m_login1.isValid()) {
         if (shutdownType == KWorkSpace::ShutdownTypeReboot) {
-            d->m_login1.call("Reboot", interactive);
+            d->m_login1.call("Reboot", true);
         } else if (shutdownType == KWorkSpace::ShutdownTypeHalt) {
-            d->m_login1.call("PowerOff", interactive);
+            d->m_login1.call("PowerOff", true);
         }
         return;
     }
 
     if (d->m_consolekit.isValid()) {
         if (shutdownType == KWorkSpace::ShutdownTypeReboot) {
-            d->m_consolekit.call("Reboot", interactive);
+            d->m_consolekit.call("Reboot", true);
         } else if (shutdownType == KWorkSpace::ShutdownTypeHalt) {
-            d->m_consolekit.call("PowerOff", interactive);
+            d->m_consolekit.call("PowerOff", true);
         }
         return;
     }

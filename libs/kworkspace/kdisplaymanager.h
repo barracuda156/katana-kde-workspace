@@ -46,8 +46,7 @@ public:
     ~KDisplayManager();
 
     bool canShutdown();
-    void shutdown(KWorkSpace::ShutdownType shutdownType,
-                  KWorkSpace::ShutdownMode shutdownMode);
+    void shutdown(KWorkSpace::ShutdownType shutdownType);
 
     bool isSwitchable();
     void newSession();

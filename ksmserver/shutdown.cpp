@@ -73,15 +73,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
-void KSMServer::logout( int confirm, int sdtype, int sdmode )
+void KSMServer::logout( int confirm, int sdtype )
 {
-    // KDE5: remove me
-    if (sdtype == KWorkSpace::ShutdownTypeLogout)
-        sdtype = KWorkSpace::ShutdownTypeNone;
-
     shutdown( (KWorkSpace::ShutdownConfirm)confirm,
-            (KWorkSpace::ShutdownType)sdtype,
-            (KWorkSpace::ShutdownMode)sdmode );
+            (KWorkSpace::ShutdownType)sdtype);
 }
 
 bool KSMServer::canShutdown()
@@ -94,7 +89,7 @@ bool KSMServer::canShutdown()
 }
 
 void KSMServer::shutdown( KWorkSpace::ShutdownConfirm confirm,
-    KWorkSpace::ShutdownType sdtype, KWorkSpace::ShutdownMode sdmode )
+                          KWorkSpace::ShutdownType sdtype )
 {
     pendingShutdown.stop();
     if( dialogActive )
@@ -109,7 +104,6 @@ void KSMServer::shutdown( KWorkSpace::ShutdownConfirm confirm,
             pendingShutdown.start( 1000 );
             pendingShutdown_confirm = confirm;
             pendingShutdown_sdtype = sdtype;
-            pendingShutdown_sdmode = sdmode;
         }
         return;
     }
@@ -138,8 +132,6 @@ void KSMServer::shutdown( KWorkSpace::ShutdownConfirm confirm,
                 cg.readEntry( "shutdownType", (int)KWorkSpace::ShutdownTypeNone );
         choose = true;
     }
-    if (sdmode == KWorkSpace::ShutdownModeDefault)
-        sdmode = KWorkSpace::ShutdownModeInteractive;
 
     dialogActive = true;
     if ( !logoutConfirmed ) {
@@ -159,7 +151,6 @@ void KSMServer::shutdown( KWorkSpace::ShutdownConfirm confirm,
         inhibitCookie = Solid::PowerManagement::beginSuppressingSleep();
 
         shutdownType = sdtype;
-        shutdownMode = sdmode;
 
         // shall we save the session on logout?
         saveSession = ( cg.readEntry( "loginMode", "restorePreviousLogout" ) == "restorePreviousLogout" );
@@ -214,7 +205,7 @@ void KSMServer::shutdown( KWorkSpace::ShutdownConfirm confirm,
 
 void KSMServer::pendingShutdownTimeout()
 {
-    shutdown( pendingShutdown_confirm, pendingShutdown_sdtype, pendingShutdown_sdmode );
+    shutdown( pendingShutdown_confirm, pendingShutdown_sdtype );
 }
 
 void KSMServer::saveCurrentSession()

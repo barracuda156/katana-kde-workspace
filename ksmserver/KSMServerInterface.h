@@ -32,7 +32,7 @@ class KSMServerInterface : public QObject
   Q_CLASSINFO("D-Bus Interface", "org.kde.KSMServerInterface")
 
 public Q_SLOTS:
-  Q_SCRIPTABLE void logout(int, int, int );
+  Q_SCRIPTABLE void logout(int, int );
   Q_SCRIPTABLE QStringList sessionList();
 
   Q_SCRIPTABLE QString currentSession();
