@@ -92,5 +92,3 @@ X-KDE-ServiceTypes=SearchProvider
 Keys=fsd
 Query=https://directory.fsf.org/wiki?search=\\{@}
 Query[x-test]=xxhttps://directory.fsf.org/wiki?search=\\{@}xx
-
-
