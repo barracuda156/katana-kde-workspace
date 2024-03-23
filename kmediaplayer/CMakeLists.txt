@@ -6,7 +6,7 @@ add_executable(kmediaplayer main.cpp kmediawindow.cpp)
 target_link_libraries(kmediaplayer
     KDE4::kdecore
     KDE4::kdeui
-    KDE4::kfile
+    KDE4::kio
     KDE4::kcmutils
     KDE4::kmediaplayer
     KDE4::solid

@@ -22,7 +22,7 @@ target_link_libraries(konq PRIVATE
 )
 target_link_libraries(konq PUBLIC
     KDE4::kparts
-    KDE4::kfile
+    KDE4::kio
 )
 
 set_target_properties(konq PROPERTIES

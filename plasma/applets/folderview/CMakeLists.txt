@@ -35,7 +35,6 @@ kde4_add_plugin(plasma_applet_folderview ${folderview_SRCS})
 target_link_libraries(plasma_applet_folderview
     KDE4::plasma
     KDE4::kio
-    KDE4::kfile
     KDE4::knetworkmanager
     ${X11_LIBRARIES}
     konq

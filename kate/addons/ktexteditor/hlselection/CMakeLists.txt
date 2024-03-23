@@ -7,7 +7,6 @@ target_link_libraries(ktexteditor_hlselection
     KDE4::kio
     KDE4::ktexteditor
     KDE4::kdeui
-    KDE4::kfile
 )
 
 install(

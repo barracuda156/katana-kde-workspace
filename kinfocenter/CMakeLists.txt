@@ -49,7 +49,7 @@ set( kinfocenter_SRCS
 add_executable(kinfocenter ${kinfocenter_SRCS} )
 
 target_link_libraries(kinfocenter
-    KDE4::kfile
+    KDE4::kio
     KDE4::kcmutils
 )
 

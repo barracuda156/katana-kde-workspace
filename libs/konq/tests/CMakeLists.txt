@@ -19,7 +19,7 @@ target_link_libraries(libkonq-konqmimedatatest konq
 kde4_add_test(libkonq-konqpopupmenutest konqpopupmenutest.cpp)
 
 target_link_libraries(libkonq-konqpopupmenutest
-    KDE4::kfile
+    KDE4::kio
     ${QT_QTCORE_LIBRARY}
     ${QT_QTGUI_LIBRARY}
     ${QT_QTTEST_LIBRARY}

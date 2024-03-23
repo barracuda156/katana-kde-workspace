@@ -8,7 +8,7 @@ set(katefilebrowserplugin_PART_SRCS
 kde4_add_plugin(katefilebrowserplugin ${katefilebrowserplugin_PART_SRCS})
 
 target_link_libraries(katefilebrowserplugin
-    KDE4::kfile
+    KDE4::kio
     KDE4::kparts
     kateinterfaces
 )

@@ -17,7 +17,6 @@ target_link_libraries(plasma-windowed
     KDE4::plasma
     KDE4::kio
     ${X11_LIBRARIES}
-    KDE4::kfile
     kworkspace
 )
 

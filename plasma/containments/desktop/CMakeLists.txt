@@ -7,7 +7,7 @@ set(krunner_xml ${CMAKE_SOURCE_DIR}/krunner/dbus/org.kde.krunner.App.xml)
 QT4_ADD_DBUS_INTERFACE(desktop_SRCS ${krunner_xml} krunner_interface)
 
 kde4_add_plugin(plasma_containment_desktop ${desktop_SRCS})
-target_link_libraries(plasma_containment_desktop KDE4::plasma KDE4::kio KDE4::kfile)
+target_link_libraries(plasma_containment_desktop KDE4::plasma KDE4::kio)
 
 install(TARGETS plasma_containment_desktop DESTINATION ${KDE4_PLUGIN_INSTALL_DIR})
 install(FILES plasma-containment-desktop.desktop DESTINATION ${KDE4_SERVICES_INSTALL_DIR})

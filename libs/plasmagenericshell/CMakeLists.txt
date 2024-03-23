@@ -22,7 +22,7 @@ add_library(plasmagenericshell SHARED ${plasmagenericshell_LIB_SRCS})
 target_link_libraries(plasmagenericshell PUBLIC
     KDE4::plasma
     KDE4::kdeui
-    KDE4::kfile
+    KDE4::kio
     KDE4::solid
     kworkspace
 )

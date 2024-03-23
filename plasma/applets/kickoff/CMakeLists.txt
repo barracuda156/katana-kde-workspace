@@ -31,7 +31,7 @@ QT4_ADD_DBUS_INTERFACE(libkickoff_SRCS ${krunner_xml} krunner_interface)
 set(ksmserver_xml ${CMAKE_SOURCE_DIR}/ksmserver/org.kde.KSMServerInterface.xml)
 QT4_ADD_DBUS_INTERFACE(libkickoff_SRCS ${ksmserver_xml} ksmserver_interface)
 
-set(Kickoff_LIBS KDE4::kio KDE4::kfile KDE4::solid kworkspace)
+set(Kickoff_LIBS KDE4::kio KDE4::solid kworkspace)
 
 add_library(kickoff SHARED ${libkickoff_SRCS})
 target_link_libraries(kickoff KDE4::plasma ${Kickoff_LIBS})

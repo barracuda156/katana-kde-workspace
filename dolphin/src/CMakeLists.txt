@@ -80,7 +80,7 @@ kde4_add_kcfg_files(dolphinprivate_LIB_SRCS
 add_library(dolphinprivate SHARED ${dolphinprivate_LIB_SRCS})
 
 target_link_libraries(dolphinprivate
-    KDE4::kfile
+    KDE4::kio
     konq
 )
 
@@ -169,7 +169,7 @@ set(dolphin_SRCS ${dolphin_SRCS} panels/terminal/terminalpanel.cpp)
 add_executable(dolphin ${dolphin_SRCS})
 
 target_link_libraries(dolphin
-    KDE4::kfile
+    KDE4::kio
     KDE4::kparts
     KDE4::kcmutils
     KDE4::solid
@@ -245,10 +245,10 @@ kde4_add_plugin(kcm_dolphinnavigation ${kcm_dolphinnavigation_PART_SRCS})
 kde4_add_plugin(kcm_dolphinservices ${kcm_dolphinservices_PART_SRCS})
 kde4_add_plugin(kcm_dolphingeneral ${kcm_dolphingeneral_PART_SRCS})
 
-target_link_libraries(kcm_dolphinviewmodes KDE4::kdeui KDE4::kfile dolphinprivate)
-target_link_libraries(kcm_dolphinnavigation  KDE4::kdeui KDE4::kfile dolphinprivate)
-target_link_libraries(kcm_dolphinservices KDE4::kdeui KDE4::kfile KDE4::kio dolphinprivate)
-target_link_libraries(kcm_dolphingeneral KDE4::kdeui KDE4::kfile KDE4::kio dolphinprivate)
+target_link_libraries(kcm_dolphinviewmodes KDE4::kdeui KDE4::kio dolphinprivate)
+target_link_libraries(kcm_dolphinnavigation  KDE4::kdeui KDE4::kio dolphinprivate)
+target_link_libraries(kcm_dolphinservices KDE4::kdeui KDE4::kio dolphinprivate)
+target_link_libraries(kcm_dolphingeneral KDE4::kdeui KDE4::kio dolphinprivate)
 
 install(
     TARGETS

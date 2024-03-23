@@ -25,7 +25,6 @@ add_executable(plasma-desktop ${plasma_SRCS})
 target_link_libraries(plasma-desktop
     KDE4::plasma
     KDE4::kio
-    KDE4::kfile
     KDE4::ktexteditor
     KDE4::kidletime
     ${X11_LIBRARIES}

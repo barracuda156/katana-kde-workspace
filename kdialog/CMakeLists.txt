@@ -13,7 +13,6 @@ qt4_add_dbus_adaptor(kdialog_SRCS
 add_executable(kdialog ${kdialog_SRCS})
 
 target_link_libraries(kdialog
-    KDE4::kfile
     KDE4::kio
 )
 
