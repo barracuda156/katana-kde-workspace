@@ -33,7 +33,6 @@ private:
     QCheckBox* cb_ftpEnablePasv;
     QCheckBox* cb_ftpMarkPartial;
 
-    KIntNumInput* sb_socketRead;
     KIntNumInput* sb_serverConnect;
     KIntNumInput* sb_serverResponse;
 

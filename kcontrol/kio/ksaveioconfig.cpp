@@ -66,13 +66,6 @@ void KSaveIOConfig::reparseConfiguration ()
   d->config = 0;
 }
 
-void KSaveIOConfig::setReadTimeout( int _timeout )
-{
-  KConfigGroup cfg (config(), QString());
-  cfg.writeEntry("ReadTimeout", qMax(MIN_TIMEOUT_VALUE,_timeout));
-  cfg.sync();
-}
-
 void KSaveIOConfig::setConnectTimeout( int _timeout )
 {
   KConfigGroup cfg (config(), QString());

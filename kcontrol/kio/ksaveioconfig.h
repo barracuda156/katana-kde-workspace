@@ -30,8 +30,6 @@ namespace KSaveIOConfig
 void reparseConfiguration();
 
 /** Timeout Settings */
-void setReadTimeout (int);
-
 void setConnectTimeout (int);
 
 void setResponseTimeout (int);

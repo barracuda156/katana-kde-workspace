@@ -41,11 +41,6 @@ KIOPreferences::KIOPreferences(QWidget *parent, const QVariantList &)
     mainLayout->addWidget( gb_Timeout );
 
     QFormLayout* timeoutLayout = new QFormLayout(gb_Timeout);
-    sb_socketRead = new KIntNumInput( this );
-    sb_socketRead->setSuffix( ki18np( " second", " seconds" ) );
-    connect(sb_socketRead, SIGNAL(valueChanged(int)), SLOT(configChanged()));
-    timeoutLayout->addRow(i18n( "Soc&ket read:" ), sb_socketRead);
-
     sb_serverConnect = new KIntNumInput( 0, this );
     sb_serverConnect->setSuffix( ki18np( " second", " seconds" ) );
     connect(sb_serverConnect, SIGNAL(valueChanged(int)), SLOT(configChanged()));
@@ -102,11 +97,9 @@ void KIOPreferences::load()
 {
   KProtocolManager proto;
 
-  sb_socketRead->setRange( MIN_TIMEOUT_VALUE, MAX_TIMEOUT_VALUE );
   sb_serverResponse->setRange( MIN_TIMEOUT_VALUE, MAX_TIMEOUT_VALUE );
   sb_serverConnect->setRange( MIN_TIMEOUT_VALUE, MAX_TIMEOUT_VALUE );
 
-  sb_socketRead->setValue( proto.readTimeout() );
   sb_serverResponse->setValue( proto.responseTimeout() );
   sb_serverConnect->setValue( proto.connectTimeout() );
 
@@ -122,7 +115,6 @@ void KIOPreferences::load()
 
 void KIOPreferences::save()
 {
-  KSaveIOConfig::setReadTimeout( sb_socketRead->value() );
   KSaveIOConfig::setResponseTimeout( sb_serverResponse->value() );
   KSaveIOConfig::setConnectTimeout( sb_serverConnect->value() );
 
@@ -141,7 +133,6 @@ void KIOPreferences::save()
 
 void KIOPreferences::defaults()
 {
-  sb_socketRead->setValue( DEFAULT_READ_TIMEOUT );
   sb_serverResponse->setValue( DEFAULT_RESPONSE_TIMEOUT );
   sb_serverConnect->setValue( DEFAULT_CONNECT_TIMEOUT );
 
