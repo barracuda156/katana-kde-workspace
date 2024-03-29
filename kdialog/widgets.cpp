@@ -357,7 +357,6 @@ bool Widgets::calendar( QWidget *parent, const QString &title, const QString &te
     QLabel label (vbox);
     label.setText (text);
     KCalendarWidget dateWidget( vbox );
-    dateWidget.setContentsMargins(2, 2, 2, 2);
     dateWidget.setFocus();
     handleXGeometry(&dlg);
 
