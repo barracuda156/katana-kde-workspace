@@ -34,7 +34,6 @@ private:
     QCheckBox* cb_ftpMarkPartial;
 
     KIntNumInput* sb_socketRead;
-    KIntNumInput* sb_proxyConnect;
     KIntNumInput* sb_serverConnect;
     KIntNumInput* sb_serverResponse;
 

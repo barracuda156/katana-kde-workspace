@@ -34,21 +34,7 @@ void setReadTimeout (int);
 
 void setConnectTimeout (int);
 
-void setProxyConnectTimeout (int);
-
 void setResponseTimeout (int);
-
-
-/** Proxy Settings */
-void setUseReverseProxy (bool);
-
-void setProxyType (KProtocolManager::ProxyType);
-
-void setProxyFor (const QString&, const QString&);
-
-QString noProxyFor();
-void setNoProxyFor (const QString&);
-
 
 /** Miscellaneous Settings */
 void setMarkPartial (bool);

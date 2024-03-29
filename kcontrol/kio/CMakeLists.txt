@@ -2,7 +2,6 @@
 
 set(kcm_kio_PART_SRCS
     main.cpp
-    kproxydlg.cpp
     netpref.cpp
     bookmarks.cpp
     ksaveioconfig.cpp
@@ -10,7 +9,6 @@ set(kcm_kio_PART_SRCS
 
 set_source_files_properties(
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/kproxydlg.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/netpref.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/bookmarks.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ksaveioconfig.cpp
@@ -35,6 +33,5 @@ install(
     FILES
     bookmarks.desktop
     netpref.desktop
-    proxy.desktop
     DESTINATION ${KDE4_SERVICES_INSTALL_DIR}
 )

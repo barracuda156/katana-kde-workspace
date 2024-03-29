@@ -34,12 +34,10 @@
 
 // Local
 #include "netpref.h"
-#include "kproxydlg.h"
 #include "bookmarks.h"
 
 K_PLUGIN_FACTORY(KioConfigFactory,
         registerPlugin<KIOPreferences>("netpref");
-        registerPlugin<KProxyDialog>("proxy");
         registerPlugin<BookmarksConfigModule>("bookmarks");
 	)
 K_EXPORT_PLUGIN(KioConfigFactory("kcmkio"))

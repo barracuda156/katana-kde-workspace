@@ -80,13 +80,6 @@ void KSaveIOConfig::setConnectTimeout( int _timeout )
   cfg.sync();
 }
 
-void KSaveIOConfig::setProxyConnectTimeout( int _timeout )
-{
-  KConfigGroup cfg (config(), QString());
-  cfg.writeEntry("ProxyConnectTimeout", qMax(MIN_TIMEOUT_VALUE,_timeout));
-  cfg.sync();
-}
-
 void KSaveIOConfig::setResponseTimeout( int _timeout )
 {
   KConfigGroup cfg (config(), QString());
@@ -113,41 +106,6 @@ void KSaveIOConfig::setAutoResume( bool _mode )
 {
   KConfigGroup cfg (config(), QString());
   cfg.writeEntry( "AutoResume", _mode );
-  cfg.sync();
-}
-
-void KSaveIOConfig::setUseReverseProxy( bool mode )
-{
-  KConfigGroup cfg (config(), "Proxy Settings");
-  cfg.writeEntry("ReversedException", mode);
-  cfg.sync();
-}
-
-void KSaveIOConfig::setProxyType(KProtocolManager::ProxyType type)
-{
-  KConfigGroup cfg (config(), "Proxy Settings");
-  cfg.writeEntry("ProxyType", static_cast<int>(type));
-  cfg.sync();
-}
-
-QString KSaveIOConfig::noProxyFor()
-{
-    KConfigGroup cfg(config(), "Proxy Settings");
-    return cfg.readEntry("NoProxyFor");
-}
-
-void KSaveIOConfig::setNoProxyFor( const QString& _noproxy )
-{
-  KConfigGroup cfg (config(), "Proxy Settings");
-  cfg.writeEntry("NoProxyFor", _noproxy);
-  cfg.sync();
-}
-
-void KSaveIOConfig::setProxyFor( const QString& protocol,
-                                 const QString& _proxy )
-{
-  KConfigGroup cfg (config(), "Proxy Settings");
-  cfg.writeEntry(protocol.toLower() + "Proxy", _proxy);
   cfg.sync();
 }
 
