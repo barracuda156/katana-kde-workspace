@@ -50,7 +50,6 @@ private slots:
     void poll();
     void switchDisplay();
     void resumedFromSuspend();
-    void checkInhibition();
     void showKcm();
     void tryAutoConfig();
 
@@ -63,11 +62,9 @@ private:
     QList< RandROutput* > activeOutputs( RandRDisplay &display );
     QList< RandROutput* > validCrtcOutputs( RandRDisplay &display );
     QList< RandROutput* > outputs( RandRDisplay &display, bool connected = false, bool active = false, bool validCrtc = false );
-    bool isLidPresent();
     bool have_randr;
     int randr_base;
     int randr_error;
-    uint m_inhibitionCookie;
     Window window;
     QStringList currentMonitors;
     RandrMonitorHelper* helper;

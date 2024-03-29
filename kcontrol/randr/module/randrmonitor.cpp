@@ -50,14 +50,11 @@ RandrMonitorModule::RandrMonitorModule( QObject* parent, const QList<QVariant>& 
     , have_randr( false )
     , dialog(0)
 {
-    m_inhibitionCookie = 0;
     setModuleName( "randrmonitor" );
     initRandr();
 
     connect( Solid::PowerManagement::notifier(), SIGNAL(resumingFromSuspend()),
              this, SLOT(resumedFromSuspend()) );
-
-    checkInhibition();
 }
 
 RandrMonitorModule::~RandrMonitorModule()
@@ -117,9 +114,6 @@ void RandrMonitorModule::processX11Event( XEvent* e )
         {
             kDebug() << "Monitor change detected";
             QStringList newMonitors = connectedMonitors();
-
-            //If we are already inhibiting and we should stop it, do it
-            checkInhibition();
 
             if( newMonitors == currentMonitors ) {
                 kDebug() << "Same monitors";
@@ -209,54 +203,6 @@ QStringList RandrMonitorModule::activeMonitors() const
     }
     XRRFreeScreenResources( resources );
     return ret;
-}
-
-void RandrMonitorModule::checkInhibition()
-{
-    if (!have_randr) {
-        kDebug() << "Can't check inhibition, XRandR minor to 1.2 detected";
-        return;
-    }
-
-    if (!isLidPresent()) {
-        kDebug() << "This feature is only for laptop, and there is no Lid present";
-        return;
-    }
-
-    QStringList activeMonitorsList = activeMonitors();
-    kDebug() << "Active monitor list";
-    kDebug() << activeMonitorsList;
-
-    bool inhibit = false;
-    Q_FOREACH(const QString monitor, activeMonitorsList) {
-        //LVDS is the default type reported by most drivers, default is needed because the
-        //NVIDIA binary blob always report default as active monitor.
-        if (!monitor.contains("LVDS") && !monitor.contains("default") && !monitor.contains("eDP")) {
-            inhibit = true;
-            break;
-        }
-    }
-
-    if (m_inhibitionCookie > 0 && !inhibit) {
-        kDebug() << "Stopping: " << m_inhibitionCookie;
-        Solid::PowerManagement::stopSuppressingSleep(m_inhibitionCookie);
-        m_inhibitionCookie = 0;
-    } else if (m_inhibitionCookie < 0 && inhibit) { // If we are NOT inhibiting and we should, do it
-        m_inhibitionCookie = Solid::PowerManagement::beginSuppressingSleep();
-        kDebug() << "Inhibing: " << m_inhibitionCookie;
-    }
-}
-
-bool RandrMonitorModule::isLidPresent()
-{
-    // get a list of all devices that are Buttons
-    foreach (Solid::Device device, Solid::Device::listFromType(Solid::DeviceInterface::Button, QString())) {
-        Solid::Button *button = device.as<Solid::Button>();
-        if (button->type() == Solid::Button::LidButton) {
-            return true;
-        }
-    }
-    return false;
 }
 
 void RandrMonitorModule::switchDisplay()
