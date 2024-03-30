@@ -437,25 +437,6 @@ bool SolidDeviceEngine::populateDeviceData(const QString &name)
 
         m_signalmanager->mapDevice(battery, device.udi());
     }
-    if (device.is<Solid::Button>()) {
-        Solid::Button *button = device.as<Solid::Button>();
-        if (!button) {
-            return false;
-        }
-
-        devicetypes << I18N_NOOP("Button");
-
-        QStringList buttontype;
-        buttontype << I18N_NOOP("Lid Button") << I18N_NOOP("Power Button") << I18N_NOOP("Sleep Button")
-                << I18N_NOOP("Unknown Button Type") << I18N_NOOP("Tablet Button");
-
-        setData(name, I18N_NOOP("Type"), buttontype.at((int)button->type()));
-        setData(name, I18N_NOOP("Has State"), button->hasState());
-        setData(name, I18N_NOOP("State Value"), button->stateValue());
-        setData(name, I18N_NOOP("Pressed"), false);  //this is an extra value that is tracked by the button signals
-
-        m_signalmanager->mapDevice(button, device.udi());
-    }
     if (device.is<Solid::AudioInterface>()) {
         Solid::AudioInterface *audiointerface = device.as<Solid::AudioInterface>();
         if (!audiointerface) {

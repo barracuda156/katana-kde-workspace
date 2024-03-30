@@ -90,8 +90,6 @@ QTreeWidgetItem *DeviceListing::createListItems(const Solid::DeviceInterface::Ty
             return new SolCameraDevice(type);
         case Solid::DeviceInterface::PortableMediaPlayer:
             return new SolMediaPlayerDevice(type);
-        case Solid::DeviceInterface::Button:
-            return new SolButtonDevice(type);
         case Solid::DeviceInterface::Battery:
             return new SolBatteryDevice(type);
         case Solid::DeviceInterface::AcAdapter:
@@ -115,7 +113,6 @@ void DeviceListing::populateListing(const show showStatus)
     Solid::DeviceInterface::NetworkInterface,
     Solid::DeviceInterface::AudioInterface,
     Solid::DeviceInterface::Video,
-    Solid::DeviceInterface::Button,
     Solid::DeviceInterface::Battery, 
     Solid::DeviceInterface::AcAdapter,
     Solid::DeviceInterface::PortableMediaPlayer,
@@ -188,8 +185,6 @@ void DeviceListing::deviceAddedSlot(const QString udi)
 	  new SolCameraDevice(deviceMap[deviceType],dev); break;
 	case Solid::DeviceInterface::PortableMediaPlayer:
 	  new SolMediaPlayerDevice(deviceMap[deviceType],dev); break;
-	case Solid::DeviceInterface::Button:
-	  new SolButtonDevice(deviceMap[deviceType],dev); break;
 	case Solid::DeviceInterface::Battery:
 	  new SolBatteryDevice(deviceMap[deviceType],dev); break;
 	case Solid::DeviceInterface::AcAdapter:

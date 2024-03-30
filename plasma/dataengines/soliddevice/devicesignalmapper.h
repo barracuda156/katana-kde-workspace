@@ -39,7 +39,6 @@
 #include <solid/networkinterface.h>
 #include <solid/acadapter.h>
 #include <solid/battery.h>
-#include <solid/button.h>
 #include <solid/audiointerface.h>
 #include <solid/video.h>
 #include <solid/graphic.h>
@@ -72,18 +71,6 @@ class AcAdapterSignalMapper : public DeviceSignalMapper
 
     public Q_SLOTS:
         void plugStateChanged(bool newState);
-};
-
-class ButtonSignalMapper : public DeviceSignalMapper
-{
-    Q_OBJECT
-
-    public:
-        ButtonSignalMapper(QObject *parent=0);
-        ~ButtonSignalMapper();
-
-    public Q_SLOTS:
-        void pressed(Solid::Button::ButtonType type);
 };
 
 class BatterySignalMapper : public DeviceSignalMapper

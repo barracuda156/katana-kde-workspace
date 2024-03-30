@@ -28,7 +28,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <kpluginloader.h>
 #include <ktoolinvocation.h>
 #include <solid/powermanagement.h>
-#include <solid/button.h>
 #include <solid/device.h>
 
 #include <qprocess.h>

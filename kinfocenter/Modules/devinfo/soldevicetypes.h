@@ -100,18 +100,6 @@ class SolAudioDevice : public SolDevice
     SolDevice *ossSubItem;
 };
 
-class SolButtonDevice : public SolDevice 
-{
-  public:
-    SolButtonDevice(const Solid::DeviceInterface::Type &);
-    SolButtonDevice(QTreeWidgetItem *, const Solid::Device &);
-    QVListLayout *infoPanelLayout();
-    
-  private:
-    void setDefaultDeviceIcon();
-    void setDefaultListing(const Solid::DeviceInterface::Type &);
-};
-
 class SolMediaPlayerDevice : public SolDevice 
 {
   public:

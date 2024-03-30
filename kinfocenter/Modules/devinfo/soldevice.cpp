@@ -76,12 +76,6 @@ void SolDevice::setDefaultDeviceText()
       if (!label.isEmpty()) {
           ddtString = label;
       }
-    } else if(tiedDevice.isDeviceInterface(Solid::DeviceInterface::Button) && ddtString.isEmpty()) {
-      // button that is not on keyboard for example does not have product/vendor
-      QString label = SolDevice::udi().section("/", -1, -1);
-      if (!label.isEmpty()) {
-          ddtString = label;
-      }
     }
   }
   setText(0,ddtString);
