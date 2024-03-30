@@ -27,6 +27,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QFontComboBox>
 
 class KateHelpButton;
 
@@ -41,7 +42,6 @@ class VariableSpellCheckItem;
 class VariableRemoveSpacesItem;
 
 class KColorCombo;
-class KFontComboBox;
 class KSpellDictionaryComboBox;
 
 class VariableEditor : public QWidget
@@ -138,7 +138,7 @@ protected Q_SLOTS:
   void setItemValue(const QFont& newValue);
 
 private:
-  KFontComboBox* m_comboBox;
+  QFontComboBox* m_comboBox;
 };
 
 

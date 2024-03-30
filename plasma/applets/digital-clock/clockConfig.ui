@@ -43,7 +43,7 @@
    <item row="1" column="2">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="KFontComboBox" name="plainClockFont"/>
+      <widget class="QFontComboBox" name="plainClockFont"/>
      </item>
      <item>
       <spacer name="horizontalSpacer_3">
@@ -427,11 +427,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>KFontComboBox</class>
-   <extends>KComboBox</extends>
-   <header>kfontcombobox.h</header>
-  </customwidget>
   <customwidget>
    <class>KComboBox</class>
    <extends>QComboBox</extends>
