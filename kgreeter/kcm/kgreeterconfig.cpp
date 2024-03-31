@@ -157,7 +157,7 @@ void KCMGreeter::load()
 void KCMGreeter::save()
 {
     QVariantMap kgreeterarguments;
-    kgreeterarguments.insert("font", fontchooser->font().toString());
+    kgreeterarguments.insert("font", fontchooser->currentFont().toString());
     kgreeterarguments.insert("style", stylesbox->itemData(stylesbox->currentIndex()).toString());
     kgreeterarguments.insert("colorscheme", colorsbox->itemData(colorsbox->currentIndex()).toString());
     kgreeterarguments.insert("cursortheme", cursorbox->itemData(cursorbox->currentIndex()).toString());
