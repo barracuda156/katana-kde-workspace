@@ -70,7 +70,7 @@ KCMGreeter::KCMGreeter(QWidget* parent, const QVariantList& args)
 
     load();
 
-    connect(fontchooser, SIGNAL(fontSelected(QFont)), this, SLOT(slotFontChanged(QFont)));
+    connect(fontchooser, SIGNAL(currentFontChanged(QFont)), this, SLOT(slotFontChanged(QFont)));
 
     const QStringList kthemercs = KGlobal::dirs()->findAllResources("data", "kstyle/themes/*.themerc");
     foreach (const QString &style, QStyleFactory::keys()) {
@@ -136,7 +136,7 @@ KCMGreeter::~KCMGreeter()
 void KCMGreeter::load()
 {
     QSettings kgreetersettings(KDE_SYSCONFDIR "/lightdm/lightdm-kgreeter-greeter.conf");
-    const QString kgreeterfontstring = kgreetersettings.string("greeter/font");
+    const QString kgreeterfontstring = kgreetersettings.string("greeter/font", KGreeterDefaultFont().toString());
     const QString kgreeterstyle = kgreetersettings.string("greeter/style", KGreeterDefaultStyle());
     const QString kgreetercolor = kgreetersettings.string("greeter/colorscheme");
     const QString kgreetercursortheme = kgreetersettings.string("greeter/cursortheme", KGreeterDefaultCursorTheme());
@@ -273,7 +273,7 @@ void KCMGreeter::loadSettings(const QString &font, const QString &style, const Q
     if (!kgreeterfont.fromString(font)) {
         kgreeterfont = KGreeterDefaultFont();
     }
-    fontchooser->setFont(kgreeterfont);
+    fontchooser->setCurrentFont(kgreeterfont);
 
     for (int i = 0; i < stylesbox->count(); i++) {
         if (stylesbox->itemData(i).toString().toLower() == style.toLower()) {

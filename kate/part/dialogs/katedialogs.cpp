@@ -67,7 +67,6 @@
 #include <kcombobox.h>
 #include <kconfig.h>
 #include <kdebug.h>
-#include <kfontdialog.h>
 #include <kglobal.h>
 #include <kglobalsettings.h>
 #include <kiconloader.h>

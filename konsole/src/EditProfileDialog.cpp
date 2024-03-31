@@ -23,19 +23,18 @@
 // Standard
 #include <cmath>
 
-// Qt
+// Katie
+#include <QtCore/QTextCodec>
+#include <QtCore/QTimer>
 #include <QtGui/QBrush>
 #include <QtGui/QPainter>
-#include <QtGui/qstandarditemmodel.h>
-#include <QtCore/QTextCodec>
-#include <QtGui/qbrush.h>
-#include <QtGui/qbrush.h>
-#include <QtCore/QTimer>
+#include <QtGui/QStandardItemModel>
+#include <QtGui/QBrush>
+#include <QtGui/QFontDialog>
 
 // KDE
 #include <kdeversion.h>
 #include <KCodecAction>
-#include <KFontDialog>
 #include <KIcon>
 #include <KIconDialog>
 #include <KFileDialog>
@@ -1210,25 +1209,22 @@ void EditProfileDialog::fontSelected(const QFont& aFont)
 }
 void EditProfileDialog::showFontDialog()
 {
+    // TODO: no setter for it
+#if 0
     QString sampleText = QString("ell 'lL', one '1', little eye 'i', big eye");
     sampleText += QString("'I', lL1iI, Zero '0', little oh 'o', big oh 'O', 0oO");
     sampleText += QString("`~!@#$%^&*()_+-=[]\\{}|:\";'<>?,./");
     sampleText += QString("0123456789");
     sampleText += QString("\nThe Quick Brown Fox Jumps Over The Lazy Dog\n");
     sampleText += i18n("--- Type anything in this box ---");
+#endif
+
     QFont currentFont = _ui->fontPreviewLabel->font();
 
-    QWeakPointer<KFontDialog> dialog = new KFontDialog(this, KFontChooser::FixedFontsOnly);
-    dialog.data()->setCaption(i18n("Select Fixed Width Font"));
-    dialog.data()->setFont(currentFont, true);
-
-    // Use text more fitting to show font differences in a terminal
-    QList<KFontChooser*> chooserList = dialog.data()->findChildren<KFontChooser*>();
-    if (!chooserList.isEmpty())
-        chooserList.at(0)->setSampleText(sampleText);
-
-    connect(dialog.data(), SIGNAL(fontSelected(QFont)), this, SLOT(fontSelected(QFont)));
-
+    QWeakPointer<QFontDialog> dialog = new QFontDialog(currentFont, this);
+    dialog.data()->setWindowTitle(KDialog::makeStandardCaption(i18n("Select Fixed Width Font"), this));
+    dialog.data()->setOptions(QFontDialog::MonospacedFonts);
+    connect(dialog.data(), SIGNAL(currentFontChanged(QFont)), this, SLOT(fontSelected(QFont)));
     if (dialog.data()->exec() == QDialog::Rejected)
         fontSelected(currentFont);
     delete dialog.data();

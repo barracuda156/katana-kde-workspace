@@ -26,9 +26,9 @@
 #include <QVBoxLayout>
 #include <QFormLayout>
 #include <QFontDatabase>
+#include <QFontDialog>
 #include <qplatformdefs.h>
 
-#include <KFontDialog>
 #include <KAcceleratorManager>
 #include <KApplication>
 #include <KGlobalSettings>
@@ -136,24 +136,20 @@ void FontUseItem::writeFont()
   }
 }
 
-void FontUseItem::applyFontDiff( const QFont &fnt, int fontDiffFlags )
+void FontUseItem::applyFontDiff( const QFont &fnt )
 {
   QFont _font( font() );
 
-  if (fontDiffFlags & KFontChooser::FontDiffSize) {
-    _font.setPointSizeF( fnt.pointSizeF() );
-  }
-  if (fontDiffFlags & KFontChooser::FontDiffFamily) {
+  if (_font.family() != fnt.family()) {
     QFontDatabase fdb;
     if (!isFixedOnly() || fdb.isFixedPitch(fnt.family(), fnt.styleName()))
       _font.setFamily( fnt.family() );
   }
-  if (fontDiffFlags & KFontChooser::FontDiffStyle) {
-    _font.setWeight( fnt.weight() );
-    _font.setStyle( fnt.style() );
-    _font.setUnderline( fnt.underline() );
-    _font.setStyleName( fnt.styleName() );
-  }
+  _font.setPointSizeF( fnt.pointSizeF() );
+  _font.setWeight( fnt.weight() );
+  _font.setStyle( fnt.style() );
+  _font.setUnderline( fnt.underline() );
+  _font.setStyleName( fnt.styleName() );
 
   setFont( _font, isFixedOnly() );
 }
@@ -744,14 +740,12 @@ void KFonts::save()
 
 void KFonts::slotApplyFontDiff()
 {
-  QFont font = QFont(fontUseList.first()->font());
-	KFontChooser::FontDiffFlags fontDiffFlags = 0;
-  int ret = KFontDialog::getFontDiff(font,fontDiffFlags,KFontChooser::NoDisplayFlags,this);
-
-  if (ret == KDialog::Accepted && fontDiffFlags)
+  bool ret = false;
+  QFont font = QFontDialog::getFont(&ret, fontUseList.first()->font(), this);
+  if (ret)
   {
     for ( int i = 0; i < (int) fontUseList.count(); i++ )
-      fontUseList.at( i )->applyFontDiff( font,fontDiffFlags );
+      fontUseList.at( i )->applyFontDiff( font );
     emit changed(true);
   }
 }

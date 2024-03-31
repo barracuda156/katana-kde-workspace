@@ -37,7 +37,6 @@
 #include <kcolorscheme.h>
 #include <kcolorutils.h>
 #include <kinputdialog.h>
-#include <kfontchooser.h>
 #include <kmessagebox.h>
 #include <khbox.h>
 #include <ktabwidget.h>
@@ -359,7 +358,9 @@ KateSchemaConfigFontTab::KateSchemaConfigFontTab()
 {
   QGridLayout *grid = new QGridLayout( this );
 
-  m_fontchooser = new KFontChooser ( this, KFontChooser::NoDisplayFlags );
+  m_fontchooser = new QFontDialog ( this );
+  m_fontchooser->setWindowFlags(Qt::Widget);
+  m_fontchooser->setOptions( QFontDialog::NoButtons );
   grid->addWidget( m_fontchooser, 0, 0);
 }
 
@@ -409,14 +410,14 @@ void KateSchemaConfigFontTab::schemaChanged( const QString &newSchema )
   }
 
   m_fontchooser->disconnect ( this );
-  m_fontchooser->setFont ( newFont );
-  connect (m_fontchooser, SIGNAL (fontSelected(QFont)), this, SLOT (slotFontSelected(QFont)));
+  m_fontchooser->setCurrentFont ( newFont );
+  connect (m_fontchooser, SIGNAL (currentFontChanged(QFont)), this, SLOT (slotFontSelected(QFont)));
 }
 
 void KateSchemaConfigFontTab::importSchema(KConfigGroup& config)
 {
   QFont f (KGlobalSettings::fixedFont());
-  m_fontchooser->setFont(config.readEntry("Font", f));
+  m_fontchooser->setCurrentFont(config.readEntry("Font", f));
   m_fonts[m_currentSchema] = m_fontchooser->font();
 }
 

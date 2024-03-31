@@ -24,19 +24,18 @@
 
 #include <QPushButton>
 #include <QRegExp>
-
 #include <QFile>
 #include <QListWidget>
 #include <QHBoxLayout>
-#include <kfontdialog.h>
-#include <kdebug.h>
+
+#include <kdialog.h>
 #include <klocale.h>
 #include <kcolorbutton.h>
 #include <knotification.h>
+#include <kdebug.h>
+
 #include "StyleEngine.h"
-
 #include "ui_LogFileSettings.h"
-
 #include "moc_LogFile.cpp"
 
 LogFile::LogFile(QWidget *parent, const QString& title, SharedSettings *workSheetSettings)

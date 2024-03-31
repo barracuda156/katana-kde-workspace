@@ -126,18 +126,20 @@
    <item row="0" column="0" colspan="3">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="KFontChooser" name="fontchooser"/>
+      <widget class="QFontDialog" name="fontchooser">
+       <property name="windowFlags">
+        <set>Qt::Widget</set>
+       </property>
+       <property name="options">
+        <set>QFontDialog::NoButtons</set>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>KFontChooser</class>
-   <extends></extends>
-   <header>kfontdialog.h</header>
-  </customwidget>
   <customwidget>
    <class>KUrlRequester</class>
    <extends></extends>

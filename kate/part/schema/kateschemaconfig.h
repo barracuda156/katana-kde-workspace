@@ -27,6 +27,7 @@
 
 #include <QtCore/QMap>
 #include <QtGui/QFont>
+#include <QtGui/QFontDialog>
 
 #include <kconfig.h>
 
@@ -93,7 +94,7 @@ class KateSchemaConfigFontTab : public QWidget
     void changed();
 
   private:
-    class KFontChooser *m_fontchooser;
+    QFontDialog *m_fontchooser;
     QMap<QString, QFont> m_fonts;
     QString m_currentSchema;
 

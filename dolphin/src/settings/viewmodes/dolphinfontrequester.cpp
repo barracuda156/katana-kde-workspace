@@ -19,7 +19,6 @@
 
 #include "dolphinfontrequester.h"
 
-#include <KFontDialog>
 #include <KGlobalSettings>
 #include <KLocale>
 #include <KComboBox>
@@ -27,6 +26,7 @@
 #include <QEvent>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QFontDialog>
 
 DolphinFontRequester::DolphinFontRequester(QWidget* parent) :
     QWidget(parent),
@@ -87,11 +87,9 @@ QFont DolphinFontRequester::customFont() const
 
 void DolphinFontRequester::openFontDialog()
 {
-    QFont font = m_customFont;
-    const int result = KFontDialog::getFont(font,
-                                            KFontChooser::NoDisplayFlags,
-                                            this);
-    if (result == KFontDialog::Accepted) {
+    bool result = false;
+    QFont font = QFontDialog::getFont(&result, m_customFont, this);
+    if (result) {
         m_customFont = font;
         m_modeCombo->setFont(m_customFont);
         emit changed();

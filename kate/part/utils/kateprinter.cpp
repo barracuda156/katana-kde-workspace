@@ -37,7 +37,6 @@
 #include <kapplication.h>
 #include <kcolorbutton.h>
 #include <kdebug.h>
-#include <kfontdialog.h>
 #include <klocale.h>
 #include <kdeprintdialog.h>
 #include <kurl.h>
@@ -45,6 +44,8 @@
 #include <klineedit.h>
 #include <knuminput.h>
 #include <kcombobox.h>
+#include <kconfiggroup.h>
+#include <kdialog.h>
 
 #include <QtGui/QPainter>
 #include <QtGui/QCheckBox>
@@ -52,7 +53,7 @@
 #include <QtGui/QPrintDialog>
 #include <QtGui/QPrinter>
 #include <QtGui/QApplication>
-
+#include <QtGui/QFontDialog>
 #include <QtGui/QLabel>
 #include <QtGui/QLayout>
 #include <QtCore/QStringList>
@@ -958,9 +959,11 @@ bool KatePrintHeaderFooter::useFooterBackground()
 
 void KatePrintHeaderFooter::setHFFont()
 {
-  QFont fnt( lFontPreview->font() );
+  bool ok = false;
+  const QString title = KDialog::makeStandardCaption(i18n("Select Font"), this);
   // display a font dialog
-  if ( KFontDialog::getFont( fnt, KFontChooser::NoDisplayFlags, this ) == KFontDialog::Accepted )
+  QFont fnt = QFontDialog::getFont( &ok, lFontPreview->font(), this, title );
+  if ( ok )
   {
     // set preview
     lFontPreview->setFont( fnt );

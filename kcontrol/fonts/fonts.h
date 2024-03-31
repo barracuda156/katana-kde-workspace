@@ -34,7 +34,7 @@ public:
     void readFont();
     void writeFont();
     void setDefault();
-    void applyFontDiff(const QFont &fnt, int fontDiffFlags);
+    void applyFontDiff(const QFont &fnt);
 
     const QString& rcFile() { return _rcfile; }
     const QString& rcGroup() { return _rcgroup; }
