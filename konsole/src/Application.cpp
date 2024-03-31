@@ -51,11 +51,6 @@ Application::Application()
 
     // handle session management
     if ((args->count() != 0) || !firstInstance || !isSessionRestored()) {
-        // check for arguments to print help or other information to the
-        // terminal, quit if such an argument was found
-        if (processHelpArgs(args))
-            return;
-
         // create a new window or use an existing one
         MainWindow* window = processWindowArgs(args);
 
@@ -166,6 +161,7 @@ void Application::processTabsFromFileArgs(KCmdLineArgs* args,
     if (!tabsFile.open(QFile::ReadOnly)) {
         kWarning() << "ERROR: Cannot open tabs file "
                    << tabsFileName.toLocal8Bit().data();
+        // TODO: this will not quit, exit code?
         quit();
     }
 
@@ -329,37 +325,23 @@ Profile::Ptr Application::processProfileSelectArgs(KCmdLineArgs* args)
 bool Application::processHelpArgs(KCmdLineArgs* args)
 {
     if (args->isSet("list-profiles")) {
-        listAvailableProfiles();
+        QStringList paths = ProfileManager::instance()->availableProfilePaths();
+        foreach(const QString& path, paths) {
+            QFileInfo info(path);
+            const QByteArray base = info.completeBaseName().toLocal8Bit();
+            printf("%s\n", base.constData());
+        }
         return true;
     } else if (args->isSet("list-profile-properties")) {
-        listProfilePropertyInfo();
+        Profile::Ptr tempProfile = ProfileManager::instance()->defaultProfile();
+        const QStringList names = tempProfile->propertiesInfoList();
+        foreach(const QString& name, names) {
+            const QByteArray namebytes = name.toLocal8Bit();
+            printf("%s\n", namebytes.constData());
+        }
         return true;
     }
     return false;
-}
-
-void Application::listAvailableProfiles()
-{
-    QStringList paths = ProfileManager::instance()->availableProfilePaths();
-
-    foreach(const QString& path, paths) {
-        QFileInfo info(path);
-        printf("%s\n", info.completeBaseName().toLocal8Bit().constData());
-    }
-
-    quit();
-}
-
-void Application::listProfilePropertyInfo()
-{
-    Profile::Ptr tempProfile = ProfileManager::instance()->defaultProfile();
-    const QStringList names = tempProfile->propertiesInfoList();
-
-    foreach(const QString& name, names) {
-        printf("%s\n", name.toLocal8Bit().constData());
-    }
-
-    quit();
 }
 
 Profile::Ptr Application::processProfileChangeArgs(KCmdLineArgs* args, Profile::Ptr baseProfile)

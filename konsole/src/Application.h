@@ -62,6 +62,8 @@ public:
      */
     MainWindow* newMainWindow();
 
+    static bool processHelpArgs(KCmdLineArgs* args);
+
 private slots:
     void createWindow(Profile::Ptr profile , const QString& directory);
     void detachView(Session* session);
@@ -69,11 +71,9 @@ private slots:
     void toggleBackgroundInstance();
 
 private:
-    void init();
     void listAvailableProfiles();
     void listProfilePropertyInfo();
     void startBackgroundMode(MainWindow* window);
-    bool processHelpArgs(KCmdLineArgs* args);
     MainWindow* processWindowArgs(KCmdLineArgs* args);
     Profile::Ptr processProfileSelectArgs(KCmdLineArgs* args);
     Profile::Ptr processProfileChangeArgs(KCmdLineArgs* args, Profile::Ptr baseProfile);

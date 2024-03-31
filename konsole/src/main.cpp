@@ -63,6 +63,12 @@ int main(int argc, char** argv)
     fillCommandLineOptions(konsoleOptions);
     KCmdLineArgs::addCmdLineOptions(konsoleOptions);
 
+    // check for arguments to print help or other information to the
+    // terminal, quit if such an argument was found
+    if (Application::processHelpArgs(KCmdLineArgs::parsedArgs())) {
+        return 0;
+    }
+
     // create a new application instance
     Application app;
 
