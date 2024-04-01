@@ -23,6 +23,7 @@
 
 #include <QMutex>
 #include <QTimer>
+#include <QGraphicsGridLayout>
 #include <QGraphicsLinearLayout>
 #include <Plasma/Theme>
 #include <Plasma/Frame>
@@ -33,6 +34,7 @@
 static const int s_monitorsid = -1;
 static const int s_updatetimeout = 1000;
 static const QSizeF s_minimumvisualizersize = QSizeF(120, 70);
+static const QSizeF s_minimummetersize = QSizeF(70, 70);
 
 enum KSensorType {
     UnknownSensor = 0,
@@ -40,7 +42,8 @@ enum KSensorType {
     NetReceiverSensor = 2,
     NetTransmitterSensor = 3,
     DiskFreeSensor = 4,
-    DiskUsedSensor = 5
+    DiskUsedSensor = 5,
+    ThermalSensor = 6
 };
 
 static KSensorType kSensorType(const QByteArray &sensor)
@@ -65,6 +68,8 @@ static KSensorType kSensorType(const QByteArray &sensor)
         return KSensorType::DiskFreeSensor;
     } else if (sensor.startsWith("partitions/") && sensor.endsWith("/usedspace")) {
         return KSensorType::DiskUsedSensor;
+    } else if (sensor.startsWith("acpi/Thermal_Zone/")) {
+        return KSensorType::ThermalSensor;
     }
     return KSensorType::UnknownSensor;
 }
@@ -86,6 +91,12 @@ static QByteArray kPartitionID(const QByteArray &sensor)
         return sensor.mid(0, sensor.size() - 10);
     }
     kWarning() << "invalid partition sensor" << sensor;
+    return sensor;
+}
+
+static QByteArray kThermalID(const QByteArray &sensor)
+{
+    // as-is
     return sensor;
 }
 
@@ -150,7 +161,7 @@ SystemMonitorNet::SystemMonitorNet(QGraphicsWidget *parent, const QByteArray &ne
     m_netplotter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_netplotter->setTitle(i18n("Network"));
     m_netplotter->setUnit("KiB/s");
-    m_netplotter->setShowTopBar(false);
+    m_netplotter->setShowTopBar(true);
     m_netplotter->setShowLabels(true);
     m_netplotter->setShowVerticalLines(false);
     m_netplotter->setShowHorizontalLines(false);
@@ -213,6 +224,36 @@ QByteArray SystemMonitorPartition::partitionID() const
 {
     return m_partitionid;
 }
+
+
+class SystemMonitorThermal : public Plasma::Meter
+{
+    Q_OBJECT
+public:
+    SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid);
+
+    QByteArray thermalID() const;
+
+private:
+    QByteArray m_thermalid;
+};
+
+SystemMonitorThermal::SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid)
+    : Plasma::Meter(parent),
+    m_thermalid(thermalid)
+{
+    setMeterType(Plasma::Meter::AnalogMeter);
+    setMinimumSize(s_minimummetersize);
+    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    setMinimum(0);
+    setMaximum(120);
+}
+
+QByteArray SystemMonitorThermal::thermalID() const
+{
+    return m_thermalid;
+}
+
 
 class SystemMonitorClient : public QObject, public KSGRD::SensorClient
 {
@@ -293,10 +334,16 @@ void SystemMonitorClient::answerReceived(int id, const QList<QByteArray> &answer
             kDebug() << "mapping sensor" << sensorname << sensortype;
             // pre-sort, order of occurance matters
             const KSensorType ksensortype = kSensorType(sensorname);
-            if (ksensortype == KSensorType::DiskFreeSensor || ksensortype == KSensorType::DiskUsedSensor) {
-                m_sensors.append(sensorname);
-            } else {
-                m_sensors.prepend(sensorname);
+            switch (ksensortype) {
+                case KSensorType::DiskFreeSensor:
+                case KSensorType::DiskUsedSensor: {
+                    m_sensors.append(sensorname);
+                    break;
+                }
+                default: {
+                    m_sensors.prepend(sensorname);
+                    break;
+                }
             }
         }
         emit sensorsChanged();
@@ -337,12 +384,13 @@ private Q_SLOTS:
 private:
     QMutex m_mutex;
     SystemMonitor* m_systemmonitor;
-    QGraphicsLinearLayout* m_layout;
+    QGraphicsGridLayout* m_layout;
     SystemMonitorClient* m_systemmonitorclient;
     Plasma::Frame* m_cpuframe;
     Plasma::SignalPlotter* m_cpuplotter;
     QList<SystemMonitorNet*> m_netmonitors;
     QList<SystemMonitorPartition*> m_partitionmonitors;
+    QList<SystemMonitorThermal*> m_thermalmonitors;
     QList<QByteArray> m_requestsensors;
 };
 
@@ -355,7 +403,7 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     m_cpuframe(nullptr),
     m_cpuplotter(nullptr)
 {
-    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
+    m_layout = new QGraphicsGridLayout(this);
     m_systemmonitorclient = new SystemMonitorClient(this);
     connect(
         m_systemmonitorclient, SIGNAL(sensorValue(QByteArray,float)),
@@ -368,7 +416,7 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     m_cpuplotter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_cpuplotter->setTitle(i18n("CPU"));
     m_cpuplotter->setUnit("%");
-    m_cpuplotter->setShowTopBar(false);
+    m_cpuplotter->setShowTopBar(true);
     m_cpuplotter->setShowLabels(true);
     m_cpuplotter->setShowVerticalLines(false);
     m_cpuplotter->setShowHorizontalLines(false);
@@ -377,7 +425,7 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     m_cpuplotter->setVerticalRange(0.0, 100.0);
     m_cpuplotter->addPlot(kCPUVisualizerColor());
     kAddItem(m_cpuframe, m_cpuplotter);
-    m_layout->addItem(m_cpuframe);
+    m_layout->addItem(m_cpuframe, 0, 0);
 
     setLayout(m_layout);
 
@@ -404,7 +452,12 @@ void SystemMonitorWidget::slotUpdateLayout()
     }
     qDeleteAll(m_partitionmonitors);
     m_partitionmonitors.clear();
-    
+    foreach (SystemMonitorThermal* thermalmonitor, m_thermalmonitors) {
+        m_layout->removeItem(thermalmonitor);
+    }
+    qDeleteAll(m_thermalmonitors);
+    m_thermalmonitors.clear();
+
     m_requestsensors.clear();
     foreach (const QByteArray &sensor, m_systemmonitorclient->sensors()) {
         const KSensorType ksensortype = kSensorType(sensor);
@@ -414,14 +467,29 @@ void SystemMonitorWidget::slotUpdateLayout()
         }
         if (ksensortype == KSensorType::NetReceiverSensor) {
             SystemMonitorNet* netmonitor = new SystemMonitorNet(this, kNetID(sensor));
-            m_layout->addItem(netmonitor);
+            m_layout->addItem(netmonitor, 1, 0);
             m_netmonitors.append(netmonitor);
         }
 
         if (ksensortype == KSensorType::DiskFreeSensor) {
             SystemMonitorPartition* partitionmonitor = new SystemMonitorPartition(this, kPartitionID(sensor));
-            m_layout->addItem(partitionmonitor);
+            m_layout->addItem(partitionmonitor, m_layout->rowCount(), 0, 1, 2);
             m_partitionmonitors.append(partitionmonitor);
+        }
+    }
+
+    foreach (const QByteArray &sensor, m_systemmonitorclient->sensors()) {
+        const KSensorType ksensortype = kSensorType(sensor);
+        if (ksensortype == KSensorType::ThermalSensor) {
+            // bottom row is reserved, thermal monitors are aligned to the CPU monitor + the
+            // network monitors count
+            if (m_thermalmonitors.size() >= (m_netmonitors.size() + 1)) {
+                kWarning() << "not enough space for thermal sensor" << sensor;
+                continue;
+            }
+            SystemMonitorThermal* thermalmonitor = new SystemMonitorThermal(this, kThermalID(sensor));
+            m_layout->addItem(thermalmonitor, m_thermalmonitors.size(), 1);
+            m_thermalmonitors.append(thermalmonitor);
         }
     }
 
@@ -495,6 +563,18 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
                     partitionmonitor->setMaximum(maxvalue);
                     partitionmonitor->setValue(roundvalue);
                     // qDebug() << Q_FUNC_INFO << "disk used" << sensor << roundvalue << maxvalue;
+                    break;
+                }
+            }
+            break;
+        }
+        case KSensorType::ThermalSensor: {
+            QMutexLocker locker(&m_mutex);
+            const QByteArray thermalid = kThermalID(sensor);
+            foreach (SystemMonitorThermal* thermalmonitor, m_thermalmonitors) {
+                if (thermalmonitor->thermalID() == thermalid) {
+                    const int roundvalue = qRound(value);
+                    thermalmonitor->setValue(roundvalue);
                     break;
                 }
             }
