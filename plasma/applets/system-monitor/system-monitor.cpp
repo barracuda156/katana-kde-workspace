@@ -24,6 +24,7 @@
 #include <QTimer>
 #include <QGraphicsLinearLayout>
 #include <Plasma/Theme>
+#include <Plasma/Frame>
 #include <Plasma/SignalPlotter>
 #include <KDebug>
 
@@ -36,6 +37,26 @@ static const char* const s_cpusystemloadsensor = "cpu/system/TotalLoad";
 static const char* const s_netreceiverdatasensor = "network/interfaces/eno1/receiver/data";
 static const char* const s_nettransmitterdatasensor = "network/interfaces/eno1/transmitter/data";
 static const int s_updatetimeout = 1000;
+static const QSizeF s_minimumvisualizersize = QSizeF(120, 70);
+
+static Plasma::Frame* kMakeFrame(QGraphicsWidget *parent)
+{
+    Plasma::Frame* plasmaframe = new Plasma::Frame(parent);
+    plasmaframe->setFrameShadow(Plasma::Frame::Sunken);
+    plasmaframe->setMinimumSize(s_minimumvisualizersize);
+    plasmaframe->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    QGraphicsLinearLayout* plasmaframelayout = new QGraphicsLinearLayout(plasmaframe);
+    plasmaframelayout->setContentsMargins(0, 0, 0, 0);
+    plasmaframe->setLayout(plasmaframelayout);
+    return plasmaframe;
+}
+
+void kAddItem(QGraphicsWidget *parent, QGraphicsWidget *widget)
+{
+    QGraphicsLinearLayout* parentlayout = static_cast<QGraphicsLinearLayout*>(parent->layout());
+    Q_ASSERT(parentlayout);
+    parentlayout->addItem(widget);
+}
 
 // TODO: hardcoded
 static QColor kCPUVisualizerColor()
@@ -168,7 +189,9 @@ private:
     SystemMonitor* m_systemmonitor;
     QGraphicsLinearLayout* m_layout;
     SystemMonitorClient* m_systemmonitorclient;
+    Plasma::Frame* m_cpuframe;
     Plasma::SignalPlotter* m_cpuplotter;
+    Plasma::Frame* m_netframe;
     Plasma::SignalPlotter* m_netplotter;
     QList<double> m_netsample;
 };
@@ -179,7 +202,9 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     m_systemmonitor(systemmonitor),
     m_layout(nullptr),
     m_systemmonitorclient(nullptr),
+    m_cpuframe(nullptr),
     m_cpuplotter(nullptr),
+    m_netframe(nullptr),
     m_netplotter(nullptr)
 {
     m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
@@ -189,7 +214,8 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
         this, SLOT(slotSensorValue(QByteArray,float))
     );
 
-    m_cpuplotter = new Plasma::SignalPlotter(this);
+    m_cpuframe = kMakeFrame(this);
+    m_cpuplotter = new Plasma::SignalPlotter(m_cpuframe);
     m_cpuplotter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_cpuplotter->setTitle(i18n("CPU"));
     m_cpuplotter->setUnit("%");
@@ -201,9 +227,11 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     m_cpuplotter->setUseAutoRange(false);
     m_cpuplotter->setVerticalRange(0.0, 100.0);
     m_cpuplotter->addPlot(kCPUVisualizerColor());
-    m_layout->addItem(m_cpuplotter);
+    kAddItem(m_cpuframe, m_cpuplotter);
+    m_layout->addItem(m_cpuframe);
 
-    m_netplotter = new Plasma::SignalPlotter(this);
+    m_netframe = kMakeFrame(this);
+    m_netplotter = new Plasma::SignalPlotter(m_netframe);
     m_netplotter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_netplotter->setTitle(i18n("Network"));
     m_netplotter->setUnit("KiB/s");
@@ -216,7 +244,8 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     m_netplotter->setStackPlots(true);
     m_netplotter->addPlot(kNetReceiverVisualizerColor());
     m_netplotter->addPlot(kNetTransmitterVisualizerColor());
-    m_layout->addItem(m_netplotter);
+    kAddItem(m_netframe, m_netplotter);
+    m_layout->addItem(m_netframe);
 
     setLayout(m_layout);
 }
