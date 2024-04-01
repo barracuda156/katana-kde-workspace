@@ -31,6 +31,7 @@
 #include <Plasma/Meter>
 #include <KDebug>
 
+static const QString s_sensorshostname = QString::fromLatin1("localhost");
 static const int s_monitorsid = -1;
 static const int s_updatetimeout = 1000;
 static const QSizeF s_minimumvisualizersize = QSizeF(120, 70);
@@ -63,11 +64,12 @@ static KSensorType kSensorType(const QByteArray &sensor)
             return KSensorType::UnknownSensor;
         }
         return KSensorType::NetTransmitterSensor;
-    // any partitions
+    // any partition
     } else if (sensor.startsWith("partitions/") && sensor.endsWith("/freespace")) {
         return KSensorType::DiskFreeSensor;
     } else if (sensor.startsWith("partitions/") && sensor.endsWith("/usedspace")) {
         return KSensorType::DiskUsedSensor;
+    // any thermal zone
     } else if (sensor.startsWith("acpi/Thermal_Zone/")) {
         return KSensorType::ThermalSensor;
     }
@@ -265,7 +267,7 @@ public:
     ~SystemMonitorClient();
 
     QList<QByteArray> sensors() const;
-    void requestValue(const QByteArray &sensor) const;
+    void requestValue(const QByteArray &sensor);
 
 Q_SIGNALS:
     void sensorsChanged();
@@ -286,7 +288,7 @@ SystemMonitorClient::SystemMonitorClient(QObject *parent)
     : QObject(parent)
 {
     KSGRD::SensorMgr = new KSGRD::SensorManager(this);
-    KSGRD::SensorMgr->engage("localhost", "", "ksysguardd");
+    KSGRD::SensorMgr->engage(s_sensorshostname, "", "ksysguardd");
 
     connect(KSGRD::SensorMgr, SIGNAL(update()), this, SLOT(slotUpdate()));
     slotUpdate();
@@ -301,7 +303,7 @@ QList<QByteArray> SystemMonitorClient::sensors() const
     return m_sensors;
 }
 
-void SystemMonitorClient::requestValue(const QByteArray &sensor) const
+void SystemMonitorClient::requestValue(const QByteArray &sensor)
 {
     const int sensorid = m_sensors.indexOf(sensor);
     if (sensorid < 0) {
@@ -310,12 +312,12 @@ void SystemMonitorClient::requestValue(const QByteArray &sensor) const
         return;
     }
     const QString sensorstring = QString::fromLatin1(sensor.constData(), sensor.size());
-    KSGRD::SensorMgr->sendRequest("localhost", sensorstring, (KSGRD::SensorClient*)this, sensorid);
+    KSGRD::SensorMgr->sendRequest(s_sensorshostname, sensorstring, this, sensorid);
 }
 
 void SystemMonitorClient::slotUpdate()
 {
-    KSGRD::SensorMgr->sendRequest("localhost", "monitors", (KSGRD::SensorClient*)this, s_monitorsid);
+    KSGRD::SensorMgr->sendRequest(s_sensorshostname, "monitors", this, s_monitorsid);
 }
 
 void SystemMonitorClient::answerReceived(int id, const QList<QByteArray> &answer)
@@ -583,6 +585,7 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
             break;
         }
         case KSensorType::UnknownSensor: {
+            kWarning() << "got value for unknown sensor" << sensor;
             break;
         }
     }
