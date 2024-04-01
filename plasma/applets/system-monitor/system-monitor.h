@@ -20,6 +20,7 @@
 #ifndef SYSTEM_MONITOR_H
 #define SYSTEM_MONITOR_H
 
+#include <KConfigDialog>
 #include <Plasma/PopupApplet>
 
 class SystemMonitorWidget;
@@ -31,8 +32,11 @@ public:
     SystemMonitor(QObject *parent, const QVariantList &args);
     ~SystemMonitor();
 
-    void init();
-    QGraphicsWidget *graphicsWidget();
+    // Plasma::Applet reimplementations
+    void init() final;
+    void createConfigurationInterface(KConfigDialog *parent) final;
+    // Plasma::PopupApplet reimplementation
+    QGraphicsWidget* graphicsWidget() final;
 
 private:
     friend SystemMonitorWidget;

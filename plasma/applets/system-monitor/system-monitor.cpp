@@ -32,11 +32,25 @@ typedef QList<QByteArray> SystemMonitorSensors;
 static const int s_monitorsid = -1;
 static const char* const s_systemuptimesensor = "system/uptime";
 static const char* const s_cpusystemloadsensor = "cpu/system/TotalLoad";
+// TODO: hardcoded
+static const char* const s_netreceiverdatasensor = "network/interfaces/eno1/receiver/data";
+static const char* const s_nettransmitterdatasensor = "network/interfaces/eno1/transmitter/data";
 static const int s_updatetimeout = 1000;
 
+// TODO: hardcoded
 static QColor kCPUVisualizerColor()
 {
     return Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
+}
+
+static QColor kNetReceiverVisualizerColor()
+{
+    return Plasma::Theme::defaultTheme()->color(Plasma::Theme::VisitedLinkColor);
+}
+
+static QColor kNetTransmitterVisualizerColor()
+{
+    return Plasma::Theme::defaultTheme()->color(Plasma::Theme::LinkColor);
 }
 
 class SystemMonitorClient : public QObject, public KSGRD::SensorClient
@@ -143,6 +157,9 @@ public:
     SystemMonitorWidget(SystemMonitor* systemmonitor);
     ~SystemMonitorWidget();
 
+public Q_SLOTS:
+    void slotUpdateLayout();
+
 private Q_SLOTS:
     void slotRequestValues();
     void slotSensorValue(const QByteArray &sensor, const float value);
@@ -152,13 +169,18 @@ private:
     QGraphicsLinearLayout* m_layout;
     SystemMonitorClient* m_systemmonitorclient;
     Plasma::SignalPlotter* m_cpuplotter;
+    Plasma::SignalPlotter* m_netplotter;
+    QList<double> m_netsample;
 };
 
 
 SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     : QGraphicsWidget(systemmonitor),
     m_systemmonitor(systemmonitor),
-    m_layout(nullptr)
+    m_layout(nullptr),
+    m_systemmonitorclient(nullptr),
+    m_cpuplotter(nullptr),
+    m_netplotter(nullptr)
 {
     m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
     m_systemmonitorclient = new SystemMonitorClient(this);
@@ -166,6 +188,7 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
         m_systemmonitorclient, SIGNAL(sensorValue(QByteArray,float)),
         this, SLOT(slotSensorValue(QByteArray,float))
     );
+
     m_cpuplotter = new Plasma::SignalPlotter(this);
     m_cpuplotter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_cpuplotter->setTitle(i18n("CPU"));
@@ -179,19 +202,43 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     m_cpuplotter->setVerticalRange(0.0, 100.0);
     m_cpuplotter->addPlot(kCPUVisualizerColor());
     m_layout->addItem(m_cpuplotter);
-    setLayout(m_layout);
 
-    slotRequestValues();
+    m_netplotter = new Plasma::SignalPlotter(this);
+    m_netplotter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_netplotter->setTitle(i18n("Network"));
+    m_netplotter->setUnit("KiB/s");
+    m_netplotter->setShowTopBar(false);
+    m_netplotter->setShowLabels(true);
+    m_netplotter->setShowVerticalLines(false);
+    m_netplotter->setShowHorizontalLines(false);
+    m_netplotter->setThinFrame(false);
+    m_netplotter->setUseAutoRange(true);
+    m_netplotter->setStackPlots(true);
+    m_netplotter->addPlot(kNetReceiverVisualizerColor());
+    m_netplotter->addPlot(kNetTransmitterVisualizerColor());
+    m_layout->addItem(m_netplotter);
+
+    setLayout(m_layout);
 }
 
 SystemMonitorWidget::~SystemMonitorWidget()
 {
 }
 
+void SystemMonitorWidget::slotUpdateLayout()
+{
+    QTimer::singleShot(s_updatetimeout, this, SLOT(slotRequestValues()));
+}
+
 void SystemMonitorWidget::slotRequestValues()
 {
+    m_netsample.clear();
+    m_netsample.append(0.0);
+    m_netsample.append(0.0);
     m_systemmonitorclient->requestValue(s_systemuptimesensor);
     m_systemmonitorclient->requestValue(s_cpusystemloadsensor);
+    m_systemmonitorclient->requestValue(s_netreceiverdatasensor);
+    m_systemmonitorclient->requestValue(s_nettransmitterdatasensor);
     QTimer::singleShot(s_updatetimeout, this, SLOT(slotRequestValues()));
 }
 
@@ -199,6 +246,12 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
 {
     if (sensor == s_cpusystemloadsensor) {
         m_cpuplotter->addSample(QList<double>() << double(value));
+    } else if (sensor == s_netreceiverdatasensor) {
+        m_netsample[0] = double(value);
+        m_netplotter->addSample(m_netsample);
+    } else if (sensor == s_nettransmitterdatasensor) {
+        m_netsample[1] = double(value);
+        m_netplotter->addSample(m_netsample);
     }
 }
 
@@ -209,6 +262,7 @@ SystemMonitor::SystemMonitor(QObject *parent, const QVariantList &args)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_system-monitor");
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
+    setHasConfigurationInterface(true);
     m_systemmonitorwidget = new SystemMonitorWidget(this);
     setPopupIcon("utilities-system-monitor");
 }
@@ -220,6 +274,12 @@ SystemMonitor::~SystemMonitor()
 
 void SystemMonitor::init()
 {
+    QTimer::singleShot(500, m_systemmonitorwidget, SLOT(slotUpdateLayout()));
+}
+
+void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
+{
+    // TODO: implement
 }
 
 QGraphicsWidget *SystemMonitor::graphicsWidget()
