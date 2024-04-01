@@ -181,6 +181,7 @@ QByteArray SystemMonitorNet::netID() const
 void SystemMonitorNet::resetSample()
 {
     m_netsample.clear();
+    m_netsample.reserve(2);
     m_netsample.append(0.0);
     m_netsample.append(0.0);
 }
@@ -245,6 +246,7 @@ SystemMonitorThermal::SystemMonitorThermal(QGraphicsWidget *parent, const QByteA
     setMeterType(Plasma::Meter::AnalogMeter);
     setMinimumSize(s_minimummetersize);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    // TODO: units?
     setMinimum(0);
     setMaximum(120);
 }
