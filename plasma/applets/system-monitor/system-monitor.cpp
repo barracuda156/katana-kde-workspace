@@ -187,6 +187,33 @@ void SystemMonitorNet::addTransmitSample(const float value)
 }
 
 
+class SystemMonitorPartition : public Plasma::Meter
+{
+    Q_OBJECT
+public:
+    SystemMonitorPartition(QGraphicsWidget *parent, const QByteArray &partitionid);
+
+    QByteArray partitionID() const;
+
+private:
+    QByteArray m_partitionid;
+};
+
+SystemMonitorPartition::SystemMonitorPartition(QGraphicsWidget *parent, const QByteArray &partitionid)
+    : Plasma::Meter(parent),
+    m_partitionid(partitionid)
+{
+    setMeterType(Plasma::Meter::BarMeterHorizontal);
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    setMinimum(0);
+    setMaximum(0);
+}
+
+QByteArray SystemMonitorPartition::partitionID() const
+{
+    return m_partitionid;
+}
+
 class SystemMonitorClient : public QObject, public KSGRD::SensorClient
 {
     Q_OBJECT
@@ -264,7 +291,13 @@ void SystemMonitorClient::answerReceived(int id, const QList<QByteArray> &answer
             }
             const QByteArray sensorname = splitsensoranswer.at(0);
             kDebug() << "mapping sensor" << sensorname << sensortype;
-            m_sensors.append(sensorname);
+            // pre-sort, order of occurance matters
+            const KSensorType ksensortype = kSensorType(sensorname);
+            if (ksensortype == KSensorType::DiskFreeSensor || ksensortype == KSensorType::DiskUsedSensor) {
+                m_sensors.append(sensorname);
+            } else {
+                m_sensors.prepend(sensorname);
+            }
         }
         emit sensorsChanged();
     } else if (id < m_sensors.size()) {
@@ -308,8 +341,8 @@ private:
     SystemMonitorClient* m_systemmonitorclient;
     Plasma::Frame* m_cpuframe;
     Plasma::SignalPlotter* m_cpuplotter;
-    QList<SystemMonitorNet*> m_netplotters;
-    QList<Plasma::Meter*> m_diskmeters;
+    QList<SystemMonitorNet*> m_netmonitors;
+    QList<SystemMonitorPartition*> m_partitionmonitors;
     QList<QByteArray> m_requestsensors;
 };
 
@@ -361,19 +394,18 @@ SystemMonitorWidget::~SystemMonitorWidget()
 void SystemMonitorWidget::slotUpdateLayout()
 {
     QMutexLocker locker(&m_mutex);
-    foreach (SystemMonitorNet* netplotter, m_netplotters) {
-        m_layout->removeItem(netplotter);
+    foreach (SystemMonitorNet* netmonitor, m_netmonitors) {
+        m_layout->removeItem(netmonitor);
     }
-    qDeleteAll(m_netplotters);
-    m_diskmeters.clear();
-    foreach (Plasma::Meter* diskmeter, m_diskmeters) {
-        m_layout->removeItem(diskmeter);
+    qDeleteAll(m_netmonitors);
+    m_netmonitors.clear();
+    foreach (SystemMonitorPartition* partitionmonitor, m_partitionmonitors) {
+        m_layout->removeItem(partitionmonitor);
     }
-    qDeleteAll(m_diskmeters);
-    m_diskmeters.clear();
+    qDeleteAll(m_partitionmonitors);
+    m_partitionmonitors.clear();
     
     m_requestsensors.clear();
-    // TODO: pre-sort, order of occurance matters
     foreach (const QByteArray &sensor, m_systemmonitorclient->sensors()) {
         const KSensorType ksensortype = kSensorType(sensor);
         if (ksensortype != KSensorType::UnknownSensor) {
@@ -381,21 +413,15 @@ void SystemMonitorWidget::slotUpdateLayout()
             kDebug() << "monitoring" << sensor << ksensortype;
         }
         if (ksensortype == KSensorType::NetReceiverSensor) {
-            SystemMonitorNet* netplotter = new SystemMonitorNet(this, kNetID(sensor));
-            m_layout->addItem(netplotter);
-            m_netplotters.append(netplotter);
+            SystemMonitorNet* netmonitor = new SystemMonitorNet(this, kNetID(sensor));
+            m_layout->addItem(netmonitor);
+            m_netmonitors.append(netmonitor);
         }
 
         if (ksensortype == KSensorType::DiskFreeSensor) {
-            Plasma::Meter* diskmeter = new Plasma::Meter(this);
-            diskmeter->setMeterType(Plasma::Meter::BarMeterHorizontal);
-            diskmeter->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-            // TODO: custom class
-            diskmeter->setProperty("_k_diskmeterid", kPartitionID(sensor));
-            diskmeter->setMinimum(0);
-            diskmeter->setMaximum(0);
-            m_layout->addItem(diskmeter);
-            m_diskmeters.append(diskmeter);
+            SystemMonitorPartition* partitionmonitor = new SystemMonitorPartition(this, kPartitionID(sensor));
+            m_layout->addItem(partitionmonitor);
+            m_partitionmonitors.append(partitionmonitor);
         }
     }
 
@@ -405,8 +431,8 @@ void SystemMonitorWidget::slotUpdateLayout()
 void SystemMonitorWidget::slotRequestValues()
 {
     QMutexLocker locker(&m_mutex);
-    foreach (SystemMonitorNet* netplotter, m_netplotters) {
-        netplotter->resetSample();
+    foreach (SystemMonitorNet* netmonitor, m_netmonitors) {
+        netmonitor->resetSample();
     }
     locker.unlock();
     foreach (const QByteArray &request, m_requestsensors) {
@@ -426,9 +452,9 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
         case KSensorType::NetReceiverSensor: {
             QMutexLocker locker(&m_mutex);
             const QByteArray netid = kNetID(sensor);
-            foreach (SystemMonitorNet* netplotter, m_netplotters) {
-                if (netplotter->netID() == netid) {
-                    netplotter->addReceiveSample(value);
+            foreach (SystemMonitorNet* netmonitor, m_netmonitors) {
+                if (netmonitor->netID() == netid) {
+                    netmonitor->addReceiveSample(value);
                     break;
                 }
             }
@@ -437,9 +463,9 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
         case KSensorType::NetTransmitterSensor: {
             QMutexLocker locker(&m_mutex);
             const QByteArray netid = kNetID(sensor);
-            foreach (SystemMonitorNet* netplotter, m_netplotters) {
-                if (netplotter->netID() == netid) {
-                    netplotter->addTransmitSample(value);
+            foreach (SystemMonitorNet* netmonitor, m_netmonitors) {
+                if (netmonitor->netID() == netid) {
+                    netmonitor->addTransmitSample(value);
                     break;
                 }
             }
@@ -448,12 +474,11 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
         case KSensorType::DiskFreeSensor: {
             QMutexLocker locker(&m_mutex);
             const QByteArray partitionid = kPartitionID(sensor);
-            foreach (Plasma::Meter* diskmeter, m_diskmeters) {
-                const QByteArray diskmeterid = diskmeter->property("_k_diskmeterid").toByteArray();
-                if (diskmeterid == partitionid) {
+            foreach (SystemMonitorPartition* partitionmonitor, m_partitionmonitors) {
+                if (partitionmonitor->partitionID() == partitionid) {
                     const int roundvalue = qRound(value);
-                    const int maxvalue = qMax(roundvalue + diskmeter->value(), roundvalue);
-                    diskmeter->setMaximum(maxvalue);
+                    const int maxvalue = qMax(roundvalue + partitionmonitor->value(), roundvalue);
+                    partitionmonitor->setMaximum(maxvalue);
                     // qDebug() << Q_FUNC_INFO << "disk free" << sensor << roundvalue << maxvalue;
                     break;
                 }
@@ -463,13 +488,12 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
         case KSensorType::DiskUsedSensor: {
             QMutexLocker locker(&m_mutex);
             const QByteArray partitionid = kPartitionID(sensor);
-            foreach (Plasma::Meter* diskmeter, m_diskmeters) {
-                const QByteArray diskmeterid = diskmeter->property("_k_diskmeterid").toByteArray();
-                if (diskmeterid == partitionid) {
+            foreach (SystemMonitorPartition* partitionmonitor, m_partitionmonitors) {
+                if (partitionmonitor->partitionID() == partitionid) {
                     const int roundvalue = qRound(value);
-                    const int maxvalue = qMax(roundvalue, diskmeter->maximum());
-                    diskmeter->setMaximum(maxvalue);
-                    diskmeter->setValue(roundvalue);
+                    const int maxvalue = qMax(roundvalue, partitionmonitor->maximum());
+                    partitionmonitor->setMaximum(maxvalue);
+                    partitionmonitor->setValue(roundvalue);
                     // qDebug() << Q_FUNC_INFO << "disk used" << sensor << roundvalue << maxvalue;
                     break;
                 }
