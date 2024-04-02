@@ -59,21 +59,24 @@ static KSensorType kSensorType(const QByteArray &sensor)
     if (sensor == "cpu/system/TotalLoad") {
         return KSensorType::CPUSensor;
     // any network receiver or transmitter except loopback
-    } else if (sensor.startsWith("network/interfaces/") && sensor.endsWith("/receiver/data")) {
+    } else if (sensor.startsWith("network/interfaces/")) {
         if (sensor.contains("/interfaces/lo/")) {
             return KSensorType::UnknownSensor;
         }
-        return KSensorType::NetReceiverSensor;
-    } else if (sensor.startsWith("network/interfaces/") && sensor.endsWith("/transmitter/data")) {
-        if (sensor.contains("/interfaces/lo/")) {
-            return KSensorType::UnknownSensor;
+        if (sensor.endsWith("/receiver/data")) {
+            return KSensorType::NetReceiverSensor;
+        } else if (sensor.endsWith("/transmitter/data")) {
+            return KSensorType::NetTransmitterSensor;
         }
-        return KSensorType::NetTransmitterSensor;
+        return KSensorType::UnknownSensor;
     // any partition
-    } else if (sensor.startsWith("partitions/") && sensor.endsWith("/freespace")) {
-        return KSensorType::PartitionFreeSensor;
-    } else if (sensor.startsWith("partitions/") && sensor.endsWith("/usedspace")) {
-        return KSensorType::PartitionUsedSensor;
+    } else if (sensor.startsWith("partitions/")) {
+        if (sensor.endsWith("/freespace")) {
+            return KSensorType::PartitionFreeSensor;
+        } else if (sensor.endsWith("/usedspace")) {
+            return KSensorType::PartitionUsedSensor;
+        }
+        return KSensorType::UnknownSensor;
     // any thermal zone or lmsensor except fans
     } else if (sensor.startsWith("acpi/Thermal_Zone/") || sensor.startsWith("lmsensors/")) {
         if (sensor.contains("fan")) {
