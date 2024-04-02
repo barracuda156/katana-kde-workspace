@@ -25,6 +25,7 @@
 #include <QTimer>
 #include <QGraphicsGridLayout>
 #include <QGraphicsLinearLayout>
+#include <KUnitConversion>
 #include <Plasma/Theme>
 #include <Plasma/Frame>
 #include <Plasma/SignalPlotter>
@@ -42,8 +43,8 @@ enum KSensorType {
     CPUSensor = 1,
     NetReceiverSensor = 2,
     NetTransmitterSensor = 3,
-    DiskFreeSensor = 4,
-    DiskUsedSensor = 5,
+    PartitionFreeSensor = 4,
+    PartitionUsedSensor = 5,
     ThermalSensor = 6
 };
 
@@ -66,9 +67,9 @@ static KSensorType kSensorType(const QByteArray &sensor)
         return KSensorType::NetTransmitterSensor;
     // any partition
     } else if (sensor.startsWith("partitions/") && sensor.endsWith("/freespace")) {
-        return KSensorType::DiskFreeSensor;
+        return KSensorType::PartitionFreeSensor;
     } else if (sensor.startsWith("partitions/") && sensor.endsWith("/usedspace")) {
-        return KSensorType::DiskUsedSensor;
+        return KSensorType::PartitionUsedSensor;
     // any thermal zone
     } else if (sensor.startsWith("acpi/Thermal_Zone/")) {
         return KSensorType::ThermalSensor;
@@ -98,7 +99,19 @@ static QByteArray kPartitionID(const QByteArray &sensor)
 
 static QByteArray kThermalID(const QByteArray &sensor)
 {
-    // as-is
+    if (sensor.endsWith("/Temperature")) {
+        return sensor.mid(0, sensor.size() - 12);
+    }
+    kWarning() << "invalid thermal sensor" << sensor;
+    return sensor;
+}
+
+static QString kSensorDisplayString(const QByteArray &sensor)
+{
+    const int indexofslash = sensor.lastIndexOf('/');
+    if (indexofslash >= 0) {
+        return sensor.mid(indexofslash + 1, sensor.size() - indexofslash - 1);
+    }
     return sensor;
 }
 
@@ -161,7 +174,7 @@ SystemMonitorNet::SystemMonitorNet(QGraphicsWidget *parent, const QByteArray &ne
 
     m_netplotter = new Plasma::SignalPlotter(this);
     m_netplotter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_netplotter->setTitle(i18n("Network"));
+    m_netplotter->setTitle(kSensorDisplayString(m_netid));
     m_netplotter->setUnit("KiB/s");
     m_netplotter->setShowTopBar(true);
     m_netplotter->setShowLabels(true);
@@ -219,6 +232,7 @@ SystemMonitorPartition::SystemMonitorPartition(QGraphicsWidget *parent, const QB
 {
     setMeterType(Plasma::Meter::BarMeterHorizontal);
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    // TODO: label
     setMinimum(0);
     setMaximum(0);
 }
@@ -236,9 +250,11 @@ public:
     SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid);
 
     QByteArray thermalID() const;
+    void setSensorValue(const float value);
 
 private:
     QByteArray m_thermalid;
+    QString m_thermaldisplaystring;
 };
 
 SystemMonitorThermal::SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid)
@@ -248,14 +264,25 @@ SystemMonitorThermal::SystemMonitorThermal(QGraphicsWidget *parent, const QByteA
     setMeterType(Plasma::Meter::AnalogMeter);
     setMinimumSize(s_minimummetersize);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    // TODO: units?
+    m_thermaldisplaystring = kSensorDisplayString(m_thermalid);
+    setLabel(0, m_thermaldisplaystring);
+    // NOTE: units is celsius, see:
+    // https://www.kernel.org/doc/Documentation/thermal/sysfs-api.txt
     setMinimum(0);
-    setMaximum(120);
+    // emergency is usually 2x less
+    setMaximum(200);
 }
 
 QByteArray SystemMonitorThermal::thermalID() const
 {
     return m_thermalid;
+}
+
+void SystemMonitorThermal::setSensorValue(const float value)
+{
+    const QString valuestring = KTemperature(double(value), KTemperature::Celsius).toString();
+    setLabel(0, QString::fromLatin1("%1 - %2").arg(m_thermaldisplaystring).arg(valuestring));
+    setValue(qRound(value));
 }
 
 
@@ -339,8 +366,8 @@ void SystemMonitorClient::answerReceived(int id, const QList<QByteArray> &answer
             // pre-sort, order of occurance matters
             const KSensorType ksensortype = kSensorType(sensorname);
             switch (ksensortype) {
-                case KSensorType::DiskFreeSensor:
-                case KSensorType::DiskUsedSensor: {
+                case KSensorType::PartitionFreeSensor:
+                case KSensorType::PartitionUsedSensor: {
                     m_sensors.append(sensorname);
                     break;
                 }
@@ -475,7 +502,7 @@ void SystemMonitorWidget::slotUpdateLayout()
             m_netmonitors.append(netmonitor);
         }
 
-        if (ksensortype == KSensorType::DiskFreeSensor) {
+        if (ksensortype == KSensorType::PartitionFreeSensor) {
             SystemMonitorPartition* partitionmonitor = new SystemMonitorPartition(this, kPartitionID(sensor));
             m_layout->addItem(partitionmonitor, m_layout->rowCount(), 0, 1, 2);
             m_partitionmonitors.append(partitionmonitor);
@@ -543,7 +570,7 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
             }
             break;
         }
-        case KSensorType::DiskFreeSensor: {
+        case KSensorType::PartitionFreeSensor: {
             QMutexLocker locker(&m_mutex);
             const QByteArray partitionid = kPartitionID(sensor);
             foreach (SystemMonitorPartition* partitionmonitor, m_partitionmonitors) {
@@ -551,13 +578,13 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
                     const int roundvalue = qRound(value);
                     const int maxvalue = qMax(roundvalue + partitionmonitor->value(), roundvalue);
                     partitionmonitor->setMaximum(maxvalue);
-                    // qDebug() << Q_FUNC_INFO << "disk free" << sensor << roundvalue << maxvalue;
+                    // qDebug() << Q_FUNC_INFO << "partition free" << sensor << roundvalue << maxvalue;
                     break;
                 }
             }
             break;
         }
-        case KSensorType::DiskUsedSensor: {
+        case KSensorType::PartitionUsedSensor: {
             QMutexLocker locker(&m_mutex);
             const QByteArray partitionid = kPartitionID(sensor);
             foreach (SystemMonitorPartition* partitionmonitor, m_partitionmonitors) {
@@ -566,7 +593,7 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
                     const int maxvalue = qMax(roundvalue, partitionmonitor->maximum());
                     partitionmonitor->setMaximum(maxvalue);
                     partitionmonitor->setValue(roundvalue);
-                    // qDebug() << Q_FUNC_INFO << "disk used" << sensor << roundvalue << maxvalue;
+                    // qDebug() << Q_FUNC_INFO << "partition used" << sensor << roundvalue << maxvalue;
                     break;
                 }
             }
@@ -577,8 +604,7 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
             const QByteArray thermalid = kThermalID(sensor);
             foreach (SystemMonitorThermal* thermalmonitor, m_thermalmonitors) {
                 if (thermalmonitor->thermalID() == thermalid) {
-                    const int roundvalue = qRound(value);
-                    thermalmonitor->setValue(roundvalue);
+                    thermalmonitor->setSensorValue(value);
                     break;
                 }
             }
@@ -589,7 +615,7 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
             break;
         }
     }
-    if (ksensortype == KSensorType::DiskFreeSensor || ksensortype == KSensorType::DiskUsedSensor) {
+    if (ksensortype == KSensorType::PartitionFreeSensor || ksensortype == KSensorType::PartitionUsedSensor) {
         // force an update, apparently sometimes the sensors have bogus values (e.g. / reported to
         // have zero free space, probably bug in ksysguard)
         update();
