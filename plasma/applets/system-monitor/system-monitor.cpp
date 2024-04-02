@@ -866,6 +866,8 @@ SystemMonitor::SystemMonitor(QObject *parent, const QVariantList &args)
     setHasConfigurationInterface(true);
     m_systemmonitorwidget = new SystemMonitorWidget(this);
     setPopupIcon("utilities-system-monitor");
+    // NOTE: no check has to be done if it is installed
+    setAssociatedApplication("ksysguard");
 }
 
 SystemMonitor::~SystemMonitor()
