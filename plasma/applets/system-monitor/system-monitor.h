@@ -58,14 +58,12 @@ private:
     QColor m_cpucolor;
     QColor m_receivercolor;
     QColor m_transmittercolor;
-    int m_temperatureunit;
     KLineEdit* m_hostnameedit;
     KIntNumInput* m_portbox;
     KTimeEdit* m_updateedit;
     KColorButton* m_cpubutton;
     KColorButton* m_receiverbutton;
     KColorButton* m_transmitterbutton;
-    QComboBox* m_temperaturebox;
     QSpacerItem* m_spacer;
 };
 
