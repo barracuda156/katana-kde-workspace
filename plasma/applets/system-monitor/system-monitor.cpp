@@ -76,11 +76,33 @@ static KSensorType kSensorType(const QByteArray &sensor)
         return KSensorType::PartitionFreeSensor;
     } else if (sensor.startsWith("partitions/") && sensor.endsWith("/usedspace")) {
         return KSensorType::PartitionUsedSensor;
-    // any thermal zone
-    } else if (sensor.startsWith("acpi/Thermal_Zone/")) {
+    // any thermal zone or lmsensor except fans
+    } else if (sensor.startsWith("acpi/Thermal_Zone/") || sensor.startsWith("lmsensors/")) {
+        if (sensor.contains("fan")) {
+            return KSensorType::UnknownSensor;
+        }
         return KSensorType::ThermalSensor;
     }
     return KSensorType::UnknownSensor;
+}
+
+static int kWeightSensor(const QByteArray &sensor)
+{
+    // CPU sensors go first
+    if (sensor.contains("/Package_")) {
+        return 0;
+    }
+    // GPU sensors after
+    if (sensor.contains("-pci-") && sensor.contains("/temp")) {
+        return 1;
+    }
+    // anything else
+    return 2;
+}
+
+static bool kSensorSort(const QByteArray &first, const QByteArray &second)
+{
+    return (kWeightSensor(first) <= kWeightSensor(second));
 }
 
 static QByteArray kNetID(const QByteArray &sensor)
@@ -108,7 +130,6 @@ static QByteArray kThermalID(const QByteArray &sensor)
     if (sensor.endsWith("/Temperature")) {
         return sensor.mid(0, sensor.size() - 12);
     }
-    kWarning() << "invalid thermal sensor" << sensor;
     return sensor;
 }
 
@@ -309,25 +330,22 @@ public:
     SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid, const int temperatureunit);
 
     QByteArray thermalID() const;
-    void setSensorValue(const double value);
 
 private:
     const QByteArray m_thermalid;
-    const KTemperature::KTempUnit m_temperatureunit;
-    const QString m_thermaldisplaystring;
 };
 
 SystemMonitorThermal::SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid, const int temperatureunit)
     : Plasma::Meter(parent),
-    m_thermalid(thermalid),
-    m_temperatureunit(static_cast<KTemperature::KTempUnit>(temperatureunit)),
-    m_thermaldisplaystring(kSensorDisplayString(m_thermalid))
+    m_thermalid(thermalid)
 {
     setMeterType(Plasma::Meter::AnalogMeter);
     setMinimumSize(s_minimummetersize);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    setLabel(0, m_thermaldisplaystring);
-    switch (m_temperatureunit) {
+    // TODO: the display string may be too long, have to elide
+    setLabel(0, kSensorDisplayString(m_thermalid));
+    const KTemperature::KTempUnit ktempunit = static_cast<KTemperature::KTempUnit>(temperatureunit);
+    switch (ktempunit) {
         case KTemperature::Celsius: {
             setMinimum(0);
             setMaximum(110);
@@ -356,15 +374,6 @@ QByteArray SystemMonitorThermal::thermalID() const
 {
     return m_thermalid;
 }
-
-void SystemMonitorThermal::setSensorValue(const double value)
-{
-    const double valueinunit = KTemperature(value, KTemperature::Celsius).convertTo(m_temperatureunit);
-    const QString valuestring = KTemperature(valueinunit, m_temperatureunit).toString();
-    setLabel(0, QString::fromLatin1("%1 - %2").arg(m_thermaldisplaystring).arg(valuestring));
-    setValue(qRound(valueinunit));
-}
-
 
 class SystemMonitorClient : public QObject, public KSGRD::SensorClient
 {
@@ -483,7 +492,7 @@ void SystemMonitorClient::answerReceived(int id, const QList<QByteArray> &answer
             }
         }
         if (!thermalsensors.isEmpty()) {
-            qSort(thermalsensors);
+            qStableSort(thermalsensors.begin(), thermalsensors.end(), kSensorSort);
             m_sensors.append(thermalsensors);
         }
         // qDebug() << Q_FUNC_INFO << m_sensors;
@@ -763,7 +772,7 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const double
             const QByteArray thermalid = kThermalID(sensor);
             foreach (SystemMonitorThermal* thermalmonitor, m_thermalmonitors) {
                 if (thermalmonitor->thermalID() == thermalid) {
-                    thermalmonitor->setSensorValue(value);
+                    thermalmonitor->setValue(qRound(value));
                     break;
                 }
             }
