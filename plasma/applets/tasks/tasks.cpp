@@ -369,10 +369,11 @@ void TasksApplet::createConfigurationInterface(KConfigDialog *parent)
 {
     QWidget* widget = new QWidget();
     QGridLayout* widgetlayout = new QGridLayout(widget);
-    QLabel* pagermodelabel = new QLabel(widget);
-    pagermodelabel->setText(i18n("Tooltip:"));
-    widgetlayout->addWidget(pagermodelabel, 0, 0);
+    QLabel* tooltipmodelabel = new QLabel(widget);
+    tooltipmodelabel->setText(i18n("Tooltip:"));
+    widgetlayout->addWidget(tooltipmodelabel, 0, 0, Qt::AlignRight);
     m_tooltipmodebox = new QComboBox(widget);
+    m_tooltipmodebox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     m_tooltipmodebox->addItem(i18n("Task name"), static_cast<int>(TasksApplet::ToolTipPreview));
     m_tooltipmodebox->addItem(i18n("Task name and preview"), static_cast<int>(TasksApplet::ToolTipPreview));
     m_tooltipmodebox->addItem(i18n("Task name, preview and highlight window"), static_cast<int>(TasksApplet::ToolTipHighlight));

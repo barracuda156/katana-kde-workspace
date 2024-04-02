@@ -793,8 +793,9 @@ void WeatherApplet::createConfigurationInterface(KConfigDialog *parent)
     QGridLayout* widgetlayout = new QGridLayout(widget);
     QLabel* tempunitlabel = new QLabel(widget);
     tempunitlabel->setText(i18n("Temperature unit:"));
-    widgetlayout->addWidget(tempunitlabel, 0, 0);
+    widgetlayout->addWidget(tempunitlabel, 0, 0, Qt::AlignRight);
     m_tempunitbox = new QComboBox(widget);
+    m_tempunitbox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     for (int i = 0; i < KTemperature::UnitCount; i++) {
         const KTemperature::KTempUnit tempunit = static_cast<KTemperature::KTempUnit>(i);
         m_tempunitbox->addItem(KTemperature::unitDescription(tempunit), tempunit);
@@ -803,8 +804,9 @@ void WeatherApplet::createConfigurationInterface(KConfigDialog *parent)
     widgetlayout->addWidget(m_tempunitbox, 0, 1);
     QLabel* locationlabel = new QLabel(widget);
     locationlabel->setText(i18n("Location:"));
-    widgetlayout->addWidget(locationlabel, 1, 0);
+    widgetlayout->addWidget(locationlabel, 1, 0, Qt::AlignRight);
     m_locationbox = new QComboBox(widget);
+    m_locationbox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     QMap<QString,QString> sortedzones;
     foreach (const KTimeZone &ktimezone, KSystemTimeZones::zones()) {
         const QString ktimezonename = ktimezone.name();
