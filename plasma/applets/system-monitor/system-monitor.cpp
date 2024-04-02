@@ -586,7 +586,7 @@ void SystemMonitorWidget::setupMonitors(const QString &hostname, const int port,
                                         const int temperatureunit)
 {
     m_updatetimer->stop();
-    m_updatetimer->setInterval(update * 1000);
+    m_updatetimer->setInterval(qMax(update, s_update) * 1000);
     disconnect(m_systemmonitorclient, 0, this, 0);
     m_systemmonitor->setBusy(true);
     if (!m_systemmonitorclient->setup(hostname, port)) {
