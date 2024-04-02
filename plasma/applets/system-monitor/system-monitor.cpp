@@ -326,8 +326,29 @@ SystemMonitorThermal::SystemMonitorThermal(QGraphicsWidget *parent, const QByteA
     setMinimumSize(s_minimummetersize);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     setLabel(0, m_thermaldisplaystring);
-    setMinimum(0);
-    setMaximum(2000);
+    switch (m_temperatureunit) {
+        case KTemperature::Celsius: {
+            setMinimum(0);
+            setMaximum(110);
+            break;
+        }
+        case KTemperature::Kelvin: {
+            setMinimum(64);
+            setMaximum(384);
+            break;
+        }
+        case KTemperature::Fahrenheit: {
+            setMinimum(32);
+            setMaximum(230);
+            break;
+        }
+        default: {
+            kWarning() << "unhandled temperature unit" << temperatureunit;
+            setMinimum(0);
+            setMaximum(100);
+            break;
+        }
+    }
 }
 
 QByteArray SystemMonitorThermal::thermalID() const
@@ -337,9 +358,10 @@ QByteArray SystemMonitorThermal::thermalID() const
 
 void SystemMonitorThermal::setSensorValue(const float value)
 {
-    const QString valuestring = KTemperature(double(value), m_temperatureunit).toString();
+    const double valueinunit = KTemperature(double(value), KTemperature::Celsius).convertTo(m_temperatureunit);
+    const QString valuestring = KTemperature(valueinunit, m_temperatureunit).toString();
     setLabel(0, QString::fromLatin1("%1 - %2").arg(m_thermaldisplaystring).arg(valuestring));
-    setValue(qRound(value));
+    setValue(qRound(valueinunit));
 }
 
 
