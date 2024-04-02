@@ -20,8 +20,3 @@ install(
     FILES plasma-applet-system-monitor.desktop
     DESTINATION ${KDE4_SERVICES_INSTALL_DIR}
 )
-
-install(
-    FILES hdd_panel.svgz
-    DESTINATION ${KDE4_DATA_INSTALL_DIR}/desktoptheme/default/system-monitor/
-)
