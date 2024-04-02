@@ -22,6 +22,7 @@
 
 #include <QColor>
 #include <QComboBox>
+#include <QSpacerItem>
 #include <KConfigDialog>
 #include <KLineEdit>
 #include <KTimeEdit>
@@ -65,6 +66,7 @@ private:
     KColorButton* m_receiverbutton;
     KColorButton* m_transmitterbutton;
     QComboBox* m_temperaturebox;
+    QSpacerItem* m_spacer;
 };
 
 #endif // SYSTEM_MONITOR_H

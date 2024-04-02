@@ -23,7 +23,8 @@
 
 #include <QMutex>
 #include <QTimer>
-#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QLabel>
 #include <QGraphicsGridLayout>
 #include <QGraphicsLinearLayout>
 #include <KUnitConversion>
@@ -784,7 +785,8 @@ SystemMonitor::SystemMonitor(QObject *parent, const QVariantList &args)
     m_cpubutton(nullptr),
     m_receiverbutton(nullptr),
     m_transmitterbutton(nullptr),
-    m_temperaturebox(nullptr)
+    m_temperaturebox(nullptr),
+    m_spacer(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_system-monitor");
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
@@ -807,24 +809,35 @@ void SystemMonitor::init()
 void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
 {
     QWidget* widget = new QWidget();
-    QVBoxLayout* widgetlayout = new QVBoxLayout(widget);
-    // TODO: labels
+    QGridLayout* widgetlayout = new QGridLayout(widget);
+    QLabel* hostnamelabel = new QLabel(widget);
+    hostnamelabel->setText(i18n("Hostname:"));
+    widgetlayout->addWidget(hostnamelabel, 0, 0, Qt::AlignRight);
     m_hostnameedit = new KLineEdit(widget);
     m_hostnameedit->setText(m_hostname);
-    widgetlayout->addWidget(m_hostnameedit);
+    widgetlayout->addWidget(m_hostnameedit, 0, 1);
 
+    QLabel* portlabel = new QLabel(widget);
+    portlabel->setText(i18n("Port:"));
+    widgetlayout->addWidget(portlabel, 1, 0, Qt::AlignRight);
     m_portbox = new KIntNumInput(widget);
     m_portbox->setMinimum(s_port);
     m_portbox->setMaximum(USHRT_MAX);
     m_portbox->setSpecialValueText(i18n("Default"));
     m_portbox->setValue(m_port);
-    widgetlayout->addWidget(m_portbox);
+    widgetlayout->addWidget(m_portbox, 1, 1);
 
+    QLabel* updatelabel = new QLabel(widget);
+    updatelabel->setText(i18n("Update interval:"));
+    widgetlayout->addWidget(updatelabel, 2, 0, Qt::AlignRight);
     m_updateedit = new KTimeEdit(widget);
     m_updateedit->setMinimumTime(QTime(0, 0, 1));
     m_updateedit->setTime(QTime(0, 0, 0).addSecs(m_update));
-    widgetlayout->addWidget(m_updateedit);
+    widgetlayout->addWidget(m_updateedit, 2, 1);
 
+    QLabel* cpulabel = new QLabel(widget);
+    cpulabel->setText(i18n("CPU color:"));
+    widgetlayout->addWidget(cpulabel, 3, 0, Qt::AlignRight);
     const QColor defaultcpucolor = kCPUVisualizerColor();
     QColor cpucolor = m_cpucolor;
     if (!cpucolor.isValid()) {
@@ -833,8 +846,11 @@ void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
     m_cpubutton = new KColorButton(widget);
     m_cpubutton->setDefaultColor(defaultcpucolor);
     m_cpubutton->setColor(cpucolor);
-    widgetlayout->addWidget(m_cpubutton);
+    widgetlayout->addWidget(m_cpubutton, 3, 1);
 
+    QLabel* receiverlabel = new QLabel(widget);
+    receiverlabel->setText(i18n("Receiver color:"));
+    widgetlayout->addWidget(receiverlabel, 4, 0, Qt::AlignRight);
     const QColor defaultreceivercolor = kNetReceiverVisualizerColor();
     QColor receivercolor = m_receivercolor;
     if (!receivercolor.isValid()) {
@@ -843,8 +859,11 @@ void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
     m_receiverbutton = new KColorButton(widget);
     m_receiverbutton->setDefaultColor(defaultreceivercolor);
     m_receiverbutton->setColor(receivercolor);
-    widgetlayout->addWidget(m_receiverbutton);
+    widgetlayout->addWidget(m_receiverbutton, 4, 1);
 
+    QLabel* transmitterlabel = new QLabel(widget);
+    transmitterlabel->setText(i18n("Transmitter color:"));
+    widgetlayout->addWidget(transmitterlabel, 5, 0, Qt::AlignRight);
     const QColor defaulttransmittercolor = kNetTransmitterVisualizerColor();
     QColor transmittercolor = m_transmittercolor;
     if (!transmittercolor.isValid()) {
@@ -853,16 +872,21 @@ void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
     m_transmitterbutton = new KColorButton(widget);
     m_transmitterbutton->setDefaultColor(defaulttransmittercolor);
     m_transmitterbutton->setColor(transmittercolor);
-    widgetlayout->addWidget(m_transmitterbutton);
+    widgetlayout->addWidget(m_transmitterbutton, 5, 1);
 
+    QLabel* temperaturelabel = new QLabel(widget);
+    temperaturelabel->setText(i18n("Temeprature unit:"));
+    widgetlayout->addWidget(temperaturelabel, 6, 0, Qt::AlignRight);
     m_temperaturebox = new QComboBox(widget);
     for (int i = 0; i < KTemperature::UnitCount; i++) {
         m_temperaturebox->addItem(KTemperature::unitDescription(static_cast<KTemperature::KTempUnit>(i)));
     }
     m_temperaturebox->setCurrentIndex(m_temperatureunit);
-    widgetlayout->addWidget(m_temperaturebox);
+    widgetlayout->addWidget(m_temperaturebox, 6, 1);
 
-    widgetlayout->addStretch();
+    m_spacer = new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Expanding);
+    widgetlayout->addItem(m_spacer, 7, 0, 1, 2);
+
     widget->setLayout(widgetlayout);
     parent->addPage(widget, i18n("System Monitor"), "utilities-system-monitor");
 

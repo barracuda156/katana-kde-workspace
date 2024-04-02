@@ -22,7 +22,7 @@
 #include <QTimer>
 #include <QGraphicsGridLayout>
 #include <QGraphicsLinearLayout>
-#include <QGridLayout>
+#include <QVBoxLayout>
 #include <Solid/Device>
 #include <Solid/DeviceNotifier>
 #include <Plasma/Label>
