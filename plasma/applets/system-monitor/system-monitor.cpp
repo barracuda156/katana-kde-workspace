@@ -777,9 +777,6 @@ SystemMonitor::SystemMonitor(QObject *parent, const QVariantList &args)
     m_hostname(s_hostname),
     m_port(s_port),
     m_update(s_update),
-    m_cpucolor(kCPUVisualizerColor()),
-    m_receivercolor(kNetReceiverVisualizerColor()),
-    m_transmittercolor(kNetTransmitterVisualizerColor()),
     m_temperatureunit(s_temperatureunit),
     m_hostnameedit(nullptr),
     m_portbox(nullptr),
@@ -803,18 +800,8 @@ SystemMonitor::~SystemMonitor()
 
 void SystemMonitor::init()
 {
-    KConfigGroup configgroup = config();
-    m_hostname = configgroup.readEntry("hostname", s_hostname);
-    m_port = configgroup.readEntry("port", s_port);
-    m_update = configgroup.readEntry("update", s_update);
-    m_cpucolor = configgroup.readEntry("cpucolor", kCPUVisualizerColor());
-    m_receivercolor = configgroup.readEntry("netreceivercolor", kNetReceiverVisualizerColor());
-    m_transmittercolor = configgroup.readEntry("nettransmittercolor", kNetTransmitterVisualizerColor());
-    m_temperatureunit = configgroup.readEntry("temperatureunit", s_temperatureunit);
-    m_systemmonitorwidget->setupMonitors(
-        m_hostname, m_port, m_update,
-        m_cpucolor, m_receivercolor, m_transmittercolor, m_temperatureunit
-    );
+    slotThemeChanged();
+    connect(Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()), this, SLOT(slotThemeChanged()));
 }
 
 void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
@@ -838,19 +825,34 @@ void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
     m_updateedit->setTime(QTime(0, 0, 0).addSecs(m_update));
     widgetlayout->addWidget(m_updateedit);
 
+    const QColor defaultcpucolor = kCPUVisualizerColor();
+    QColor cpucolor = m_cpucolor;
+    if (!cpucolor.isValid()) {
+        cpucolor = defaultcpucolor;
+    }
     m_cpubutton = new KColorButton(widget);
-    m_cpubutton->setDefaultColor(kCPUVisualizerColor());
-    m_cpubutton->setColor(m_cpucolor);
+    m_cpubutton->setDefaultColor(defaultcpucolor);
+    m_cpubutton->setColor(cpucolor);
     widgetlayout->addWidget(m_cpubutton);
 
+    const QColor defaultreceivercolor = kNetReceiverVisualizerColor();
+    QColor receivercolor = m_receivercolor;
+    if (!receivercolor.isValid()) {
+        receivercolor = defaultreceivercolor;
+    }
     m_receiverbutton = new KColorButton(widget);
-    m_receiverbutton->setDefaultColor(kNetReceiverVisualizerColor());
-    m_receiverbutton->setColor(m_receivercolor);
+    m_receiverbutton->setDefaultColor(defaultreceivercolor);
+    m_receiverbutton->setColor(receivercolor);
     widgetlayout->addWidget(m_receiverbutton);
 
+    const QColor defaulttransmittercolor = kNetTransmitterVisualizerColor();
+    QColor transmittercolor = m_transmittercolor;
+    if (!transmittercolor.isValid()) {
+        transmittercolor = defaulttransmittercolor;
+    }
     m_transmitterbutton = new KColorButton(widget);
-    m_transmitterbutton->setDefaultColor(kNetTransmitterVisualizerColor());
-    m_transmitterbutton->setColor(m_transmittercolor);
+    m_transmitterbutton->setDefaultColor(defaulttransmittercolor);
+    m_transmitterbutton->setColor(transmittercolor);
     widgetlayout->addWidget(m_transmitterbutton);
 
     m_temperaturebox = new QComboBox(widget);
@@ -900,11 +902,48 @@ void SystemMonitor::slotConfigAccepted()
     configgroup.writeEntry("hostname", m_hostname);
     configgroup.writeEntry("port", m_port);
     configgroup.writeEntry("update", m_update);
-    configgroup.writeEntry("cpucolor", m_cpucolor);
-    configgroup.writeEntry("netreceivercolor", m_receivercolor);
-    configgroup.writeEntry("nettransmittercolor", m_transmittercolor);
+    if (m_cpucolor == kCPUVisualizerColor()) {
+        configgroup.writeEntry("cpucolor", QColor());
+    } else {
+        configgroup.writeEntry("cpucolor", m_cpucolor);
+    }
+    if (m_receivercolor == kNetReceiverVisualizerColor()) {
+        configgroup.writeEntry("netreceivercolor", QColor());
+    } else {
+        configgroup.writeEntry("netreceivercolor", m_receivercolor);
+    }
+    if (m_transmittercolor == kNetTransmitterVisualizerColor()) {
+        configgroup.writeEntry("nettransmittercolor", QColor());
+    } else {
+        configgroup.writeEntry("nettransmittercolor", m_transmittercolor);
+    }
     configgroup.writeEntry("temperatureunit", m_temperatureunit);
     emit configNeedsSaving();
+    m_systemmonitorwidget->setupMonitors(
+        m_hostname, m_port, m_update,
+        m_cpucolor, m_receivercolor, m_transmittercolor, m_temperatureunit
+    );
+}
+
+void SystemMonitor::slotThemeChanged()
+{
+    KConfigGroup configgroup = config();
+    m_hostname = configgroup.readEntry("hostname", s_hostname);
+    m_port = configgroup.readEntry("port", s_port);
+    m_update = configgroup.readEntry("update", s_update);
+    m_cpucolor = configgroup.readEntry("cpucolor", QColor());
+    if (!m_cpucolor.isValid()) {
+        m_cpucolor = kCPUVisualizerColor();
+    }
+    m_receivercolor = configgroup.readEntry("netreceivercolor", QColor());
+    if (!m_receivercolor.isValid()) {
+        m_receivercolor = kNetReceiverVisualizerColor();
+    }
+    m_transmittercolor = configgroup.readEntry("nettransmittercolor", QColor());
+    if (!m_transmittercolor.isValid()) {
+        m_transmittercolor = kNetTransmitterVisualizerColor();
+    }
+    m_temperatureunit = configgroup.readEntry("temperatureunit", s_temperatureunit);
     m_systemmonitorwidget->setupMonitors(
         m_hostname, m_port, m_update,
         m_cpucolor, m_receivercolor, m_transmittercolor, m_temperatureunit

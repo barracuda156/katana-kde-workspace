@@ -46,6 +46,7 @@ public:
 
 private Q_SLOTS:
     void slotConfigAccepted();
+    void slotThemeChanged();
 
 private:
     friend SystemMonitorWidget;

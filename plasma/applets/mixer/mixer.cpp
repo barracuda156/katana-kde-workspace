@@ -960,7 +960,6 @@ MixerApplet::MixerApplet(QObject *parent, const QVariantList &args)
     m_mixerwidget(nullptr),
     m_showvisualizer(s_showvisualizer),
     m_visualizerscale(s_visualizerscale),
-    m_visualizercolor(kDefaultVisualizerColor()),
     m_visualizericon(s_visualizericon),
     m_visualizerbox(nullptr),
     m_visualizerscalebox(nullptr),
@@ -981,13 +980,8 @@ MixerApplet::~MixerApplet()
 
 void MixerApplet::init()
 {
-    KConfigGroup configgroup = config();
-    m_showvisualizer = configgroup.readEntry("showVisualizer", s_showvisualizer);
-    m_visualizerscale = configgroup.readEntry("visualizerScale", s_visualizerscale);
-    m_visualizercolor = configgroup.readEntry("visualizerColor", kDefaultVisualizerColor());
-    m_visualizericon = configgroup.readEntry("visualizerIcon", s_visualizericon);
-
-    m_mixerwidget->showVisualizer(m_showvisualizer, m_visualizerscale, m_visualizercolor, m_visualizericon);
+    slotThemeChanged();
+    connect(Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()), this, SLOT(slotThemeChanged()));
 }
 
 void MixerApplet::createConfigurationInterface(KConfigDialog *parent)
@@ -1005,9 +999,14 @@ void MixerApplet::createConfigurationInterface(KConfigDialog *parent)
     m_visualizerscalebox->setLabel(i18n("Smooth-factor"));
     widgetlayout->addWidget(m_visualizerscalebox);
 
+    const QColor defaultvisualizercolor = kDefaultVisualizerColor();
+    QColor visualizercolor = m_visualizercolor;
+    if (!visualizercolor.isValid()) {
+        visualizercolor = defaultvisualizercolor;
+    }
     m_visualizerbutton = new KColorButton(widget);
-    m_visualizerbutton->setDefaultColor(kDefaultVisualizerColor());
-    m_visualizerbutton->setColor(m_visualizercolor);
+    m_visualizerbutton->setDefaultColor(defaultvisualizercolor);
+    m_visualizerbutton->setColor(visualizercolor);
     widgetlayout->addWidget(m_visualizerbutton);
 
     m_visualizericonbox = new QCheckBox(widget);
@@ -1054,9 +1053,27 @@ void MixerApplet::slotConfigAccepted()
     KConfigGroup configgroup = config();
     configgroup.writeEntry("showVisualizer", m_showvisualizer);
     configgroup.writeEntry("visualizerScale", m_visualizerscale);
-    configgroup.writeEntry("visualizerColor", m_visualizercolor);
+    if (m_visualizercolor == kDefaultVisualizerColor()) {
+        configgroup.writeEntry("visualizerColor", QColor());
+    } else {
+        configgroup.writeEntry("visualizerColor", m_visualizercolor);
+    }
     configgroup.writeEntry("visualizerIcon", m_visualizericon);
     emit configNeedsSaving();
+    m_mixerwidget->showVisualizer(m_showvisualizer, m_visualizerscale, m_visualizercolor, m_visualizericon);
+}
+
+void MixerApplet::slotThemeChanged()
+{
+    KConfigGroup configgroup = config();
+    m_showvisualizer = configgroup.readEntry("showVisualizer", s_showvisualizer);
+    m_visualizerscale = configgroup.readEntry("visualizerScale", s_visualizerscale);
+    m_visualizercolor = configgroup.readEntry("visualizerColor", QColor());
+    if (!m_visualizercolor.isValid()) {
+        m_visualizercolor = kDefaultVisualizerColor();
+    }
+    m_visualizericon = configgroup.readEntry("visualizerIcon", s_visualizericon);
+
     m_mixerwidget->showVisualizer(m_showvisualizer, m_visualizerscale, m_visualizercolor, m_visualizericon);
 }
 
