@@ -457,6 +457,7 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     m_cpuplotter->addPlot(kCPUVisualizerColor());
     kAddItem(m_cpuframe, m_cpuplotter);
     m_layout->addItem(m_cpuframe, 0, 0);
+    m_layout->setColumnStretchFactor(0, 2);
 
     setLayout(m_layout);
 
