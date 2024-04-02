@@ -20,7 +20,13 @@
 #ifndef SYSTEM_MONITOR_H
 #define SYSTEM_MONITOR_H
 
+#include <QColor>
+#include <QComboBox>
 #include <KConfigDialog>
+#include <KLineEdit>
+#include <KTimeEdit>
+#include <KIntNumInput>
+#include <KColorButton>
 #include <Plasma/PopupApplet>
 
 class SystemMonitorWidget;
@@ -38,9 +44,26 @@ public:
     // Plasma::PopupApplet reimplementation
     QGraphicsWidget* graphicsWidget() final;
 
+private Q_SLOTS:
+    void slotConfigAccepted();
+
 private:
     friend SystemMonitorWidget;
     SystemMonitorWidget *m_systemmonitorwidget;
+    QString m_hostname;
+    int m_port;
+    int m_update;
+    QColor m_cpucolor;
+    QColor m_receivercolor;
+    QColor m_transmittercolor;
+    int m_temperatureunit;
+    KLineEdit* m_hostnameedit;
+    KIntNumInput* m_portbox;
+    KTimeEdit* m_updateedit;
+    KColorButton* m_cpubutton;
+    KColorButton* m_receiverbutton;
+    KColorButton* m_transmitterbutton;
+    QComboBox* m_temperaturebox;
 };
 
 #endif // SYSTEM_MONITOR_H

@@ -23,6 +23,7 @@
 
 #include <QMutex>
 #include <QTimer>
+#include <QVBoxLayout>
 #include <QGraphicsGridLayout>
 #include <QGraphicsLinearLayout>
 #include <KUnitConversion>
@@ -32,9 +33,13 @@
 #include <Plasma/Meter>
 #include <KDebug>
 
-static const QString s_sensorshostname = QString::fromLatin1("localhost");
+static const QString s_hostname = QString::fromLatin1("localhost");
+static const int s_port = -1;
+// NOTE: units of thermal zones are in celsius, see:
+// https://www.kernel.org/doc/Documentation/thermal/sysfs-api.txt
+static const int s_temperatureunit = static_cast<int>(KTemperature::Celsius);
 static const int s_monitorsid = -1;
-static const int s_updatetimeout = 1000;
+static const int s_update = 1; // 1 sec
 static const QSizeF s_minimumvisualizersize = QSizeF(120, 70);
 static const QSizeF s_minimummetersize = QSizeF(70, 70);
 
@@ -132,7 +137,6 @@ static void kAddItem(QGraphicsWidget *parent, QGraphicsWidget *widget)
     parentlayout->addItem(widget);
 }
 
-// TODO: hardcoded
 static QColor kCPUVisualizerColor()
 {
     return Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
@@ -152,7 +156,8 @@ class SystemMonitorNet : public Plasma::Frame
 {
     Q_OBJECT
 public:
-    SystemMonitorNet(QGraphicsWidget *parent, const QByteArray &netid);
+    SystemMonitorNet(QGraphicsWidget *parent, const QByteArray &netid,
+                     const QColor &receivercolor, const QColor &transmittercolor);
 
     QByteArray netID() const;
     void resetSample();
@@ -165,7 +170,8 @@ private:
     QList<double> m_netsample;
 };
 
-SystemMonitorNet::SystemMonitorNet(QGraphicsWidget *parent, const QByteArray &netid)
+SystemMonitorNet::SystemMonitorNet(QGraphicsWidget *parent, const QByteArray &netid,
+                                   const QColor &receivercolor, const QColor &transmittercolor)
     : Plasma::Frame(parent),
     m_netplotter(nullptr),
     m_netid(netid)
@@ -183,8 +189,8 @@ SystemMonitorNet::SystemMonitorNet(QGraphicsWidget *parent, const QByteArray &ne
     m_netplotter->setThinFrame(false);
     m_netplotter->setUseAutoRange(true);
     m_netplotter->setStackPlots(true);
-    m_netplotter->addPlot(kNetReceiverVisualizerColor());
-    m_netplotter->addPlot(kNetTransmitterVisualizerColor());
+    m_netplotter->addPlot(receivercolor);
+    m_netplotter->addPlot(transmittercolor);
     kAddItem(this, m_netplotter);
 }
 
@@ -299,30 +305,29 @@ class SystemMonitorThermal : public Plasma::Meter
 {
     Q_OBJECT
 public:
-    SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid);
+    SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid, const int temperatureunit);
 
     QByteArray thermalID() const;
     void setSensorValue(const float value);
 
 private:
     const QByteArray m_thermalid;
+    const KTemperature::KTempUnit m_temperatureunit;
     const QString m_thermaldisplaystring;
 };
 
-SystemMonitorThermal::SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid)
+SystemMonitorThermal::SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid, const int temperatureunit)
     : Plasma::Meter(parent),
     m_thermalid(thermalid),
+    m_temperatureunit(static_cast<KTemperature::KTempUnit>(temperatureunit)),
     m_thermaldisplaystring(kSensorDisplayString(m_thermalid))
 {
     setMeterType(Plasma::Meter::AnalogMeter);
     setMinimumSize(s_minimummetersize);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     setLabel(0, m_thermaldisplaystring);
-    // NOTE: units is celsius, see:
-    // https://www.kernel.org/doc/Documentation/thermal/sysfs-api.txt
     setMinimum(0);
-    // emergency is usually 2x less
-    setMaximum(200);
+    setMaximum(2000);
 }
 
 QByteArray SystemMonitorThermal::thermalID() const
@@ -332,7 +337,7 @@ QByteArray SystemMonitorThermal::thermalID() const
 
 void SystemMonitorThermal::setSensorValue(const float value)
 {
-    const QString valuestring = KTemperature(double(value), KTemperature::Celsius).toString();
+    const QString valuestring = KTemperature(double(value), m_temperatureunit).toString();
     setLabel(0, QString::fromLatin1("%1 - %2").arg(m_thermaldisplaystring).arg(valuestring));
     setValue(qRound(value));
 }
@@ -343,8 +348,8 @@ class SystemMonitorClient : public QObject, public KSGRD::SensorClient
     Q_OBJECT
 public:
     SystemMonitorClient(QObject *parent);
-    ~SystemMonitorClient();
 
+    bool setup(const QString &hostname, const int port);
     QList<QByteArray> sensors() const;
     void requestValue(const QByteArray &sensor);
 
@@ -360,21 +365,33 @@ protected:
     void sensorLost(int id) final;
 
 private:
+    QString m_hostname;
     QList<QByteArray> m_sensors;
 };
 
 SystemMonitorClient::SystemMonitorClient(QObject *parent)
-    : QObject(parent)
+    : QObject(parent),
+    m_hostname(s_hostname)
 {
     KSGRD::SensorMgr = new KSGRD::SensorManager(this);
-    KSGRD::SensorMgr->engage(s_sensorshostname, "", "ksysguardd");
-
     connect(KSGRD::SensorMgr, SIGNAL(update()), this, SLOT(slotUpdate()));
-    slotUpdate();
 }
 
-SystemMonitorClient::~SystemMonitorClient()
+bool SystemMonitorClient::setup(const QString &hostname, const int port)
 {
+    if (KSGRD::SensorMgr->isConnected(m_hostname)) {
+        KSGRD::SensorMgr->disengage(m_hostname);
+    }
+    m_hostname = hostname;
+    kDebug() << "connecting to sensor manager on" << m_hostname << port;
+    const bool result = KSGRD::SensorMgr->engage(m_hostname, "", "ksysguardd", port);
+    if (!result) {
+        kWarning() << "could not connect to sensor manager on" << m_hostname << port;
+        m_sensors.clear();
+    } else {
+        slotUpdate();
+    }
+    return result;
 }
 
 QList<QByteArray> SystemMonitorClient::sensors() const
@@ -391,12 +408,12 @@ void SystemMonitorClient::requestValue(const QByteArray &sensor)
         return;
     }
     const QString sensorstring = QString::fromLatin1(sensor.constData(), sensor.size());
-    KSGRD::SensorMgr->sendRequest(s_sensorshostname, sensorstring, this, sensorid);
+    KSGRD::SensorMgr->sendRequest(m_hostname, sensorstring, this, sensorid);
 }
 
 void SystemMonitorClient::slotUpdate()
 {
-    KSGRD::SensorMgr->sendRequest(s_sensorshostname, "monitors", this, s_monitorsid);
+    KSGRD::SensorMgr->sendRequest(m_hostname, "monitors", this, s_monitorsid);
 }
 
 void SystemMonitorClient::answerReceived(int id, const QList<QByteArray> &answer)
@@ -473,7 +490,11 @@ class SystemMonitorWidget : public QGraphicsWidget
     Q_OBJECT
 public:
     SystemMonitorWidget(SystemMonitor* systemmonitor);
-    ~SystemMonitorWidget();
+
+    void setupMonitors(const QString &hostname, const int port, const int update,
+                       const QColor &cpucolor,
+                       const QColor &receivercolor, const QColor &transmittercolor,
+                       const int temperatureunit);
 
 public Q_SLOTS:
     void slotUpdateLayout();
@@ -492,7 +513,11 @@ private:
     QList<SystemMonitorNet*> m_netmonitors;
     QList<SystemMonitorPartition*> m_partitionmonitors;
     QList<SystemMonitorThermal*> m_thermalmonitors;
+    QTimer* m_updatetimer;
     QList<QByteArray> m_requestsensors;
+    QColor m_receivercolor;
+    QColor m_transmittercolor;
+    int m_temperatureunit;
 };
 
 
@@ -504,12 +529,8 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     m_cpuframe(nullptr),
     m_cpuplotter(nullptr)
 {
-    m_layout = new QGraphicsGridLayout(this);
     m_systemmonitorclient = new SystemMonitorClient(this);
-    connect(
-        m_systemmonitorclient, SIGNAL(sensorValue(QByteArray,float)),
-        this, SLOT(slotSensorValue(QByteArray,float))
-    );
+    m_layout = new QGraphicsGridLayout(this);
 
     m_cpuframe = new Plasma::Frame(this);
     kSetupFrame(m_cpuframe);
@@ -531,14 +552,41 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
 
     setLayout(m_layout);
 
+    m_updatetimer = new QTimer(this);
+    // the time is in seconds, has to be in ms for the timer
+    m_updatetimer->setInterval(s_update * 1000);
+    connect(m_updatetimer, SIGNAL(timeout()), this, SLOT(slotRequestValues()));
+}
+
+void SystemMonitorWidget::setupMonitors(const QString &hostname, const int port, const int update,
+                                        const QColor &cpucolor,
+                                        const QColor &receivercolor, const QColor &transmittercolor,
+                                        const int temperatureunit)
+{
+    m_updatetimer->stop();
+    m_updatetimer->setInterval(update * 1000);
+    disconnect(m_systemmonitorclient, 0, this, 0);
+    m_systemmonitor->setBusy(true);
+    if (!m_systemmonitorclient->setup(hostname, port)) {
+        slotUpdateLayout();
+        const QString errorstring = i18n("Could not connect to: %1 on port %2", hostname, QString::number(port));
+        m_systemmonitor->showMessage(KIcon("dialog-error"), errorstring, Plasma::MessageButton::ButtonOk);
+        return;
+    }
+    m_cpuplotter->removePlot(0);
+    m_cpuplotter->addPlot(cpucolor);
+    m_receivercolor = receivercolor;
+    m_transmittercolor = transmittercolor;
+    m_temperatureunit = temperatureunit;
+    slotUpdateLayout();
+    connect(
+        m_systemmonitorclient, SIGNAL(sensorValue(QByteArray,float)),
+        this, SLOT(slotSensorValue(QByteArray,float))
+    );
     connect(
         m_systemmonitorclient, SIGNAL(sensorsChanged()),
         this, SLOT(slotUpdateLayout())
     );
-}
-
-SystemMonitorWidget::~SystemMonitorWidget()
-{
 }
 
 void SystemMonitorWidget::slotUpdateLayout()
@@ -568,7 +616,10 @@ void SystemMonitorWidget::slotUpdateLayout()
         if (ksensortype == KSensorType::NetReceiverSensor) {
             const QByteArray knetid = kNetID(sensor);
             kDebug() << "creating net monitor for" << knetid;
-            SystemMonitorNet* netmonitor = new SystemMonitorNet(this, knetid);
+            SystemMonitorNet* netmonitor = new SystemMonitorNet(
+                this, knetid,
+                m_receivercolor, m_transmittercolor
+            );
             m_layout->addItem(netmonitor, 1, 0);
             m_netmonitors.append(netmonitor);
         }
@@ -576,7 +627,9 @@ void SystemMonitorWidget::slotUpdateLayout()
         if (ksensortype == KSensorType::PartitionFreeSensor) {
             const QByteArray kpartitionid = kPartitionID(sensor);
             kDebug() << "creating partition monitor for" << kpartitionid;
-            SystemMonitorPartition* partitionmonitor = new SystemMonitorPartition(this, kpartitionid);
+            SystemMonitorPartition* partitionmonitor = new SystemMonitorPartition(
+                this, kpartitionid
+            );
             m_layout->addItem(partitionmonitor, m_layout->rowCount(), 0, 1, 2);
             m_partitionmonitors.append(partitionmonitor);
         }
@@ -585,21 +638,29 @@ void SystemMonitorWidget::slotUpdateLayout()
     foreach (const QByteArray &sensor, m_systemmonitorclient->sensors()) {
         const KSensorType ksensortype = kSensorType(sensor);
         if (ksensortype == KSensorType::ThermalSensor) {
-            // bottom row is reserved, thermal monitors are aligned to the CPU monitor + the
-            // network monitors count
+            // bottom is reserved, thermal monitors are aligned to the CPU monitor + the network
+            // monitors count
             if (m_thermalmonitors.size() >= (m_netmonitors.size() + 1)) {
                 kWarning() << "not enough space for thermal sensor" << sensor;
                 continue;
             }
             const QByteArray thermalid = kThermalID(sensor);
             kDebug() << "creating thermal monitor for" << thermalid;
-            SystemMonitorThermal* thermalmonitor = new SystemMonitorThermal(this, thermalid);
+            SystemMonitorThermal* thermalmonitor = new SystemMonitorThermal(
+                this, thermalid,
+                m_temperatureunit
+            );
             m_layout->addItem(thermalmonitor, m_thermalmonitors.size(), 1);
             m_thermalmonitors.append(thermalmonitor);
         }
     }
 
-    QTimer::singleShot(s_updatetimeout, this, SLOT(slotRequestValues()));
+    // immediate update in case the update time is long
+    locker.unlock();
+    slotRequestValues();
+    // and start polling for updates
+    m_updatetimer->start();
+    m_systemmonitor->setBusy(false);
 }
 
 void SystemMonitorWidget::slotRequestValues()
@@ -615,7 +676,6 @@ void SystemMonitorWidget::slotRequestValues()
     foreach (const QByteArray &request, m_requestsensors) {
         m_systemmonitorclient->requestValue(request);
     }
-    QTimer::singleShot(s_updatetimeout, this, SLOT(slotRequestValues()));
 }
 
 void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float value)
@@ -691,7 +751,21 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
 
 SystemMonitor::SystemMonitor(QObject *parent, const QVariantList &args)
     : Plasma::PopupApplet(parent, args),
-    m_systemmonitorwidget(nullptr)
+    m_systemmonitorwidget(nullptr),
+    m_hostname(s_hostname),
+    m_port(s_port),
+    m_update(s_update),
+    m_cpucolor(kCPUVisualizerColor()),
+    m_receivercolor(kNetReceiverVisualizerColor()),
+    m_transmittercolor(kNetTransmitterVisualizerColor()),
+    m_temperatureunit(s_temperatureunit),
+    m_hostnameedit(nullptr),
+    m_portbox(nullptr),
+    m_updateedit(nullptr),
+    m_cpubutton(nullptr),
+    m_receiverbutton(nullptr),
+    m_transmitterbutton(nullptr),
+    m_temperaturebox(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_system-monitor");
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
@@ -707,17 +781,112 @@ SystemMonitor::~SystemMonitor()
 
 void SystemMonitor::init()
 {
-    QTimer::singleShot(500, m_systemmonitorwidget, SLOT(slotUpdateLayout()));
+    KConfigGroup configgroup = config();
+    m_hostname = configgroup.readEntry("hostname", s_hostname);
+    m_port = configgroup.readEntry("port", s_port);
+    m_update = configgroup.readEntry("update", s_update);
+    m_cpucolor = configgroup.readEntry("cpucolor", kCPUVisualizerColor());
+    m_receivercolor = configgroup.readEntry("netreceivercolor", kNetReceiverVisualizerColor());
+    m_transmittercolor = configgroup.readEntry("nettransmittercolor", kNetTransmitterVisualizerColor());
+    m_temperatureunit = configgroup.readEntry("temperatureunit", s_temperatureunit);
+    m_systemmonitorwidget->setupMonitors(
+        m_hostname, m_port, m_update,
+        m_cpucolor, m_receivercolor, m_transmittercolor, m_temperatureunit
+    );
 }
 
 void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
 {
-    // TODO: implement
+    QWidget* widget = new QWidget();
+    QVBoxLayout* widgetlayout = new QVBoxLayout(widget);
+    // TODO: labels
+    m_hostnameedit = new KLineEdit(widget);
+    m_hostnameedit->setText(m_hostname);
+    widgetlayout->addWidget(m_hostnameedit);
+
+    m_portbox = new KIntNumInput(widget);
+    m_portbox->setMinimum(s_port);
+    m_portbox->setMaximum(USHRT_MAX);
+    m_portbox->setSpecialValueText(i18n("Default"));
+    m_portbox->setValue(m_port);
+    widgetlayout->addWidget(m_portbox);
+
+    m_updateedit = new KTimeEdit(widget);
+    m_updateedit->setMinimumTime(QTime(0, 0, 1));
+    m_updateedit->setTime(QTime(0, 0, 0).addSecs(m_update));
+    widgetlayout->addWidget(m_updateedit);
+
+    m_cpubutton = new KColorButton(widget);
+    m_cpubutton->setDefaultColor(kCPUVisualizerColor());
+    m_cpubutton->setColor(m_cpucolor);
+    widgetlayout->addWidget(m_cpubutton);
+
+    m_receiverbutton = new KColorButton(widget);
+    m_receiverbutton->setDefaultColor(kNetReceiverVisualizerColor());
+    m_receiverbutton->setColor(m_receivercolor);
+    widgetlayout->addWidget(m_receiverbutton);
+
+    m_transmitterbutton = new KColorButton(widget);
+    m_transmitterbutton->setDefaultColor(kNetTransmitterVisualizerColor());
+    m_transmitterbutton->setColor(m_transmittercolor);
+    widgetlayout->addWidget(m_transmitterbutton);
+
+    m_temperaturebox = new QComboBox(widget);
+    for (int i = 0; i < KTemperature::UnitCount; i++) {
+        m_temperaturebox->addItem(KTemperature::unitDescription(static_cast<KTemperature::KTempUnit>(i)));
+    }
+    m_temperaturebox->setCurrentIndex(m_temperatureunit);
+    widgetlayout->addWidget(m_temperaturebox);
+
+    widgetlayout->addStretch();
+    widget->setLayout(widgetlayout);
+    parent->addPage(widget, i18n("System Monitor"), "utilities-system-monitor");
+
+    connect(parent, SIGNAL(applyClicked()), this, SLOT(slotConfigAccepted()));
+    connect(parent, SIGNAL(okClicked()), this, SLOT(slotConfigAccepted()));
+    connect(m_hostnameedit, SIGNAL(textChanged(QString)), parent, SLOT(settingsModified()));
+    connect(m_portbox, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
+    connect(m_updateedit, SIGNAL(timeChanged(QTime)), parent, SLOT(settingsModified()));
+    connect(m_cpubutton, SIGNAL(changed(QColor)), parent, SLOT(settingsModified()));
+    connect(m_receiverbutton, SIGNAL(changed(QColor)), parent, SLOT(settingsModified()));
+    connect(m_transmitterbutton, SIGNAL(changed(QColor)), parent, SLOT(settingsModified()));
+    connect(m_temperaturebox, SIGNAL(currentIndexChanged(int)), parent, SLOT(settingsModified()));
 }
 
 QGraphicsWidget *SystemMonitor::graphicsWidget()
 {
     return m_systemmonitorwidget;
+}
+
+void SystemMonitor::slotConfigAccepted()
+{
+    Q_ASSERT(m_hostnameedit != nullptr);
+    Q_ASSERT(m_portbox != nullptr);
+    Q_ASSERT(m_updateedit != nullptr);
+    Q_ASSERT(m_cpubutton != nullptr);
+    Q_ASSERT(m_receiverbutton != nullptr);
+    Q_ASSERT(m_transmitterbutton != nullptr);
+    Q_ASSERT(m_temperaturebox != nullptr);
+    m_hostname = m_hostnameedit->text();
+    m_port = m_portbox->value();
+    m_update = QTime(0, 0, 0).secsTo(m_updateedit->time());
+    m_cpucolor = m_cpubutton->color();
+    m_receivercolor = m_receiverbutton->color();
+    m_transmittercolor = m_transmitterbutton->color();
+    m_temperatureunit = m_temperaturebox->currentIndex();
+    KConfigGroup configgroup = config();
+    configgroup.writeEntry("hostname", m_hostname);
+    configgroup.writeEntry("port", m_port);
+    configgroup.writeEntry("update", m_update);
+    configgroup.writeEntry("cpucolor", m_cpucolor);
+    configgroup.writeEntry("netreceivercolor", m_receivercolor);
+    configgroup.writeEntry("nettransmittercolor", m_transmittercolor);
+    configgroup.writeEntry("temperatureunit", m_temperatureunit);
+    emit configNeedsSaving();
+    m_systemmonitorwidget->setupMonitors(
+        m_hostname, m_port, m_update,
+        m_cpucolor, m_receivercolor, m_transmittercolor, m_temperatureunit
+    );
 }
 
 K_EXPORT_PLASMA_APPLET(system-monitor_applet, SystemMonitor)
