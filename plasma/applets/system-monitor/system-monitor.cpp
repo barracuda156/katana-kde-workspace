@@ -36,7 +36,7 @@
 
 static const QString s_hostname = QString::fromLatin1("localhost");
 static const int s_port = -1;
-// NOTE: units of thermal zones are in celsius, see:
+// NOTE: values of thermal zones are in celsius, see:
 // https://www.kernel.org/doc/Documentation/thermal/sysfs-api.txt
 static const int s_temperatureunit = static_cast<int>(KTemperature::Celsius);
 static const int s_monitorsid = -1;
@@ -162,8 +162,8 @@ public:
 
     QByteArray netID() const;
     void resetSample();
-    void addReceiveSample(const float value);
-    void addTransmitSample(const float value);
+    void addReceiveSample(const double value);
+    void addTransmitSample(const double value);
 
 private:
     Plasma::SignalPlotter* m_netplotter;
@@ -208,15 +208,15 @@ void SystemMonitorNet::resetSample()
     m_netsample.append(0.0);
 }
 
-void SystemMonitorNet::addReceiveSample(const float value)
+void SystemMonitorNet::addReceiveSample(const double value)
 {
-    m_netsample[0] = double(value);
+    m_netsample[0] = value;
     m_netplotter->addSample(m_netsample);
 }
 
-void SystemMonitorNet::addTransmitSample(const float value)
+void SystemMonitorNet::addTransmitSample(const double value)
 {
-    m_netsample[1] = double(value);
+    m_netsample[1] = value;
     m_netplotter->addSample(m_netsample);
 }
 
@@ -229,8 +229,8 @@ public:
 
     QByteArray partitionID() const;
     void resetSpace();
-    void setFreeSpace(const float value);
-    void setUsedSpace(const float value);
+    void setFreeSpace(const double value);
+    void setUsedSpace(const double value);
 
 protected:
      void paint(QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) final;
@@ -269,13 +269,13 @@ void SystemMonitorPartition::resetSpace()
     m_partitionvalues[1] = -1;
 }
 
-void SystemMonitorPartition::setFreeSpace(const float value)
+void SystemMonitorPartition::setFreeSpace(const double value)
 {
     m_partitionvalues[0] = qRound(value / 1024.0);
     calculateValues();
 }
 
-void SystemMonitorPartition::setUsedSpace(const float value)
+void SystemMonitorPartition::setUsedSpace(const double value)
 {
     m_partitionvalues[1] = qRound(value / 1024.0);
     calculateValues();
@@ -309,7 +309,7 @@ public:
     SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid, const int temperatureunit);
 
     QByteArray thermalID() const;
-    void setSensorValue(const float value);
+    void setSensorValue(const double value);
 
 private:
     const QByteArray m_thermalid;
@@ -357,9 +357,9 @@ QByteArray SystemMonitorThermal::thermalID() const
     return m_thermalid;
 }
 
-void SystemMonitorThermal::setSensorValue(const float value)
+void SystemMonitorThermal::setSensorValue(const double value)
 {
-    const double valueinunit = KTemperature(double(value), KTemperature::Celsius).convertTo(m_temperatureunit);
+    const double valueinunit = KTemperature(value, KTemperature::Celsius).convertTo(m_temperatureunit);
     const QString valuestring = KTemperature(valueinunit, m_temperatureunit).toString();
     setLabel(0, QString::fromLatin1("%1 - %2").arg(m_thermaldisplaystring).arg(valuestring));
     setValue(qRound(valueinunit));
@@ -378,7 +378,7 @@ public:
 
 Q_SIGNALS:
     void sensorsChanged();
-    void sensorValue(const QByteArray &sensor, const float value);
+    void sensorValue(const QByteArray &sensor, const double value);
 
 private Q_SLOTS:
     void slotUpdate();
@@ -491,9 +491,14 @@ void SystemMonitorClient::answerReceived(int id, const QList<QByteArray> &answer
     } else if (id < m_sensors.size()) {
         foreach (const QByteArray &sensoranswer, answer) {
             const QByteArray sensorname = m_sensors.at(id);
-            const float sensorvalue = sensoranswer.toFloat();
-            kDebug() << "got sensor value" << id << sensorname << sensorvalue;
-            emit sensorValue(sensorname, sensorvalue);
+            bool ok = false;
+            const double sensorvalue = sensoranswer.toDouble(&ok);
+            if (Q_UNLIKELY(!ok)) {
+                kWarning() << "sensor value conversion failed" << sensoranswer;
+            } else {
+                kDebug() << "got sensor value" << id << sensorname << sensorvalue;
+                emit sensorValue(sensorname, sensorvalue);
+            }
         }
     } else {
         kWarning() << "invalid sensor ID" << id;
@@ -524,7 +529,7 @@ public Q_SLOTS:
 
 private Q_SLOTS:
     void slotRequestValues();
-    void slotSensorValue(const QByteArray &sensor, const float value);
+    void slotSensorValue(const QByteArray &sensor, const double value);
 
 private:
     QMutex m_mutex;
@@ -603,8 +608,8 @@ void SystemMonitorWidget::setupMonitors(const QString &hostname, const int port,
     m_temperatureunit = temperatureunit;
     slotUpdateLayout();
     connect(
-        m_systemmonitorclient, SIGNAL(sensorValue(QByteArray,float)),
-        this, SLOT(slotSensorValue(QByteArray,float))
+        m_systemmonitorclient, SIGNAL(sensorValue(QByteArray,double)),
+        this, SLOT(slotSensorValue(QByteArray,double))
     );
     connect(
         m_systemmonitorclient, SIGNAL(sensorsChanged()),
@@ -701,12 +706,12 @@ void SystemMonitorWidget::slotRequestValues()
     }
 }
 
-void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float value)
+void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const double value)
 {
     const KSensorType ksensortype = kSensorType(sensor);
     switch (ksensortype) {
         case KSensorType::CPUSensor: {
-            m_cpuplotter->addSample(QList<double>() << double(value));
+            m_cpuplotter->addSample(QList<double>() << value);
             break;
         }
         case KSensorType::NetReceiverSensor: {
