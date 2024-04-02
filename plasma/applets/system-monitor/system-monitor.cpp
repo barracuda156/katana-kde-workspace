@@ -280,6 +280,8 @@ void SystemMonitorPartition::paint(QPainter *p, const QStyleOptionGraphicsItem *
     p->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
     QFontMetricsF pfmetrics(p->font());
     const QRectF rect(QPointF(0, 0), size());
+    // the partition display string may be very long (it is the final directory of the mount point)
+    // and Plasma::Meter does not do eliding so it is done here
     const QString pstring = pfmetrics.elidedText(m_partitiondisplaystring, Qt::ElideRight, rect.width());
     p->drawText(rect, Qt::AlignCenter, pstring);
 }
@@ -401,6 +403,9 @@ void SystemMonitorClient::answerReceived(int id, const QList<QByteArray> &answer
 {
     if (id == s_monitorsid) {
         m_sensors.clear();
+        // pre-sort, order of occurance matters and thermal sensors are not even received in sorted
+        // order
+        QList<QByteArray> thermalsensors;
         foreach (const QByteArray &sensoranswer, answer) {
             const QList<QByteArray> splitsensoranswer = sensoranswer.split('\t');
             if (splitsensoranswer.size() != 2) {
@@ -412,21 +417,36 @@ void SystemMonitorClient::answerReceived(int id, const QList<QByteArray> &answer
                 continue;
             }
             const QByteArray sensorname = splitsensoranswer.at(0);
-            kDebug() << "mapping sensor" << sensorname << sensortype;
-            // pre-sort, order of occurance matters
             const KSensorType ksensortype = kSensorType(sensorname);
             switch (ksensortype) {
+                case KSensorType::ThermalSensor: {
+                    kDebug() << "mapping thermal sensor" << sensorname << sensortype;
+                    thermalsensors.append(sensorname);
+                    break;
+                }
                 case KSensorType::PartitionFreeSensor:
                 case KSensorType::PartitionUsedSensor: {
+                    kDebug() << "mapping sensor to back" << sensorname << sensortype;
                     m_sensors.append(sensorname);
                     break;
                 }
-                default: {
+                case KSensorType::CPUSensor:
+                case KSensorType::NetReceiverSensor:
+                case KSensorType::NetTransmitterSensor: {
+                    kDebug() << "mapping sensor to front" << sensorname << sensortype;
                     m_sensors.prepend(sensorname);
+                    break;
+                }
+                case KSensorType::UnknownSensor: {
                     break;
                 }
             }
         }
+        if (!thermalsensors.isEmpty()) {
+            qSort(thermalsensors);
+            m_sensors.append(thermalsensors);
+        }
+        // qDebug() << Q_FUNC_INFO << m_sensors;
         emit sensorsChanged();
     } else if (id < m_sensors.size()) {
         foreach (const QByteArray &sensoranswer, answer) {
@@ -543,18 +563,20 @@ void SystemMonitorWidget::slotUpdateLayout()
     m_requestsensors.clear();
     foreach (const QByteArray &sensor, m_systemmonitorclient->sensors()) {
         const KSensorType ksensortype = kSensorType(sensor);
-        if (ksensortype != KSensorType::UnknownSensor) {
-            m_requestsensors.append(sensor);
-            kDebug() << "monitoring" << sensor << ksensortype;
-        }
+        Q_ASSERT(ksensortype != KSensorType::UnknownSensor);
+        m_requestsensors.append(sensor);
         if (ksensortype == KSensorType::NetReceiverSensor) {
-            SystemMonitorNet* netmonitor = new SystemMonitorNet(this, kNetID(sensor));
+            const QByteArray knetid = kNetID(sensor);
+            kDebug() << "creating net monitor for" << knetid;
+            SystemMonitorNet* netmonitor = new SystemMonitorNet(this, knetid);
             m_layout->addItem(netmonitor, 1, 0);
             m_netmonitors.append(netmonitor);
         }
 
         if (ksensortype == KSensorType::PartitionFreeSensor) {
-            SystemMonitorPartition* partitionmonitor = new SystemMonitorPartition(this, kPartitionID(sensor));
+            const QByteArray kpartitionid = kPartitionID(sensor);
+            kDebug() << "creating partition monitor for" << kpartitionid;
+            SystemMonitorPartition* partitionmonitor = new SystemMonitorPartition(this, kpartitionid);
             m_layout->addItem(partitionmonitor, m_layout->rowCount(), 0, 1, 2);
             m_partitionmonitors.append(partitionmonitor);
         }
@@ -569,7 +591,9 @@ void SystemMonitorWidget::slotUpdateLayout()
                 kWarning() << "not enough space for thermal sensor" << sensor;
                 continue;
             }
-            SystemMonitorThermal* thermalmonitor = new SystemMonitorThermal(this, kThermalID(sensor));
+            const QByteArray thermalid = kThermalID(sensor);
+            kDebug() << "creating thermal monitor for" << thermalid;
+            SystemMonitorThermal* thermalmonitor = new SystemMonitorThermal(this, thermalid);
             m_layout->addItem(thermalmonitor, m_thermalmonitors.size(), 1);
             m_thermalmonitors.append(thermalmonitor);
         }
