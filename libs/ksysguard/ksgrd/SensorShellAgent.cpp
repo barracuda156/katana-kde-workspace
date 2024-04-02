@@ -47,7 +47,7 @@ SensorShellAgent::~SensorShellAgent()
 }
 	
 bool SensorShellAgent::start( const QString &host, const QString &shell,
-                              const QString &command, int )
+                              const QString &command, int port)
 {
   mDaemon = new QProcess();
   mDaemon->setProcessChannelMode( QProcess::SeparateChannels );
@@ -71,12 +71,12 @@ bool SensorShellAgent::start( const QString &host, const QString &shell,
     QString program = args.takeAt(0);
     mDaemon->start(program, args);
   } else {
-    mArgs = mShell + " " + hostName() + " ksysguardd";
+    mArgs = mShell + " " + hostName() + " ksysguardd -p" + port;
     mDaemon->start(mShell, QStringList() << hostName() << "ksysguardd");
   }
   
 
-  return true;
+  return mDaemon->waitForStarted();
 }
 
 void SensorShellAgent::hostInfo( QString &shell, QString &command,
