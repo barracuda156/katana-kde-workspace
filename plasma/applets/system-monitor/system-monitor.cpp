@@ -161,7 +161,7 @@ public:
 
 private:
     Plasma::SignalPlotter* m_netplotter;
-    QByteArray m_netid;
+    const QByteArray m_netid;
     QList<double> m_netsample;
 };
 
@@ -221,15 +221,22 @@ public:
     SystemMonitorPartition(QGraphicsWidget *parent, const QByteArray &partitionid);
 
     QByteArray partitionID() const;
+    void resetSpace();
+    void setFreeSpace(const float value);
+    void setUsedSpace(const float value);
 
 private:
-    QByteArray m_partitionid;
+    void calculateValues();
+
+    const QByteArray m_partitionid;
+    int m_partitionvalues[2];
 };
 
 SystemMonitorPartition::SystemMonitorPartition(QGraphicsWidget *parent, const QByteArray &partitionid)
     : Plasma::Meter(parent),
     m_partitionid(partitionid)
 {
+    resetSpace();
     setMeterType(Plasma::Meter::BarMeterHorizontal);
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     // TODO: label
@@ -240,6 +247,32 @@ SystemMonitorPartition::SystemMonitorPartition(QGraphicsWidget *parent, const QB
 QByteArray SystemMonitorPartition::partitionID() const
 {
     return m_partitionid;
+}
+
+void SystemMonitorPartition::resetSpace()
+{
+    m_partitionvalues[0] = -1;
+    m_partitionvalues[1] = -1;
+}
+
+void SystemMonitorPartition::setFreeSpace(const float value)
+{
+    m_partitionvalues[0] = qRound(value / 1024.0);
+    calculateValues();
+}
+
+void SystemMonitorPartition::setUsedSpace(const float value)
+{
+    m_partitionvalues[1] = qRound(value / 1024.0);
+    calculateValues();
+}
+
+void SystemMonitorPartition::calculateValues()
+{
+    if (m_partitionvalues[0] != -1 && m_partitionvalues[1] != -1) {
+        setMaximum(m_partitionvalues[0] + m_partitionvalues[1]);
+        setValue(m_partitionvalues[1]);
+    }
 }
 
 
@@ -253,18 +286,18 @@ public:
     void setSensorValue(const float value);
 
 private:
-    QByteArray m_thermalid;
-    QString m_thermaldisplaystring;
+    const QByteArray m_thermalid;
+    const QString m_thermaldisplaystring;
 };
 
 SystemMonitorThermal::SystemMonitorThermal(QGraphicsWidget *parent, const QByteArray &thermalid)
     : Plasma::Meter(parent),
-    m_thermalid(thermalid)
+    m_thermalid(thermalid),
+    m_thermaldisplaystring(kSensorDisplayString(m_thermalid))
 {
     setMeterType(Plasma::Meter::AnalogMeter);
     setMinimumSize(s_minimummetersize);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    m_thermaldisplaystring = kSensorDisplayString(m_thermalid);
     setLabel(0, m_thermaldisplaystring);
     // NOTE: units is celsius, see:
     // https://www.kernel.org/doc/Documentation/thermal/sysfs-api.txt
@@ -534,6 +567,9 @@ void SystemMonitorWidget::slotRequestValues()
     foreach (SystemMonitorNet* netmonitor, m_netmonitors) {
         netmonitor->resetSample();
     }
+    foreach (SystemMonitorPartition* partitionmonitor, m_partitionmonitors) {
+        partitionmonitor->resetSpace();
+    }
     locker.unlock();
     foreach (const QByteArray &request, m_requestsensors) {
         m_systemmonitorclient->requestValue(request);
@@ -576,10 +612,7 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
             const QByteArray partitionid = kPartitionID(sensor);
             foreach (SystemMonitorPartition* partitionmonitor, m_partitionmonitors) {
                 if (partitionmonitor->partitionID() == partitionid) {
-                    const int roundvalue = qRound(value);
-                    const int maxvalue = qMax(roundvalue + partitionmonitor->value(), roundvalue);
-                    partitionmonitor->setMaximum(maxvalue);
-                    // qDebug() << Q_FUNC_INFO << "partition free" << sensor << roundvalue << maxvalue;
+                    partitionmonitor->setFreeSpace(value);
                     break;
                 }
             }
@@ -590,11 +623,7 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
             const QByteArray partitionid = kPartitionID(sensor);
             foreach (SystemMonitorPartition* partitionmonitor, m_partitionmonitors) {
                 if (partitionmonitor->partitionID() == partitionid) {
-                    const int roundvalue = qRound(value);
-                    const int maxvalue = qMax(roundvalue, partitionmonitor->maximum());
-                    partitionmonitor->setMaximum(maxvalue);
-                    partitionmonitor->setValue(roundvalue);
-                    // qDebug() << Q_FUNC_INFO << "partition used" << sensor << roundvalue << maxvalue;
+                    partitionmonitor->setUsedSpace(value);
                     break;
                 }
             }
@@ -615,11 +644,6 @@ void SystemMonitorWidget::slotSensorValue(const QByteArray &sensor, const float 
             kWarning() << "got value for unknown sensor" << sensor;
             break;
         }
-    }
-    if (ksensortype == KSensorType::PartitionFreeSensor || ksensortype == KSensorType::PartitionUsedSensor) {
-        // force an update, apparently sometimes the sensors have bogus values (e.g. / reported to
-        // have zero free space, probably bug in ksysguard)
-        update();
     }
 }
 
