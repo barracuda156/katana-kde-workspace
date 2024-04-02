@@ -225,23 +225,30 @@ public:
     void setFreeSpace(const float value);
     void setUsedSpace(const float value);
 
+protected:
+     void paint(QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) final;
+
 private:
     void calculateValues();
 
     const QByteArray m_partitionid;
+    QString m_partitiondisplaystring;
     int m_partitionvalues[2];
 };
 
 SystemMonitorPartition::SystemMonitorPartition(QGraphicsWidget *parent, const QByteArray &partitionid)
     : Plasma::Meter(parent),
-    m_partitionid(partitionid)
+    m_partitionid(partitionid),
+    m_partitiondisplaystring(kSensorDisplayString(m_partitionid))
 {
     resetSpace();
     setMeterType(Plasma::Meter::BarMeterHorizontal);
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    // TODO: label
     setMinimum(0);
     setMaximum(0);
+    if (m_partitiondisplaystring.isEmpty()) {
+        m_partitiondisplaystring = QLatin1String("root");
+    }
 }
 
 QByteArray SystemMonitorPartition::partitionID() const
@@ -265,6 +272,16 @@ void SystemMonitorPartition::setUsedSpace(const float value)
 {
     m_partitionvalues[1] = qRound(value / 1024.0);
     calculateValues();
+}
+
+void SystemMonitorPartition::paint(QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    Plasma::Meter::paint(p, option, widget);
+    p->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+    QFontMetricsF pfmetrics(p->font());
+    const QRectF rect(QPointF(0, 0), size());
+    const QString pstring = pfmetrics.elidedText(m_partitiondisplaystring, Qt::ElideRight, rect.width());
+    p->drawText(rect, Qt::AlignCenter, pstring);
 }
 
 void SystemMonitorPartition::calculateValues()
