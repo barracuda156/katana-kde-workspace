@@ -23,8 +23,10 @@
 #include <QClipboard>
 #include <KGlobal>
 #include <KLocale>
+#include <KSystemTimeZones>
 #include <KCModuleInfo>
 #include <Plasma/PaintUtils>
+#include <Plasma/ToolTipManager>
 #include <KDebug>
 
 static QFont kClockFont(const QRectF &contentsRect)
@@ -81,6 +83,7 @@ DigitalClockApplet::DigitalClockApplet(QObject *parent, const QVariantList &args
 void DigitalClockApplet::init()
 {
     m_timer->start();
+    Plasma::ToolTipManager::self()->registerWidget(this);
 }
 
 void DigitalClockApplet::paintInterface(QPainter *painter,
@@ -187,6 +190,19 @@ void DigitalClockApplet::changeEvent(QEvent *event)
 void DigitalClockApplet::slotTimeout()
 {
     update();
+    Plasma::ToolTipContent plasmatooltip;
+    plasmatooltip.setMainText(i18n("Current Time"));
+    const QString clockstring = kClockString();
+    QString clocktooltip;
+    if (KSystemTimeZones::local() != KTimeZone::utc()) {
+        clocktooltip.append(i18n("UTC: %1<br/>", KGlobal::locale()->formatTime(QDateTime::currentDateTimeUtc().time())));
+        clocktooltip.append(i18n("Local: %1", clockstring));
+    } else {
+        clocktooltip.append(i18n("<center>%1</center>", clockstring));
+    }
+    plasmatooltip.setSubText(clocktooltip);
+    plasmatooltip.setImage(KIcon("clock"));
+    Plasma::ToolTipManager::self()->setContent(this, plasmatooltip);
 }
 
 void DigitalClockApplet::slotConfigAccepted()

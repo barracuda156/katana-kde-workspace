@@ -159,9 +159,9 @@ void LunaApplet::constraintsEvent(Plasma::Constraints constraints)
 void LunaApplet::slotTimeout()
 {
     update();
-    Plasma::ToolTipContent plasmatooltipcontent;
-    plasmatooltipcontent.setMainText(kLunaPhaseString());
-    Plasma::ToolTipManager::self()->setContent(this, plasmatooltipcontent);
+    Plasma::ToolTipContent plasmatooltip;
+    plasmatooltip.setMainText(kLunaPhaseString());
+    Plasma::ToolTipManager::self()->setContent(this, plasmatooltip);
 }
 
 #include "moc_luna.cpp"

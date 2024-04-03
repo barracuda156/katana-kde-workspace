@@ -249,7 +249,7 @@ static void kUpdateIconWidget(Plasma::IconWidget *iconwidget, const KWeatherData
         )
     );
     Plasma::ToolTipContent plasmatooltip;
-    plasmatooltip.setMainText(QString::fromLatin1("<center>%1</center>").arg(dayname));
+    plasmatooltip.setMainText(dayname);
     plasmatooltip.setSubText(
         QString::fromLatin1("<center>%1</center>").arg(
             kDisplayCondition(
@@ -759,6 +759,7 @@ WeatherApplet::WeatherApplet(QObject *parent, const QVariantList &args)
     m_spacer(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_weather");
+    KGlobal::locale()->insertCatalog("timezones4");
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
     setHasConfigurationInterface(true);
     setPopupIcon(s_defaultweathericon);
