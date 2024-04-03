@@ -29,6 +29,7 @@
 #include <QGraphicsLinearLayout>
 #include <KUnitConversion>
 #include <Plasma/Theme>
+#include <Plasma/Label>
 #include <Plasma/Frame>
 #include <Plasma/SignalPlotter>
 #include <Plasma/Meter>
@@ -487,10 +488,8 @@ bool SystemMonitorClient::setup(const QString &hostname, const int port)
     const bool result = KSGRD::SensorMgr->engage(m_hostname, "", "ksysguardd", port);
     if (!result) {
         kWarning() << "could not connect to sensor manager on" << m_hostname << port;
-        m_sensors.clear();
-    } else {
-        slotUpdate();
     }
+    slotUpdate();
     return result;
 }
 
@@ -513,6 +512,9 @@ void SystemMonitorClient::requestValue(const QByteArray &sensor)
 
 void SystemMonitorClient::slotUpdate()
 {
+    // even if setup does not fail the manager may not answer
+    m_sensors.clear();
+    emit sensorsChanged();
     KSGRD::SensorMgr->sendRequest(m_hostname, "monitors", this, s_monitorsid);
 }
 
@@ -612,6 +614,7 @@ private:
     SystemMonitor* m_systemmonitor;
     QGraphicsGridLayout* m_layout;
     SystemMonitorClient* m_systemmonitorclient;
+    Plasma::Label* m_label;
     SystemMonitorCPU* m_cpuframe;
     Plasma::SignalPlotter* m_cpuplotter;
     QList<SystemMonitorNet*> m_netmonitors;
@@ -629,11 +632,17 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     m_systemmonitor(systemmonitor),
     m_layout(nullptr),
     m_systemmonitorclient(nullptr),
+    m_label(nullptr),
     m_cpuframe(nullptr),
     m_cpuplotter(nullptr)
 {
     m_systemmonitorclient = new SystemMonitorClient(this);
     m_layout = new QGraphicsGridLayout(this);
+
+    m_label = new Plasma::Label(this);
+    m_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_label->setText(i18n("No sensors"));
+    m_label->setAlignment(Qt::AlignCenter);
 
     m_cpuframe = new SystemMonitorCPU(this);
     m_cpuplotter = new Plasma::SignalPlotter(m_cpuframe);
@@ -751,6 +760,17 @@ void SystemMonitorWidget::slotUpdateLayout()
             m_layout->addItem(thermalmonitor, m_thermalmonitors.size(), 1);
             m_thermalmonitors.append(thermalmonitor);
         }
+    }
+
+    if (m_requestsensors.isEmpty()) {
+        // no sensors were reported
+        m_layout->addItem(m_label, m_layout->rowCount(), 0);
+        m_label->setVisible(true);
+        m_cpuframe->setVisible(false);
+    } else {
+        m_label->setVisible(false);
+        m_layout->removeItem(m_label);
+        m_cpuframe->setVisible(true);
     }
 
     // immediate update in case the update time is long
