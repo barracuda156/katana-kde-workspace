@@ -22,6 +22,8 @@
 #define CALENDARTEST_H
 
 #include <QTimer>
+#include <KConfigDialog>
+#include <KCModuleProxy>
 #include <Plasma/PopupApplet>
 #include <Plasma/Svg>
 
@@ -36,10 +38,12 @@ public:
     void init() final;
     void constraintsEvent(Plasma::Constraints constraints) final;
     QGraphicsWidget *graphicsWidget() final;
+    void createConfigurationInterface(KConfigDialog *parent) final;
     void popupEvent(bool show) final;
 
 private slots:
     void slotCheckDate();
+    void slotConfigAccepted();
 
 private:
     void paintIcon();
@@ -48,6 +52,7 @@ private:
     Plasma::Svg *m_svg;
     QTimer *m_timer;
     int m_day;
+    KCModuleProxy* m_kcmclockproxy;
 };
 
 K_EXPORT_PLASMA_APPLET(calendar, CalendarApplet)

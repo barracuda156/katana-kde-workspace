@@ -25,6 +25,7 @@
 #include <KCalendarWidget>
 #include <KSystemTimeZones>
 #include <KIcon>
+#include <KCModuleInfo>
 #include <Plasma/Theme>
 #include <Plasma/CalendarWidget>
 #include <Plasma/ToolTipManager>
@@ -77,7 +78,8 @@ CalendarApplet::CalendarApplet(QObject *parent, const QVariantList &args)
     m_calendarwidget(nullptr),
     m_svg(nullptr),
     m_timer(nullptr),
-    m_day(-1)
+    m_day(-1),
+    m_kcmclockproxy(nullptr)
 {
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
     setPopupIcon("view-pim-calendar");
@@ -120,6 +122,19 @@ void CalendarApplet::popupEvent(const bool show)
     }
 }
 
+void CalendarApplet::createConfigurationInterface(KConfigDialog *parent)
+{
+    m_kcmclockproxy = new KCModuleProxy("clock");
+    parent->addPage(
+        m_kcmclockproxy, m_kcmclockproxy->moduleInfo().moduleName(),
+        m_kcmclockproxy->moduleInfo().icon()
+    );
+
+    connect(parent, SIGNAL(applyClicked()), this, SLOT(slotConfigAccepted()));
+    connect(parent, SIGNAL(okClicked()), this, SLOT(slotConfigAccepted()));
+    connect(m_kcmclockproxy, SIGNAL(changed(bool)), parent, SLOT(settingsModified()));
+}
+
 void CalendarApplet::slotCheckDate()
 {
     const int today = kGetDay();
@@ -144,10 +159,14 @@ void CalendarApplet::slotCheckDate()
     Plasma::ToolTipManager::self()->setContent(this, plasmatooltip);
 }
 
+void CalendarApplet::slotConfigAccepted()
+{
+    m_kcmclockproxy->save();
+}
+
 void CalendarApplet::paintIcon()
 {
     const int iconSize = qMin(size().width(), size().height());
-
     if (iconSize <= 0) {
         return;
     }

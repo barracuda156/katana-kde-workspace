@@ -7,6 +7,7 @@ set(calendar_SRCS
 kde4_add_plugin(plasma_applet_calendar ${calendar_SRCS})
 target_link_libraries(plasma_applet_calendar
     KDE4::plasma
+    KDE4::kcmutils
 )
 
 install(
