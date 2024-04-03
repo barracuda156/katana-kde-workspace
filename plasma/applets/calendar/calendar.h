@@ -45,8 +45,8 @@ private:
     void paintIcon();
 
     CalendarWidget *m_calendarwidget;
-    Plasma::Svg *m_theme;
-    QTimer *m_dateUpdater;
+    Plasma::Svg *m_svg;
+    QTimer *m_timer;
     int m_day;
 };
 

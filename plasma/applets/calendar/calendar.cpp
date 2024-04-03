@@ -75,23 +75,29 @@ void CalendarWidget::showToday()
 CalendarApplet::CalendarApplet(QObject *parent, const QVariantList &args)
     : Plasma::PopupApplet(parent, args),
     m_calendarwidget(nullptr),
-    m_theme(nullptr),
+    m_svg(nullptr),
+    m_timer(nullptr),
     m_day(-1)
 {
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
     setPopupIcon("view-pim-calendar");
 
     m_calendarwidget = new CalendarWidget(this);
-    m_dateUpdater = new QTimer(this);
+
+    m_svg = new Plasma::Svg(this);
+    m_svg->setImagePath("calendar/mini-calendar");
+    m_svg->setContainsMultipleImages(true);
+
+    m_timer = new QTimer(this);
     // 3sec to account for localtime changes for example
-    m_dateUpdater->setInterval(3000);
-    connect(m_dateUpdater, SIGNAL(timeout()), this, SLOT(slotCheckDate()));
+    m_timer->setInterval(3000);
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(slotCheckDate()));
 }
 
 void CalendarApplet::init()
 {
     slotCheckDate();
-    m_dateUpdater->start();
+    m_timer->start();
     Plasma::ToolTipManager::self()->registerWidget(this);
 }
 
@@ -146,17 +152,11 @@ void CalendarApplet::paintIcon()
         return;
     }
 
-    if (!m_theme) {
-        m_theme = new Plasma::Svg(this);
-        m_theme->setImagePath("calendar/mini-calendar");
-        m_theme->setContainsMultipleImages(true);
-    }
-
     QPixmap icon(iconSize, iconSize);
     icon.fill(Qt::transparent);
     QPainter p(&icon);
 
-    m_theme->paint(&p, icon.rect(), "mini-calendar");
+    m_svg->paint(&p, icon.rect(), "mini-calendar");
 
     QFont font = Plasma::Theme::defaultTheme()->font(Plasma::Theme::DefaultFont);
     p.setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::ButtonTextColor));
@@ -166,7 +166,7 @@ void CalendarApplet::paintIcon()
         icon.rect().adjusted(0, icon.height() / 4, 0, 0), Qt::AlignCenter,
         QString::number(kGetDay())
     );
-    m_theme->resize();
+    m_svg->resize();
     p.end();
     setPopupIcon(icon);
 }
