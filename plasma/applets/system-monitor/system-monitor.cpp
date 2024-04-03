@@ -717,6 +717,7 @@ void SystemMonitorWidget::slotUpdateLayout()
     m_thermalmonitors.clear();
 
     m_requestsensors.clear();
+    m_cpuframe->setVisible(true);
     foreach (const QByteArray &sensor, m_systemmonitorclient->sensors()) {
         const KSensorType ksensortype = kSensorType(sensor);
         Q_ASSERT(ksensortype != KSensorType::UnknownSensor);
@@ -764,9 +765,10 @@ void SystemMonitorWidget::slotUpdateLayout()
 
     if (m_requestsensors.isEmpty()) {
         // no sensors were reported
-        m_layout->addItem(m_label, m_layout->rowCount(), 0);
-        m_label->setVisible(true);
         m_cpuframe->setVisible(false);
+        // put the label in a cell that is unlikely to be taken at any point
+        m_layout->addItem(m_label, 100, 0);
+        m_label->setVisible(true);
     } else {
         m_label->setVisible(false);
         m_layout->removeItem(m_label);
