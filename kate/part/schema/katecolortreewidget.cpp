@@ -23,13 +23,14 @@
 #include <QtGui/QStyledItemDelegate>
 #include <QtGui/QPainter>
 #include <QtGui/QHeaderView>
+#include <QtGui/QColorDialog>
 
 #include <klocale.h>
 #include <kconfiggroup.h>
 #include <kdebug.h>
-#include <kcolordialog.h>
 #include <kcolorscheme.h>
 #include <kcolorutils.h>
+#include <kdialog.h>
 
 #include <QDebug>
 #include <QEvent>
@@ -267,7 +268,8 @@ bool KateColorTreeWidget::edit(const QModelIndex& index, EditTrigger trigger, QE
     QColor color = item->useDefaultColor() ? item->defaultColor() : item->color();
 
     if (index.column() == 1) {
-      if (KColorDialog::getColor(color, item->defaultColor(), this) == QDialog::Accepted) {
+      color = QColorDialog::getColor(color, this, KDialog::makeStandardCaption(i18n("Select Color"), this));
+      if (color.isValid()) {
         item->setUseDefaultColor(false);
         item->setColor(color);
         viewport()->update();

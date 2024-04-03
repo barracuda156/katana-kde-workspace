@@ -20,7 +20,7 @@
 */
 
 #include <kacceleratormanager.h>
-#include <kcolordialog.h>
+#include <kdialog.h>
 #include <klineedit.h>
 #include <klocale.h>
 #include <knuminput.h>
@@ -39,6 +39,7 @@
 #include <QtGui/QPixmap>
 #include <QtGui/QPushButton>
 #include <QtGui/QTreeView>
+#include <QtGui/QColorDialog>
 
 #include <limits>
 
@@ -452,14 +453,16 @@ void FancyPlotterSettings::editSensor()
 
   SensorModelEntry sensor = mModel->sensor( index );
 
-  KColorDialog dialog(this, true);
+  QColorDialog dialog(this);
+  dialog.setModal(true);
+  dialog.setWindowTitle(KDialog::makeStandardCaption(i18n("Select Color"), this));
   connect(&dialog, SIGNAL(colorSelected(QColor)), this, SLOT(setColorForSelectedItem(QColor)));
   QColor color = sensor.color();
-  dialog.setColor(color);
+  dialog.setCurrentColor(color);
   int result = dialog.exec();
 
-  if ( result == KColorDialog::Accepted )
-    sensor.setColor( dialog.color() );
+  if ( result == QColorDialog::Accepted )
+    sensor.setColor( dialog.currentColor() );
   //If it's not accepted, make sure we set the color back to how it was
   mModel->setSensor( sensor, index );
 }

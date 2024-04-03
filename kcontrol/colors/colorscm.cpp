@@ -28,11 +28,12 @@
 #include <QtGui/QStackedWidget>
 #include <QtGui/QPainter>
 #include <QtGui/QBitmap>
-#include <QtDBus/QtDBus>
+#include <QtGui/QColorDialog>
+#include <QtDBus/QDBusMessage>
+#include <QtDBus/QDBusConnection>
 
 #include <KAboutData>
 #include <KColorButton>
-#include <KColorDialog>
 #include <KDebug>
 #include <KFileDialog>
 #include <KGlobal>
@@ -456,8 +457,8 @@ void KColorCm::variesClicked()
     // find which button was changed
     const int row = sender()->objectName().toInt();
 
-    QColor color;
-    if(KColorDialog::getColor(color, this ) != QDialog::Rejected )
+    QColor color = QColorDialog::getColor(color, this, KDialog::makeStandardCaption(i18n("Select Color"), this));
+    if(color.isValid())
     {
         changeColor(row, color);
         m_stackedWidgets[row - 9]->setCurrentIndex(0);

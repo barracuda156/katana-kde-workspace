@@ -28,13 +28,11 @@
 #include <KConfigGroup>
 #include <KIcon>
 #include <KFileDialog>
-#include <KColorDialog>
 #include <KDebug>
 #include <QtCore/QHash>
 #include <QtCore/QTextStream>
 #include <QtCore/QTimer>
 #include <QtGui/QFileDialog>
-#include <QtGui/QColorDialog>
 #include <QtGui/QApplication>
 #include <QtGui/QToolButton>
 #include <QtGui/QToolBar>
@@ -129,32 +127,7 @@ private Q_SLOTS:
     }
 };
 
-class KColorDialogBridge : public KColorDialog
-{
-public:
-    KColorDialogBridge(QColorDialog* original_ = 0L) : KColorDialog(original_, true) , original(original_)
-    {
-        connect(this, SIGNAL(colorSelected(QColor)), original, SIGNAL(currentColorChanged(QColor)));
-    }
-
-    QColorDialog *original;
-
-    virtual void accept()
-    {
-        KColorDialog::accept();
-        original->setCurrentColor(color());
-        QMetaObject::invokeMethod(original, "accept"); //workaround protected
-    }
-
-    virtual void reject()
-    {
-        KColorDialog::reject();
-        QMetaObject::invokeMethod(original, "reject"); //workaround protected
-    }
-};
-
 Q_DECLARE_METATYPE(KFileDialogBridge *)
-Q_DECLARE_METATYPE(KColorDialogBridge *)
 
 class KQGuiPlatformPlugin : public QGuiPlatformPlugin
 {
@@ -337,43 +310,6 @@ public: // File Dialog integration
         QString ret;
         kde2QtFilter(qfd->nameFilters().join(";;"), kdefd->currentFilter(), &ret);
         return ret;
-    }
-
-public: // ColorDialog
-#define K_CD(QCD) KColorDialogBridge *kdecd = qvariant_cast<KColorDialogBridge *>(QCD->property("_k_bridge"))
-    void colorDialogDelete(QColorDialog *qcd) final
-    {
-        K_CD(qcd);
-        delete kdecd;
-
-    }
-
-    bool colorDialogSetVisible(QColorDialog *qcd, bool visible) final
-    {
-        K_CD(qcd);
-        if (!kdecd) {
-            kdecd = new KColorDialogBridge(qcd);
-            kdecd->setColor(qcd->currentColor());
-            if (qcd->options() & QColorDialog::NoButtons) {
-                kdecd->setButtons(KDialog::None);
-            }
-            kdecd->setModal(qcd->isModal());
-            qcd->setProperty("_k_bridge", QVariant::fromValue(kdecd));
-        }
-        if (visible) {
-            kdecd->setCaption(qcd->windowTitle());
-            kdecd->setAlphaChannelEnabled(qcd->options() & QColorDialog::ShowAlphaChannel);
-        }
-        kdecd->setVisible(visible);
-        return true;
-    }
-
-    void colorDialogSetCurrentColor(QColorDialog *qcd, const QColor &color) final
-    {
-        K_CD(qcd);
-        if (kdecd) {
-            kdecd->setColor(color);
-        }
     }
 
 private slots:

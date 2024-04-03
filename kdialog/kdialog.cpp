@@ -21,6 +21,7 @@
 //
 
 #include <QtCore/qdatetime.h>
+#include <QtGui/qcolordialog.h>
 #include <kdebug.h>
 #include "widgets.h"
 
@@ -33,7 +34,6 @@
 #include <kfiledialog.h>
 #include <kfileitem.h>
 #include <kicondialog.h>
-#include <kcolordialog.h>
 #include <kwindowsystem.h>
 #include <kiconloader.h>
 #include <klocale.h>
@@ -746,22 +746,25 @@ static int directCommand(KCmdLineArgs *args)
 
     // --getcolor
     if (args->isSet("getcolor")) {
-        KColorDialog dlg((QWidget*)0L, true);
+        QColorDialog dlg((QWidget*)0L);
+        dlg.setModal(true);
 
+        QColor defaultColor;
         if (args->isSet("default")) {
             defaultEntry = args->getOption("default");
-            dlg.setColor(defaultEntry);
+            defaultColor = QColor(defaultEntry);
+            dlg.setCurrentColor(defaultColor);
         }
         Widgets::handleXGeometry(&dlg);
         kapp->setTopWidget(&dlg);
-        dlg.setCaption(title.isEmpty() ? i18nc("@title:window", "Choose Color") : title);
+        dlg.setWindowTitle(title.isEmpty() ? KDialog::makeStandardCaption(i18nc("@title:window", "Choose Color")) : title);
 
-        if (dlg.exec() == KColorDialog::Accepted) {
+        if (dlg.exec() == QColorDialog::Accepted) {
             QString result;
-            if (dlg.color().isValid()) {
-                result = dlg.color().name();
+            if (dlg.currentColor().isValid()) {
+                result = dlg.currentColor().name();
             } else {
-                result = dlg.defaultColor().name();
+                result = defaultColor.name();
             }
             cout << result.toLocal8Bit().data() << endl;
             return 0;

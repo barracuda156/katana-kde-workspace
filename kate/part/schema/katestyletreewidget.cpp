@@ -26,13 +26,14 @@
 #include <QtGui/QAction>
 #include <QtGui/QStyledItemDelegate>
 #include <QtGui/QHeaderView>
+#include <QtGui/QColorDialog>
 
 #include <klocale.h>
 #include <kicon.h>
 #include <kcolorscheme.h>
 #include <kmenu.h>
 #include <kmessagebox.h>
-#include <kcolordialog.h>
+#include <kdialog.h>
 
 #include "kateconfig.h"
 #include "kateextendedattribute.h"
@@ -638,7 +639,11 @@ void KateStyleTreeWidgetItem::setColor( int column )
     d = defaultStyle->selectedBackground().color();
   }
 
-  if ( KColorDialog::getColor( c, d, treeWidget() ) != QDialog::Accepted) return;
+  if (!c.isValid()) {
+    c = d;
+  }
+  c = QColorDialog::getColor( c, treeWidget(), KDialog::makeStandardCaption(i18n("Select Color"), treeWidget()) );
+  if (!c.isValid()) return;
 
   bool def = ! c.isValid();
 

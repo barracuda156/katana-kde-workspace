@@ -20,12 +20,12 @@
 // Own
 #include "ColorSchemeEditor.h"
 
-// Qt
-#include <QtGui/QFontMetrics>
+// Katie
 #include <QtCore/QFileInfo>
+#include <QtGui/QFontMetrics>
+#include <QtGui/QColorDialog>
 
 // KDE
-#include <KColorDialog>
 #include <KWindowSystem>
 #include <KFileDialog>
 #include <KUrlCompletion>
@@ -139,9 +139,9 @@ void ColorSchemeEditor::editColorItem(QTableWidgetItem* item)
     }
 
     QColor color = item->background().color();
-    int result = KColorDialog::getColor(color);
+    color = QColorDialog::getColor(color, nullptr, KDialog::makeStandardCaption(i18n("Select Color"), nullptr));
 
-    if (result == KColorDialog::Accepted) {
+    if (color.isValid()) {
         item->setBackground(color);
 
         int colorSchemeRow = item->row();
