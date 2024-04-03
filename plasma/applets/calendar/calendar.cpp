@@ -83,7 +83,8 @@ CalendarApplet::CalendarApplet(QObject *parent, const QVariantList &args)
 
     m_calendarwidget = new CalendarWidget(this);
     m_dateUpdater = new QTimer(this);
-    m_dateUpdater->setInterval(60000); // 1min
+    // 3sec to account for localtime changes for example
+    m_dateUpdater->setInterval(3000);
     connect(m_dateUpdater, SIGNAL(timeout()), this, SLOT(slotCheckDate()));
 }
 
