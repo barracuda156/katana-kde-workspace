@@ -97,18 +97,6 @@ static void applyGtkStyles(bool active, int version)
 
 // -----------------------------------------------------------------------------
 
-static void applyQtSettings(KSharedConfigPtr kglobalcfg)
-{
-    QSettings settings(QLatin1String("Katie"));
-
-    /* export font settings */
-    KConfigGroup fontgrp(kglobalcfg, "General");
-    QString font = fontgrp.readEntry("font", KGlobalSettings::generalFont().toString());
-    settings.setString("Qt/font", font);
-}
-
-// -----------------------------------------------------------------------------
-
 static void addColorDef(QString&s, const char *n, const QColor &col)
 {
     QString tmp;
@@ -243,7 +231,6 @@ int main(int argc, char *argv[])
 
     // This key is written by the "colors" module.
     bool exportColors      = kcmdisplayx11.readEntry("exportKDEColors", true);
-    bool exportQtSettings  = true;
     bool exportXftSettings = true;
 
     // Obtain the application palette that is about to be set.
@@ -393,26 +380,22 @@ int main(int argc, char *argv[])
     applyGtkStyles(exportColors, 1);
     applyGtkStyles(exportColors, 2);
 
-    /* Katie exports */
-    if (exportQtSettings) {
-        applyQtSettings(kglobalcfg);
+    // Send notification for settings change to Katie applications
+    QApplication::flush();
+    QDateTime settingsstamp = QDateTime::currentDateTime();
 
-        QApplication::flush();
-        QDateTime settingsstamp = QDateTime::currentDateTime();
+    static const QByteArray atomname("_QT_SETTINGS_TIMESTAMP");
+    static Atom qt_settings_timestamp = XInternAtom( QX11Info::display(), atomname.constData(), False);
 
-        static const QByteArray atomname("_QT_SETTINGS_TIMESTAMP");
-        static Atom qt_settings_timestamp = XInternAtom( QX11Info::display(), atomname.constData(), False);
-
-        QBuffer stamp;
-        QDataStream s(&stamp.buffer(), QIODevice::WriteOnly);
-        s << settingsstamp;
-        XChangeProperty(
-            QX11Info::display(), QX11Info::appRootWindow(), qt_settings_timestamp,
-            qt_settings_timestamp, 8, PropModeReplace,
-            (unsigned char*) stamp.buffer().data(), stamp.buffer().size()
-        );
-        QApplication::flush();
-    }
+    QBuffer stamp;
+    QDataStream s(&stamp.buffer(), QIODevice::WriteOnly);
+    s << settingsstamp;
+    XChangeProperty(
+        QX11Info::display(), QX11Info::appRootWindow(), qt_settings_timestamp,
+        qt_settings_timestamp, 8, PropModeReplace,
+        (unsigned char*) stamp.buffer().data(), stamp.buffer().size()
+    );
+    QApplication::flush();
 
     return 0;
 }

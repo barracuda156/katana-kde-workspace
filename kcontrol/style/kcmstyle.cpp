@@ -50,7 +50,6 @@
 #include <kpluginloader.h>
 
 #include <QtCore/QFile>
-#include <QtCore/QSettings>
 #include <QtGui/QAbstractItemView>
 #include <QtGui/QLabel>
 #include <QtGui/QPainter>
