@@ -22,112 +22,26 @@
 
 #include <KStandardDirs>
 #include <KGlobal>
-#include <KComponentData>
 #include <KGlobalSettings>
 #include <KStyle>
 #include <KConfigGroup>
 #include <KIcon>
-#include <KFileDialog>
+#include <KIconTheme>
+#include <KMimeType>
 #include <KDebug>
-#include <QtCore/QHash>
-#include <QtCore/QTextStream>
-#include <QtCore/QTimer>
-#include <QtGui/QFileDialog>
-#include <QtGui/QApplication>
-#include <QtGui/QToolButton>
-#include <QtGui/QToolBar>
-#include <QtGui/QMainWindow>
-#include <QtGui/QGuiPlatformPlugin>
-#include <QtGui/QX11Info>
+#include <QFileInfo>
+#include <QApplication>
+#include <QToolButton>
+#include <QToolBar>
+#include <QMainWindow>
+#include <QGuiPlatformPlugin>
+#include <QX11Info>
 
 #ifdef HAVE_XCURSOR
 #  include <X11/Xlib.h>
 #  include <X11/Xcursor/Xcursor.h>
 #  include <fixx11h.h>
 #endif
-
-/*
- * Map a Katie filter string into a KDE one.
- * (from kfiledialog.cpp)
-*/
-static QString qt2KdeFilter(const QString &f)
-{
-    QString filter;
-    QTextStream str(&filter, QIODevice::WriteOnly);
-    const QStringList list(f.split(";;").replaceInStrings("/", "\\/"));
-    bool first = true;
-
-    foreach (const QString &it, list) {
-        int ob = it.lastIndexOf('('), cb = it.lastIndexOf(')');
-
-        if (cb != -1 && ob < cb) {
-            if (first) {
-                first = false;
-            } else {
-                str << '\n';
-            }
-            str << it.mid(ob+1, (cb-ob)-1) << '|' << it.mid(0, ob);
-        }
-    }
-    return filter;
-}
-
-/*
- * Map a KDE filter string into a Qt one.
- * (from kfiledialog.cpp)
- */
-static void kde2QtFilter(const QString &orig, const QString &kde, QString *sel)
-{
-    if (sel) {
-        const QStringList list(orig.split(";;"));
-        int pos;
-
-        foreach (const QString &it, list) {
-            pos = it.indexOf(kde);
-            if (pos != -1 && pos > 0 &&
-                (it[pos-1] == '(' || it[pos-1] == ' ') &&
-                it.length() >= (kde.length() + pos) &&
-                (it[pos+kde.length()] == ')' || it[pos+kde.length()] == ' ')) {
-                *sel = it;
-                return;
-            }
-        }
-    }
-}
-
-
-class KFileDialogBridge : public KFileDialog
-{
-    Q_OBJECT
-public:
-    KFileDialogBridge (const KUrl &startDir, const QString &filter, QFileDialog *original_)
-     :  KFileDialog (startDir, filter, original_), original(original_)
-     {
-         connect(this, SIGNAL(fileSelected(KUrl)), this, SLOT(slotFileSelected(KUrl)));
-     }
-
-    virtual void accept()
-    {
-        KFileDialog::accept();
-        QMetaObject::invokeMethod(original, "accept"); //workaround protected
-    }
-
-    virtual void reject()
-    {
-        KFileDialog::reject();
-        QMetaObject::invokeMethod(original, "reject"); //workaround protected
-    }
-
-    QFileDialog *original;
-
-private Q_SLOTS:
-    void slotFileSelected(const KUrl &url)
-    {
-        QMetaObject::invokeMethod(original, "currentChanged", Q_ARG(QString, url.url())); //workaround protected
-    }
-};
-
-Q_DECLARE_METATYPE(KFileDialogBridge *)
 
 class KQGuiPlatformPlugin : public QGuiPlatformPlugin
 {
@@ -198,118 +112,6 @@ public:
             }
         }
         return QGuiPlatformPlugin::platformHint(hint);
-    }
-
-public: // File Dialog integration
-#define K_FD(QFD) KFileDialogBridge *kdefd = qvariant_cast<KFileDialogBridge *>(QFD->property("_k_bridge"))
-    void fileDialogDelete(QFileDialog *qfd) final
-    {
-        K_FD(qfd);
-        delete kdefd;
-    }
-
-    bool fileDialogSetVisible(QFileDialog *qfd, bool visible) final
-    {
-        K_FD(qfd);
-        if (!kdefd && visible) {
-            kdefd = new KFileDialogBridge(KUrl::fromPath(qfd->directory().canonicalPath()),
-                                          qt2KdeFilter(qfd->nameFilters().join(";;")), qfd);
-
-            qfd->setProperty("_k_bridge", QVariant::fromValue(kdefd));
-        }
-
-        if (visible) {
-            switch (qfd->fileMode()) {
-                case QFileDialog::AnyFile: {
-                    kdefd->setMode(KFile::LocalOnly | KFile::File);
-                    break;
-                }
-                case QFileDialog::ExistingFile: {
-                    kdefd->setMode(KFile::LocalOnly | KFile::File | KFile::ExistingOnly);
-                    break;
-                }
-                case QFileDialog::ExistingFiles: {
-                    kdefd->setMode(KFile::LocalOnly | KFile::Files | KFile::ExistingOnly);
-                    break;
-                }
-                case QFileDialog::Directory:
-                case QFileDialog::DirectoryOnly: {
-                    kdefd->setMode(KFile::LocalOnly | KFile::Directory);
-                    break;
-                }
-            }
-
-            kdefd->setOperationMode((qfd->acceptMode() == QFileDialog::AcceptSave) ? KFileDialog::Saving : KFileDialog::Opening);
-            kdefd->setCaption(qfd->windowTitle());
-            kdefd->setConfirmOverwrite(qfd->confirmOverwrite());
-            kdefd->setSelection(qfd->selectedFiles().value(0));
-        }
-        kdefd->setVisible(visible);
-        return true;
-    }
-
-    QDialog::DialogCode fileDialogResultCode(QFileDialog *qfd) final
-    {
-        K_FD(qfd);
-        Q_ASSERT(kdefd);
-        return QDialog::DialogCode(kdefd->result());
-    }
-
-    void fileDialogSetDirectory(QFileDialog *qfd, const QString &directory) final
-    {
-        K_FD(qfd);
-        kdefd->setUrl(KUrl::fromPath(directory));
-    }
-
-    QString fileDialogDirectory(const QFileDialog *qfd) const final
-    {
-        K_FD(qfd);
-        Q_ASSERT(kdefd);
-        return kdefd->baseUrl().pathOrUrl();
-    }
-
-    void fileDialogSelectFile(QFileDialog *qfd, const QString &filename) final
-    {
-        K_FD(qfd);
-        Q_ASSERT(kdefd);
-        kdefd->setSelection(filename);
-    }
-
-    virtual QStringList fileDialogSelectedFiles(const QFileDialog *qfd) const
-    {
-        K_FD(qfd);
-        Q_ASSERT(kdefd);
-        return kdefd->selectedFiles();
-    }
-
-#if 0
-    virtual void fileDialogSetFilter(QFileDialog *qfd)
-    {
-        K_FD(qfd);
-    }
-#endif
-
-    void fileDialogSetNameFilters(QFileDialog *qfd, const QStringList &filters) final
-    {
-        K_FD(qfd);
-        Q_ASSERT(kdefd);
-        kdefd->setFilter(qt2KdeFilter(filters.join(";;")));
-    }
-
-#if 0
-    void fileDialogSelectNameFilter(QFileDialog *qfd, const QString &filter) final
-    {
-        K_FD(qfd);
-    }
-#endif
-
-    QString fileDialogSelectedNameFilter(const QFileDialog *qfd) const final
-    {
-        K_FD(qfd);
-        Q_ASSERT(kdefd);
-        QString ret;
-        kde2QtFilter(qfd->nameFilters().join(";;"), kdefd->currentFilter(), &ret);
-        return ret;
     }
 
 private slots:
