@@ -24,7 +24,6 @@
 #include <KGlobal>
 #include <KLocale>
 #include <KCModuleInfo>
-#include <Plasma/Svg>
 #include <Plasma/PaintUtils>
 #include <KDebug>
 
@@ -72,10 +71,7 @@ DigitalClockApplet::DigitalClockApplet(QObject *parent, const QVariantList &args
     m_timer = new QTimer(this);
     // even if the time format contains ms polling and repainting more often that 1sec is overkill
     m_timer->setInterval(1000);
-    connect(
-        m_timer, SIGNAL(timeout()),
-        this, SLOT(slotTimeout())
-    );
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
 
     m_menu = new KMenu(i18n("C&opy to Clipboard"));
     m_menu->setIcon(KIcon("edit-copy"));
