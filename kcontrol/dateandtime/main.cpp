@@ -112,8 +112,11 @@ void KclockModule::save()
     } else {
         // explicit load() in case its not the timezone that is changed
         load();
+        // not watched for
+#if 0
         QDBusMessage msg = QDBusMessage::createSignal("/org/kde/kcmshell_clock", "org.kde.kcmshell_clock", "clockUpdated");
         QDBusConnection::sessionBus().send(msg);
+#endif
     }
 }
 
