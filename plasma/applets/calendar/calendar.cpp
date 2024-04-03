@@ -22,12 +22,14 @@
 
 #include <QGraphicsLinearLayout>
 #include <QPainter>
+#include <KCalendarWidget>
+#include <KSystemTimeZones>
+#include <KIcon>
 #include <Plasma/Theme>
 #include <Plasma/CalendarWidget>
-#include <KCalendarWidget>
+#include <Plasma/ToolTipManager>
 #include <KDebug>
 
-// TODO: option for this, what if I want to show the UTC date?
 static int kGetDay()
 {
     return QDate::currentDate().day();
@@ -89,6 +91,7 @@ void CalendarApplet::init()
 {
     slotCheckDate();
     m_dateUpdater->start();
+    Plasma::ToolTipManager::self()->registerWidget(this);
 }
 
 void CalendarApplet::constraintsEvent(Plasma::Constraints constraints)
@@ -118,6 +121,20 @@ void CalendarApplet::slotCheckDate()
         kDebug() << "updating calendar icon" << m_day << today;
         paintIcon();
     }
+
+    Plasma::ToolTipContent plasmatooltip;
+    plasmatooltip.setMainText(i18n("Current Date"));
+    const QString calendarstring = KGlobal::locale()->formatDate(QDateTime::currentDateTime().date());
+    QString calendartooltip;
+    if (KSystemTimeZones::local() != KTimeZone::utc()) {
+        calendartooltip.append(i18n("UTC: %1<br/>", KGlobal::locale()->formatDate(QDateTime::currentDateTimeUtc().date())));
+        calendartooltip.append(i18n("Local: %1", calendarstring));
+    } else {
+        calendartooltip.append(i18n("<center>%1</center>", calendarstring));
+    }
+    plasmatooltip.setSubText(calendartooltip);
+    plasmatooltip.setImage(KIcon("office-calendar"));
+    Plasma::ToolTipManager::self()->setContent(this, plasmatooltip);
 }
 
 void CalendarApplet::paintIcon()
