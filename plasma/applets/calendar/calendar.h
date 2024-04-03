@@ -21,44 +21,33 @@
 #ifndef CALENDARTEST_H
 #define CALENDARTEST_H
 
-#include <Plasma/PopupApplet>
-#include <Plasma/Label>
-
 #include <QTimer>
+#include <Plasma/PopupApplet>
+#include <Plasma/Svg>
 
-#include "plasmaclock/calendar.h"
-
-namespace Plasma
-{
-    class Svg;
-}
+class CalendarWidget;
 
 class CalendarApplet : public Plasma::PopupApplet
 {
     Q_OBJECT
-    public:
-        CalendarApplet(QObject *parent, const QVariantList &args);
-        ~CalendarApplet();
+public:
+    CalendarApplet(QObject *parent, const QVariantList &args);
 
-        void init();
-        void constraintsEvent(Plasma::Constraints constraints);
+    void init() final;
+    void constraintsEvent(Plasma::Constraints constraints) final;
+    QGraphicsWidget *graphicsWidget() final;
+    void popupEvent(bool show) final;
 
-        /**
-         * The widget that displays the calendar.
-         */
-        QGraphicsWidget *graphicsWidget();
+private slots:
+    void slotCheckDate();
 
-    protected:
-        void focusInEvent(QFocusEvent * event);
+private:
+    void paintIcon();
 
-    protected slots:
-        void updateDate();
-        void paintIcon();
-
-    private:
-        Plasma::Calendar *m_calendarWidget;
-        Plasma::Svg *m_theme;
-        QTimer *m_dateUpdater;
+    CalendarWidget *m_calendarwidget;
+    Plasma::Svg *m_theme;
+    QTimer *m_dateUpdater;
+    int m_day;
 };
 
 K_EXPORT_PLASMA_APPLET(calendar, CalendarApplet)

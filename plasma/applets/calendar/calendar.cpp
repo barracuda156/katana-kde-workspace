@@ -20,60 +20,102 @@
 
 #include "calendar.h"
 
-#include <QGraphicsLayout>
+#include <QGraphicsLinearLayout>
 #include <QPainter>
-#include <QTimer>
-
-#include <KDebug>
-#include <KSystemTimeZones>
-#include <KConfigDialog>
-#include <KConfigGroup>
-
-#include <Plasma/Svg>
 #include <Plasma/Theme>
+#include <Plasma/CalendarWidget>
+#include <KCalendarWidget>
+#include <KDebug>
+
+// TODO: option for this, what if I want to show the UTC date?
+static int kGetDay()
+{
+    return QDate::currentDate().day();
+}
+
+class CalendarWidget : public QGraphicsWidget
+{
+    Q_OBJECT
+public:
+    CalendarWidget(QGraphicsWidget *parent);
+
+    void showToday();
+
+private:
+    QGraphicsLinearLayout* m_layout;
+    Plasma::CalendarWidget* m_plasmacalendar;
+    KCalendarWidget* m_nativewidget;
+};
+
+CalendarWidget::CalendarWidget(QGraphicsWidget *parent)
+    : QGraphicsWidget(parent),
+    m_layout(nullptr),
+    m_plasmacalendar(nullptr)
+{
+    m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
+    m_plasmacalendar = new Plasma::CalendarWidget(this);
+    m_plasmacalendar->setMinimumSize(QSize(300, 250));
+    m_plasmacalendar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_nativewidget = m_plasmacalendar->nativeWidget();
+    // changing the date on the calendar does not make sense
+    m_nativewidget->setSelectionMode(QCalendarWidget::NoSelection);
+    m_nativewidget->setDateEditEnabled(false);
+    m_layout->addItem(m_plasmacalendar);
+    setLayout(m_layout);
+}
+
+void CalendarWidget::showToday()
+{
+    m_nativewidget->showToday();
+}
+
 
 CalendarApplet::CalendarApplet(QObject *parent, const QVariantList &args)
     : Plasma::PopupApplet(parent, args),
-    m_calendarWidget(0),
-    m_theme(0)
+    m_calendarwidget(nullptr),
+    m_theme(nullptr),
+    m_day(-1)
 {
-    KGlobal::locale()->insertCatalog("libplasmaclock");
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
-    setCacheMode(DeviceCoordinateCache);
-    m_dateUpdater = new QTimer(this);
-    m_dateUpdater->setSingleShot(true);
-    connect(m_dateUpdater, SIGNAL(timeout()), this, SLOT(updateDate()));
-}
+    setPopupIcon("view-pim-calendar");
 
-CalendarApplet::~CalendarApplet()
-{
+    m_calendarwidget = new CalendarWidget(this);
+    m_dateUpdater = new QTimer(this);
+    m_dateUpdater->setInterval(60000); // 1min
+    connect(m_dateUpdater, SIGNAL(timeout()), this, SLOT(slotCheckDate()));
 }
 
 void CalendarApplet::init()
 {
-    setPopupIcon("view-pim-calendar");
-    m_calendarWidget = new Plasma::Calendar(this);
-    updateDate();
-    configChanged();
-    setFocusPolicy(Qt::StrongFocus);
-}
-
-void CalendarApplet::focusInEvent(QFocusEvent* event)
-{
-    Q_UNUSED(event);
-    m_calendarWidget->setFlag(QGraphicsItem::ItemIsFocusable);
-    m_calendarWidget->setFocus();
-}
-
-QGraphicsWidget *CalendarApplet::graphicsWidget()
-{
-    return m_calendarWidget;
+    slotCheckDate();
+    m_dateUpdater->start();
 }
 
 void CalendarApplet::constraintsEvent(Plasma::Constraints constraints)
 {
-    if ((constraints|Plasma::FormFactorConstraint || constraints|Plasma::SizeConstraint) &&
-        layout()->itemAt(0) != m_calendarWidget) {
+    if (constraints & Plasma::FormFactorConstraint || constraints & Plasma::SizeConstraint) {
+        paintIcon();
+    }
+}
+
+QGraphicsWidget *CalendarApplet::graphicsWidget()
+{
+    return m_calendarwidget;
+}
+
+void CalendarApplet::popupEvent(const bool show)
+{
+    if (show) {
+        m_calendarwidget->showToday();
+    }
+}
+
+void CalendarApplet::slotCheckDate()
+{
+    const int today = kGetDay();
+    if (today != m_day) {
+        m_day = today;
+        kDebug() << "updating calendar icon" << m_day << today;
         paintIcon();
     }
 }
@@ -86,14 +128,13 @@ void CalendarApplet::paintIcon()
         return;
     }
 
-    QPixmap icon(iconSize, iconSize);
-
     if (!m_theme) {
         m_theme = new Plasma::Svg(this);
         m_theme->setImagePath("calendar/mini-calendar");
         m_theme->setContainsMultipleImages(true);
     }
 
+    QPixmap icon(iconSize, iconSize);
     icon.fill(Qt::transparent);
     QPainter p(&icon);
 
@@ -103,32 +144,14 @@ void CalendarApplet::paintIcon()
     p.setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::ButtonTextColor));
     font.setPixelSize(icon.height() / 2);
     p.setFont(font);
-    p.drawText(icon.rect().adjusted(0, icon.height()/4, 0, 0), Qt::AlignCenter,
-               QString::number(m_calendarWidget->date().day()));
+    p.drawText(
+        icon.rect().adjusted(0, icon.height() / 4, 0, 0), Qt::AlignCenter,
+        QString::number(kGetDay())
+    );
     m_theme->resize();
     p.end();
     setPopupIcon(icon);
 }
 
-void CalendarApplet::updateDate()
-{
-    QDateTime now = QDateTime::currentDateTime();
-    static const int secsInDay = 24 * 60 * 60;
-    const int sinceEpoch = now.toTime_t() + KSystemTimeZones::local().currentOffset();
-    const int updateIn = (secsInDay) - (sinceEpoch % secsInDay);
-    if (updateIn > secsInDay - 60) {
-        // after midnight, we try and update right away again in case of odd clock drifting
-        // that could cause us to miss (or delay) the date change
-        m_dateUpdater->setInterval(60 * 1000);
-    } else if (updateIn < m_dateUpdater->interval()) {
-        m_dateUpdater->setInterval(updateIn * 1000);
-    } else {
-        // update once an hour
-        m_dateUpdater->setInterval(60 * 60 * 1000);
-    }
-    //kDebug() << "updating in" << m_dateUpdater->interval();
-    m_dateUpdater->start();
-    paintIcon();
-}
-
 #include "moc_calendar.cpp"
+#include "calendar.moc"
