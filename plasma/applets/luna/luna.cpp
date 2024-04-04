@@ -26,16 +26,19 @@
 // for reference:
 // https://en.wikipedia.org/wiki/Lunar_phase
 // https://stardate.org/moon-phase-calculator
-static const qreal s_moonmonth = 29.5;
+// https://www.timeanddate.com/astronomy/moon/phases.html
+static const qreal s_moonmonth = 29.53059;
 
 static int kLunaPhase()
 {
-    const QDateTime now = QDateTime::currentDateTimeUtc();
-    qreal moonphase = qreal(now.toTime_t());
-    while (moonphase > s_moonmonth) {
-        moonphase /= 29.5;
+    static const QDateTime firsnewmoon = QDateTime(QDate(1900, 1, 1), QTime(0, 0, 0), Qt::UTC);
+    const QDateTime now = QDateTime::currentDateTime();
+    const qreal gregoriandays = qreal(-now.daysTo(firsnewmoon.toLocalTime()));
+    qreal moonphase = 0;
+    while ((moonphase + s_moonmonth) < gregoriandays) {
+        moonphase += s_moonmonth;
     }
-    const int roundmoonphase = qRound(s_moonmonth - moonphase);
+    const int roundmoonphase = qRound(gregoriandays - moonphase);
     // qDebug() << Q_FUNC_INFO << now << roundmoonphase;
     return roundmoonphase;
 }
