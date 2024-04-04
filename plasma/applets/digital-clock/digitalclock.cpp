@@ -74,10 +74,6 @@ DigitalClockApplet::DigitalClockApplet(QObject *parent, const QVariantList &args
     // even if the time format contains ms polling and repainting more often that 1sec is overkill
     m_timer->setInterval(1000);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
-
-    m_menu = new KMenu(i18n("C&opy to Clipboard"));
-    m_menu->setIcon(KIcon("edit-copy"));
-    connect(m_menu, SIGNAL(triggered(QAction*)), this, SLOT(slotCopyToClipboard(QAction*)));
 }
 
 void DigitalClockApplet::init()
@@ -117,36 +113,6 @@ void DigitalClockApplet::createConfigurationInterface(KConfigDialog *parent)
     connect(parent, SIGNAL(okClicked()), this, SLOT(slotConfigAccepted()));
     connect(m_kcmclockproxy, SIGNAL(changed(bool)), parent, SLOT(settingsModified()));
     connect(m_kcmlanguageproxy, SIGNAL(changed(bool)), parent, SLOT(settingsModified()));
-}
-
-QList<QAction*> DigitalClockApplet::contextualActions()
-{
-    const QDateTime datetime = QDateTime::currentDateTime();
-    const QDate date = datetime.date();
-    const QTime time = datetime.time();
-
-    m_menu->clear();
-    m_menu->addAction(KGlobal::locale()->formatDate(date, QLocale::LongFormat));
-    m_menu->addAction(KGlobal::locale()->formatDate(date, QLocale::ShortFormat));
-
-    QAction* separator0 = new QAction(this);
-    separator0->setSeparator(true);
-    m_menu->addAction(separator0);
-
-    m_menu->addAction(KGlobal::locale()->formatTime(time, QLocale::LongFormat));
-    m_menu->addAction(KGlobal::locale()->formatTime(time, QLocale::ShortFormat));
-
-    QAction* separator1 = new QAction(this);
-    separator1->setSeparator(true);
-    m_menu->addAction(separator1);
-
-    m_menu->addAction(KGlobal::locale()->formatDateTime(datetime, QLocale::LongFormat));
-    m_menu->addAction(KGlobal::locale()->formatDateTime(datetime, QLocale::ShortFormat));
-    m_menu->addAction(KGlobal::locale()->formatDateTime(datetime, QLocale::NarrowFormat));
-
-    QList<QAction*> actions;
-    actions.append(m_menu->menuAction());
-    return actions;
 }
 
 void DigitalClockApplet::constraintsEvent(Plasma::Constraints constraints)
@@ -209,13 +175,6 @@ void DigitalClockApplet::slotConfigAccepted()
 {
     m_kcmclockproxy->save();
     m_kcmlanguageproxy->save();
-}
-
-void DigitalClockApplet::slotCopyToClipboard(QAction *action)
-{
-    QString actiontext = action->text();
-    actiontext.remove(QChar('&'));
-    QApplication::clipboard()->setText(actiontext);
 }
 
 #include "moc_digitalclock.cpp"

@@ -162,12 +162,11 @@ Comment[zh_TW]=以數位格式顯示時間
 Icon=preferences-system-time
 Type=Service
 X-KDE-ServiceTypes=Plasma/Applet
-
 X-KDE-Library=plasma_applet_dig_clock
-X-KDE-PluginInfo-Author=Riccardo Iaconelli
-X-KDE-PluginInfo-Email=riccardo@kde.org
+X-KDE-PluginInfo-Author=Ivailo Monev
+X-KDE-PluginInfo-Email=xakepa10@gmail.com
 X-KDE-PluginInfo-Name=digital-clock
-X-KDE-PluginInfo-Version=1.0
+X-KDE-PluginInfo-Version=2.0
 X-KDE-PluginInfo-Website=
 X-KDE-PluginInfo-Category=Date and Time
 X-KDE-PluginInfo-Depends=

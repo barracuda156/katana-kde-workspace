@@ -23,7 +23,6 @@
 #include <QTimer>
 #include <KConfigDialog>
 #include <KCModuleProxy>
-#include <KMenu>
 #include <Plasma/Applet>
 #include <Plasma/Svg>
 
@@ -39,7 +38,6 @@ public:
                         const QStyleOptionGraphicsItem *option,
                         const QRect &contentsRect);
     void createConfigurationInterface(KConfigDialog *parent) final;
-    QList<QAction*> contextualActions() final;
 
 protected:
     // Plasma::Applet reimplementation
@@ -50,14 +48,12 @@ protected:
 private Q_SLOTS:
     void slotTimeout();
     void slotConfigAccepted();
-    void slotCopyToClipboard(QAction *action);
 
 private:
     Plasma::Svg* m_svg;
     QTimer* m_timer;
     KCModuleProxy* m_kcmclockproxy;
     KCModuleProxy* m_kcmlanguageproxy;
-    KMenu* m_menu;
 };
 
 K_EXPORT_PLASMA_APPLET(dig_clock, DigitalClockApplet)
