@@ -108,6 +108,7 @@ void DictAppletWidget::slotReturnPressed()
     const KUrl queryurl = s_dictapi + queryword;
     m_kiojob = KIO::storedGet(queryurl, KIO::HideProgressInfo);
     m_kiojob->setAutoDelete(false);
+    connect(m_kiojob, SIGNAL(finished(KJob*)), this, SLOT(slotFinished(KJob*)));
 }
 
 void DictAppletWidget::slotFinished(KJob *kjob)
