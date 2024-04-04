@@ -90,6 +90,7 @@ DictAppletWidget::DictAppletWidget(DictApplet* dictapplet)
     m_textbrowser = new Plasma::TextBrowser(this);
     m_textbrowser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_nativetextbrowser = m_textbrowser->nativeWidget();
+    m_nativetextbrowser->setReadOnly(true);
     m_layout->addItem(m_textbrowser, 1, 0, 1, 2);
     // big stretch factor to squeeze the icon as much as possible
     m_layout->setColumnStretchFactor(1, 100);
@@ -124,6 +125,7 @@ void DictAppletWidget::slotWordChanged()
     if (queryword.isEmpty()) {
         setText(QString(), false);
         return;
+    // NOTE: API restriction
     } else if (queryword.contains(' ')) {
         setText(i18n("Only words can be queried"), true);
         return;
