@@ -31,6 +31,7 @@
 #include <KDebug>
 
 static const QString s_dictapi = QString::fromLatin1("https://api.dictionaryapi.dev/api/v2/entries/en/");
+static const QString s_defaultpopupicon = QString::fromLatin1("accessories-dictionary");
 static const QSizeF s_minimumsize = QSizeF(300, 250);
 
 class DictAppletWidget : public QGraphicsWidget
@@ -68,7 +69,7 @@ DictAppletWidget::DictAppletWidget(DictApplet* dictapplet)
 
     m_iconwidget = new Plasma::IconWidget(this);
     m_iconwidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    m_iconwidget->setIcon(KIcon("accessories-dictionary"));
+    m_iconwidget->setIcon(KIcon(s_defaultpopupicon));
     m_iconwidget->setAcceptHoverEvents(false);
     m_iconwidget->setAcceptedMouseButtons(Qt::NoButton);
     m_layout->addItem(m_iconwidget, 0, 0);
@@ -179,7 +180,7 @@ DictApplet::DictApplet(QObject *parent, const QVariantList &args)
     m_dictwidget(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_qstardict");
-    setPopupIcon("accessories-dictionary");
+    setPopupIcon(s_defaultpopupicon);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
 
     m_dictwidget = new DictAppletWidget(this);
