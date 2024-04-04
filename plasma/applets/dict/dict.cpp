@@ -202,10 +202,6 @@ DictApplet::DictApplet(QObject *parent, const QVariantList &args)
     m_dictwidget = new DictAppletWidget(this);
 }
 
-void DictApplet::init()
-{
-}
-
 QGraphicsWidget *DictApplet::graphicsWidget()
 {
     return m_dictwidget;
