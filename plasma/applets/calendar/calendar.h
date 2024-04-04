@@ -47,9 +47,9 @@ private slots:
 private:
     void paintIcon();
 
-    CalendarWidget *m_calendarwidget;
-    Plasma::Svg *m_svg;
-    QTimer *m_timer;
+    CalendarWidget* m_calendarwidget;
+    Plasma::Svg* m_svg;
+    QTimer* m_timer;
     int m_day;
     KCModuleProxy* m_kcmclockproxy;
 };
