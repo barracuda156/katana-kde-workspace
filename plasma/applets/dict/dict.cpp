@@ -45,11 +45,14 @@ private Q_SLOTS:
     void slotFinished(KJob *kjob);
 
 private:
+    void setText(const QString &text, const bool error);
+
     DictApplet* m_dictapplet;
     QGraphicsGridLayout* m_layout;
     Plasma::IconWidget* m_iconwidget;
     Plasma::LineEdit* m_wordedit;
     Plasma::TextBrowser* m_textbrowser;
+    QTextBrowser* m_nativetextbrowser;
     KIO::StoredTransferJob* m_kiojob;
 };
 
@@ -86,6 +89,7 @@ DictAppletWidget::DictAppletWidget(DictApplet* dictapplet)
 
     m_textbrowser = new Plasma::TextBrowser(this);
     m_textbrowser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_nativetextbrowser = m_textbrowser->nativeWidget();
     m_layout->addItem(m_textbrowser, 1, 0, 1, 2);
     // big stretch factor to squeeze the icon as much as possible
     m_layout->setColumnStretchFactor(1, 100);
@@ -93,15 +97,35 @@ DictAppletWidget::DictAppletWidget(DictApplet* dictapplet)
     setLayout(m_layout);
 }
 
+void DictAppletWidget::setText(const QString &text, const bool error)
+{
+    if (m_kiojob) {
+        m_kiojob->deleteLater();
+        m_kiojob = nullptr;
+    }
+    m_textbrowser->setText(text);
+    QTextCursor textcursor = m_nativetextbrowser->textCursor();
+    m_nativetextbrowser->selectAll();
+    if (error) {
+        m_nativetextbrowser->setAlignment(Qt::AlignCenter);
+    } else {
+        m_nativetextbrowser->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    }
+    textcursor.movePosition(QTextCursor::End);
+    m_nativetextbrowser->setTextCursor(textcursor);
+    m_wordedit->setEnabled(true);
+    m_dictapplet->setBusy(false);
+}
+
 void DictAppletWidget::slotWordChanged()
 {
     const QString queryword = m_wordedit->text();
     // basic validation
     if (queryword.isEmpty()) {
-        m_textbrowser->setText(QString());
+        setText(QString(), false);
         return;
     } else if (queryword.contains(' ')) {
-        m_textbrowser->setText(i18n("Only words can be queried"));
+        setText(i18n("Only words can be queried"), true);
         return;
     }
     
@@ -117,11 +141,12 @@ void DictAppletWidget::slotWordChanged()
 void DictAppletWidget::slotFinished(KJob *kjob)
 {
     kDebug() << "dict job finished";
-    if (kjob->error() != KJob::NoError) {
-        m_textbrowser->setText(kjob->errorString());
-        kjob->deleteLater();
-        m_wordedit->setEnabled(true);
-        m_dictapplet->setBusy(false);
+    if (kjob->error() == KIO::ERR_SERVICE_NOT_AVAILABLE) {
+        // special case, the server returns 404 when no definition is found
+        setText(i18n("No definitions found"), true);
+        return;
+    } else if (kjob->error() != KJob::NoError) {
+        setText(kjob->errorString(), true);
         return;
     }
 
@@ -129,35 +154,27 @@ void DictAppletWidget::slotFinished(KJob *kjob)
     kjob->deleteLater();
     if (jsondocument.isNull()) {
         kWarning() << jsondocument.errorString();
-        m_textbrowser->setText(i18n("Cannot parse JSON"));
-        m_wordedit->setEnabled(true);
-        m_dictapplet->setBusy(false);
+        setText(i18n("Cannot parse JSON"), true);
         return;
     }
 
     const QVariantList rootlist = jsondocument.toVariant().toList();
     if (rootlist.isEmpty()) {
         kWarning() << "unexpected dict JSON data";
-        m_textbrowser->setText(i18n("Unexpected JSON data"));
-        m_wordedit->setEnabled(true);
-        m_dictapplet->setBusy(false);
+        setText(i18n("Unexpected JSON data"), true);
         return;
     }
     const QVariantList meaningslist = rootlist.first().toMap().value("meanings").toList();
     if (meaningslist.isEmpty()) {
         kWarning() << "unexpected dict meanings data";
-        m_textbrowser->setText(i18n("Unexpected meanings data"));
-        m_wordedit->setEnabled(true);
-        m_dictapplet->setBusy(false);
+        setText(i18n("Unexpected meanings data"), true);
         return;
     }
     // qDebug() << Q_FUNC_INFO << "meanings" << meaningslist;
     const QVariantList definitionslist = meaningslist.first().toMap().value("definitions").toList();
     if (definitionslist.isEmpty()) {
         kWarning() << "unexpected dict definitions data";
-        m_textbrowser->setText(i18n("Unexpected definitions data"));
-        m_wordedit->setEnabled(true);
-        m_dictapplet->setBusy(false);
+        setText(i18n("Unexpected definitions data"), true);
         return;
     }
     // qDebug() << Q_FUNC_INFO << "definitions" << definitionslist;
@@ -170,9 +187,7 @@ void DictAppletWidget::slotFinished(KJob *kjob)
     meaning.append(example);
     meaning.append("\n</dl>\n</p>\n");
     kDebug() << "dict result is" << definition << example;
-    m_textbrowser->setText(meaning);
-    m_wordedit->setEnabled(true);
-    m_dictapplet->setBusy(false);
+    setText(meaning, false);
 }
 
 DictApplet::DictApplet(QObject *parent, const QVariantList &args)
