@@ -1515,8 +1515,6 @@ QList<QPair<int, QVariant> > KFileItemModel::dateRoleGroups() const
     const int maxIndex = count() - 1;
     QList<QPair<int, QVariant> > groups;
 
-    const QDate currentDate = QDateTime::currentDateTime().date();
-
     QDate previousModifiedDate;
     QString groupValue;
     for (int i = 0; i <= maxIndex; ++i) {
