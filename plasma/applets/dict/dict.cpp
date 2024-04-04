@@ -22,6 +22,7 @@
 #include <QGraphicsGridLayout>
 #include <QJsonDocument>
 #include <KIcon>
+#include <KLineEdit>
 #include <KIO/Job>
 #include <KIO/StoredTransferJob>
 #include <Plasma/IconWidget>
@@ -39,7 +40,7 @@ public:
     DictAppletWidget(DictApplet* dictapplet);
 
 private Q_SLOTS:
-    void slotReturnPressed();
+    void slotWordChanged();
     void slotFinished(KJob *kjob);
 
 private:
@@ -78,7 +79,8 @@ DictAppletWidget::DictAppletWidget(DictApplet* dictapplet)
     m_wordedit->setClickMessage(i18n("Enter word to define here"));
     setFocusProxy(m_wordedit);
     m_wordedit->setFocus();
-    connect(m_wordedit, SIGNAL(returnPressed()), this, SLOT(slotReturnPressed()));
+    connect(m_wordedit, SIGNAL(returnPressed()), this, SLOT(slotWordChanged()));
+    connect(m_wordedit->nativeWidget(), SIGNAL(clearButtonClicked()), this, SLOT(slotWordChanged()));
     m_layout->addItem(m_wordedit, 0, 1);
 
     m_textbrowser = new Plasma::TextBrowser(this);
@@ -90,7 +92,7 @@ DictAppletWidget::DictAppletWidget(DictApplet* dictapplet)
     setLayout(m_layout);
 }
 
-void DictAppletWidget::slotReturnPressed()
+void DictAppletWidget::slotWordChanged()
 {
     const QString queryword = m_wordedit->text();
     // basic validation
