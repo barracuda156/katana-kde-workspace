@@ -148,7 +148,7 @@ void CalendarApplet::slotCheckDate()
 
     Plasma::ToolTipContent plasmatooltip;
     plasmatooltip.setMainText(i18n("Current Date"));
-    const QString calendarstring = KGlobal::locale()->formatDate(QDateTime::currentDateTime().date());
+    const QString calendarstring = KGlobal::locale()->formatDate(QDate::currentDate());
     QString calendartooltip;
     if (KSystemTimeZones::local() != KTimeZone::utc()) {
         calendartooltip.append(i18n("UTC: %1<br/>", KGlobal::locale()->formatDate(QDateTime::currentDateTimeUtc().date())));
