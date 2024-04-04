@@ -31,7 +31,7 @@ static const qreal s_moonmonth = 29.53059;
 
 static int kLunaPhase()
 {
-    static const QDateTime firsnewmoon = QDateTime(QDate(1900, 1, 1), QTime(0, 0, 0), Qt::UTC);
+    static const QDateTime firsnewmoon = QDateTime(QDate(1999, 8, 11), QTime(0, 0, 0), Qt::UTC);
     const QDateTime now = QDateTime::currentDateTime();
     const qreal gregoriandays = qreal(-now.daysTo(firsnewmoon.toLocalTime()));
     qreal moonphase = 0;
