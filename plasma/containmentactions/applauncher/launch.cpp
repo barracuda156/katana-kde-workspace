@@ -19,16 +19,10 @@
 
 #include "launch.h"
 
-#include <QtGui/qgraphicssceneevent.h>
-#include <QtGui/qgraphicssceneevent.h>
-
 #include <KDebug>
 #include <KIcon>
-#include <KMenu>
-
-#include <Plasma/DataEngine>
+#include <KRun>
 #include <Plasma/Containment>
-#include <Plasma/ServiceJob>
 
 AppLauncher::AppLauncher(QObject *parent, const QVariantList &args)
     : Plasma::ContainmentActions(parent, args),
@@ -67,70 +61,51 @@ QList<QAction*> AppLauncher::contextualActions()
 
 void AppLauncher::makeMenu()
 {
-    Plasma::DataEngine *apps = dataEngine("apps");
-    if (!apps->isValid()) {
-        return;
-    }
-
     m_menu->clear();
 
     //add the whole kmenu
-    Plasma::DataEngine::Data app = dataEngine("apps")->query("/");
-    const QStringList sources = app.value("entries").toStringList();
-    foreach (const QString &source, sources) {
-        addApp(m_menu, source);
+    KServiceGroup::Ptr group = KServiceGroup::root();
+    if (group && group->isValid()) {
+        addApp(m_menu, group);
     }
 }
 
-bool AppLauncher::addApp(QMenu *menu, const QString &source)
+void AppLauncher::addApp(QMenu *menu, KServiceGroup::Ptr group)
 {
-    if (source == "---") {
-        menu->addSeparator();
-        return false;
-    }
-
-    Plasma::DataEngine::Data app = dataEngine("apps")->query(source);
-
-    if (!app.value("display").toBool()) {
-        kDebug() << "hidden entry" << source;
-        return false;
-    }
-    QString name = app.value("name").toString();
+    const QString name = group->name();
     if (name.isEmpty()) {
-        kDebug() << "failed source" << source;
-        return false;
+        kDebug() << "failed source" << name;
+        return;
     }
 
-    name.replace("&", "&&"); //escaping
-    KIcon icon(app.value("iconName").toString());
+    if (group->noDisplay()) {
+        kDebug() << "hidden group" << name;
+        return;
+    }
 
-    if (app.value("isApp").toBool()) {
-        QAction *action = menu->addAction(icon, name);
-        action->setData(source);
-    } else { //ooh, it's actually a group!
-        QMenu *subMenu = menu->addMenu(icon, name);
-        bool hasEntries = false;
-        foreach (const QString &source, app.value("entries").toStringList()) {
-            hasEntries = addApp(subMenu, source) || hasEntries;
-        }
-
-        if (!hasEntries) {
+    foreach (const KServiceGroup::Ptr subGroup, group->groupEntries(KServiceGroup::NoOptions)) {
+        QMenu *subMenu = menu->addMenu(KIcon(subGroup->icon()), subGroup->caption());
+        addApp(subMenu, subGroup);
+        if (subMenu->isEmpty()) {
             delete subMenu;
-            return false;
         }
     }
-    return true;
+
+    foreach (const KService::Ptr app, group->serviceEntries(KServiceGroup::NoOptions)) {
+        if (app->noDisplay()) {
+            kDebug() << "hidden entry" << app->name();
+            continue;
+        }
+        QAction *action = menu->addAction(KIcon(app->icon()), app->name());
+        action->setData(app->entryPath());
+    }
 }
 
 void AppLauncher::switchTo(QAction *action)
 {
-    QString source = action->data().toString();
-    kDebug() << source;
-    Plasma::Service *service = dataEngine("apps")->serviceForSource(source);
-    if (service) {
-        Plasma::ServiceJob *job = service->startOperationCall("launch", service->operationParameters("launch"));
-        connect(job, SIGNAL(finished(KJob*)), service, SLOT(deleteLater()));
-    }
+    const QString entrypath = action->data().toString();
+    kDebug() << "running" << entrypath;
+    new KRun(KUrl(entrypath), nullptr);
 }
 
 #include "moc_launch.cpp"

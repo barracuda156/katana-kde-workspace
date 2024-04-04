@@ -23,7 +23,8 @@
 #include <plasma/containmentactions.h>
 
 #include <QAction>
-class KMenu;
+#include <KMenu>
+#include <KServiceGroup>
 
 class AppLauncher : public Plasma::ContainmentActions
 {
@@ -36,8 +37,7 @@ class AppLauncher : public Plasma::ContainmentActions
 
         void contextEvent(QEvent *event);
         QList<QAction*> contextualActions();
-        //returns true if something (other than a separator) was successfully added
-        bool addApp(QMenu *menu, const QString &source);
+        void addApp(QMenu *menu, KServiceGroup::Ptr group);
 
     public slots:
         void switchTo(QAction *action);
