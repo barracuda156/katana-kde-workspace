@@ -153,7 +153,6 @@ void DictAppletWidget::slotFinished(KJob *kjob)
     }
 
     const QJsonDocument jsondocument = QJsonDocument::fromJson(m_kiojob->data());
-    kjob->deleteLater();
     if (jsondocument.isNull()) {
         kWarning() << jsondocument.errorString();
         setText(i18n("Cannot parse JSON"), true);
