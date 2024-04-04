@@ -36,9 +36,6 @@ Example:
 All other entries should follow the standard .desktop specification,
 supplemented by the standard KPluginInfo keys.
 
-If a wallpaper plugin should be constrained to a specific set of FormFactors,
-include a list of those FormFactors using the X-Plasma-FormFactors key.
-
 Defined categories for wallpapers include:
  * Single Image
  * Slideshow
@@ -52,7 +49,6 @@ Subclasses: QObject
 *** Key Properties ***
 
 boundingRect: the geometry to paint the wallpaper into
-formFactors: the Plasma::FormFactors this wallpaper supports (e.g. Planar)
 
 *** Key Methods ***
 
