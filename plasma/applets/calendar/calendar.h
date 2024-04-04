@@ -17,8 +17,8 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef CALENDARTEST_H
-#define CALENDARTEST_H
+#ifndef CALENDAR_H
+#define CALENDAR_H
 
 #include <QTimer>
 #include <KConfigDialog>
@@ -56,4 +56,4 @@ private:
 
 K_EXPORT_PLASMA_APPLET(calendar, CalendarApplet)
 
-#endif
+#endif // CALENDAR_H

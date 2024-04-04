@@ -17,6 +17,7 @@ add_subdirectory(folderview)
 add_subdirectory(weather)
 add_subdirectory(pager)
 add_subdirectory(luna)
+add_subdirectory(dict)
 
 if (ALSA_FOUND)
     add_subdirectory(mixer)

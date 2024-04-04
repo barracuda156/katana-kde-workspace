@@ -1,5 +1,6 @@
-/*  This file is part of the KDE project
-    Copyright (C) 2022 Ivailo Monev <xakepa10@gmail.com>
+/*
+    This file is part of the KDE project
+    Copyright (C) 2024 Ivailo Monev <xakepa10@gmail.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -16,34 +17,29 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef DICTENGINE_H
-#define DICTENGINE_H
+#ifndef DICT_H
+#define DICT_H
 
-#include <Plasma/DataEngine>
-#include <KJob>
-#include <KIO/Job>
+#include <Plasma/PopupApplet>
 
-/**
- * This class evaluates the basic expressions given in the interface.
- */
+class DictAppletWidget;
 
-
-class DictEngine: public Plasma::DataEngine
+class DictApplet : public Plasma::PopupApplet
 {
     Q_OBJECT
 public:
-    DictEngine( QObject* parent, const QVariantList& args );
+    DictApplet(QObject *parent, const QVariantList &args);
 
-protected:
-    bool sourceRequestEvent(const QString &word);
+    // Plasma::Applet reimplementation
+    void init() final;
+    // Plasma::PopupApplet reimplementation
+    QGraphicsWidget* graphicsWidget() final;
 
 private:
-    void setError(const QString &query, const QString &message);
-
-private Q_SLOTS:
-    void slotFinished(KJob *kjob);
+    friend DictAppletWidget;
+    DictAppletWidget *m_dictwidget;
 };
 
-K_EXPORT_PLASMA_DATAENGINE(dict, DictEngine)
+K_EXPORT_PLASMA_APPLET(dict, DictApplet)
 
-#endif
+#endif // DICT_H
