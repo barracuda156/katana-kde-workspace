@@ -165,14 +165,21 @@ QSizeF PagerSvg::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
     const PagerApplet* pagerapplet = qobject_cast<PagerApplet*>(parentObject());
     bool inpanel = false;
+    bool vertical = false;
+    const QSizeF currentsize = size();
     switch (pagerapplet->formFactor()) {
-        case Plasma::FormFactor::Planar:
-        case Plasma::FormFactor::MediaCenter:
-        case Plasma::FormFactor::Application: {
+        case Plasma::FormFactor::Vertical: {
+            inpanel = true;
+            vertical = true;
+            break;
+        }
+        case Plasma::FormFactor::Horizontal: {
+            inpanel = true;
+            vertical = (currentsize.width() < currentsize.height());
             break;
         }
         default: {
-            inpanel = true;
+            vertical = (currentsize.width() < currentsize.height());
             break;
         }
     }
@@ -181,8 +188,6 @@ QSizeF PagerSvg::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
         return Plasma::SvgWidget::sizeHint(which, constraint);
     }
     if (which != Qt::MaximumSize) {
-        const QSizeF currentsize = size();
-        const bool vertical = (currentsize.width() < currentsize.height());
         // hints are based on the mode and longest text of all virtual desktops
         qreal textwidth = 0;
         const int numberofdesktops = KWindowSystem::numberOfDesktops();
@@ -199,6 +204,10 @@ QSizeF PagerSvg::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
         // the applet layout spacing + the text spacing
         static const int spacingx4 = (s_spacing * 4);
         QSizeF result;
+        if (inpanel && vertical) {
+            // vertical in panels only when the text will not be squeezed
+            vertical = (currentsize.height() >= (textwidth + spacingx4));
+        }
         if (vertical) {
             result.setWidth(fontmetricsf.height() + spacingx4);
             result.setHeight(textwidth + spacingx4);
@@ -391,31 +400,29 @@ void PagerApplet::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 void PagerApplet::constraintsEvent(Plasma::Constraints constraints)
 {
-    // perfect size finder
-    // qDebug() << Q_FUNC_INFO << size();
-    if (constraints & Plasma::SizeConstraint || constraints & Plasma::FormFactorConstraint) {
+    // update once
+    bool update = false;
+    if (constraints & Plasma::SizeConstraint) {
+        update = true;
+    }
+    if (constraints & Plasma::FormFactorConstraint) {
         switch (formFactor()) {
             case Plasma::FormFactor::Horizontal: {
                 m_layout->setOrientation(Qt::Horizontal);
-                updatePolicyAndPagers();
-                return;
+                break;
             }
             case Plasma::FormFactor::Vertical: {
                 m_layout->setOrientation(Qt::Vertical);
-                updatePolicyAndPagers();
-                return;
+                break;
             }
             default: {
+                m_layout->setOrientation(Qt::Horizontal);
                 break;
             }
         }
-
-        const QSizeF appletsize = size();
-        if (appletsize.width() >= appletsize.height()) {
-            m_layout->setOrientation(Qt::Horizontal);
-        } else {
-            m_layout->setOrientation(Qt::Vertical);
-        }
+        update = true;
+    }
+    if (update) {
         updatePolicyAndPagers();
     }
 }
