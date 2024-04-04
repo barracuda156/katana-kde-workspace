@@ -84,7 +84,7 @@ CalendarApplet::CalendarApplet(QObject *parent, const QVariantList &args)
     m_kcmclockproxy(nullptr)
 {
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
-    setPopupIcon("view-pim-calendar");
+    setPopupIcon(s_defaultpopupicon);
 
     m_calendarwidget = new CalendarWidget(this);
 
@@ -182,7 +182,7 @@ void CalendarApplet::paintIcon()
 
         setPopupIcon(QIcon(iconpixmap));
     } else {
-        setPopupIcon(s_defaultpopupicon);
+        setPopupIcon(KIcon(s_defaultpopupicon));
     }
 }
 
