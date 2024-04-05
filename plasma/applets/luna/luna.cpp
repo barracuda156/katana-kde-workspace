@@ -34,11 +34,11 @@ static int kLunaPhase()
     static const QDateTime firsnewmoon = QDateTime(QDate(1999, 8, 11), QTime(0, 0, 0), Qt::UTC);
     const QDateTime now = QDateTime::currentDateTime();
     const qreal gregoriandays = qreal(-now.daysTo(firsnewmoon.toLocalTime()));
-    qreal moonphase = 0;
-    while ((moonphase + s_moonmonth) < gregoriandays) {
-        moonphase += s_moonmonth;
+    qreal moondays = 0;
+    while ((moondays + s_moonmonth) < gregoriandays) {
+        moondays += s_moonmonth;
     }
-    const int roundmoonphase = qRound(gregoriandays - moonphase);
+    const int roundmoonphase = qRound(gregoriandays - moondays);
     // qDebug() << Q_FUNC_INFO << now << roundmoonphase;
     return roundmoonphase;
 }

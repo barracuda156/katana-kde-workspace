@@ -39,7 +39,7 @@ static const QString s_hostname = QString::fromLatin1("localhost");
 static const int s_port = -1;
 static const int s_monitorsid = -1;
 static const int s_update = 1; // 1 sec
-static const QSizeF s_minimumvisualizersize = QSizeF(120, 70);
+static const QSizeF s_minimumframesize = QSizeF(120, 70);
 static const QSizeF s_minimummetersize = QSizeF(70, 70);
 static const int s_textoffset = 10;
 
@@ -147,7 +147,7 @@ static QString kSensorDisplayString(const QByteArray &sensor)
 static void kSetupFrame(Plasma::Frame* plasmaframe)
 {
     plasmaframe->setFrameShadow(Plasma::Frame::Sunken);
-    plasmaframe->setMinimumSize(s_minimumvisualizersize);
+    plasmaframe->setMinimumSize(s_minimumframesize);
     plasmaframe->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     QGraphicsLinearLayout* plasmaframelayout = new QGraphicsLinearLayout(plasmaframe);
     plasmaframelayout->setContentsMargins(0, 0, 0, 0);
@@ -980,7 +980,7 @@ void SystemMonitor::slotThemeChanged()
     );
 }
 
-K_EXPORT_PLASMA_APPLET(system-monitor_applet, SystemMonitor)
+K_EXPORT_PLASMA_APPLET(system-monitor, SystemMonitor)
 
 #include "moc_system-monitor.cpp"
 #include "system-monitor.moc"
