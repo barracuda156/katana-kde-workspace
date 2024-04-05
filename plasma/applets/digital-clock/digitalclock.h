@@ -54,6 +54,7 @@ private:
     QTimer* m_timer;
     KCModuleProxy* m_kcmclockproxy;
     KCModuleProxy* m_kcmlanguageproxy;
+    QString m_clockstring;
 };
 
 K_EXPORT_PLASMA_APPLET(dig_clock, DigitalClockApplet)

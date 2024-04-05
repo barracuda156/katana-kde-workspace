@@ -44,10 +44,10 @@ static QString kClockString()
     return KGlobal::locale()->formatTime(QTime::currentTime());
 }
 
-static QSizeF kClockSize(const QRectF &contentsRect)
+static QSizeF kClockSize(const QRectF &contentsRect, const QString &clockstring)
 {
     QFontMetricsF fontmetricsf(kClockFont(contentsRect));
-    QSizeF clocksize = fontmetricsf.size(Qt::TextSingleLine, kClockString());
+    QSizeF clocksize = fontmetricsf.size(Qt::TextSingleLine, clockstring);
     if (contentsRect.isNull()) {
         clocksize.setHeight(clocksize.height() * 4);
         clocksize.setWidth(clocksize.width() * 2);
@@ -74,6 +74,8 @@ DigitalClockApplet::DigitalClockApplet(QObject *parent, const QVariantList &args
     // even if the time format contains ms polling and repainting more often that 1sec is overkill
     m_timer->setInterval(1000);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
+
+    m_clockstring = kClockString();
 }
 
 void DigitalClockApplet::init()
@@ -91,7 +93,7 @@ void DigitalClockApplet::paintInterface(QPainter *painter,
 
     painter->drawPixmap(
         contentsRect,
-        Plasma::PaintUtils::texturedText(kClockString(), kClockFont(contentsRect), m_svg)
+        Plasma::PaintUtils::texturedText(m_clockstring, kClockFont(contentsRect), m_svg)
     );
 }
 
@@ -118,7 +120,7 @@ void DigitalClockApplet::createConfigurationInterface(KConfigDialog *parent)
 void DigitalClockApplet::constraintsEvent(Plasma::Constraints constraints)
 {
     if (constraints && Plasma::SizeConstraint || constraints & Plasma::FormFactorConstraint) {
-        const QSizeF clocksize = kClockSize(contentsRect());
+        const QSizeF clocksize = kClockSize(contentsRect(), m_clockstring);
         switch (formFactor()) {
             case Plasma::FormFactor::Horizontal:
             case Plasma::FormFactor::Vertical: {
@@ -129,7 +131,7 @@ void DigitalClockApplet::constraintsEvent(Plasma::Constraints constraints)
             }
             default: {
                 // desktop-like
-                setMinimumSize(kClockSize(QRect()));
+                setMinimumSize(kClockSize(QRect(), m_clockstring));
                 setPreferredSize(clocksize);
                 break;
             }
@@ -155,16 +157,16 @@ void DigitalClockApplet::changeEvent(QEvent *event)
 
 void DigitalClockApplet::slotTimeout()
 {
+    m_clockstring = kClockString();
     update();
     Plasma::ToolTipContent plasmatooltip;
     plasmatooltip.setMainText(i18n("Current Time"));
-    const QString clockstring = kClockString();
     QString clocktooltip;
     if (KSystemTimeZones::local() != KTimeZone::utc()) {
         clocktooltip.append(i18n("UTC: %1<br/>", KGlobal::locale()->formatTime(QDateTime::currentDateTimeUtc().time())));
-        clocktooltip.append(i18n("Local: %1", clockstring));
+        clocktooltip.append(i18n("Local: %1", m_clockstring));
     } else {
-        clocktooltip.append(i18n("<center>%1</center>", clockstring));
+        clocktooltip.append(i18n("<center>%1</center>", m_clockstring));
     }
     plasmatooltip.setSubText(clocktooltip);
     plasmatooltip.setImage(KIcon("clock"));
