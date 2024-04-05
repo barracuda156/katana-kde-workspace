@@ -356,7 +356,6 @@ SystemMonitorThermal::SystemMonitorThermal(QGraphicsWidget *parent, const QByteA
     setMeterType(Plasma::Meter::AnalogMeter);
     setMinimumSize(s_minimummetersize);
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    // TODO: the display string may be too long, have to elide
     setLabel(0, kSensorDisplayString(m_thermalid));
     // NOTE: values of thermal zones are in celsius, see:
     // https://www.kernel.org/doc/Documentation/thermal/sysfs-api.txt
