@@ -150,42 +150,8 @@ static void kSetupFrame(Plasma::Frame* plasmaframe)
     plasmaframe->setMinimumSize(s_minimumvisualizersize);
     plasmaframe->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     QGraphicsLinearLayout* plasmaframelayout = new QGraphicsLinearLayout(plasmaframe);
+    plasmaframelayout->setContentsMargins(0, 0, 0, 0);
     plasmaframe->setLayout(plasmaframelayout);
-}
-
-static void kSetupFrameMargins(Plasma::Frame* plasmaframe)
-{
-    QGraphicsLinearLayout* plasmaframelayout = static_cast<QGraphicsLinearLayout*>(plasmaframe->layout());
-    Q_ASSERT(plasmaframelayout);
-    plasmaframelayout->setContentsMargins(0, plasmaframe->font().pointSize() + s_textoffset, 0, 0);
-}
-
-// as thread-safe as Plasma::Svg
-static Plasma::Svg* plasmasvg = nullptr;
-
-static void kPaintPlotBackground(QPainter *p, QGraphicsWidget *widget, const QSizeF &size)
-{
-    if (!plasmasvg) {
-        plasmasvg = new Plasma::Svg(widget);
-        plasmasvg->setImagePath("widgets/plot-background");
-    }
-    if (plasmasvg->isValid()) {
-        QRectF plasmasvgrect = QRectF(QPointF(0, 0), size);
-        // 3 pixels off for rounding errors
-        plasmasvgrect.setHeight(p->font().pointSize() + s_textoffset + 3);
-        plasmasvg->paint(p, plasmasvgrect);
-    } else {
-        kWarning() << "invalid widgets/plot-background";
-    }
-}
-
-static void kPaintText(QPainter *p, const QString &text, const QSizeF &size, const QPointF &point, const Qt::Alignment alignment)
-{
-    const QRectF rect(point, size);
-    p->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
-    QFontMetricsF pfmetrics(p->font());
-    const QString pstring = pfmetrics.elidedText(text, Qt::ElideRight, rect.width());
-    p->drawText(rect, alignment, pstring);
 }
 
 static void kAddItem(QGraphicsWidget *parent, QGraphicsWidget *widget)
@@ -215,34 +181,12 @@ class SystemMonitorCPU : public Plasma::Frame
     Q_OBJECT
 public:
     SystemMonitorCPU(QGraphicsWidget *parent);
-
-protected:
-    void changeEvent(QEvent *event) final;
-    void paint(QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) final;
 };
 
 SystemMonitorCPU::SystemMonitorCPU(QGraphicsWidget *parent)
     : Plasma::Frame(parent)
 {
     kSetupFrame(this);
-    kSetupFrameMargins(this);
-}
-
-void SystemMonitorCPU::changeEvent(QEvent *event)
-{
-    Plasma::Frame::changeEvent(event);
-    if (event->type() == QEvent::FontChange) {
-        kSetupFrameMargins(this);
-    }
-}
-
-void SystemMonitorCPU::paint(QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
-    Plasma::Frame::paint(p, option, widget);
-
-    const QSizeF thissize = size();
-    kPaintPlotBackground(p, this, thissize);
-    kPaintText(p, i18n("CPU"), thissize, QPointF(0, s_textoffset / 2), Qt::AlignHCenter | Qt::AlignTop);
 }
 
 
@@ -258,14 +202,9 @@ public:
     void addReceiveSample(const double value);
     void addTransmitSample(const double value);
 
-protected:
-    void changeEvent(QEvent *event) final;
-    void paint(QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) final;
-
 private:
     Plasma::SignalPlotter* m_netplotter;
     const QByteArray m_netid;
-    const QString m_netdisplaystring;
     QList<double> m_netsample;
 };
 
@@ -273,16 +212,14 @@ SystemMonitorNet::SystemMonitorNet(QGraphicsWidget *parent, const QByteArray &ne
                                    const QColor &receivercolor, const QColor &transmittercolor)
     : Plasma::Frame(parent),
     m_netplotter(nullptr),
-    m_netid(netid),
-    m_netdisplaystring(kSensorDisplayString(m_netid))
+    m_netid(netid)
 {
     kSetupFrame(this);
-    kSetupFrameMargins(this);
 
     m_netplotter = new Plasma::SignalPlotter(this);
     m_netplotter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_netplotter->setUnit("KiB/s");
-    m_netplotter->setShowTopBar(false);
+    m_netplotter->setTitle(kSensorDisplayString(m_netid));
     m_netplotter->setShowLabels(true);
     m_netplotter->setShowVerticalLines(false);
     m_netplotter->setShowHorizontalLines(false);
@@ -317,23 +254,6 @@ void SystemMonitorNet::addTransmitSample(const double value)
 {
     m_netsample[1] = value;
     m_netplotter->addSample(m_netsample);
-}
-
-void SystemMonitorNet::changeEvent(QEvent *event)
-{
-    Plasma::Frame::changeEvent(event);
-    if (event->type() == QEvent::FontChange) {
-        kSetupFrameMargins(this);
-    }
-}
-
-void SystemMonitorNet::paint(QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
-    Plasma::Frame::paint(p, option, widget);
-
-    const QSizeF thissize = size();
-    kPaintPlotBackground(p, this, thissize);
-    kPaintText(p, m_netdisplaystring, thissize, QPointF(0, s_textoffset / 2), Qt::AlignHCenter | Qt::AlignTop);
 }
 
 
@@ -400,7 +320,12 @@ void SystemMonitorPartition::setUsedSpace(const double value)
 void SystemMonitorPartition::paint(QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Plasma::Meter::paint(p, option, widget);
-    kPaintText(p, m_partitiondisplaystring, size(), QPointF(0, 0), Qt::AlignCenter);
+
+    const QRectF rect(QPointF(0, 0), size());
+    p->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
+    QFontMetricsF pfmetrics(p->font());
+    const QString pstring = pfmetrics.elidedText(m_partitiondisplaystring, Qt::ElideRight, rect.width());
+    p->drawText(rect, Qt::AlignCenter, pstring);
 }
 
 void SystemMonitorPartition::calculateValues()
@@ -648,7 +573,7 @@ SystemMonitorWidget::SystemMonitorWidget(SystemMonitor* systemmonitor)
     m_cpuplotter = new Plasma::SignalPlotter(m_cpuframe);
     m_cpuplotter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_cpuplotter->setUnit("%");
-    m_cpuplotter->setShowTopBar(false);
+    m_cpuplotter->setTitle(i18n("CPU"));
     m_cpuplotter->setShowLabels(true);
     m_cpuplotter->setShowVerticalLines(false);
     m_cpuplotter->setShowHorizontalLines(false);

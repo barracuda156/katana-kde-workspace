@@ -603,7 +603,6 @@ void MixerTabWidget::showVisualizer(const bool show, const uint scale, const QCo
         m_plotterframe->setLayout(plotterframelayout);
         m_signalplotter = new MixerPlotter(icon, m_plotterframe);
         m_signalplotter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        m_signalplotter->setShowTopBar(false);
         m_signalplotter->setShowLabels(false);
         m_signalplotter->setShowVerticalLines(false);
         m_signalplotter->setShowHorizontalLines(false);
