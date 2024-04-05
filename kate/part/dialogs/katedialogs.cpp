@@ -62,7 +62,6 @@
 #include <kapplication.h>
 #include <kcharsets.h>
 #include <kcolorbutton.h>
-#include <kcolorcombo.h>
 #include <kcombobox.h>
 #include <kconfig.h>
 #include <kdebug.h>
