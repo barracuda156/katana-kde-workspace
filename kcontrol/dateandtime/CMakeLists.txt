@@ -1,8 +1,7 @@
 ########### next target ###############
 
 set(kcm_clock_PART_SRCS
-    dtime.cpp
-    main.cpp
+    kcm_clock.cpp
 )
 kde4_add_plugin(kcm_clock ${kcm_clock_PART_SRCS})
 
@@ -18,16 +17,14 @@ install(
 
 ########### next target ###############
 
-add_executable(kcmdatetimehelper helper.cpp)
-
-target_link_libraries(kcmdatetimehelper KDE4::kdecore)
+add_executable(kcmclockhelper kcm_clock_helper.cpp)
+target_link_libraries(kcmclockhelper KDE4::kdecore)
 
 install(
-    TARGETS kcmdatetimehelper
+    TARGETS kcmclockhelper
     DESTINATION ${KDE4_LIBEXEC_INSTALL_DIR}
 )
-
-kde4_install_auth_helper_files(kcmdatetimehelper org.kde.kcontrol.kcmclock)
+kde4_install_auth_helper_files(kcmclockhelper org.kde.kcontrol.kcmclock)
 
 ########### install files ###############
 
