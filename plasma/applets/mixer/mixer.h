@@ -44,6 +44,7 @@ public:
     void wheelEvent(QGraphicsSceneWheelEvent *event) final;
 
 private Q_SLOTS:
+    void slotVisualizerToggled(bool toggled);
     void slotConfigAccepted();
     void slotThemeChanged();
 

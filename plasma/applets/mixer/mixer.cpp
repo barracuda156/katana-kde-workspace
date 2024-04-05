@@ -1017,8 +1017,10 @@ void MixerApplet::createConfigurationInterface(KConfigDialog *parent)
     widget->setLayout(widgetlayout);
     parent->addPage(widget, i18n("Visualizer"), "player-volume");
 
+    slotVisualizerToggled(m_showvisualizer);
     connect(parent, SIGNAL(applyClicked()), this, SLOT(slotConfigAccepted()));
     connect(parent, SIGNAL(okClicked()), this, SLOT(slotConfigAccepted()));
+    connect(m_visualizerbox, SIGNAL(toggled(bool)), this, SLOT(slotVisualizerToggled(bool)));
     connect(m_visualizerbox, SIGNAL(toggled(bool)), parent, SLOT(settingsModified()));
     connect(m_visualizerscalebox, SIGNAL(valueChanged(int)), parent, SLOT(settingsModified()));
     connect(m_visualizerbutton, SIGNAL(changed(QColor)), parent, SLOT(settingsModified()));
@@ -1037,6 +1039,13 @@ void MixerApplet::wheelEvent(QGraphicsSceneWheelEvent *event)
     } else {
         m_mixerwidget->increaseVolume();
     }
+}
+
+void MixerApplet::slotVisualizerToggled(bool toggled)
+{
+    m_visualizerscalebox->setEnabled(toggled);
+    m_visualizerbutton->setEnabled(toggled);
+    m_visualizericonbox->setEnabled(toggled);
 }
 
 void MixerApplet::slotConfigAccepted()
