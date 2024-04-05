@@ -70,8 +70,6 @@ KclockModule::KclockModule(QWidget *parent, const QVariantList &)
         )
     );
 
-    KGlobal::locale()->insertCatalog("timezones4"); // For time zone translations
-
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setMargin(0);
     layout->setSpacing(KDialog::spacingHint());

@@ -58,7 +58,6 @@
 Dtime::Dtime(QWidget * parent)
     : QWidget(parent)
 {
-    KGlobal::locale()->insertCatalog( "timezones4" );
     setupUi(this);
 
     connect(setDateTimeAuto, SIGNAL(toggled(bool)), this, SLOT(serverTimeCheck()));
@@ -132,7 +131,7 @@ void Dtime::currentZone()
         m_local->setText(
             i18nc(
                 "%1 is name of time zone", "Current local time zone: %1",
-                KTimeZoneWidget::displayName(localZone)
+                KSystemTimeZones::zoneName(localZone.name())
             )
         );
     } else {
@@ -140,7 +139,7 @@ void Dtime::currentZone()
             i18nc(
                 "%1 is name of time zone, %2 is its abbreviation",
                 "Current local time zone: %1 (%2)",
-                KTimeZoneWidget::displayName(localZone),
+                KSystemTimeZones::zoneName(localZone.name()),
                 QString::fromUtf8(localZone.abbreviations().first())
             )
         );

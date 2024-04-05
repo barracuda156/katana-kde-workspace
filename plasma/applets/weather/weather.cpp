@@ -206,15 +206,6 @@ static QString kDisplayCondition(const QString &icon)
     return i18n("N/A");
 }
 
-static QString kDisplayZoneName(const QString &ktimezonename)
-{
-    const QByteArray ktimezonenamebytes = ktimezonename.toUtf8();
-    QString result = i18n(ktimezonenamebytes.constData());
-    // replace underscore with space like KTimeZoneWidget
-    result = result.replace(QLatin1Char('_'), QLatin1Char(' '));
-    return result;
-}
-
 class KWeatherData
 {
 public:
@@ -759,7 +750,6 @@ WeatherApplet::WeatherApplet(QObject *parent, const QVariantList &args)
     m_spacer(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_weather");
-    KGlobal::locale()->insertCatalog("timezones4");
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
     setHasConfigurationInterface(true);
     setPopupIcon(s_defaultweathericon);
@@ -781,7 +771,7 @@ void WeatherApplet::init()
     m_longitude = configgroup.readEntry("weatherLongitude", KTimeZone::UNKNOWN);
     QString source;
     if (!m_location.isEmpty()) {
-        source = kDisplayZoneName(m_location);
+        source = KSystemTimeZones::zoneName(m_location);
     } else if (m_latitude != KTimeZone::UNKNOWN && m_longitude != KTimeZone::UNKNOWN) {
         source = i18n("Custom");
     }
@@ -814,7 +804,7 @@ void WeatherApplet::createConfigurationInterface(KConfigDialog *parent)
         if (ktimezonename == QLatin1String("UTC")) {
             continue;
         }
-        sortedzones.insert(kDisplayZoneName(ktimezonename), ktimezonename);
+        sortedzones.insert(KSystemTimeZones::zoneName(ktimezonename), ktimezonename);
     }
     m_locationbox->addItem(i18n("Automatic"));
     m_locationbox->addItem(i18n("Custom"));
