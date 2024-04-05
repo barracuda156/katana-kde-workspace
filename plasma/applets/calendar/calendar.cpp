@@ -154,7 +154,7 @@ void CalendarApplet::slotCheckDate()
         calendartooltip.append(i18n("UTC: %1<br/>", KGlobal::locale()->formatDate(QDateTime::currentDateTimeUtc().date())));
         calendartooltip.append(i18n("Local: %1", calendarstring));
     } else {
-        calendartooltip.append(i18n("<center>%1</center>", calendarstring));
+        calendartooltip.append(QString::fromLatin1("<center>%1</center>").arg(calendarstring));
     }
     plasmatooltip.setSubText(calendartooltip);
     plasmatooltip.setImage(KIcon("office-calendar"));

@@ -166,7 +166,7 @@ void DigitalClockApplet::slotTimeout()
         clocktooltip.append(i18n("UTC: %1<br/>", KGlobal::locale()->formatTime(QDateTime::currentDateTimeUtc().time())));
         clocktooltip.append(i18n("Local: %1", m_clockstring));
     } else {
-        clocktooltip.append(i18n("<center>%1</center>", m_clockstring));
+        clocktooltip.append(QString::fromLatin1("<center>%1</center>").arg(m_clockstring));
     }
     plasmatooltip.setSubText(clocktooltip);
     plasmatooltip.setImage(KIcon("clock"));
