@@ -30,6 +30,17 @@
 #include <kmessagewidget.h>
 #include <ktreewidgetsearchline.h>
 
+class KCMClockSearch : public KTreeWidgetSearchLine
+{
+    Q_OBJECT
+public:
+    KCMClockSearch(QWidget *parent);
+
+protected:
+    bool itemMatches(const QTreeWidgetItem *item, const QString &pattern) const final;
+};
+
+
 class KCMClock : public KCModule
 {
     Q_OBJECT
@@ -60,7 +71,7 @@ private:
     QDateEdit* m_dateedit;
     QGroupBox* m_timezonebox;
     QVBoxLayout* m_timezonelayout;
-    KTreeWidgetSearchLine* m_timezonesearch;
+    KCMClockSearch* m_timezonesearch;
     QTreeWidget* m_timezonewidget;
     QTimer* m_timer;
     bool m_timechanged;

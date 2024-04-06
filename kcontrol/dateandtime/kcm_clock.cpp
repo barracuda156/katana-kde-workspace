@@ -52,6 +52,28 @@ static bool kCanChangeClock()
     return (!KStandardDirs::findRootExe("hwclock").isEmpty() || !KStandardDirs::findRootExe("timedatectl").isEmpty());
 }
 
+KCMClockSearch::KCMClockSearch(QWidget *parent)
+    : KTreeWidgetSearchLine(parent)
+{
+}
+
+bool KCMClockSearch::itemMatches(const QTreeWidgetItem *item, const QString &pattern) const
+{
+    if (KTreeWidgetSearchLine::itemMatches(item, pattern)) {
+        return true;
+    }
+    // try harder with the user data in Qt::UserRole
+    const QString userdata0 = item->data(0, Qt::UserRole).toString();
+    if (userdata0.indexOf(pattern, 0, caseSensitivity()) >= 0) {
+        // untranslated zone name column matches
+        return true;
+    }
+    // maybe untranslated zone comment match
+    const QString userdata1 = item->data(1, Qt::UserRole).toString();
+    return (userdata1.indexOf(pattern, 0, caseSensitivity()) >= 0);
+}
+
+
 K_PLUGIN_FACTORY(KCMClockFactory, registerPlugin<KCMClock>();)
 K_EXPORT_PLUGIN(KCMClockFactory("kcmclock", "kcmclock"))
 
@@ -117,7 +139,7 @@ KCMClock::KCMClock(QWidget *parent, const QVariantList &args)
     m_timezonebox->setTitle(i18n("Time zone"));
     m_timezonelayout = new QVBoxLayout(m_timezonebox);
     m_timezonebox->setLayout(m_timezonelayout);
-    m_timezonesearch = new KTreeWidgetSearchLine(m_timezonebox);
+    m_timezonesearch = new KCMClockSearch(m_timezonebox);
     m_timezonesearch->setClickMessage(i18n("Search"));
     m_timezonelayout->addWidget(m_timezonesearch);
     m_timezonewidget = new QTreeWidget(m_timezonebox);
