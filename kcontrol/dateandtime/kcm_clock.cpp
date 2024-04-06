@@ -32,6 +32,7 @@
 static const int s_updatetime = 1000;
 static const int s_waittime = 100;
 static const QString s_dateformat = QString::fromLatin1("yyyy-MM-dd HH:mm:ss");
+static const QString s_utczone = QString::fromLatin1("UTC");
 
 static void kWatiForTimeZone(const QString &zone)
 {
@@ -69,7 +70,7 @@ KCMClock::KCMClock(QWidget *parent, const QVariantList &args)
 {
     Q_UNUSED(args);
 
-    setButtons(KCModule::Apply);
+    setButtons(KCModule::Default | KCModule::Apply);
     setQuickHelp(i18n("<h1>Date and Time</h1> This module allows you to change system date and time options."));
 
     KAboutData *about = new KAboutData(
@@ -174,7 +175,7 @@ void KCMClock::save()
     QString zone;
     const QList<QTreeWidgetItem*> selectedzones = m_timezonewidget->selectedItems();
     if (selectedzones.isEmpty()) {
-        zone = QLatin1String("UTC"); // what else?
+        zone = s_utczone; // what else?
     } else {
         zone = selectedzones.at(0)->data(0, Qt::UserRole).toString();
     }
@@ -224,7 +225,24 @@ void KCMClock::load()
 
 void KCMClock::defaults()
 {
-    // TODO: set timezone to UTC, check the time vs http://worldtimeapi.org/api/timezone/UTC
+    setEnabled(false);
+    if (m_canchangeclock) {
+        // TODO: check the time vs http://worldtimeapi.org/api/timezone/UTC
+    }
+    selectTimeZone(s_utczone);
+    setEnabled(true);
+}
+
+void KCMClock::selectTimeZone(const QString &name)
+{
+    for (int i = 0; i < m_timezonewidget->topLevelItemCount(); i++) {
+        QTreeWidgetItem* zoneitem = m_timezonewidget->topLevelItem(i);
+        if (zoneitem->data(0, Qt::UserRole).toString() == name) {
+            m_timezonewidget->setCurrentItem(zoneitem, 0);
+            return;
+        }
+    }
+    kWarning() << "timezone not in the tree" << name;
 }
 
 void KCMClock::slotUpdate()
@@ -241,13 +259,9 @@ void KCMClock::slotUpdate()
         m_dateedit->blockSignals(false);
     }
     if (!m_zonechanged) {
-        const QString localzonename = KSystemTimeZones::local().name();
-        for (int i = 0; i < m_timezonewidget->topLevelItemCount(); i++) {
-            QTreeWidgetItem* zoneitem = m_timezonewidget->topLevelItem(i);
-            if (zoneitem->data(0, Qt::UserRole).toString() == localzonename) {
-                m_timezonewidget->setCurrentItem(zoneitem, 0);
-            }
-        }
+        m_timezonewidget->blockSignals(true);
+        selectTimeZone(KSystemTimeZones::local().name());
+        m_timezonewidget->blockSignals(false);
     }
 }
 

@@ -49,6 +49,8 @@ private Q_SLOTS:
     void slotZoneChanged();
 
 private:
+    void selectTimeZone(const QString &name);
+
     QVBoxLayout* m_layout;
     bool m_canchangeclock;
     KMessageWidget* m_messagewidget;
