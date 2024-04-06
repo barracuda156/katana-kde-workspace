@@ -120,7 +120,7 @@ void DictAppletWidget::setText(const QString &text, const bool error)
 
 void DictAppletWidget::slotWordChanged()
 {
-    const QString queryword = m_wordedit->text();
+    const QString queryword = m_wordedit->text().trimmed();
     // basic validation
     if (queryword.isEmpty()) {
         setText(QString(), false);
