@@ -24,9 +24,10 @@
 #include <QHBoxLayout>
 #include <QGroupBox>
 #include <QDateTimeEdit>
+#include <QTreeWidget>
 #include <QTimer>
 #include <kcmodule.h>
-#include <ktimezonewidget.h>
+#include <ktreewidgetsearchline.h>
 
 class KCMCLock : public KCModule
 {
@@ -52,8 +53,9 @@ private:
     QTimeEdit* m_timeedit;
     QDateEdit* m_dateedit;
     QGroupBox* m_timezonebox;
-    QHBoxLayout* m_timezonelayout;
-    KTimeZoneWidget* m_timezonewidget;
+    QVBoxLayout* m_timezonelayout;
+    KTreeWidgetSearchLine* m_timezonesearch;
+    QTreeWidget* m_timezonewidget;
     QTimer* m_timer;
     bool m_timechanged;
     bool m_datechanged;

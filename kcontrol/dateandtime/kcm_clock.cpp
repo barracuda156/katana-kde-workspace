@@ -20,6 +20,7 @@
 #include "kcm_clock.h"
 
 #include <QThread>
+#include <QHeaderView>
 #include <kaboutdata.h>
 #include <kpluginfactory.h>
 #include <kauthorization.h>
@@ -57,6 +58,7 @@ KCMCLock::KCMCLock(QWidget *parent, const QVariantList &args)
     m_dateedit(nullptr),
     m_timezonebox(nullptr),
     m_timezonelayout(nullptr),
+    m_timezonesearch(nullptr),
     m_timezonewidget(nullptr),
     m_timer(nullptr),
     m_timechanged(false),
@@ -97,11 +99,47 @@ KCMCLock::KCMCLock(QWidget *parent, const QVariantList &args)
 
     m_timezonebox = new QGroupBox(this);
     m_timezonebox->setTitle(i18n("Time zone"));
-    m_timezonelayout = new QHBoxLayout(m_timezonebox);
+    m_timezonelayout = new QVBoxLayout(m_timezonebox);
     m_timezonebox->setLayout(m_timezonelayout);
-    m_timezonewidget = new KTimeZoneWidget(m_timezonebox);
+    m_timezonesearch = new KTreeWidgetSearchLine(m_timezonebox);
+    m_timezonesearch->setClickMessage(i18n("Search"));
+    m_timezonelayout->addWidget(m_timezonesearch);
+    m_timezonewidget = new QTreeWidget(m_timezonebox);
     m_timezonewidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_timezonewidget->setColumnCount(2);
+    QStringList treeheaders = QStringList()
+        << i18n("Time zone")
+        << i18n("Comment");
+    m_timezonewidget->setHeaderLabels(treeheaders);
+    m_timezonewidget->setRootIsDecorated(false);
+    m_timezonewidget->header()->setMovable(false);
+    m_timezonewidget->header()->setStretchLastSection(false);
+    m_timezonewidget->header()->setResizeMode(0, QHeaderView::Stretch);
+    m_timezonewidget->header()->setResizeMode(1, QHeaderView::Stretch);
+    QMap<QString, QString> sortedzones;
+    foreach (const KTimeZone &ktimezone, KSystemTimeZones::zones()) {
+        const QString zonename = ktimezone.name();
+        sortedzones.insert(KSystemTimeZones::zoneName(zonename), zonename);
+    }
+    QMapIterator<QString, QString> sortedzonesiter(sortedzones);
+    while (sortedzonesiter.hasNext()) {
+        sortedzonesiter.next();
+        const QString zonename = sortedzonesiter.value();
+        const KTimeZone ktimezone = KSystemTimeZones::zone(zonename);
+        const QString zoneflag = KStandardDirs::locate(
+            "locale",
+            QString::fromLatin1("l10n/%1/flag.png").arg(ktimezone.countryCode().toLower())
+        );;
+        QTreeWidgetItem* zoneitem = new QTreeWidgetItem();
+        zoneitem->setData(0, Qt::UserRole, zonename);
+        zoneitem->setIcon(0, KIcon(zoneflag));
+        zoneitem->setText(0, sortedzonesiter.key());
+        zoneitem->setData(1, Qt::UserRole, ktimezone.comment());
+        zoneitem->setText(1, KSystemTimeZones::zoneComment(zonename));
+        m_timezonewidget->addTopLevelItem(zoneitem);
+    }
     connect(m_timezonewidget, SIGNAL(itemSelectionChanged()), this, SLOT(slotZoneChanged()));
+    m_timezonesearch->setTreeWidget(m_timezonewidget);
     m_timezonelayout->addWidget(m_timezonewidget);
     m_layout->addWidget(m_timezonebox);
 
@@ -135,11 +173,11 @@ void KCMCLock::save()
         // qDebug() << Q_FUNC_INFO << datetime;
     }
     QString zone;
-    const QStringList selectedzones = m_timezonewidget->selection();
+    const QList<QTreeWidgetItem*> selectedzones = m_timezonewidget->selectedItems();
     if (selectedzones.isEmpty()) {
         zone = QLatin1String("UTC"); // what else?
     } else {
-        zone = selectedzones.at(0);
+        zone = selectedzones.at(0)->data(0, Qt::UserRole).toString();
     }
     // qDebug() << Q_FUNC_INFO << zone;
     savearguments.insert("zone", zone);
@@ -190,7 +228,13 @@ void KCMCLock::slotUpdate()
         m_dateedit->blockSignals(false);
     }
     if (!m_zonechanged) {
-        m_timezonewidget->setSelected(KSystemTimeZones::local().name(), true);
+        const QString localzonename = KSystemTimeZones::local().name();
+        for (int i = 0; i < m_timezonewidget->topLevelItemCount(); i++) {
+            QTreeWidgetItem* zoneitem = m_timezonewidget->topLevelItem(i);
+            if (zoneitem->data(0, Qt::UserRole).toString() == localzonename) {
+                m_timezonewidget->setCurrentItem(zoneitem, 0);
+            }
+        }
     }
 }
 
