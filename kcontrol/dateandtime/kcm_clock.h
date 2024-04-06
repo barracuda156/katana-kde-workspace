@@ -27,6 +27,7 @@
 #include <QTreeWidget>
 #include <QTimer>
 #include <kcmodule.h>
+#include <kmessagewidget.h>
 #include <ktreewidgetsearchline.h>
 
 class KCMClock : public KCModule
@@ -39,6 +40,7 @@ public:
 public Q_SLOTS:
     void load() final;
     void save() final;
+    void defaults() final;
 
 private Q_SLOTS:
     void slotUpdate();
@@ -48,6 +50,8 @@ private Q_SLOTS:
 
 private:
     QVBoxLayout* m_layout;
+    bool m_canchangeclock;
+    KMessageWidget* m_messagewidget;
     QGroupBox* m_datetimebox;
     QHBoxLayout* m_datetimelayout;
     QTimeEdit* m_timeedit;

@@ -52,6 +52,8 @@ K_EXPORT_PLUGIN(KCMClockFactory("kcmclock", "kcmclock"))
 KCMClock::KCMClock(QWidget *parent, const QVariantList &args)
     : KCModule(KCMClockFactory::componentData(), parent),
     m_layout(nullptr),
+    m_canchangeclock(false),
+    m_messagewidget(nullptr),
     m_datetimebox(nullptr),
     m_datetimelayout(nullptr),
     m_timeedit(nullptr),
@@ -81,6 +83,14 @@ KCMClock::KCMClock(QWidget *parent, const QVariantList &args)
 
     m_layout = new QVBoxLayout(this);
     setLayout(m_layout);
+
+    m_canchangeclock = kCanChangeClock();
+    m_messagewidget = new KMessageWidget(this);
+    m_messagewidget->setMessageType(KMessageWidget::Warning);
+    m_messagewidget->setCloseButtonVisible(false);
+    m_messagewidget->setText(i18n("Neither 'hwclock' nor 'timedatectl' utility found, setting the date and time is not possible."));
+    m_messagewidget->setVisible(!m_canchangeclock);
+    m_layout->addWidget(m_messagewidget);
 
     m_datetimebox = new QGroupBox(this);
     m_datetimebox->setTitle(i18n("Date and time"));
@@ -146,17 +156,6 @@ KCMClock::KCMClock(QWidget *parent, const QVariantList &args)
     m_timer = new QTimer(this);
     m_timer->setInterval(s_updatetime);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(slotUpdate()));
-
-    if (!KAuthorization::isAuthorized("org.kde.kcontrol.kcmclock")) {
-        setUseRootOnlyMessage(true);
-        setRootOnlyMessage(i18n("You are not allowed to save the configuration"));
-        setDisabled(true);
-    } else if (!kCanChangeClock()) {
-        setUseRootOnlyMessage(true);
-        setRootOnlyMessage(i18n("Neither 'hwclock' nor 'timedatectl' utility not found, setting the date is not possible"));
-        m_timeedit->setEnabled(false);
-        m_dateedit->setEnabled(false);
-    }
 }
 
 void KCMClock::save()
@@ -167,7 +166,7 @@ void KCMClock::save()
     m_datechanged = false;
     m_zonechanged = false;
     QVariantMap savearguments;
-    if (kCanChangeClock()) {
+    if (m_canchangeclock) {
         const QDateTime datetime = QDateTime(m_dateedit->date(), m_timeedit->time());
         savearguments.insert("datetime", datetime.toString(s_dateformat));
         // qDebug() << Q_FUNC_INFO << datetime;
@@ -205,6 +204,15 @@ void KCMClock::save()
 void KCMClock::load()
 {
     setEnabled(false);
+    if (!KAuthorization::isAuthorized("org.kde.kcontrol.kcmclock")) {
+        setUseRootOnlyMessage(true);
+        setRootOnlyMessage(i18n("You are not allowed to save the configuration"));
+        setDisabled(true);
+    }
+    m_canchangeclock = kCanChangeClock();
+    m_messagewidget->setVisible(!m_canchangeclock);
+    m_timeedit->setEnabled(m_canchangeclock);
+    m_dateedit->setEnabled(m_canchangeclock);
     m_timechanged = false;
     m_datechanged = false;
     m_zonechanged = false;
@@ -212,6 +220,11 @@ void KCMClock::load()
     emit changed(false);
     m_timer->start();
     setEnabled(true);
+}
+
+void KCMClock::defaults()
+{
+    // TODO: set timezone to UTC, check the time vs http://worldtimeapi.org/api/timezone/UTC
 }
 
 void KCMClock::slotUpdate()
