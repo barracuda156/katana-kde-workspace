@@ -35,6 +35,12 @@ public:
     // Plasma::PopupApplet reimplementation
     QGraphicsWidget* graphicsWidget() final;
 
+    // Plasma::Applet reimplementations
+public Q_SLOTS:
+    void configChanged();
+protected:
+    void saveState(KConfigGroup &group) const final;
+
 private:
     friend NotesAppletWidget;
     NotesAppletWidget *m_noteskwidget;

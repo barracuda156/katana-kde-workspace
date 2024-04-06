@@ -30,6 +30,9 @@ class NotesAppletWidget : public QGraphicsWidget
 public:
     NotesAppletWidget(QGraphicsWidget *parent);
 
+    QString text() const;
+    void setText(const QString &text);
+
 private:
     QGraphicsLinearLayout* m_layout;
     Plasma::Frame* m_frame;
@@ -65,6 +68,16 @@ NotesAppletWidget::NotesAppletWidget(QGraphicsWidget *parent)
     adjustSize();
 }
 
+QString NotesAppletWidget::text() const
+{
+    return m_textedit->text();
+}
+
+void NotesAppletWidget::setText(const QString &text)
+{
+    m_textedit->setText(text);
+}
+
 
 NotesApplet::NotesApplet(QObject *parent, const QVariantList &args)
     : Plasma::PopupApplet(parent, args),
@@ -79,6 +92,7 @@ NotesApplet::NotesApplet(QObject *parent, const QVariantList &args)
 
 void NotesApplet::init()
 {
+    configChanged();
 }
 
 QGraphicsWidget* NotesApplet::graphicsWidget()
@@ -86,6 +100,20 @@ QGraphicsWidget* NotesApplet::graphicsWidget()
     return m_noteskwidget;
 }
 
+void NotesApplet::configChanged()
+{
+    KConfigGroup configgroup = config();
+    const QString text = configgroup.readEntry("text", QString());
+    if (!text.isEmpty()) {
+        m_noteskwidget->setText(text);
+    }
+}
+
+void NotesApplet::saveState(KConfigGroup &group) const
+{
+    group.writeEntry("text", m_noteskwidget->text());
+    Plasma::PopupApplet::saveState(group);
+}
 K_EXPORT_PLASMA_APPLET(notes, NotesApplet)
 
 #include "notes.moc"
