@@ -289,9 +289,14 @@ void KCMClock::slotUpdate()
 {
     const QDateTime now = QDateTime::currentDateTime();
     if (!m_timechanged) {
-        m_timeedit->blockSignals(true);
-        m_timeedit->setTime(now.time());
-        m_timeedit->blockSignals(false);
+        // do not update while text has been selected otherwise selection changes, the value will
+        // be updated once selection is cleared
+        QLineEdit* timeeditlineedit = m_timeedit->findChild<QLineEdit*>();
+        if (!timeeditlineedit || !timeeditlineedit->hasSelectedText()) {
+            m_timeedit->blockSignals(true);
+            m_timeedit->setTime(now.time());
+            m_timeedit->blockSignals(false);
+        }
     }
     if (!m_datechanged) {
         m_dateedit->blockSignals(true);
