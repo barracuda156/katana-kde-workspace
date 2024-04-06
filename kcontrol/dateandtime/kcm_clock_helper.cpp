@@ -35,7 +35,7 @@ KCMClockHelper::KCMClockHelper(const char* const helper, QObject *parent)
 
 int KCMClockHelper::save(const QVariantMap &parameters)
 {
-    if (!parameters.contains("zone")) {
+    if (!parameters.contains("zonename")) {
         return KAuthorization::HelperError;
     }
 
@@ -58,8 +58,8 @@ int KCMClockHelper::save(const QVariantMap &parameters)
         }
     }
 
-    const QString zone = parameters.value("zone").toString();
-    const QString zonefile = KSystemTimeZones::zoneinfoDir() + QDir::separator() + zone;
+    const QString zonename = parameters.value("zonename").toString();
+    const QString zonefile = KSystemTimeZones::zoneinfoDir() + QDir::separator() + zonename;
     QFile::remove(s_localtime);
     if (!QFile::link(zonefile, s_localtime)) {
         return 2;

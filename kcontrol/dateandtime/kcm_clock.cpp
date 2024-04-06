@@ -39,9 +39,9 @@ static const QString s_dateformat = QString::fromLatin1("yyyy-MM-dd HH:mm:ss");
 static const QString s_utczone = QString::fromLatin1("UTC");
 static const QString s_timeapi = QString::fromLatin1("http://worldtimeapi.org/api/timezone/UTC");
 
-static void kWatiForTimeZone(const QString &zone)
+static void kWatiForTimeZone(const QString &zonename)
 {
-    while (KSystemTimeZones::local().name() != zone) {
+    while (KSystemTimeZones::local().name() != zonename) {
         QCoreApplication::processEvents(QEventLoop::AllEvents, s_waittime);
         QThread::msleep(s_waittime);
     }
@@ -172,34 +172,39 @@ void KCMClock::save()
     m_datechanged = false;
     m_zonechanged = false;
     QVariantMap savearguments;
-    if (m_canchangeclock) {
-        const QDateTime datetime = QDateTime(m_dateedit->date(), m_timeedit->time());
-        savearguments.insert("datetime", datetime.toString(s_dateformat));
-        // qDebug() << Q_FUNC_INFO << datetime;
-    }
-    QString zone;
+    QString zonename;
     const QList<QTreeWidgetItem*> selectedzones = m_timezonewidget->selectedItems();
     if (selectedzones.isEmpty()) {
-        zone = s_utczone; // what else?
+        zonename = s_utczone; // what else?
     } else {
-        zone = selectedzones.at(0)->data(0, Qt::UserRole).toString();
+        zonename = selectedzones.at(0)->data(0, Qt::UserRole).toString();
     }
-    // qDebug() << Q_FUNC_INFO << zone;
-    savearguments.insert("zone", zone);
+    // qDebug() << Q_FUNC_INFO << zonename;
+    savearguments.insert("zonename", zonename);
+    if (m_canchangeclock) {
+        // NOTE: the time passed to the utilities has to be in localtime, when the zone is UTC
+        // the time is in UTC so it has to be converted first
+        const QDateTime datetime = QDateTime(
+            m_dateedit->date(), m_timeedit->time(),
+            zonename == s_utczone ? Qt::UTC : Qt::LocalTime
+        );
+        savearguments.insert("datetime", datetime.toLocalTime().toString(s_dateformat));
+        // qDebug() << Q_FUNC_INFO << datetime;
+    }
     const int clockreply = KAuthorization::execute(
         "org.kde.kcontrol.kcmclock", "save", savearguments
     );
     if (clockreply > 0) {
         if (clockreply == 1) {
             KMessageBox::error(this, i18n("Unable to set date and time"));
-            kWatiForTimeZone(zone);
+            kWatiForTimeZone(zonename);
         } else if (clockreply == 2) {
             KMessageBox::error(this, i18n("Unable to set timezone"));
         }
     } else if (clockreply != KAuthorization::NoError) {
         KMessageBox::error(this, i18n("Unable to authenticate/execute the action: %1", KAuthorization::errorString(clockreply)));
     } else {
-        kWatiForTimeZone(zone);
+        kWatiForTimeZone(zonename);
     }
     slotUpdate();
     emit changed(false);
