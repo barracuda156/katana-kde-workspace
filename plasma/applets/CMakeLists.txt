@@ -18,6 +18,7 @@ add_subdirectory(weather)
 add_subdirectory(pager)
 add_subdirectory(luna)
 add_subdirectory(dict)
+add_subdirectory(notes)
 
 if (ALSA_FOUND)
     add_subdirectory(mixer)
