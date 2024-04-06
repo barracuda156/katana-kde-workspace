@@ -21,18 +21,23 @@
 
 #include <QThread>
 #include <QHeaderView>
+#include <QJsonDocument>
 #include <kaboutdata.h>
 #include <kpluginfactory.h>
 #include <kauthorization.h>
 #include <ksystemtimezone.h>
 #include <kstandarddirs.h>
 #include <kmessagebox.h>
+#include <kio/job.h>
+#include <kio/jobclasses.h>
+#include <kio/netaccess.h>
 #include <kdebug.h>
 
 static const int s_updatetime = 1000;
 static const int s_waittime = 100;
 static const QString s_dateformat = QString::fromLatin1("yyyy-MM-dd HH:mm:ss");
 static const QString s_utczone = QString::fromLatin1("UTC");
+static const QString s_timeapi = QString::fromLatin1("http://worldtimeapi.org/api/timezone/UTC");
 
 static void kWatiForTimeZone(const QString &zone)
 {
@@ -226,10 +231,40 @@ void KCMClock::load()
 void KCMClock::defaults()
 {
     setEnabled(false);
+    m_timer->stop();
     if (m_canchangeclock) {
-        // TODO: check the time vs http://worldtimeapi.org/api/timezone/UTC
+        KIO::StoredTransferJob* kiojob = KIO::storedGet(KUrl(s_timeapi), KIO::HideProgressInfo);
+        kiojob->setAutoDelete(false);
+        const bool kioresult = KIO::NetAccess::synchronousRun(kiojob, this);
+        if (kioresult) {
+            // qDebug() << Q_FUNC_INFO << kiojob->data();
+            const QJsonDocument jsondocument = QJsonDocument::fromJson(kiojob->data());
+            if (jsondocument.isNull()) {
+                const QString jsonerror = jsondocument.errorString();
+                kWarning() << "could not parse JSON" << jsonerror;
+                KMessageBox::error(this, jsonerror, i18n("Could not parse JSON"));
+            } else {
+                const QVariantMap jsonmap = jsondocument.toVariant().toMap();
+                const QString datetimesting = jsonmap.value("datetime").toString();
+                const QDateTime datetime = QDateTime::fromString(datetimesting, Qt::ISODate);
+                // qDebug() << Q_FUNC_INFO << datetime;
+                if (datetime.isValid()) {
+                    // TODO: the time has to keep ticking
+                    m_timeedit->setTime(datetime.time());
+                    m_dateedit->setDate(datetime.date());
+                } else {
+                    KMessageBox::error(this, i18n("Invalid date and time"), i18n("Invalid date and time"));
+                }
+            }
+        } else {
+            const QString kioerror = kiojob->errorString();
+            kWarning() << "could not get the UTC time" << kioerror;
+            KMessageBox::error(this, kioerror, i18n("Could not get the UTC time"));
+        }
+        kiojob->deleteLater();
     }
     selectTimeZone(s_utczone);
+    m_timer->start();
     setEnabled(true);
 }
 

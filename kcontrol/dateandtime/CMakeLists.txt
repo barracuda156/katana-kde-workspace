@@ -6,8 +6,8 @@ set(kcm_clock_PART_SRCS
 kde4_add_plugin(kcm_clock ${kcm_clock_PART_SRCS})
 
 target_link_libraries(kcm_clock
+    KDE4::kdeui
     KDE4::kio
-    KDE4::plasma
 )
 
 install(
