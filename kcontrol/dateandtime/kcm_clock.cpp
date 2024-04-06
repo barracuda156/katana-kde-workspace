@@ -41,16 +41,16 @@ static void kWatiForTimeZone(const QString &zone)
     }
 }
 
-static bool kCanChangeCLock()
+static bool kCanChangeClock()
 {
     return (!KStandardDirs::findRootExe("hwclock").isEmpty() || !KStandardDirs::findRootExe("timedatectl").isEmpty());
 }
 
-K_PLUGIN_FACTORY(KCMCLockFactory, registerPlugin<KCMCLock>();)
-K_EXPORT_PLUGIN(KCMCLockFactory("kcmclock", "kcmclock"))
+K_PLUGIN_FACTORY(KCMClockFactory, registerPlugin<KCMClock>();)
+K_EXPORT_PLUGIN(KCMClockFactory("kcmclock", "kcmclock"))
 
-KCMCLock::KCMCLock(QWidget *parent, const QVariantList &args)
-    : KCModule(KCMCLockFactory::componentData(), parent),
+KCMClock::KCMClock(QWidget *parent, const QVariantList &args)
+    : KCModule(KCMClockFactory::componentData(), parent),
     m_layout(nullptr),
     m_datetimebox(nullptr),
     m_datetimelayout(nullptr),
@@ -151,7 +151,7 @@ KCMCLock::KCMCLock(QWidget *parent, const QVariantList &args)
         setUseRootOnlyMessage(true);
         setRootOnlyMessage(i18n("You are not allowed to save the configuration"));
         setDisabled(true);
-    } else if (!kCanChangeCLock()) {
+    } else if (!kCanChangeClock()) {
         setUseRootOnlyMessage(true);
         setRootOnlyMessage(i18n("Neither 'hwclock' nor 'timedatectl' utility not found, setting the date is not possible"));
         m_timeedit->setEnabled(false);
@@ -159,7 +159,7 @@ KCMCLock::KCMCLock(QWidget *parent, const QVariantList &args)
     }
 }
 
-void KCMCLock::save()
+void KCMClock::save()
 {
     setEnabled(false);
     m_timer->stop();
@@ -167,7 +167,7 @@ void KCMCLock::save()
     m_datechanged = false;
     m_zonechanged = false;
     QVariantMap savearguments;
-    if (kCanChangeCLock()) {
+    if (kCanChangeClock()) {
         const QDateTime datetime = QDateTime(m_dateedit->date(), m_timeedit->time());
         savearguments.insert("datetime", datetime.toString(s_dateformat));
         // qDebug() << Q_FUNC_INFO << datetime;
@@ -202,7 +202,7 @@ void KCMCLock::save()
     setEnabled(true);
 }
 
-void KCMCLock::load()
+void KCMClock::load()
 {
     setEnabled(false);
     m_timechanged = false;
@@ -214,7 +214,7 @@ void KCMCLock::load()
     setEnabled(true);
 }
 
-void KCMCLock::slotUpdate()
+void KCMClock::slotUpdate()
 {
     const QDateTime now = QDateTime::currentDateTime();
     if (!m_timechanged) {
@@ -238,19 +238,19 @@ void KCMCLock::slotUpdate()
     }
 }
 
-void KCMCLock::slotTimeChanged()
+void KCMClock::slotTimeChanged()
 {
     m_timechanged = true;
     emit changed(true);
 }
 
-void KCMCLock::slotDateChanged()
+void KCMClock::slotDateChanged()
 {
     m_datechanged = true;
     emit changed(true);
 }
 
-void KCMCLock::slotZoneChanged()
+void KCMClock::slotZoneChanged()
 {
     m_zonechanged = true;
     emit changed(true);

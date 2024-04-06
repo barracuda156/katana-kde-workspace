@@ -29,11 +29,11 @@
 #include <kcmodule.h>
 #include <ktreewidgetsearchline.h>
 
-class KCMCLock : public KCModule
+class KCMClock : public KCModule
 {
     Q_OBJECT
 public:
-    KCMCLock(QWidget *parent, const QVariantList &arg);
+    KCMClock(QWidget *parent, const QVariantList &args);
 
     // KCModule reimplementations
 public Q_SLOTS:
@@ -62,4 +62,4 @@ private:
     bool m_zonechanged;
 };
 
-#endif // main_included
+#endif // KCM_CLOCK_H
