@@ -83,6 +83,7 @@ NotesApplet::NotesApplet(QObject *parent, const QVariantList &args)
     : Plasma::PopupApplet(parent, args),
     m_noteskwidget(nullptr)
 {
+    KGlobal::locale()->insertCatalog("plasma_applet_notes");
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
     setStatus(Plasma::AcceptingInputStatus);
     setPopupIcon("knotes");
@@ -114,6 +115,7 @@ void NotesApplet::saveState(KConfigGroup &group) const
     group.writeEntry("text", m_noteskwidget->text());
     Plasma::PopupApplet::saveState(group);
 }
+
 K_EXPORT_PLASMA_APPLET(notes, NotesApplet)
 
 #include "notes.moc"
