@@ -18,6 +18,7 @@
 
 #include "jobswidget.h"
 
+#include <QDBusConnection>
 #include <QGraphicsGridLayout>
 #include <Plasma/DataEngineManager>
 #include <Plasma/Animation>
@@ -117,7 +118,7 @@ JobsWidget::JobsWidget(QGraphicsItem *parent, NotificationsWidget *notifications
     m_notificationswidget(notificationswidget),
     m_layout(nullptr),
     m_label(nullptr),
-    m_dataengine(nullptr)
+    m_adaptor(nullptr)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
@@ -129,22 +130,21 @@ JobsWidget::JobsWidget(QGraphicsItem *parent, NotificationsWidget *notifications
     m_layout->addItem(m_label);
     setLayout(m_layout);
 
-    m_dataengine = Plasma::DataEngineManager::self()->loadEngine("applicationjobs");
-    if (!m_dataengine) {
-        kWarning() << "Could not load applicationjobs data engine";
-        return;
-    }
+    m_adaptor = new JobTrackerAdaptor(this);
     connect(
-        m_dataengine, SIGNAL(sourceAdded(QString)),
-        this, SLOT(sourceAdded(QString))
+        m_adaptor, SIGNAL(jobAdded(QString)),
+        this, SLOT(slotJobAdded(QString))
     );
+    connect(
+        m_adaptor, SIGNAL(jobUpdated(QString,QVariantMap)),
+        this, SLOT(slotJobUpdated(QString,QVariantMap))
+    );
+    QDBusConnection session = QDBusConnection::sessionBus();
+    session.registerObject("/JobTracker", this);
 }
 
 JobsWidget::~JobsWidget()
 {
-    if (m_dataengine) {
-        Plasma::DataEngineManager::self()->unloadEngine("applicationjobs");
-    }
 }
 
 int JobsWidget::count() const
@@ -152,7 +152,7 @@ int JobsWidget::count() const
     return m_frames.size();
 }
 
-void JobsWidget::sourceAdded(const QString &name)
+void JobsWidget::slotJobAdded(const QString &name)
 {
     QMutexLocker locker(&m_mutex);
     JobFrame* frame = new JobFrame(name, this);
@@ -166,11 +166,9 @@ void JobsWidget::sourceAdded(const QString &name)
     adjustSize();
 
     emit countChanged();
-    locker.unlock();
-    m_dataengine->connectSource(name, this);
 }
 
-void JobsWidget::dataUpdated(const QString &name, const Plasma::DataEngine::Data &data)
+void JobsWidget::slotJobUpdated(const QString &name, const QVariantMap &data)
 {
     QMutexLocker locker(&m_mutex);
     foreach (JobFrame* frame, m_frames) {
@@ -263,20 +261,12 @@ void JobsWidget::slotIcon0Activated()
     JobFrame* jobframe = qobject_cast<JobFrame*>(iconwidget0->parentObject());
     Q_ASSERT(jobframe != nullptr);
     if (!stopped) {
-        Plasma::Service* plasmaservice = m_dataengine->serviceForSource(jobframe->name);
-        if (!plasmaservice) {
-            kWarning() << "Could not get service for" << jobframe->name;
-        } else {
-            plasmaservice->setParent(this);
-            QVariantMap plasmaserviceargs = plasmaservice->operationParameters("stop");
-            (void)plasmaservice->startOperationCall("stop", plasmaserviceargs);
-        }
+        m_adaptor->stopJob(jobframe->name);
     } else {
         QMutableListIterator<JobFrame*> iter(m_frames);
         while (iter.hasNext()) {
             JobFrame* frame = iter.next();
             if (frame == jobframe) {
-                m_dataengine->disconnectSource(frame->name, this);
                 iter.remove();
                 frame->animateRemove();
                 break;

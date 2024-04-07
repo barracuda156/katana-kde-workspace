@@ -3,6 +3,7 @@ project(plasma-applet-notifications)
 set(notifications_SRCS
     notifications.cpp
     jobswidget.cpp
+    jobtrackeradaptor.cpp
     applicationswidget.cpp
 )
 

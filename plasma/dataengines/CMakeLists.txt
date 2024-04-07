@@ -1,2 +1,1 @@
-add_subdirectory(applicationjobs)
 add_subdirectory(notifications)

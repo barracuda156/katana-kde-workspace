@@ -295,7 +295,6 @@ add_subdirectory(kstyles)
 # Imported from kde-runtime and other sub-projects
 add_subdirectory(menu)
 add_subdirectory(knotify)
-add_subdirectory(kuiserver)
 add_subdirectory(soliduiserver)
 add_subdirectory(solid-hardware)
 add_subdirectory(kcmshell)

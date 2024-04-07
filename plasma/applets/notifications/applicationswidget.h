@@ -71,11 +71,11 @@ private Q_SLOTS:
 
 private:
     QMutex m_mutex;
-    NotificationsWidget *m_notificationswidget;
+    NotificationsWidget* m_notificationswidget;
     QGraphicsLinearLayout* m_layout;
     Plasma::Label* m_label;
     QList<ApplicationFrame*> m_frames;
-    Plasma::DataEngine *m_dataengine;
+    Plasma::DataEngine* m_dataengine;
 };
 
 #endif // APPLICATIONSWIDGET_H

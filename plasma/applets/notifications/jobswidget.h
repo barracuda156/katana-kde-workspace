@@ -19,6 +19,8 @@
 #ifndef JOBSWIDGET_H
 #define JOBSWIDGET_H
 
+#include "jobtrackeradaptor.h"
+
 #include <QMutex>
 #include <QGraphicsWidget>
 #include <QGraphicsLinearLayout>
@@ -65,16 +67,16 @@ public Q_SLOTS:
     void slotIcon1Activated();
 
 private Q_SLOTS:
-    void sourceAdded(const QString &name);
-    void dataUpdated(const QString &name, const Plasma::DataEngine::Data &data);
+    void slotJobAdded(const QString &name);
+    void slotJobUpdated(const QString &name, const QVariantMap &data);
 
 private:
     QMutex m_mutex;
-    NotificationsWidget *m_notificationswidget;
+    NotificationsWidget* m_notificationswidget;
     QGraphicsLinearLayout* m_layout;
     Plasma::Label* m_label;
     QList<JobFrame*> m_frames;
-    Plasma::DataEngine *m_dataengine;
+    JobTrackerAdaptor* m_adaptor;
 };
 
 #endif // JOBSWIDGET_H
