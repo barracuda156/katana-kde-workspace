@@ -533,8 +533,6 @@ void KateOnTheFlyChecker::deleteMovingRanges(const QList<KTextEditor::MovingRang
 KTextEditor::Range KateOnTheFlyChecker::findWordBoundaries(const KTextEditor::Cursor& begin,
                                                            const KTextEditor::Cursor& end)
 {
-  // FIXME: QTextBoundaryFinder should be ideally used for this, but it is currently
-  //        still broken in Qt
   const QRegExp boundaryRegExp("\\b");
   const QRegExp boundaryQuoteRegExp("\\b\\w+'\\w*$");  // handle spell checking of "isn't", "doesn't", etc.
   const QRegExp extendedBoundaryRegExp("(\\W|$)");
