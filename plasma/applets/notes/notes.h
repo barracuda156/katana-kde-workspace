@@ -43,7 +43,7 @@ protected:
 
 private:
     friend NotesAppletWidget;
-    NotesAppletWidget *m_noteskwidget;
+    NotesAppletWidget *m_noteswidget;
 };
 
 #endif // NOTES_H

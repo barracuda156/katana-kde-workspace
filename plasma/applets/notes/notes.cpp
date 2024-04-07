@@ -19,6 +19,7 @@
 
 #include "notes.h"
 
+#include <KTextEdit>
 #include <Plasma/Frame>
 #include <Plasma/TextEdit>
 
@@ -30,8 +31,7 @@ class NotesAppletWidget : public QGraphicsWidget
 public:
     NotesAppletWidget(QGraphicsWidget *parent);
 
-    QString text() const;
-    void setText(const QString &text);
+    Plasma::TextEdit* textEdit() const;
 
 private:
     QGraphicsLinearLayout* m_layout;
@@ -68,27 +68,22 @@ NotesAppletWidget::NotesAppletWidget(QGraphicsWidget *parent)
     adjustSize();
 }
 
-QString NotesAppletWidget::text() const
+Plasma::TextEdit* NotesAppletWidget::textEdit() const
 {
-    return m_textedit->text();
-}
-
-void NotesAppletWidget::setText(const QString &text)
-{
-    m_textedit->setText(text);
+    return m_textedit;
 }
 
 
 NotesApplet::NotesApplet(QObject *parent, const QVariantList &args)
     : Plasma::PopupApplet(parent, args),
-    m_noteskwidget(nullptr)
+    m_noteswidget(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_notes");
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
     setStatus(Plasma::AcceptingInputStatus);
     setPopupIcon("knotes");
 
-    m_noteskwidget = new NotesAppletWidget(this);
+    m_noteswidget = new NotesAppletWidget(this);
 }
 
 void NotesApplet::init()
@@ -98,21 +93,28 @@ void NotesApplet::init()
 
 QGraphicsWidget* NotesApplet::graphicsWidget()
 {
-    return m_noteskwidget;
+    return m_noteswidget;
 }
 
 void NotesApplet::configChanged()
 {
+    Plasma::TextEdit* plasmatextedit = m_noteswidget->textEdit();
+    KTextEdit* nativetextedit = plasmatextedit->nativeWidget();
     KConfigGroup configgroup = config();
     const QString text = configgroup.readEntry("text", QString());
+    const bool checkSpellingEnabled = configgroup.readEntry("checkspelling", nativetextedit->checkSpellingEnabled());
+    nativetextedit->setCheckSpellingEnabled(checkSpellingEnabled);
     if (!text.isEmpty()) {
-        m_noteskwidget->setText(text);
+        plasmatextedit->setText(text);
     }
 }
 
 void NotesApplet::saveState(KConfigGroup &group) const
 {
-    group.writeEntry("text", m_noteskwidget->text());
+    Plasma::TextEdit* plasmatextedit = m_noteswidget->textEdit();
+    KTextEdit* nativetextedit = plasmatextedit->nativeWidget();
+    group.writeEntry("text", plasmatextedit->text());
+    group.writeEntry("checkspelling", nativetextedit->checkSpellingEnabled());
     Plasma::PopupApplet::saveState(group);
 }
 
