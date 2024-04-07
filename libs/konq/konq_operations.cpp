@@ -45,7 +45,7 @@
 #include <kio/paste.h>
 #include <kio/renamedialog.h>
 #include <kdirnotify.h>
-#include <kuiserverjobtracker.h>
+#include <kjobtrackerinterface.h>
 #include <kstandarddirs.h>
 // For doDrop
 #include <kicon.h>
