@@ -41,7 +41,6 @@
 #include <Plasma/AbstractToolBox>
 #include <Plasma/Containment>
 #include <plasma/containmentactionspluginsconfig.h>
-#include <Plasma/DataEngineManager>
 #include <Plasma/Package>
 
 #include "panelview.h"

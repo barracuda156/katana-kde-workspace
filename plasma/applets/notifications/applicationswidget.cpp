@@ -22,7 +22,7 @@
 #include <QTimer>
 #include <QGraphicsGridLayout>
 #include <Plasma/Animation>
-#include <Plasma/Service>
+#include <KLocale>
 #include <KIconLoader>
 #include <KIcon>
 #include <KNotificationConfigWidget>

@@ -21,6 +21,7 @@
 #include <QDBusConnection>
 #include <QGraphicsGridLayout>
 #include <Plasma/Animation>
+#include <KLocale>
 #include <KRun>
 #include <KIconLoader>
 #include <KIcon>
