@@ -123,7 +123,7 @@ bool sendVisualNotification(const QString &text, const QString &title, const QSt
   notificationData.insert("appIcon", icon);
   notificationData.insert("summary", title);
   notificationData.insert("body", text);
-  notificationData.insert("timeout", timeout); // expire timout, unused
+  // NOTE: missing appRealName, not configurable
   reply = notificationInterface.call("updateNotification", notificationId, notificationData);
   if (!reply.isValid()) {
     // kDebug() << "Error: failed to send D-Bus message" << reply.error().message();

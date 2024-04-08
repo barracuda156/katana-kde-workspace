@@ -18,7 +18,6 @@
 
 #include "jobswidget.h"
 
-#include <QDBusConnection>
 #include <QGraphicsGridLayout>
 #include <Plasma/Animation>
 #include <KLocale>
@@ -145,7 +144,7 @@ JobsWidget::JobsWidget(QGraphicsItem *parent, NotificationsWidget *notifications
     m_layout->addItem(m_label);
     setLayout(m_layout);
 
-    m_adaptor = new JobTrackerAdaptor(this);
+    m_adaptor = JobTrackerAdaptor::self();
     connect(
         m_adaptor, SIGNAL(jobAdded(QString)),
         this, SLOT(slotJobAdded(QString))
@@ -154,12 +153,12 @@ JobsWidget::JobsWidget(QGraphicsItem *parent, NotificationsWidget *notifications
         m_adaptor, SIGNAL(jobUpdated(QString,QVariantMap)),
         this, SLOT(slotJobUpdated(QString,QVariantMap))
     );
-    QDBusConnection session = QDBusConnection::sessionBus();
-    session.registerObject("/JobTracker", this);
+    m_adaptor->registerObject();
 }
 
 JobsWidget::~JobsWidget()
 {
+    m_adaptor->unregisterObject();
 }
 
 int JobsWidget::count() const

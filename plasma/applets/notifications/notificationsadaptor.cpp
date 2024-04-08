@@ -19,8 +19,15 @@
 
 #include "notificationsadaptor.h"
 
+#include <QCoreApplication>
+#include <QDBusConnection>
+#include <KGlobal>
+
+K_GLOBAL_STATIC_WITH_ARGS(NotificationsAdaptor, kNotificationsAdaptor, (qApp))
+
 NotificationsAdaptor::NotificationsAdaptor(QObject *parent)
-    : QDBusAbstractAdaptor(parent)
+    : QDBusAbstractAdaptor(parent),
+    m_ref(0)
 {
 }
 
@@ -42,6 +49,27 @@ void NotificationsAdaptor::closeNotification(const QString &name)
 void NotificationsAdaptor::invokeAction(const QString &name, const QString &action)
 {
     emit actionRequested(name, action);
+}
+
+NotificationsAdaptor* NotificationsAdaptor::self()
+{
+    return kNotificationsAdaptor;
+}
+
+void NotificationsAdaptor::registerObject()
+{
+    if (m_ref == 0) {
+        QDBusConnection::sessionBus().registerObject("/Notifications", qApp);
+    }
+    m_ref.ref();
+}
+
+void NotificationsAdaptor::unregisterObject()
+{
+    m_ref.deref();
+    if (m_ref == 0) {
+        QDBusConnection::sessionBus().unregisterObject("/Notifications");
+    }
 }
 
 #include "moc_notificationsadaptor.cpp"

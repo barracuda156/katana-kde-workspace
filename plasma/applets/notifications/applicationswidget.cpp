@@ -18,7 +18,6 @@
 
 #include "applicationswidget.h"
 
-#include <QDBusConnection>
 #include <QTimer>
 #include <QGraphicsGridLayout>
 #include <Plasma/Animation>
@@ -142,7 +141,7 @@ ApplicationsWidget::ApplicationsWidget(QGraphicsItem *parent, NotificationsWidge
     m_layout->addStretch();
     setLayout(m_layout);
 
-    m_adaptor = new NotificationsAdaptor(this);
+    m_adaptor = NotificationsAdaptor::self();
     connect(
         m_adaptor, SIGNAL(notificationAdded(QString)),
         this, SLOT(slotNotificationAdded(QString))
@@ -151,12 +150,12 @@ ApplicationsWidget::ApplicationsWidget(QGraphicsItem *parent, NotificationsWidge
         m_adaptor, SIGNAL(notificationUpdated(QString,QVariantMap)),
         this, SLOT(slotNotificationUpdated(QString,QVariantMap))
     );
-    QDBusConnection session = QDBusConnection::sessionBus();
-    session.registerObject("/Notifications", this);
+    m_adaptor->registerObject();
 }
 
 ApplicationsWidget::~ApplicationsWidget()
 {
+    m_adaptor->unregisterObject();
 }
 
 int ApplicationsWidget::count() const

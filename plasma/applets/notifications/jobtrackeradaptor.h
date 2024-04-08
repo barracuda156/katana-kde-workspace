@@ -22,6 +22,7 @@
 
 #include <QDBusAbstractAdaptor>
 #include <QVariantMap>
+#include <QAtomicInt>
 
 // Adaptor class for interface org.kde.JobTracker
 class JobTrackerAdaptor: public QDBusAbstractAdaptor
@@ -30,6 +31,10 @@ class JobTrackerAdaptor: public QDBusAbstractAdaptor
     Q_CLASSINFO("D-Bus Interface", "org.kde.JobTracker")
 public:
     JobTrackerAdaptor(QObject *parent);
+
+    static JobTrackerAdaptor* self();
+    void registerObject();
+    void unregisterObject();
 
 public Q_SLOTS:
     void addJob(const QString &name);
@@ -41,6 +46,9 @@ Q_SIGNALS:
     void jobUpdated(const QString &name, const QVariantMap &data);
 
     void stopRequested(const QString &name);
+
+private:
+    QAtomicInt m_ref;
 };
 
 #endif // JOBTRACKERADAPTOR_H

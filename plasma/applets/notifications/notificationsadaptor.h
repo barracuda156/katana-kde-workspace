@@ -22,6 +22,7 @@
 
 #include <QDBusAbstractAdaptor>
 #include <QVariantMap>
+#include <QAtomicInt>
 
 // Adaptor class for interface org.kde.Notifications
 class NotificationsAdaptor: public QDBusAbstractAdaptor
@@ -30,6 +31,10 @@ class NotificationsAdaptor: public QDBusAbstractAdaptor
     Q_CLASSINFO("D-Bus Interface", "org.kde.Notifications")
 public:
     NotificationsAdaptor(QObject *parent);
+
+    static NotificationsAdaptor* self();
+    void registerObject();
+    void unregisterObject();
 
 public Q_SLOTS:
     void addNotification(const QString &name);
@@ -43,6 +48,9 @@ Q_SIGNALS:
 
     void closeRequested(const QString &name);
     void actionRequested(const QString &name, const QString &action);
+
+private:
+    QAtomicInt m_ref;
 };
 
 #endif // NOTIFICATIONSADAPTOR_H

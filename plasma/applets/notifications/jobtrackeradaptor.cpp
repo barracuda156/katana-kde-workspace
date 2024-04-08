@@ -19,8 +19,15 @@
 
 #include "jobtrackeradaptor.h"
 
+#include <QCoreApplication>
+#include <QDBusConnection>
+#include <KGlobal>
+
+K_GLOBAL_STATIC_WITH_ARGS(JobTrackerAdaptor, kJobTrackerAdaptor, (qApp))
+
 JobTrackerAdaptor::JobTrackerAdaptor(QObject *parent)
-    : QDBusAbstractAdaptor(parent)
+    : QDBusAbstractAdaptor(parent),
+    m_ref(0)
 {
 }
 
@@ -37,6 +44,27 @@ void JobTrackerAdaptor::updateJob(const QString &name, const QVariantMap &data)
 void JobTrackerAdaptor::stopJob(const QString &name)
 {
     emit stopRequested(name);
+}
+
+JobTrackerAdaptor* JobTrackerAdaptor::self()
+{
+    return kJobTrackerAdaptor;
+}
+
+void JobTrackerAdaptor::registerObject()
+{
+    if (m_ref == 0) {
+        QDBusConnection::sessionBus().registerObject("/JobTracker", qApp);
+    }
+    m_ref.ref();
+}
+
+void JobTrackerAdaptor::unregisterObject()
+{
+    m_ref.deref();
+    if (m_ref == 0) {
+        QDBusConnection::sessionBus().unregisterObject("/JobTracker");
+    }
 }
 
 #include "moc_jobtrackeradaptor.cpp"
