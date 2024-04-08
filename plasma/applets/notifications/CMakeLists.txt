@@ -5,6 +5,7 @@ set(notifications_SRCS
     jobswidget.cpp
     jobtrackeradaptor.cpp
     applicationswidget.cpp
+    notificationsadaptor.cpp
 )
 
 kde4_add_plugin(plasma_applet_notifications ${notifications_SRCS})

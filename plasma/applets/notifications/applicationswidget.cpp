@@ -18,9 +18,9 @@
 
 #include "applicationswidget.h"
 
+#include <QDBusConnection>
 #include <QTimer>
 #include <QGraphicsGridLayout>
-#include <Plasma/DataEngineManager>
 #include <Plasma/Animation>
 #include <Plasma/Service>
 #include <KIconLoader>
@@ -129,7 +129,7 @@ ApplicationsWidget::ApplicationsWidget(QGraphicsItem *parent, NotificationsWidge
     m_notificationswidget(notificationswidget),
     m_layout(nullptr),
     m_label(nullptr),
-    m_dataengine(nullptr)
+    m_adaptor(nullptr)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
@@ -142,22 +142,21 @@ ApplicationsWidget::ApplicationsWidget(QGraphicsItem *parent, NotificationsWidge
     m_layout->addStretch();
     setLayout(m_layout);
 
-    m_dataengine = Plasma::DataEngineManager::self()->loadEngine("notifications");
-    if (!m_dataengine) {
-        kWarning() << "Could not load notifications data engine";
-        return;
-    }
+    m_adaptor = new NotificationsAdaptor(this);
     connect(
-        m_dataengine, SIGNAL(sourceAdded(QString)),
-        this, SLOT(sourceAdded(QString))
+        m_adaptor, SIGNAL(notificationAdded(QString)),
+        this, SLOT(slotNotificationAdded(QString))
     );
+    connect(
+        m_adaptor, SIGNAL(notificationUpdated(QString,QVariantMap)),
+        this, SLOT(slotNotificationUpdated(QString,QVariantMap))
+    );
+    QDBusConnection session = QDBusConnection::sessionBus();
+    session.registerObject("/Notifications", this);
 }
 
 ApplicationsWidget::~ApplicationsWidget()
 {
-    if (m_dataengine) {
-        Plasma::DataEngineManager::self()->unloadEngine("notifications");
-    }
 }
 
 int ApplicationsWidget::count() const
@@ -165,7 +164,7 @@ int ApplicationsWidget::count() const
     return m_frames.size();
 }
 
-void ApplicationsWidget::sourceAdded(const QString &name)
+void ApplicationsWidget::slotNotificationAdded(const QString &name)
 {
     QMutexLocker locker(&m_mutex);
     ApplicationFrame* frame = new ApplicationFrame(name, this);
@@ -179,11 +178,9 @@ void ApplicationsWidget::sourceAdded(const QString &name)
     adjustSize();
 
     emit countChanged();
-    locker.unlock();
-    m_dataengine->connectSource(name, this);
 }
 
-void ApplicationsWidget::dataUpdated(const QString &name, const Plasma::DataEngine::Data &data)
+void ApplicationsWidget::slotNotificationUpdated(const QString &name, const QVariantMap &data)
 {
     QMutexLocker locker(&m_mutex);
     foreach (ApplicationFrame* frame, m_frames) {
@@ -256,15 +253,7 @@ void ApplicationsWidget::slotRemoveActivated()
     while (iter.hasNext()) {
         ApplicationFrame* frame = iter.next();
         if (frame == applicationframe) {
-            Plasma::Service* plasmaservice = m_dataengine->serviceForSource(applicationframe->name);
-            if (!plasmaservice) {
-                kWarning() << "Could not get service for" << applicationframe->name;
-            } else {
-                plasmaservice->setParent(this);
-                const QVariantMap plasmaserviceargs = plasmaservice->operationParameters("userClosed");
-                (void)plasmaservice->startOperationCall("userClosed", plasmaserviceargs);
-            }
-            m_dataengine->disconnectSource(applicationframe->name, this);
+            m_adaptor->closeNotification(applicationframe->name);
             QGraphicsGridLayout* framelayout = static_cast<QGraphicsGridLayout*>(frame->layout());
             Q_ASSERT(framelayout != nullptr);
             kClearButtons(framelayout);
@@ -281,8 +270,6 @@ void ApplicationsWidget::slotConfigureActivated()
     const Plasma::IconWidget* configurewidget = qobject_cast<Plasma::IconWidget*>(sender());
     const QString frameapprealname = configurewidget->property("_k_apprealname").toString();
     locker.unlock();
-    // same thing the notifications service does except without going trought the data engine
-    // meaning faster
     KNotificationConfigWidget::configure(frameapprealname, nullptr);
 }
 
@@ -293,15 +280,7 @@ void ApplicationsWidget::slotActionReleased()
     ApplicationFrame* actionframe = qobject_cast<ApplicationFrame*>(actionbutton->parentObject());
     Q_ASSERT(actionframe != nullptr);
     const QString actionid = actionbutton->property("_k_actionid").toString();
-    Plasma::Service* plasmaservice = m_dataengine->serviceForSource(actionframe->name);
-    if (!plasmaservice) {
-        kWarning() << "Could not get service for" << actionframe->name;
-    } else {
-        plasmaservice->setParent(this);
-        QVariantMap plasmaserviceargs = plasmaservice->operationParameters("invokeAction");
-        plasmaserviceargs["actionId"] = actionid;
-        (void)plasmaservice->startOperationCall("invokeAction", plasmaserviceargs);
-    }
+     m_adaptor->invokeAction(actionframe->name, actionid);
     locker.unlock();
     // remove notification too (compat)
     QTimer::singleShot(200, actionframe->removewidget, SIGNAL(activated()));

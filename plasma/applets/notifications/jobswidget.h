@@ -28,7 +28,6 @@
 #include <Plasma/Frame>
 #include <Plasma/IconWidget>
 #include <Plasma/Meter>
-#include <Plasma/DataEngine>
 
 class NotificationsWidget;
 

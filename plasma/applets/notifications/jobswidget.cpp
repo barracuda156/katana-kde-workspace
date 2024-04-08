@@ -20,7 +20,6 @@
 
 #include <QDBusConnection>
 #include <QGraphicsGridLayout>
-#include <Plasma/DataEngineManager>
 #include <Plasma/Animation>
 #include <KRun>
 #include <KIconLoader>

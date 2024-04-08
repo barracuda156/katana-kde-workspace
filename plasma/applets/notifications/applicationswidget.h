@@ -19,6 +19,8 @@
 #ifndef APPLICATIONSWIDGET_H
 #define APPLICATIONSWIDGET_H
 
+#include "notificationsadaptor.h"
+
 #include <QMutex>
 #include <QGraphicsWidget>
 #include <QGraphicsLinearLayout>
@@ -26,7 +28,6 @@
 #include <Plasma/Frame>
 #include <Plasma/IconWidget>
 #include <Plasma/PushButton>
-#include <Plasma/DataEngine>
 
 class NotificationsWidget;
 
@@ -66,8 +67,8 @@ public Q_SLOTS:
     void slotActionReleased();
 
 private Q_SLOTS:
-    void sourceAdded(const QString &name);
-    void dataUpdated(const QString &name, const Plasma::DataEngine::Data &data);
+    void slotNotificationAdded(const QString &name);
+    void slotNotificationUpdated(const QString &name, const QVariantMap &data);
 
 private:
     QMutex m_mutex;
@@ -75,7 +76,7 @@ private:
     QGraphicsLinearLayout* m_layout;
     Plasma::Label* m_label;
     QList<ApplicationFrame*> m_frames;
-    Plasma::DataEngine* m_dataengine;
+    NotificationsAdaptor* m_adaptor;
 };
 
 #endif // APPLICATIONSWIDGET_H
