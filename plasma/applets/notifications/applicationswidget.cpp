@@ -186,10 +186,11 @@ void ApplicationsWidget::slotNotificationUpdated(const QString &name, const QVar
     foreach (ApplicationFrame* frame, m_frames) {
         if (frame->name == name) {
             const QString appicon = data.value("appIcon").toString();
+            const QString apprealname = data.value("appRealName").toString();
+            const QStringList actions = data.value("actions").toStringList();
             if (!appicon.isEmpty()) {
                 frame->iconwidget->setIcon(appicon);
             }
-            const QStringList actions = data.value("actions").toStringList();
             QGraphicsGridLayout* framelayout = static_cast<QGraphicsGridLayout*>(frame->layout());
             Q_ASSERT(framelayout != nullptr);
             // redo the buttons layout in case of notification update
@@ -224,10 +225,12 @@ void ApplicationsWidget::slotNotificationUpdated(const QString &name, const QVar
                 framelayout->setAlignment(buttonslayout, Qt::AlignCenter);
             }
             frame->label->setText(data.value("body").toString());
-            const bool configurable = data.value("configurable").toBool();
-            frame->configurewidget->setVisible(configurable);
-            if (configurable) {
-                frame->configurewidget->setProperty("_k_apprealname", data.value("appRealName"));
+            if (apprealname.isEmpty()) {
+                kWarning() << "notification is not configurable, something needs a fix";
+                frame->configurewidget->setVisible(false);
+            } else {
+                frame->configurewidget->setVisible(true);
+                frame->configurewidget->setProperty("_k_apprealname", apprealname);
             }
             frame->adjustSize();
             adjustSize();
