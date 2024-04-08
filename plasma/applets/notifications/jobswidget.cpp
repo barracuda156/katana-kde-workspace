@@ -39,7 +39,8 @@ static QString kJobState(const QByteArray &state)
         return i18n("Job suspended");
     }
     kWarning() << "unknown job state" << state;
-    return QString();
+    Q_ASSERT(false);
+    return QString::fromLatin1(state.constData(), state.size());
 }
 
 JobFrame::JobFrame(const QString &_name, QGraphicsWidget *parent)
