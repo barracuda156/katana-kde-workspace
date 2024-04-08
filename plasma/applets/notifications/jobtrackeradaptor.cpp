@@ -24,10 +24,6 @@ JobTrackerAdaptor::JobTrackerAdaptor(QObject *parent)
 {
 }
 
-JobTrackerAdaptor::~JobTrackerAdaptor()
-{
-}
-
 void JobTrackerAdaptor::addJob(const QString &name)
 {
     emit jobAdded(name);

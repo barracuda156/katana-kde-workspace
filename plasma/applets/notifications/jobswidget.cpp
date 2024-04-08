@@ -28,6 +28,20 @@
 #include <KMimeType>
 #include <KDebug>
 
+// NOTE: this is for generic jobs such as trash jobs which provide next to no info
+static QString kJobState(const QByteArray &state)
+{
+    if (state == "running") {
+        return i18n("Job running");
+    } else if (state == "stopped") {
+        return i18n("Job finished");
+    } else if (state == "suspended") {
+        return i18n("Job suspended");
+    }
+    kWarning() << "unknown job state" << state;
+    return QString();
+}
+
 JobFrame::JobFrame(const QString &_name, QGraphicsWidget *parent)
     : Plasma::Frame(parent),
     iconwidget(nullptr),
@@ -173,14 +187,18 @@ void JobsWidget::slotJobUpdated(const QString &name, const QVariantMap &data)
     QMutexLocker locker(&m_mutex);
     foreach (JobFrame* frame, m_frames) {
         if (frame->name == name) {
-            const QString infomessage = data.value("infoMessage").toString();
-            frame->setText(infomessage);
             const QString appiconname = data.value("appIconName").toString();
+            const QString labelname0 = data.value("labelName0").toString();
+            const QString labelname1 = data.value("labelName1").toString();
+            const QString infomessage = data.value("infoMessage").toString();
+            const uint percentage = data.value("percentage").toUInt();
+            const QByteArray state = data.value("state").toByteArray();
+            const bool killable = data.value("killable").toBool();
+            const QString desturl = data.value("destUrl").toString();
             if (!appiconname.isEmpty()) {
                 frame->iconwidget->setIcon(appiconname);
             }
-            const QString labelname0 = data.value("labelName0").toString();
-            const QString labelname1 = data.value("labelName1").toString();
+            frame->setText(infomessage);
             if (!labelname0.isEmpty() && !labelname1.isEmpty()) {
                 frame->label->setText(
                     i18n(
@@ -203,14 +221,32 @@ void JobsWidget::slotJobUpdated(const QString &name, const QVariantMap &data)
                         labelname1, data.value("label1").toString()
                     )
                 );
+            } else if (!infomessage.isEmpty()) {
+                frame->label->setText(
+                    i18n(
+                        "<i>%1</i>",
+                        infomessage
+                    )
+                );
+            } else if (!desturl.isEmpty()) {
+                frame->label->setText(
+                    i18n(
+                        "<b>%1:</b> <i>%2</i>",
+                        kJobState(state), desturl
+                    )
+                );
+            } else {
+                frame->label->setText(
+                    i18n(
+                        "<i>%1</i>",
+                        kJobState(state)
+                    )
+                );
             }
-            const uint percentage = data.value("percentage").toUInt();
             if (percentage > 0) {
                 frame->meter->setVisible(true);
                 frame->meter->setValue(percentage);
             }
-            const QByteArray state = data.value("state").toByteArray();
-            const bool killable = data.value("killable").toBool();
             if (killable) {
                 frame->iconwidget0->setVisible(true);
             }
@@ -220,7 +256,6 @@ void JobsWidget::slotJobUpdated(const QString &name, const QVariantMap &data)
                 frame->iconwidget0->setProperty("_k_stopped", true);
 
                 frame->iconwidget1->setVisible(true);
-                const QString desturl = data.value("destUrl").toString();
                 if (!desturl.isEmpty()) {
                     frame->iconwidget1->setProperty("_k_desturl", desturl);
                     frame->iconwidget1->setIcon(KIcon("system-file-manager"));

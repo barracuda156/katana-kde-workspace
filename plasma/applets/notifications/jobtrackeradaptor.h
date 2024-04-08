@@ -30,7 +30,6 @@ class JobTrackerAdaptor: public QDBusAbstractAdaptor
     Q_CLASSINFO("D-Bus Interface", "org.kde.JobTracker")
 public:
     JobTrackerAdaptor(QObject *parent);
-    ~JobTrackerAdaptor();
 
 public Q_SLOTS:
     void addJob(const QString &name);

@@ -24,10 +24,6 @@ NotificationsAdaptor::NotificationsAdaptor(QObject *parent)
 {
 }
 
-NotificationsAdaptor::~NotificationsAdaptor()
-{
-}
-
 void NotificationsAdaptor::addNotification(const QString &name)
 {
     emit notificationAdded(name);
