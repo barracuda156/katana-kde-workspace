@@ -39,6 +39,7 @@
 #include <klocale.h>
 
 #include <QTimer>
+#include <QDBusInterface>
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QDesktopWidget>
@@ -93,52 +94,42 @@ bool WinIdEmbedder::eventFilter(QObject *o, QEvent *e)
  */
 bool sendVisualNotification(const QString &text, const QString &title, const QString &icon, int timeout)
 {
-  const QString dbusServiceName = "org.freedesktop.Notifications";
-  const QString dbusInterfaceName = "org.freedesktop.Notifications";
-  const QString dbusPath = "/org/freedesktop/Notifications";
+  const QString dbusServiceName = "org.kde.plasma-desktop";
+  const QString dbusInterfaceName = "org.kde.Notifications";
+  const QString dbusPath = "/Notifications";
 
-  // check if service already exists on plugin instantiation
+  // check if service is registered
   QDBusConnectionInterface* interface = QDBusConnection::sessionBus().interface();
 
   if (!interface || !interface->isServiceRegistered(dbusServiceName)) {
-    //kDebug() << dbusServiceName << "D-Bus service not registered";
+    // kDebug() << dbusServiceName << "D-Bus service not registered";
     return false;
   }
 
-  if (timeout == 0)
+  if (timeout == 0) {
     timeout = 10 * 1000;
-
-  QDBusMessage m = QDBusMessage::createMethodCall(dbusServiceName, dbusPath, dbusInterfaceName, "Notify");
-  QList<QVariant> args;
-
-  args.append("kdialog"); // app_name
-  args.append(0U); // replaces_id
-  args.append(icon); // app_icon
-  args.append(title); // summary
-  args.append(text); // body
-  args.append(QStringList()); // actions - unused for plain passive popups
-  args.append(QVariantMap()); // hints - unused atm
-  args.append(timeout); // expire timout
-
-  m.setArguments(args);
-
-  QDBusMessage replyMsg = QDBusConnection::sessionBus().call(m);
-  if(replyMsg.type() == QDBusMessage::ReplyMessage) {
-    if (!replyMsg.arguments().isEmpty()) {
-      return true;
-    }
-    // Not displaying any error messages as this is optional for kdialog
-    // and KPassivePopup is a perfectly valid fallback.
-    //else {
-    //  kDebug() << "Error: received reply with no arguments.";
-    //}
-  } else if (replyMsg.type() == QDBusMessage::ErrorMessage) {
-    //kDebug() << "Error: failed to send D-Bus message";
-    //kDebug() << replyMsg;
-  } else {
-    //kDebug() << "Unexpected reply type";
   }
-  return false;
+
+  const QString notificationId = qRandomUuid();
+  QDBusInterface notificationInterface(dbusServiceName, dbusPath, dbusInterfaceName);
+  QDBusReply<void> reply = notificationInterface.call("addNotification", notificationId);
+  if (!reply.isValid()) {
+    // kDebug() << "Error: failed to send D-Bus message" << reply.error().message();
+    return false;
+  }
+
+  QVariantMap notificationData;
+  notificationData.insert("appName", "kdialog");
+  notificationData.insert("appIcon", icon);
+  notificationData.insert("summary", title);
+  notificationData.insert("body", text);
+  notificationData.insert("timeout", timeout); // expire timout, unused
+  reply = notificationInterface.call("updateNotification", notificationId, notificationData);
+  if (!reply.isValid()) {
+    // kDebug() << "Error: failed to send D-Bus message" << reply.error().message();
+    return false;
+  }
+  return true;
 }
 
 static void outputStringList(const QStringList &list, bool separateOutput)
