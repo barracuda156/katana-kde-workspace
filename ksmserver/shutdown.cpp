@@ -451,7 +451,7 @@ void KSMServer::completeShutdownOrCheckpoint()
         // if sound is not working for some reason the closed() signal never happens
         // and logoutSoundFinished() never gets called. Add this timer to make
         // sure the shutdown procedure continues even if sound system is broken.
-        QTimer::singleShot(5000, this, SLOT(logoutSoundTimeout()));
+        QTimer::singleShot(10000, this, SLOT(logoutSoundTimeout()));
         kDebug() << "Starting logout event";
         state = WaitingForKNotify;
         createLogoutEffectWidget();
