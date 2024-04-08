@@ -221,13 +221,6 @@ void JobsWidget::slotJobUpdated(const QString &name, const QVariantMap &data)
                         labelname1, data.value("label1").toString()
                     )
                 );
-            } else if (!infomessage.isEmpty()) {
-                frame->label->setText(
-                    i18n(
-                        "<i>%1</i>",
-                        infomessage
-                    )
-                );
             } else if (!desturl.isEmpty()) {
                 frame->label->setText(
                     i18n(
