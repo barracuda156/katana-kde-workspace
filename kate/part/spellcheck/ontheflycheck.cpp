@@ -402,7 +402,8 @@ void KateOnTheFlyChecker::performSpellCheck()
     updateConfig();
   }
   m_speller->setDictionary(language);
-  m_speller->setText(text); // don't call 'start()' after this!
+  m_speller->setText(text);
+  m_speller->start();
 }
 
 void KateOnTheFlyChecker::removeRangeFromEverything(KTextEditor::MovingRange *movingRange)
