@@ -349,7 +349,7 @@ void PagerApplet::createConfigurationInterface(KConfigDialog *parent)
     QGridLayout* widgetlayout = new QGridLayout(widget);
     QLabel* pagermodelabel = new QLabel(widget);
     pagermodelabel->setText(i18n("Text:"));
-    widgetlayout->addWidget(pagermodelabel, 0, 0, Qt::AlignRight);
+    widgetlayout->addWidget(pagermodelabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
     m_pagermodebox = new QComboBox(widget);
     m_pagermodebox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     m_pagermodebox->addItem(i18n("Desktop number"), static_cast<int>(PagerApplet::ShowNumber));

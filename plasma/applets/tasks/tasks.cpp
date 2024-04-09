@@ -371,7 +371,7 @@ void TasksApplet::createConfigurationInterface(KConfigDialog *parent)
     QGridLayout* widgetlayout = new QGridLayout(widget);
     QLabel* tooltipmodelabel = new QLabel(widget);
     tooltipmodelabel->setText(i18n("Tooltip:"));
-    widgetlayout->addWidget(tooltipmodelabel, 0, 0, Qt::AlignRight);
+    widgetlayout->addWidget(tooltipmodelabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
     m_tooltipmodebox = new QComboBox(widget);
     m_tooltipmodebox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     m_tooltipmodebox->addItem(i18n("Task name"), static_cast<int>(TasksApplet::ToolTipPreview));

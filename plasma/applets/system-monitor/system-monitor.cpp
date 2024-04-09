@@ -833,14 +833,14 @@ void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
     QGridLayout* widgetlayout = new QGridLayout(widget);
     QLabel* hostnamelabel = new QLabel(widget);
     hostnamelabel->setText(i18n("Hostname:"));
-    widgetlayout->addWidget(hostnamelabel, 0, 0, Qt::AlignRight);
+    widgetlayout->addWidget(hostnamelabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
     m_hostnameedit = new KLineEdit(widget);
     m_hostnameedit->setText(m_hostname);
     widgetlayout->addWidget(m_hostnameedit, 0, 1);
 
     QLabel* portlabel = new QLabel(widget);
     portlabel->setText(i18n("Port:"));
-    widgetlayout->addWidget(portlabel, 1, 0, Qt::AlignRight);
+    widgetlayout->addWidget(portlabel, 1, 0, Qt::AlignRight | Qt::AlignVCenter);
     m_portbox = new KIntNumInput(widget);
     m_portbox->setMinimum(s_port);
     m_portbox->setMaximum(USHRT_MAX);
@@ -850,7 +850,7 @@ void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
 
     QLabel* updatelabel = new QLabel(widget);
     updatelabel->setText(i18n("Update interval:"));
-    widgetlayout->addWidget(updatelabel, 2, 0, Qt::AlignRight);
+    widgetlayout->addWidget(updatelabel, 2, 0, Qt::AlignRight | Qt::AlignVCenter);
     m_updateedit = new KTimeEdit(widget);
     m_updateedit->setMinimumTime(QTime(0, 0, 1));
     m_updateedit->setTime(QTime(0, 0, 0).addSecs(m_update));
@@ -858,7 +858,7 @@ void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
 
     QLabel* cpulabel = new QLabel(widget);
     cpulabel->setText(i18n("CPU color:"));
-    widgetlayout->addWidget(cpulabel, 3, 0, Qt::AlignRight);
+    widgetlayout->addWidget(cpulabel, 3, 0, Qt::AlignRight | Qt::AlignVCenter);
     const QColor defaultcpucolor = kCPUVisualizerColor();
     QColor cpucolor = m_cpucolor;
     if (!cpucolor.isValid()) {
@@ -871,7 +871,7 @@ void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
 
     QLabel* receiverlabel = new QLabel(widget);
     receiverlabel->setText(i18n("Receiver color:"));
-    widgetlayout->addWidget(receiverlabel, 4, 0, Qt::AlignRight);
+    widgetlayout->addWidget(receiverlabel, 4, 0, Qt::AlignRight | Qt::AlignVCenter);
     const QColor defaultreceivercolor = kNetReceiverVisualizerColor();
     QColor receivercolor = m_receivercolor;
     if (!receivercolor.isValid()) {
@@ -884,7 +884,7 @@ void SystemMonitor::createConfigurationInterface(KConfigDialog *parent)
 
     QLabel* transmitterlabel = new QLabel(widget);
     transmitterlabel->setText(i18n("Transmitter color:"));
-    widgetlayout->addWidget(transmitterlabel, 5, 0, Qt::AlignRight);
+    widgetlayout->addWidget(transmitterlabel, 5, 0, Qt::AlignRight | Qt::AlignVCenter);
     const QColor defaulttransmittercolor = kNetTransmitterVisualizerColor();
     QColor transmittercolor = m_transmittercolor;
     if (!transmittercolor.isValid()) {

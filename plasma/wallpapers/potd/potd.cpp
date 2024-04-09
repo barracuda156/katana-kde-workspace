@@ -22,7 +22,8 @@
 #include <QImageWriter>
 #include <QFileInfo>
 #include <QJsonDocument>
-#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QLabel>
 #include <KStandardDirs>
 #include <KIO/Job>
 #include <KIO/StoredTransferJob>
@@ -62,7 +63,8 @@ PoTD::PoTD(QObject *parent, const QVariantList &args)
     m_downloading(false),
     m_providerbox(nullptr),
     m_resizemethodbox(nullptr),
-    m_colorbutton(nullptr)
+    m_colorbutton(nullptr),
+    m_spacer(nullptr)
 {
     m_timer = new QTimer(this);
     m_timer->setInterval(10000);
@@ -123,9 +125,12 @@ void PoTD::paint(QPainter *painter, const QRectF &exposedRect)
 QWidget* PoTD::createConfigurationInterface(QWidget *parent)
 {
     QWidget* potdconfigwidget = new QWidget(parent);
-    QHBoxLayout* potdconfiglayout = new QHBoxLayout(potdconfigwidget);
+    QGridLayout* potdconfiglayout = new QGridLayout(potdconfigwidget);
     potdconfigwidget->setLayout(potdconfiglayout);
 
+    QLabel* providerlabel = new QLabel(potdconfigwidget);
+    providerlabel->setText(i18n("Provider:"));
+    potdconfiglayout->addWidget(providerlabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
     m_providerbox = new QComboBox(potdconfigwidget);
     m_providerbox->addItem(i18n("Pexels"), "pexels");
     m_providerbox->addItem(i18n("Flickr"), "flickr");
@@ -139,8 +144,11 @@ QWidget* PoTD::createConfigurationInterface(QWidget *parent)
         m_providerbox, SIGNAL(currentIndexChanged(int)),
         this, SLOT(slotProviderChanged(int))
     );
-    potdconfiglayout->addWidget(m_providerbox);
+    potdconfiglayout->addWidget(m_providerbox, 0, 1);
 
+    QLabel* resizemodelabel = new QLabel(potdconfigwidget);
+    resizemodelabel->setText(i18n("Positioning:"));
+    potdconfiglayout->addWidget(resizemodelabel, 1, 0, Qt::AlignRight | Qt::AlignVCenter);
     m_resizemethodbox = new QComboBox(potdconfigwidget);
     m_resizemethodbox->addItem(i18n("Scaled & Cropped"), Plasma::Wallpaper::ResizeMethod::ScaledAndCroppedResize);
     m_resizemethodbox->addItem(i18n("Scaled"), Plasma::Wallpaper::ResizeMethod::ScaledResize);
@@ -158,12 +166,18 @@ QWidget* PoTD::createConfigurationInterface(QWidget *parent)
         m_resizemethodbox, SIGNAL(currentIndexChanged(int)),
         this, SLOT(slotResizeMethodChanged(int))
     );
-    potdconfiglayout->addWidget(m_resizemethodbox);
+    potdconfiglayout->addWidget(m_resizemethodbox, 1, 1);
 
+    QLabel* colorlabel = new QLabel(potdconfigwidget);
+    colorlabel->setText(i18n("Color:"));
+    potdconfiglayout->addWidget(colorlabel, 2, 0, Qt::AlignRight | Qt::AlignVCenter);
     m_colorbutton = new KColorButton(potdconfigwidget);
     m_colorbutton->setColor(m_color);
     connect(m_colorbutton, SIGNAL(changed(QColor)), this, SLOT(slotColorChanged(QColor)));
-    potdconfiglayout->addWidget(m_colorbutton);
+    potdconfiglayout->addWidget(m_colorbutton, 2, 1);
+
+    m_spacer = new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Expanding);
+    potdconfiglayout->addItem(m_spacer, 3, 0, 1, 2);
 
     connect(this, SIGNAL(settingsChanged(bool)), parent, SLOT(settingsChanged(bool)));
     return potdconfigwidget;

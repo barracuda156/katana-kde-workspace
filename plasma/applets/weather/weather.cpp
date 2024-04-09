@@ -784,7 +784,7 @@ void WeatherApplet::createConfigurationInterface(KConfigDialog *parent)
     QGridLayout* widgetlayout = new QGridLayout(widget);
     QLabel* tempunitlabel = new QLabel(widget);
     tempunitlabel->setText(i18n("Temperature unit:"));
-    widgetlayout->addWidget(tempunitlabel, 0, 0, Qt::AlignRight);
+    widgetlayout->addWidget(tempunitlabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
     m_tempunitbox = new QComboBox(widget);
     m_tempunitbox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     for (int i = 0; i < KTemperature::UnitCount; i++) {
@@ -795,7 +795,7 @@ void WeatherApplet::createConfigurationInterface(KConfigDialog *parent)
     widgetlayout->addWidget(m_tempunitbox, 0, 1);
     QLabel* locationlabel = new QLabel(widget);
     locationlabel->setText(i18n("Location:"));
-    widgetlayout->addWidget(locationlabel, 1, 0, Qt::AlignRight);
+    widgetlayout->addWidget(locationlabel, 1, 0, Qt::AlignRight | Qt::AlignVCenter);
     m_locationbox = new QComboBox(widget);
     m_locationbox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     QMap<QString,QString> sortedzones;

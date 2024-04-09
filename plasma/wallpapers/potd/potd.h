@@ -24,6 +24,7 @@
 #include <QColor>
 #include <QTimer>
 #include <QComboBox>
+#include <QSpacerItem>
 #include <Plasma/Wallpaper>
 #include <KJob>
 #include <KColorButton>
@@ -71,6 +72,7 @@ private:
     QComboBox* m_providerbox;
     QComboBox* m_resizemethodbox;
     KColorButton* m_colorbutton;
+    QSpacerItem* m_spacer;
 };
 
 K_EXPORT_PLASMA_WALLPAPER(potd, PoTD)
