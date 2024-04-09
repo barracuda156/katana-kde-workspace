@@ -60,7 +60,7 @@ private Q_SLOTS:
 private:
     void flickrDownload();
     void pexelsDownload();
-    void checkWallpaper();
+    bool checkWallpaper();
     void repaintWallpaper();
 
     QString m_provider;

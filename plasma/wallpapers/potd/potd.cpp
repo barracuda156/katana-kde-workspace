@@ -90,8 +90,10 @@ void PoTD::init(const KConfigGroup &config)
         kWarning() << "invalid color" << m_color;
         m_color = s_defaultcolor;
     }
-    checkWallpaper();
-    repaintWallpaper();
+    if (!checkWallpaper()) {
+        // force update if checkWallpaper() did not for settings to apply
+        repaintWallpaper();
+    }
     m_timer->start();
 }
 
@@ -382,7 +384,7 @@ void PoTD::imageFinished(KJob *kjob)
     m_storejob->deleteLater();
 }
 
-void PoTD::checkWallpaper()
+bool PoTD::checkWallpaper()
 {
     const QString potdimagepath = kPoTDPath(m_provider);
     kDebug() << "checking potd" << potdimagepath;
@@ -396,11 +398,14 @@ void PoTD::checkWallpaper()
         } else if (m_provider == "flickr") {
             flickrDownload();
         }
+        return true;
     } else if (m_imagepath != potdimagepath) {
         kDebug() << "using up-to-date potd" << potdimagepath;
         m_imagepath = potdimagepath;
         repaintWallpaper();
+        return true;
     }
+    return false;
 }
 
 void PoTD::repaintWallpaper()
