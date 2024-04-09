@@ -57,6 +57,7 @@ static QString kPoTDPath(const QString &provider)
 
 PoTD::PoTD(QObject *parent, const QVariantList &args)
     : Plasma::Wallpaper(parent, args),
+    m_provider(s_defaultprovider),
     m_resizemethod(s_defaultresizemethod),
     m_color(s_defaultcolor),
     m_timer(nullptr),
@@ -76,17 +77,11 @@ PoTD::PoTD(QObject *parent, const QVariantList &args)
         this, SIGNAL(renderCompleted(QImage)),
         this, SLOT(slotRenderCompleted(QImage))
     );
-    if (args.size() > 0) {
-        m_provider = args.at(0).toString();
-        kDebug() << "using provider from argument" << m_provider;
-    }
 }
 
 void PoTD::init(const KConfigGroup &config)
 {
-    if (m_provider.isEmpty()) {
-        m_provider = config.readEntry("provider", s_defaultprovider);
-    }
+    m_provider = config.readEntry("provider", s_defaultprovider);
     if (m_provider != QLatin1String("pexels") && m_provider != QLatin1String("flickr")) {
         kWarning() << "invalid provider" << m_provider;
         m_provider = s_defaultprovider;
