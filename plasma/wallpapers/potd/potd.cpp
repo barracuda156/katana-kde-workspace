@@ -336,7 +336,6 @@ void PoTD::flickrFinished(KJob *kjob)
 
         const KUrl queryurl(s_flickrapiurl + m_flickrdate.toString(Qt::ISODate));
         kDebug() << "stat fail, retrying with" << queryurl.prettyUrl();
-        kstoredjob->deleteLater();
         kstoredjob = KIO::storedGet(queryurl, KIO::HideProgressInfo);
         kstoredjob->setAutoDelete(false);
         connect(kstoredjob, SIGNAL(finished(KJob*)), SLOT(flickrFinished(KJob*)));
