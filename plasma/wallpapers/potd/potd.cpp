@@ -173,6 +173,8 @@ QWidget* PoTD::createConfigurationInterface(QWidget *parent)
     potdconfiglayout->addWidget(colorlabel, 2, 0, Qt::AlignRight | Qt::AlignVCenter);
     m_colorbutton = new KColorButton(potdconfigwidget);
     m_colorbutton->setColor(m_color);
+    m_colorbutton->setToolTip(i18n("Change wallpaper frame color"));
+    m_colorbutton->setWhatsThis(i18n("Change the color of the frame that it may be visible when the wallpaper is centered or scaled with the same proportions."));
     connect(m_colorbutton, SIGNAL(changed(QColor)), this, SLOT(slotColorChanged(QColor)));
     potdconfiglayout->addWidget(m_colorbutton, 2, 1);
 
