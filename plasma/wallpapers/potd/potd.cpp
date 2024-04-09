@@ -245,9 +245,7 @@ void PoTD::pexelsFinished(KJob *kjob)
         return;
     }
 
-    const QByteArray jsondata = m_storejob->data();
-
-    const QJsonDocument jsondoc = QJsonDocument::fromJson(jsondata);
+    const QJsonDocument jsondoc = QJsonDocument::fromJson(m_storejob->data());
     if (jsondoc.isNull()) {
         kWarning() << "JSON error" << jsondoc.errorString();
         m_storejob->deleteLater();
@@ -308,7 +306,6 @@ void PoTD::flickrFinished(KJob *kjob)
     if (jsondata.startsWith("jsonFlickrApi(") && jsondata.endsWith(')')) {
         jsondata = jsondata.mid(14, jsondata.size() - 15);
     }
-
     const QJsonDocument jsondoc = QJsonDocument::fromJson(jsondata);
     if (jsondoc.isNull()) {
         kWarning() << "JSON error" << jsondoc.errorString();
