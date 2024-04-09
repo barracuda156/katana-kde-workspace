@@ -29,6 +29,9 @@
 #include <Plasma/ToolTipManager>
 #include <KDebug>
 
+// the default of KLocale
+static const QLocale::FormatType s_timeformat = QLocale::ShortFormat;
+
 static QFont kClockFont(const QRectF &contentsRect)
 {
     QFont font = KGlobalSettings::smallestReadableFont();
@@ -55,6 +58,17 @@ static QSizeF kClockSize(const QRectF &contentsRect, const QString &clockstring)
     return clocksize;
 }
 
+static int kClockInterval(const QString &format)
+{
+    if (format.contains(QLatin1String("z"))) {
+        // more often that that is overkill
+        return 100;
+    } else if (format.contains(QLatin1String("s"))) {
+        return 1000;
+    }
+    return 3000;
+}
+
 DigitalClockApplet::DigitalClockApplet(QObject *parent, const QVariantList &args)
     : Plasma::Applet(parent, args),
     m_svg(nullptr),
@@ -71,8 +85,7 @@ DigitalClockApplet::DigitalClockApplet(QObject *parent, const QVariantList &args
     m_svg->setContainsMultipleImages(true);
 
     m_timer = new QTimer(this);
-    // even if the time format contains ms polling and repainting more often that 1sec is overkill
-    m_timer->setInterval(1000);
+    m_timer->setInterval(kClockInterval(KGlobal::locale()->timeFormat(s_timeformat)));
     connect(m_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
 
     m_clockstring = kClockString();
@@ -143,10 +156,11 @@ void DigitalClockApplet::changeEvent(QEvent *event)
 {
     Plasma::Applet::changeEvent(event);
     switch (event->type()) {
-        // the time format depends on the locale, update the sizes
+        // the time format depends on the locale, update the sizes and poll timer
         case QEvent::LocaleChange:
         case QEvent::LanguageChange: {
             constraintsEvent(Plasma::SizeConstraint);
+            m_timer->setInterval(kClockInterval(KGlobal::locale()->timeFormat(s_timeformat)));
             break;
         }
         default: {
