@@ -108,7 +108,7 @@ void PoTD::paint(QPainter *painter, const QRectF &exposedRect)
 {
     const QSize brectsize = boundingRect().size().toSize();
     if (m_image.isNull() || m_size != brectsize) {
-        painter->fillRect(exposedRect, QBrush(Qt::black));
+        painter->fillRect(exposedRect, m_color);
         m_size = brectsize;
         if (!m_imagepath.isEmpty()) {
             kDebug() << "rendering potd" << m_imagepath << m_size << m_resizemethod << m_color;
