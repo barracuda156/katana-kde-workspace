@@ -499,7 +499,7 @@ void SystemMonitorClient::answerReceived(int id, const QList<QByteArray> &answer
             if (Q_UNLIKELY(!ok)) {
                 kWarning() << "sensor value conversion failed" << sensorname << sensoranswer;
             } else {
-                kDebug() << "got sensor value" << id << sensorname << sensorvalue;
+                // kDebug() << "got sensor value" << id << sensorname << sensorvalue;
                 emit sensorValue(sensorname, sensorvalue);
             }
         }
