@@ -173,6 +173,7 @@ QWidget* PoTD::createConfigurationInterface(QWidget *parent)
     m_colorbutton->setToolTip(i18n("Change wallpaper frame color"));
     m_colorbutton->setWhatsThis(i18n("Change the color of the frame that it may be visible when the wallpaper is centered or scaled with the same proportions."));
     connect(m_colorbutton, SIGNAL(changed(QColor)), this, SLOT(slotColorChanged(QColor)));
+    toggleColorButton();
     potdconfiglayout->addWidget(m_colorbutton, 2, 1);
 
     m_spacer = new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -206,6 +207,7 @@ void PoTD::slotProviderChanged(int index)
 void PoTD::slotResizeMethodChanged(int index)
 {
     m_resizemethod = m_resizemethodbox->itemData(index).toInt();
+    toggleColorButton();
     slotSettingsChanged();
 }
 
@@ -413,6 +415,17 @@ void PoTD::repaintWallpaper()
     kDebug() << "repainting potd" << m_imagepath << m_provider;
     m_image = QImage();
     emit update(boundingRect());
+}
+
+void PoTD::toggleColorButton()
+{
+    // same is done in the image wallpaper plugin
+    if (m_resizemethod == Plasma::Wallpaper::ResizeMethod::MaxpectResize
+        || m_resizemethod == Plasma::Wallpaper::ResizeMethod::CenteredResize) {
+        m_colorbutton->setEnabled(true);
+    } else {
+        m_colorbutton->setEnabled(false);
+    }
 }
 
 #include "moc_potd.cpp"

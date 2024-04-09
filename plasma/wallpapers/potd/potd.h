@@ -62,6 +62,7 @@ private:
     void pexelsDownload();
     bool checkWallpaper();
     void repaintWallpaper();
+    void toggleColorButton();
 
     QString m_provider;
     QString m_imagepath;
