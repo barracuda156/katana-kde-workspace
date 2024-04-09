@@ -26,15 +26,15 @@
 #include <QLabel>
 #include <KStandardDirs>
 #include <KIO/Job>
-#include <KIO/StoredTransferJob>
 #include <KRandom>
 #include <KDebug>
 
 static const QString s_defaultprovider = QString::fromLatin1("pexels");
-static const QByteArray s_podformat = QImageWriter::defaultImageFormat();
 // same defaults as that of Plasma::Wallpaper
 static const int s_defaultresizemethod = Plasma::Wallpaper::ScaledResize;
 static const QColor s_defaultcolor = QColor(0, 0, 0);
+static const int s_potdtimeout = 10000;
+static const QByteArray s_podformat = QImageWriter::defaultImageFormat();
 
 // for reference:
 // https://www.pexels.com/api/documentation/#photos-curated
@@ -46,9 +46,7 @@ static const QString s_pexelsapiurl = QString::fromLatin1("https://api.pexels.co
 static const QString s_flickrapiurl = QString::fromLatin1(
     "https://api.flickr.com/services/rest/?api_key=31f4917c363e2f76b9fc944790dcc338&format=json&method=flickr.interestingness.getList&date="
 );
-static const QString s_flickrimageurl = QString::fromLatin1(
-    "https://live.staticflickr.com/%1/%2_%3_b.jpg"
-);
+static const QString s_flickrimageurl = QString::fromLatin1("https://live.staticflickr.com/%1/%2_%3_b.jpg");
 
 static QString kPoTDPath(const QString &provider)
 {
@@ -61,14 +59,14 @@ PoTD::PoTD(QObject *parent, const QVariantList &args)
     m_resizemethod(s_defaultresizemethod),
     m_color(s_defaultcolor),
     m_timer(nullptr),
-    m_downloading(false),
+    m_storejob(nullptr),
     m_providerbox(nullptr),
     m_resizemethodbox(nullptr),
     m_colorbutton(nullptr),
     m_spacer(nullptr)
 {
     m_timer = new QTimer(this);
-    m_timer->setInterval(10000);
+    m_timer->setInterval(s_potdtimeout);
     connect(
         m_timer, SIGNAL(timeout()),
         this, SLOT(slotTimeout())
@@ -92,7 +90,8 @@ void PoTD::init(const KConfigGroup &config)
         kWarning() << "invalid color" << m_color;
         m_color = s_defaultcolor;
     }
-    slotTimeout();
+    checkWallpaper();
+    repaintWallpaper();
     m_timer->start();
 }
 
@@ -110,6 +109,7 @@ void PoTD::paint(QPainter *painter, const QRectF &exposedRect)
         painter->fillRect(exposedRect, QBrush(Qt::black));
         m_size = brectsize;
         if (!m_imagepath.isEmpty()) {
+            kDebug() << "rendering potd" << m_imagepath << m_size << m_resizemethod << m_color;
             render(m_imagepath, m_size, static_cast<Plasma::Wallpaper::ResizeMethod>(m_resizemethod), m_color);
         }
         return;
@@ -189,13 +189,16 @@ void PoTD::slotRenderCompleted(const QImage &image)
 void PoTD::slotSettingsChanged()
 {
     emit settingsChanged(true);
-    repaintWallpaper();
 }
 
 void PoTD::slotProviderChanged(int index)
 {
     m_provider = m_providerbox->itemData(index).toString();
     slotSettingsChanged();
+    if (m_storejob) {
+        m_storejob->kill();
+    }
+    checkWallpaper();
 }
 
 void PoTD::slotResizeMethodChanged(int index)
@@ -212,56 +215,38 @@ void PoTD::slotColorChanged(const QColor &color)
 
 void PoTD::slotTimeout()
 {
-    if (m_downloading) {
+    if (m_storejob) {
         kDebug() << "download in progress";
         return;
     }
-    const QString potdimagepath = kPoTDPath(m_provider);
-    kDebug() << "checking potd" << potdimagepath;
-    QFileInfo potdimageinfo(potdimagepath);
-    if (!potdimageinfo.isFile()
-        || potdimageinfo.lastModified().date().day() != QDate::currentDate().day()) {
-        m_imagepath.clear();
-        repaintWallpaper();
-        if (m_provider == "pexels") {
-            pexelsDownload();
-        } else if (m_provider == "flickr") {
-            flickrDownload();
-        }
-    } else {
-        kDebug() << "using up-to-date potd" << potdimagepath;
-        m_imagepath = potdimagepath;
-    }
+    checkWallpaper();
 }
 
 void PoTD::pexelsDownload()
 {
-    m_downloading = true;
     const KUrl potdurl(s_pexelsapiurl);
     kDebug() << "starting job for" << potdurl.prettyUrl();
-    KIO::StoredTransferJob *kstoredjob = KIO::storedGet(potdurl, KIO::HideProgressInfo);
-    kstoredjob->setAutoDelete(false);
-    kstoredjob->addMetaData("Authorization", s_pexelsapikey);
-    connect(kstoredjob, SIGNAL(finished(KJob*)), SLOT(pexelsFinished(KJob*)));
+    m_storejob = KIO::storedGet(potdurl, KIO::HideProgressInfo);
+    m_storejob->setAutoDelete(false);
+    m_storejob->addMetaData("Authorization", s_pexelsapikey);
+    connect(m_storejob, SIGNAL(finished(KJob*)), SLOT(pexelsFinished(KJob*)));
 }
 
 void PoTD::pexelsFinished(KJob *kjob)
 {
-    KIO::StoredTransferJob* kstoredjob = qobject_cast<KIO::StoredTransferJob*>(kjob);
-    if (kstoredjob->error()) {
-        kWarning() << "request error" << kstoredjob->url();
-        kstoredjob->deleteLater();
-        m_downloading = false;
+    Q_ASSERT(kjob == m_storejob);
+    if (m_storejob->error() != KJob::NoError) {
+        kWarning() << "request error" << m_storejob->url();
+        m_storejob->deleteLater();
         return;
     }
 
-    const QByteArray jsondata = kstoredjob->data();
-    kstoredjob->deleteLater();
+    const QByteArray jsondata = m_storejob->data();
 
     const QJsonDocument jsondoc = QJsonDocument::fromJson(jsondata);
     if (jsondoc.isNull()) {
         kWarning() << "JSON error" << jsondoc.errorString();
-        m_downloading = false;
+        m_storejob->deleteLater();
         return;
     }
 
@@ -281,50 +266,49 @@ void PoTD::pexelsFinished(KJob *kjob)
 
     if (pexelsphotolist.isEmpty()) {
         kWarning() << "empty photo list";
-        m_downloading = false;
+        m_storejob->deleteLater();
         return;
     }
 
     const KUrl photourl(pexelsphotolist.at(KRandom::randomMax(pexelsphotolist.size())));
     kDebug() << "chosen photo" << photourl.prettyUrl();
-    kstoredjob = KIO::storedGet(photourl, KIO::HideProgressInfo);
-    kstoredjob->setAutoDelete(false);
-    kstoredjob->addMetaData("Authorization", s_pexelsapikey);
-    connect(kstoredjob, SIGNAL(finished(KJob*)), SLOT(imageFinished(KJob*)));
+    m_storejob->deleteLater();
+    m_storejob = KIO::storedGet(photourl, KIO::HideProgressInfo);
+    m_storejob->setAutoDelete(false);
+    m_storejob->addMetaData("Authorization", s_pexelsapikey);
+    connect(m_storejob, SIGNAL(finished(KJob*)), SLOT(imageFinished(KJob*)));
 }
 
 void PoTD::flickrDownload()
 {
-    m_downloading = true;
+    Q_ASSERT(m_storejob == nullptr);
     m_flickrdate = QDate::currentDate();
     const KUrl potdurl(s_flickrapiurl + m_flickrdate.toString(Qt::ISODate));
     kDebug() << "starting job for" << potdurl.prettyUrl();
-    KIO::StoredTransferJob *kstoredjob = KIO::storedGet(potdurl, KIO::HideProgressInfo);
-    kstoredjob->setAutoDelete(false);
-    connect(kstoredjob, SIGNAL(finished(KJob*)), SLOT(flickrFinished(KJob*)));
+    m_storejob = KIO::storedGet(potdurl, KIO::HideProgressInfo);
+    m_storejob->setAutoDelete(false);
+    connect(m_storejob, SIGNAL(finished(KJob*)), SLOT(flickrFinished(KJob*)));
 }
 
 void PoTD::flickrFinished(KJob *kjob)
 {
-    KIO::StoredTransferJob* kstoredjob = qobject_cast<KIO::StoredTransferJob*>(kjob);
-    if (kstoredjob->error()) {
-        kWarning() << "request error" << kstoredjob->url();
-        kstoredjob->deleteLater();
-        m_downloading = false;
+    Q_ASSERT(kjob == m_storejob);
+    if (m_storejob->error() != KJob::NoError) {
+        kWarning() << "request error" << m_storejob->url();
+        m_storejob->deleteLater();
         return;
     }
 
     // HACK: fix the data to be valid JSON
-    QByteArray jsondata = kstoredjob->data();
+    QByteArray jsondata = m_storejob->data();
     if (jsondata.startsWith("jsonFlickrApi(") && jsondata.endsWith(')')) {
         jsondata = jsondata.mid(14, jsondata.size() - 15);
     }
-    kstoredjob->deleteLater();
 
     const QJsonDocument jsondoc = QJsonDocument::fromJson(jsondata);
     if (jsondoc.isNull()) {
         kWarning() << "JSON error" << jsondoc.errorString();
-        m_downloading = false;
+        m_storejob->deleteLater();
         return;
     }
 
@@ -336,9 +320,10 @@ void PoTD::flickrFinished(KJob *kjob)
 
         const KUrl queryurl(s_flickrapiurl + m_flickrdate.toString(Qt::ISODate));
         kDebug() << "stat fail, retrying with" << queryurl.prettyUrl();
-        kstoredjob = KIO::storedGet(queryurl, KIO::HideProgressInfo);
-        kstoredjob->setAutoDelete(false);
-        connect(kstoredjob, SIGNAL(finished(KJob*)), SLOT(flickrFinished(KJob*)));
+        m_storejob->deleteLater();
+        m_storejob = KIO::storedGet(queryurl, KIO::HideProgressInfo);
+        m_storejob->setAutoDelete(false);
+        connect(m_storejob, SIGNAL(finished(KJob*)), SLOT(flickrFinished(KJob*)));
         return;
     }
 
@@ -360,46 +345,67 @@ void PoTD::flickrFinished(KJob *kjob)
 
     if (flickrphotolist.isEmpty()) {
         kWarning() << "empty photo list";
-        m_downloading = false;
+        m_storejob->deleteLater();
         return;
     }
 
     const KUrl photourl(flickrphotolist.at(KRandom::randomMax(flickrphotolist.size())));
     kDebug() << "chosen photo" << photourl.prettyUrl();
-    kstoredjob = KIO::storedGet(photourl, KIO::HideProgressInfo);
-    kstoredjob->setAutoDelete(false);
-    connect(kstoredjob, SIGNAL(finished(KJob*)), SLOT(imageFinished(KJob*)));
+    m_storejob->deleteLater();
+    m_storejob = KIO::storedGet(photourl, KIO::HideProgressInfo);
+    m_storejob->setAutoDelete(false);
+    connect(m_storejob, SIGNAL(finished(KJob*)), SLOT(imageFinished(KJob*)));
 }
 
 void PoTD::imageFinished(KJob *kjob)
 {
-    KIO::StoredTransferJob* kstoredjob = qobject_cast<KIO::StoredTransferJob*>(kjob);
-    if (kstoredjob->error()) {
-        kWarning() << "image job error" << kstoredjob->url();
-        kstoredjob->deleteLater();
-        m_downloading = false;
+    Q_ASSERT(kjob == m_storejob);
+    if (m_storejob->error() != KJob::NoError) {
+        kWarning() << "image job error" << m_storejob->url();
+        m_storejob->deleteLater();
         return;
     }
 
-    const QImage potdimage = QImage::fromData(kstoredjob->data());
+    const QImage potdimage = QImage::fromData(m_storejob->data());
     if (potdimage.isNull()) {
-        kWarning() << "null image for" << kstoredjob->url();
+        kWarning() << "null image for" << m_storejob->url();
     } else {
         const QString potdimagepath = kPoTDPath(m_provider);
         if (!potdimage.save(potdimagepath, s_podformat)) {
-            kWarning() << "could not save image for" << kstoredjob->url();
+            kWarning() << "could not save image for" << m_storejob->url();
         } else {
             kDebug() << "saved fresh potd" << potdimagepath;
             m_imagepath = potdimagepath;
             repaintWallpaper();
         }
     }
-    kstoredjob->deleteLater();
-    m_downloading = false;
+    m_storejob->deleteLater();
+}
+
+void PoTD::checkWallpaper()
+{
+    const QString potdimagepath = kPoTDPath(m_provider);
+    kDebug() << "checking potd" << potdimagepath;
+    QFileInfo potdimageinfo(potdimagepath);
+    if (!potdimageinfo.isFile()
+        || potdimageinfo.lastModified().date().day() != QDate::currentDate().day()) {
+        m_imagepath.clear();
+        repaintWallpaper();
+        if (m_provider == "pexels") {
+            pexelsDownload();
+        } else if (m_provider == "flickr") {
+            flickrDownload();
+        }
+    } else if (m_imagepath != potdimagepath) {
+        kDebug() << "using up-to-date potd" << potdimagepath;
+        m_imagepath = potdimagepath;
+        repaintWallpaper();
+    }
 }
 
 void PoTD::repaintWallpaper()
 {
+    kDebug() << "repainting potd" << m_imagepath << m_provider;
     m_image = QImage();
     emit update(boundingRect());
 }

@@ -23,10 +23,12 @@
 #include <QImage>
 #include <QColor>
 #include <QTimer>
+#include <QPointer>
 #include <QComboBox>
 #include <QSpacerItem>
 #include <Plasma/Wallpaper>
 #include <KJob>
+#include <KIO/StoredTransferJob>
 #include <KColorButton>
 
 class PoTD : public Plasma::Wallpaper
@@ -58,6 +60,7 @@ private Q_SLOTS:
 private:
     void flickrDownload();
     void pexelsDownload();
+    void checkWallpaper();
     void repaintWallpaper();
 
     QString m_provider;
@@ -67,7 +70,7 @@ private:
     int m_resizemethod;
     QColor m_color;
     QTimer* m_timer;
-    bool m_downloading;
+    QPointer<KIO::StoredTransferJob> m_storejob;
     QDate m_flickrdate;
     QComboBox* m_providerbox;
     QComboBox* m_resizemethodbox;
