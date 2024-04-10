@@ -37,14 +37,18 @@ class JobFrame : public Plasma::Frame
 public:
     explicit JobFrame(const QString &name, QGraphicsWidget *parent);
 
-    Plasma::IconWidget* iconwidget;
-    Plasma::Label* label;
-    Plasma::IconWidget* iconwidget0;
-    Plasma::IconWidget* iconwidget1;
-    Plasma::Meter* meter;
-    QString name;
+private Q_SLOTS:
+    void slotJobUpdated(const QString &name, const QVariantMap &data);
+    void slotIcon0Activated();
+    void slotIcon1Activated();
 
-    void animateRemove();
+private:
+    QString m_name;
+    Plasma::IconWidget* m_iconwidget;
+    Plasma::Label* m_label;
+    Plasma::IconWidget* m_iconwidget0;
+    Plasma::IconWidget* m_iconwidget1;
+    Plasma::Meter* m_meter;
 };
 
 
@@ -60,21 +64,16 @@ public:
 Q_SIGNALS:
     int countChanged();
 
-public Q_SLOTS:
-    void slotFrameDestroyed();
-    void slotIcon0Activated();
-    void slotIcon1Activated();
-
 private Q_SLOTS:
     void slotJobAdded(const QString &name);
-    void slotJobUpdated(const QString &name, const QVariantMap &data);
+    void slotFrameDestroyed(QObject *object);
 
 private:
     QMutex m_mutex;
     NotificationsWidget* m_notificationswidget;
     QGraphicsLinearLayout* m_layout;
     Plasma::Label* m_label;
-    QList<JobFrame*> m_frames;
+    QList<QObject*> m_frames;
     JobTrackerAdaptor* m_adaptor;
 };
 

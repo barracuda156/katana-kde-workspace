@@ -37,13 +37,18 @@ class ApplicationFrame : public Plasma::Frame
 public:
     explicit ApplicationFrame(const QString &name, QGraphicsWidget *parent);
 
-    Plasma::IconWidget* iconwidget;
-    Plasma::Label* label;
-    Plasma::IconWidget* removewidget;
-    Plasma::IconWidget* configurewidget;
-    QString name;
+private Q_SLOTS:
+    void slotRemoveActivated();
+    void slotConfigureActivated();
+    void slotActionReleased();
+    void slotNotificationUpdated(const QString &name, const QVariantMap &data);
 
-    void animateRemove();
+private:
+    QString m_name;
+    Plasma::IconWidget* m_iconwidget;
+    Plasma::Label* m_label;
+    Plasma::IconWidget* m_removewidget;
+    Plasma::IconWidget* m_configurewidget;
 };
 
 
@@ -60,22 +65,16 @@ Q_SIGNALS:
     int countChanged();
     void ping();
 
-public Q_SLOTS:
-    void slotFrameDestroyed();
-    void slotRemoveActivated();
-    void slotConfigureActivated();
-    void slotActionReleased();
-
 private Q_SLOTS:
     void slotNotificationAdded(const QString &name);
-    void slotNotificationUpdated(const QString &name, const QVariantMap &data);
+    void slotFrameDestroyed(QObject *object);
 
 private:
     QMutex m_mutex;
     NotificationsWidget* m_notificationswidget;
     QGraphicsLinearLayout* m_layout;
     Plasma::Label* m_label;
-    QList<ApplicationFrame*> m_frames;
+    QList<QObject*> m_frames;
     NotificationsAdaptor* m_adaptor;
 };
 

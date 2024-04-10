@@ -42,14 +42,14 @@ static QString kJobState(const QByteArray &state)
     return QString::fromLatin1(state.constData(), state.size());
 }
 
-JobFrame::JobFrame(const QString &_name, QGraphicsWidget *parent)
+JobFrame::JobFrame(const QString &name, QGraphicsWidget *parent)
     : Plasma::Frame(parent),
-    iconwidget(nullptr),
-    label(nullptr),
-    iconwidget0(nullptr),
-    iconwidget1(nullptr),
-    meter(nullptr),
-    name(_name)
+    m_name(name),
+    m_iconwidget(nullptr),
+    m_label(nullptr),
+    m_iconwidget0(nullptr),
+    m_iconwidget1(nullptr),
+    m_meter(nullptr)
 {
     JobsWidget* jobswidget = qobject_cast<JobsWidget*>(parent);
 
@@ -57,73 +57,178 @@ JobFrame::JobFrame(const QString &_name, QGraphicsWidget *parent)
     setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     QGraphicsGridLayout* framelayout = new QGraphicsGridLayout(this);
 
-    iconwidget = new Plasma::IconWidget(this);
-    iconwidget->setAcceptHoverEvents(false);
-    iconwidget->setAcceptedMouseButtons(Qt::NoButton);
-    iconwidget->setIcon(KIcon("services"));
+    m_iconwidget = new Plasma::IconWidget(this);
+    m_iconwidget->setAcceptHoverEvents(false);
+    m_iconwidget->setAcceptedMouseButtons(Qt::NoButton);
+    m_iconwidget->setIcon(KIcon("services"));
     const int desktopiconsize = KIconLoader::global()->currentSize(KIconLoader::Desktop);
     const QSizeF desktopiconsizef = QSizeF(desktopiconsize, desktopiconsize);
-    iconwidget->setPreferredIconSize(desktopiconsizef);
-    iconwidget->setMinimumSize(desktopiconsizef);
-    iconwidget->setMaximumSize(desktopiconsizef);
-    iconwidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    framelayout->addItem(iconwidget, 0, 0, 2, 1);
+    m_iconwidget->setPreferredIconSize(desktopiconsizef);
+    m_iconwidget->setMinimumSize(desktopiconsizef);
+    m_iconwidget->setMaximumSize(desktopiconsizef);
+    m_iconwidget->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    framelayout->addItem(m_iconwidget, 0, 0, 2, 1);
 
-    label = new Plasma::Label(this);
-    label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-    label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-    label->nativeWidget()->setOpenExternalLinks(true);
-    framelayout->addItem(label, 0, 1, 3, 1);
+    m_label = new Plasma::Label(this);
+    m_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    m_label->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    m_label->nativeWidget()->setOpenExternalLinks(true);
+    framelayout->addItem(m_label, 0, 1, 3, 1);
 
     const int smalliconsize = KIconLoader::global()->currentSize(KIconLoader::Small);
-    iconwidget0 = new Plasma::IconWidget(this);
-    iconwidget0->setMaximumIconSize(QSize(smalliconsize, smalliconsize));
-    iconwidget0->setIcon(KIcon("task-reject"));
-    iconwidget0->setToolTip(i18n("Click to stop the job."));
-    iconwidget0->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    iconwidget0->setVisible(false);
+    m_iconwidget0 = new Plasma::IconWidget(this);
+    m_iconwidget0->setMaximumIconSize(QSize(smalliconsize, smalliconsize));
+    m_iconwidget0->setIcon(KIcon("task-reject"));
+    m_iconwidget0->setToolTip(i18n("Click to stop the job."));
+    m_iconwidget0->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    m_iconwidget0->setVisible(false);
     connect(
-        iconwidget0, SIGNAL(activated()),
-        jobswidget, SLOT(slotIcon0Activated())
+        m_iconwidget0, SIGNAL(activated()),
+        this, SLOT(slotIcon0Activated())
     );
-    framelayout->addItem(iconwidget0, 0, 2, 1, 1);
+    framelayout->addItem(m_iconwidget0, 0, 2, 1, 1);
 
-    iconwidget1 = new Plasma::IconWidget(this);
-    iconwidget1->setMaximumIconSize(QSize(smalliconsize, smalliconsize));
-    iconwidget1->setIcon(KIcon("task-complete"));
-    iconwidget1->setToolTip(i18n("The job has completed."));
-    iconwidget1->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    iconwidget1->setVisible(false);
+    m_iconwidget1 = new Plasma::IconWidget(this);
+    m_iconwidget1->setMaximumIconSize(QSize(smalliconsize, smalliconsize));
+    m_iconwidget1->setIcon(KIcon("task-complete"));
+    m_iconwidget1->setToolTip(i18n("The job has completed."));
+    m_iconwidget1->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    m_iconwidget1->setVisible(false);
     connect(
-        iconwidget1, SIGNAL(activated()),
-        jobswidget, SLOT(slotIcon1Activated())
+        m_iconwidget1, SIGNAL(activated()),
+        this, SLOT(slotIcon1Activated())
     );
-    framelayout->addItem(iconwidget1, 1, 2, 1, 1);
+    framelayout->addItem(m_iconwidget1, 1, 2, 1, 1);
 
-    meter = new Plasma::Meter(this);
-    meter->setMeterType(Plasma::Meter::BarMeterHorizontal);
-    meter->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    meter->setMinimum(0);
-    meter->setMaximum(100);
-    meter->setVisible(false);
-    framelayout->addItem(meter, 4, 0, 1, 3);
+    m_meter = new Plasma::Meter(this);
+    m_meter->setMeterType(Plasma::Meter::BarMeterHorizontal);
+    m_meter->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    m_meter->setMinimum(0);
+    m_meter->setMaximum(100);
+    m_meter->setVisible(false);
+    framelayout->addItem(m_meter, 4, 0, 1, 3);
 
     setLayout(framelayout);
+
+    connect(
+        JobTrackerAdaptor::self(), SIGNAL(jobUpdated(QString,QVariantMap)),
+        this, SLOT(slotJobUpdated(QString,QVariantMap))
+    );
 }
 
-void JobFrame::animateRemove()
+void JobFrame::slotJobUpdated(const QString &name, const QVariantMap &data)
 {
-    Plasma::Animation *animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation);
-    Q_ASSERT(animation != nullptr);
-    JobsWidget* jobswidget = qobject_cast<JobsWidget*>(parentObject());
-    disconnect(iconwidget0, 0, jobswidget, 0);
-    disconnect(iconwidget1, 0, jobswidget, 0);
+    if (m_name != name) {
+        return;
+    }
+    const QString appiconname = data.value("appIconName").toString();
+    const QString labelname0 = data.value("labelName0").toString();
+    const QString labelname1 = data.value("labelName1").toString();
+    const QString infomessage = data.value("infoMessage").toString();
+    const uint percentage = data.value("percentage").toUInt();
+    const QByteArray state = data.value("state").toByteArray();
+    const bool killable = data.value("killable").toBool();
+    const QString desturl = data.value("destUrl").toString();
+    if (!appiconname.isEmpty()) {
+        m_iconwidget->setIcon(appiconname);
+    }
+    setText(infomessage);
+    if (!labelname0.isEmpty() && !labelname1.isEmpty()) {
+        m_label->setText(
+            i18n(
+                "<p><b>%1:</b> <i>%2</i></p><p><b>%3:</b> <i>%4</i></p>",
+                labelname0, data.value("label0").toString(),
+                labelname1, data.value("label1").toString()
+            )
+        );
+    } else if (!labelname0.isEmpty()) {
+        m_label->setText(
+            i18n(
+                "<b>%1:</b> <i>%2</i>",
+                labelname0, data.value("label0").toString()
+            )
+        );
+    } else if (!labelname1.isEmpty()) {
+        m_label->setText(
+            i18n(
+                "<b>%1:</b> <i>%2</i>",
+                labelname1, data.value("label1").toString()
+            )
+        );
+    } else if (!desturl.isEmpty()) {
+        m_label->setText(
+            i18n(
+                "<b>%1:</b> <i>%2</i>",
+                kJobState(state), desturl
+            )
+        );
+    } else {
+        m_label->setText(
+            i18n(
+                "<i>%1</i>",
+                kJobState(state)
+            )
+        );
+    }
+    if (percentage > 0) {
+        m_meter->setVisible(true);
+        m_meter->setValue(percentage);
+    }
+    if (killable) {
+        m_iconwidget0->setVisible(true);
+    }
+    if (state == "stopped") {
+        m_iconwidget0->setIcon(KIcon("dialog-close"));
+        m_iconwidget0->setToolTip(i18n("Click to remove this job notification."));
+        m_iconwidget0->setProperty("_k_stopped", true);
 
-    connect(animation, SIGNAL(finished()), this, SLOT(deleteLater()));
-    animation->setTargetWidget(this);
-    animation->setProperty("startOpacity", 1.0);
-    animation->setProperty("targetOpacity", 0.0);
-    animation->start(QAbstractAnimation::DeleteWhenStopped);
+        m_iconwidget1->setVisible(true);
+        if (!desturl.isEmpty()) {
+            m_iconwidget1->setProperty("_k_desturl", desturl);
+            m_iconwidget1->setIcon(KIcon("system-file-manager"));
+            m_iconwidget1->setToolTip(i18n("Click to open the destination of the job."));
+        } else {
+            m_iconwidget1->setAcceptHoverEvents(false);
+            m_iconwidget1->setAcceptedMouseButtons(Qt::NoButton);
+        }
+    }
+    // error overrides everything iconwidget1 does
+    const QString error = data.value("error").toString();
+    if (!error.isEmpty()) {
+        m_iconwidget1->setVisible(false);
+        m_iconwidget1->setAcceptHoverEvents(false);
+        m_iconwidget1->setAcceptedMouseButtons(Qt::NoButton);
+        m_iconwidget1->setIcon(KIcon("task-attention"));
+        m_iconwidget1->setToolTip(error);
+    }
+    adjustSize();
+}
+
+void JobFrame::slotIcon0Activated()
+{
+    const bool stopped = m_iconwidget0->property("_k_stopped").toBool();
+    if (!stopped) {
+        JobTrackerAdaptor::self()->stopJob(m_name);
+    } else {
+        Plasma::Animation *animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation);
+        Q_ASSERT(animation != nullptr);
+        disconnect(m_iconwidget0, 0, this, 0);
+        disconnect(m_iconwidget1, 0, this, 0);
+
+        connect(animation, SIGNAL(finished()), this, SLOT(deleteLater()));
+        animation->setTargetWidget(this);
+        animation->setProperty("startOpacity", 1.0);
+        animation->setProperty("targetOpacity", 0.0);
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+    }
+}
+
+void JobFrame::slotIcon1Activated()
+{
+    const KUrl desturl = KUrl(m_iconwidget1->property("_k_desturl").toString());
+    const KMimeType::Ptr kmimetype = KMimeType::findByUrl(desturl);
+    Q_ASSERT(kmimetype);
+    KRun::runUrl(desturl, kmimetype->name(), nullptr);
 }
 
 
@@ -149,10 +254,6 @@ JobsWidget::JobsWidget(QGraphicsItem *parent, NotificationsWidget *notifications
         m_adaptor, SIGNAL(jobAdded(QString)),
         this, SLOT(slotJobAdded(QString))
     );
-    connect(
-        m_adaptor, SIGNAL(jobUpdated(QString,QVariantMap)),
-        this, SLOT(slotJobUpdated(QString,QVariantMap))
-    );
     m_adaptor->registerObject();
 }
 
@@ -169,149 +270,26 @@ int JobsWidget::count() const
 void JobsWidget::slotJobAdded(const QString &name)
 {
     QMutexLocker locker(&m_mutex);
-    JobFrame* frame = new JobFrame(name, this);
+    JobFrame* jobframe = new JobFrame(name, this);
     connect(
-        frame, SIGNAL(destroyed()),
-        this, SLOT(slotFrameDestroyed())
+        jobframe, SIGNAL(destroyed(QObject*)),
+        this, SLOT(slotFrameDestroyed(QObject*))
     );
-    m_frames.append(frame);
+    m_frames.append(jobframe);
     m_label->setVisible(false);
-    m_layout->insertItem(0, frame);
+    m_layout->insertItem(0, jobframe);
     adjustSize();
 
     emit countChanged();
 }
 
-void JobsWidget::slotJobUpdated(const QString &name, const QVariantMap &data)
+void JobsWidget::slotFrameDestroyed(QObject *object)
 {
     QMutexLocker locker(&m_mutex);
-    foreach (JobFrame* frame, m_frames) {
-        if (frame->name == name) {
-            const QString appiconname = data.value("appIconName").toString();
-            const QString labelname0 = data.value("labelName0").toString();
-            const QString labelname1 = data.value("labelName1").toString();
-            const QString infomessage = data.value("infoMessage").toString();
-            const uint percentage = data.value("percentage").toUInt();
-            const QByteArray state = data.value("state").toByteArray();
-            const bool killable = data.value("killable").toBool();
-            const QString desturl = data.value("destUrl").toString();
-            if (!appiconname.isEmpty()) {
-                frame->iconwidget->setIcon(appiconname);
-            }
-            frame->setText(infomessage);
-            if (!labelname0.isEmpty() && !labelname1.isEmpty()) {
-                frame->label->setText(
-                    i18n(
-                        "<p><b>%1:</b> <i>%2</i></p><p><b>%3:</b> <i>%4</i></p>",
-                        labelname0, data.value("label0").toString(),
-                        labelname1, data.value("label1").toString()
-                    )
-                );
-            } else if (!labelname0.isEmpty()) {
-                frame->label->setText(
-                    i18n(
-                        "<b>%1:</b> <i>%2</i>",
-                        labelname0, data.value("label0").toString()
-                    )
-                );
-            } else if (!labelname1.isEmpty()) {
-                frame->label->setText(
-                    i18n(
-                        "<b>%1:</b> <i>%2</i>",
-                        labelname1, data.value("label1").toString()
-                    )
-                );
-            } else if (!desturl.isEmpty()) {
-                frame->label->setText(
-                    i18n(
-                        "<b>%1:</b> <i>%2</i>",
-                        kJobState(state), desturl
-                    )
-                );
-            } else {
-                frame->label->setText(
-                    i18n(
-                        "<i>%1</i>",
-                        kJobState(state)
-                    )
-                );
-            }
-            if (percentage > 0) {
-                frame->meter->setVisible(true);
-                frame->meter->setValue(percentage);
-            }
-            if (killable) {
-                frame->iconwidget0->setVisible(true);
-            }
-            if (state == "stopped") {
-                frame->iconwidget0->setIcon(KIcon("dialog-close"));
-                frame->iconwidget0->setToolTip(i18n("Click to remove this job notification."));
-                frame->iconwidget0->setProperty("_k_stopped", true);
-
-                frame->iconwidget1->setVisible(true);
-                if (!desturl.isEmpty()) {
-                    frame->iconwidget1->setProperty("_k_desturl", desturl);
-                    frame->iconwidget1->setIcon(KIcon("system-file-manager"));
-                    frame->iconwidget1->setToolTip(i18n("Click to open the destination of the job."));
-                } else {
-                    frame->iconwidget1->setAcceptHoverEvents(false);
-                    frame->iconwidget1->setAcceptedMouseButtons(Qt::NoButton);
-                }
-            }
-            // error overrides everything iconwidget1 does
-            const QString error = data.value("error").toString();
-            if (!error.isEmpty()) {
-                frame->iconwidget1->setVisible(false);
-                frame->iconwidget1->setAcceptHoverEvents(false);
-                frame->iconwidget1->setAcceptedMouseButtons(Qt::NoButton);
-                frame->iconwidget1->setIcon(KIcon("task-attention"));
-                frame->iconwidget1->setToolTip(error);
-            }
-            frame->adjustSize();
-            adjustSize();
-            break;
-        }
-    }
-}
-
-void JobsWidget::slotFrameDestroyed()
-{
+    m_frames.removeAll(object);
     m_label->setVisible(m_frames.size() <= 0);
     adjustSize();
     emit countChanged();
-}
-
-void JobsWidget::slotIcon0Activated()
-{
-    QMutexLocker locker(&m_mutex);
-    const Plasma::IconWidget* iconwidget0 = qobject_cast<Plasma::IconWidget*>(sender());
-    const bool stopped = iconwidget0->property("_k_stopped").toBool();
-    JobFrame* jobframe = qobject_cast<JobFrame*>(iconwidget0->parentObject());
-    Q_ASSERT(jobframe != nullptr);
-    if (!stopped) {
-        m_adaptor->stopJob(jobframe->name);
-    } else {
-        QMutableListIterator<JobFrame*> iter(m_frames);
-        while (iter.hasNext()) {
-            JobFrame* frame = iter.next();
-            if (frame == jobframe) {
-                iter.remove();
-                frame->animateRemove();
-                break;
-            }
-        }
-    }
-}
-
-void JobsWidget::slotIcon1Activated()
-{
-    QMutexLocker locker(&m_mutex);
-    const Plasma::IconWidget* iconwidget1 = qobject_cast<Plasma::IconWidget*>(sender());
-    const KUrl desturl = KUrl(iconwidget1->property("_k_desturl").toString());
-    locker.unlock();
-    const KMimeType::Ptr kmimetype = KMimeType::findByUrl(desturl);
-    Q_ASSERT(kmimetype);
-    KRun::runUrl(desturl, kmimetype->name(), nullptr);
 }
 
 #include "moc_jobswidget.cpp"
