@@ -33,7 +33,6 @@
 #include <KService>
 #include <KStandardDirs>
 #include <Plasma/AbstractRunner>
-#include <Plasma/RunnerManager>
 
 // Local
 #include "core/recentapplications.h"
@@ -43,45 +42,6 @@
 using namespace Kickoff;
 
 Plasma::RunnerManager * _runnerManager = NULL;
-Plasma::RunnerManager * runnerManager() {
-    if (_runnerManager == NULL) {
-        KConfigGroup conf =
-            componentData().config()->group("KRunner");
-
-        conf.writeEntry("loadAll", false);
-        _runnerManager = new Plasma::RunnerManager(conf);
-
-        // initializing allowed runners
-        QStringList allowed;
-        allowed
-            << "places"
-            << "shell"
-            << "services"
-            << "bookmarks"
-            << "recentdocuments"
-            << "locations";
-        _runnerManager->setAllowedRunners(allowed);
-
-        conf.sync();
-
-        // runner:  "sessions"   "Desktop Sessions"
-        // runner:  "places"   "Places"
-        // runner:  "windows"   "Windows"
-        // runner:  "plasma-desktop"   "Plasma Desktop Shell"
-        // runner:  "services"   "Applications"
-        // runner:  "powerdevil"   "PowerDevil"
-        // runner:  "shell"   "Command Line"
-        // runner:  "katesessions"   "Kate Sessions"
-        // runner:  "locations"   "Locations"
-        // runner:  "webshortcuts"   "Web Shortcuts"
-        // runner:  "konsolesessions"   "Konsole Sessions"
-        // runner:  "recentdocuments"   "Recent Documents"
-        // runner:  "calculator"   "Calculator"
-        // runner:  "bookmarks"   "Bookmarks"
-        // runner:  "unitconverter"   "Unit Converter"
-    }
-    return _runnerManager;
-}
 
 KService::Ptr serviceForUrl(const KUrl & url)
 {
@@ -141,7 +101,7 @@ bool KRunnerItemHandler::openUrl(const KUrl& url)
         qWarning() << "Failed to find service for" << url;
     }
 
-    runnerManager()->run(id);
+    KRunnerModel::runnerManager()->run(id);
     return true;
 }
 
@@ -271,5 +231,27 @@ QMimeData * KRunnerModel::mimeData(const QModelIndexList &indexes) const
     return mimeData;
 
 }
+
+Plasma::RunnerManager* KRunnerModel::runnerManager()
+{
+    if (_runnerManager == NULL) {
+        KConfigGroup conf = componentData().config()->group("Plugins");
+        QStringList allowed;
+        foreach (KPluginInfo plugin, Plasma::RunnerManager::listRunnerInfo()) {
+            plugin.load(conf);
+            if (plugin.isPluginEnabled()) {
+                allowed.append(plugin.pluginName());
+            }
+        }
+        // NOTE: Plasma::RunnerManager uses sub-group named PlasmaRunnerManager
+        conf = componentData().config()->group("KRunner");
+        conf.writeEntry("loadAll", false);
+        conf.sync();
+        _runnerManager = new Plasma::RunnerManager(conf);
+        _runnerManager->setAllowedRunners(allowed);
+    }
+    return _runnerManager;
+}
+
 
 #include "moc_krunnermodel.cpp"

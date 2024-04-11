@@ -26,6 +26,7 @@
 #include "core/urlitemlauncher.h"
 
 #include <Plasma/QueryMatch>
+#include <Plasma/RunnerManager>
 
 namespace Kickoff {
 
@@ -50,6 +51,7 @@ public:
     // virtual Qt::DropActions supportedDropActions() const;
     // virtual Qt::DropActions supportedDragActions() const;
 
+    static Plasma::RunnerManager* runnerManager();
 private:
     void timerEvent(QTimerEvent * event);
 

@@ -68,6 +68,7 @@ set_source_files_properties(
 kde4_add_plugin(plasma_applet_launcher ${Applet_SRCS})
 
 target_link_libraries(plasma_applet_launcher
+    KDE4::kcmutils
     KDE4::plasma
     ${QT_QTNETWORK_LIBRARY}
     ${Kickoff_LIBS}

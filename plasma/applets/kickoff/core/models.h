@@ -20,14 +20,15 @@
 #ifndef MODELS_H
 #define MODELS_H
 
-// Qt
+#include "kickoff_export.h"
+
+// Katie
+#include <QStandardItem>
+#include <QModelIndex>
 
 // KDE
 #include <KService>
-
-#include <QStandardItem>
-class KUrl;
-#include <QModelIndex>
+#include <KUrl>
 
 namespace Solid
 {
@@ -132,7 +133,7 @@ void swapModelIndexes(QModelIndex& first, QModelIndex& second);
 
 // returns the Kickoff component data, this is mainly used
 // to access the Kickoff shared config data
-KComponentData componentData();
+KICKOFF_EXPORT KComponentData componentData();
 }
 
 #endif //MODELS_H

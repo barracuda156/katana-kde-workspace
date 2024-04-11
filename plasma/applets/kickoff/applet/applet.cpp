@@ -20,7 +20,7 @@
 // Own
 #include "applet/applet.h"
 
-// Qt
+// Katie
 #include <QtCore/QProcess>
 #include <QtGui/QAction>
 #include <QtGui/QApplication>
@@ -33,17 +33,21 @@
 #include <KIcon>
 #include <KDebug>
 #include <KConfigDialog>
+#include <KPluginSelector>
 
 // Plasma
 #include <Plasma/IconWidget>
 #include <Plasma/Containment>
 #include <Plasma/View>
 #include <Plasma/ToolTipManager>
+#include <Plasma/RunnerManager>
 
 // Local
 #include "ui_kickoffConfig.h"
 #include "ui/launcher.h"
 #include "core/recentapplications.h"
+#include "core/models.h"
+#include "core/krunnermodel.h"
 
 class LauncherApplet::Private
 {
@@ -61,6 +65,7 @@ public:
     QAction* switcher;
     LauncherApplet *q;
     Ui::kickoffConfig ui;
+    KPluginSelector* selector;
 };
 
 void LauncherApplet::Private::createLauncher()
@@ -157,6 +162,16 @@ void LauncherApplet::createConfigurationInterface(KConfigDialog *parent)
     d->ui.setupUi(widget);
     parent->addPage(widget, i18nc("General configuration page", "General"), icon());
 
+    d->selector = new KPluginSelector(widget);
+    d->selector->addPlugins(
+        Plasma::RunnerManager::listRunnerInfo(),
+        KPluginSelector::ReadConfigFile,
+        i18n("Available Plugins"), QString(),
+        Kickoff::componentData().config()
+    );
+    connect(d->selector, SIGNAL(changed(bool)), parent, SLOT(settingsModified()));
+    parent->addPage(d->selector, i18n("Runners"), "preferences-plugin");
+
     connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
     connect(parent, SIGNAL(okClicked()), this, SLOT(configAccepted()));
 
@@ -202,6 +217,17 @@ void LauncherApplet::configChanged()
 
 void LauncherApplet::configAccepted()
 {
+    d->selector->save();
+    KConfigGroup pcg = Kickoff::componentData().config()->group("Plugins");
+    QStringList allowed;
+    foreach (KPluginInfo plugin, Plasma::RunnerManager::listRunnerInfo()) {
+        plugin.load(pcg);
+        if (plugin.isPluginEnabled()) {
+            allowed.append(plugin.pluginName());
+        }
+    }
+    Kickoff::KRunnerModel::runnerManager()->setAllowedRunners(allowed);
+
     bool switchTabsOnHover = d->ui.switchOnHoverCheckBox->isChecked();
     bool showAppsByName = d->ui.appsByNameCheckBox->isChecked();
     bool showRecentlyInstalled = d->ui.showRecentlyInstalledCheckBox->isChecked();
