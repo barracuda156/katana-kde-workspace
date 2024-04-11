@@ -95,14 +95,14 @@ CalendarApplet::CalendarApplet(QObject *parent, const QVariantList &args)
     m_timer = new QTimer(this);
     // 3sec to account for localtime changes for example
     m_timer->setInterval(3000);
-    connect(m_timer, SIGNAL(timeout()), this, SLOT(slotCheckDate()));
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
 }
 
 void CalendarApplet::init()
 {
-    slotCheckDate();
-    m_timer->start();
     Plasma::ToolTipManager::self()->registerWidget(this);
+    slotTimeout();
+    m_timer->start();
 }
 
 QGraphicsWidget *CalendarApplet::graphicsWidget()
@@ -137,7 +137,7 @@ void CalendarApplet::popupEvent(bool show)
     }
 }
 
-void CalendarApplet::slotCheckDate()
+void CalendarApplet::slotTimeout()
 {
     const int today = kGetDay();
     if (today != m_day) {
@@ -145,7 +145,7 @@ void CalendarApplet::slotCheckDate()
         kDebug() << "updating calendar icon" << m_day << today;
         paintIcon();
     }
-
+    // affected by locale changes so always updated
     Plasma::ToolTipContent plasmatooltip;
     plasmatooltip.setMainText(i18n("Current Date"));
     const QString calendarstring = KGlobal::locale()->formatDate(QDate::currentDate());

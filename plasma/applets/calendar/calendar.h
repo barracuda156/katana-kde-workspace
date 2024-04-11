@@ -43,7 +43,7 @@ protected:
     void popupEvent(bool show) final;
 
 private slots:
-    void slotCheckDate();
+    void slotTimeout();
     void slotConfigAccepted();
 
 private:

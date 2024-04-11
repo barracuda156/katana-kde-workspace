@@ -43,9 +43,8 @@ static int kLunaPhase()
     return roundmoonphase;
 }
 
-static QString kLunaPhaseString()
+static QString kLunaPhaseString(const int phase)
 {
-    const int phase = kLunaPhase();
     switch (phase) {
         case 0: {
             return i18n("New Moon");
@@ -104,7 +103,8 @@ static QString kLunaPhaseString()
 LunaApplet::LunaApplet(QObject *parent, const QVariantList &args)
     : Plasma::Applet(parent, args),
     m_svg(nullptr),
-    m_timer(nullptr)
+    m_timer(nullptr),
+    m_phase(0)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_luna");
     setAspectRatioMode(Plasma::AspectRatioMode::Square);
@@ -122,8 +122,9 @@ LunaApplet::LunaApplet(QObject *parent, const QVariantList &args)
 
 void LunaApplet::init()
 {
-    m_timer->start();
     Plasma::ToolTipManager::self()->registerWidget(this);
+    slotTimeout();
+    m_timer->start();
 }
 
 void LunaApplet::paintInterface(QPainter *painter,
@@ -135,7 +136,7 @@ void LunaApplet::paintInterface(QPainter *painter,
     painter->setRenderHint(QPainter::SmoothPixmapTransform);
     painter->setRenderHint(QPainter::Antialiasing);
 
-    m_svg->paint(painter, contentsRect, QString::number(kLunaPhase()));
+    m_svg->paint(painter, contentsRect, QString::number(m_phase));
 }
 
 void LunaApplet::constraintsEvent(Plasma::Constraints constraints)
@@ -161,9 +162,14 @@ void LunaApplet::constraintsEvent(Plasma::Constraints constraints)
 
 void LunaApplet::slotTimeout()
 {
-    update();
+    const int phase = kLunaPhase();
+    if (phase != m_phase) {
+        m_phase = phase;
+        update();
+    }
+    // affected by locale changes so always updated
     Plasma::ToolTipContent plasmatooltip;
-    plasmatooltip.setMainText(kLunaPhaseString());
+    plasmatooltip.setMainText(kLunaPhaseString(m_phase));
     Plasma::ToolTipManager::self()->setContent(this, plasmatooltip);
 }
 

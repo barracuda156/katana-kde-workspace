@@ -45,6 +45,7 @@ private Q_SLOTS:
 private:
     Plasma::Svg* m_svg;
     QTimer* m_timer;
+    int m_phase;
 };
 
 K_EXPORT_PLASMA_APPLET(luna, LunaApplet)
