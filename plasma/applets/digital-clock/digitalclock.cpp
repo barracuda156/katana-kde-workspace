@@ -171,8 +171,12 @@ void DigitalClockApplet::changeEvent(QEvent *event)
 
 void DigitalClockApplet::slotTimeout()
 {
-    m_clockstring = kClockString();
-    update();
+    const QString clockstring = kClockString();
+    if (clockstring != m_clockstring) {
+        m_clockstring = clockstring;
+        update();
+    }
+    // affected by locale changes so always updated
     Plasma::ToolTipContent plasmatooltip;
     plasmatooltip.setMainText(i18n("Current Time"));
     QString clocktooltip;
