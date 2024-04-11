@@ -34,8 +34,7 @@
 #include <KConfigDialog>
 #include <KPluginSelector>
 #include <KToolInvocation>
-
-// Plasma
+#include <KCategorizedView>
 #include <Plasma/IconWidget>
 #include <Plasma/Containment>
 #include <Plasma/View>
@@ -48,6 +47,39 @@
 #include "core/recentapplications.h"
 #include "core/models.h"
 #include "core/krunnermodel.h"
+
+// NOTE: keep in sync with:
+// kdelibs/kutils/kpluginselector_p.h
+static const int s_pluginnamerole = 0x0CBBBB00;
+
+static QString kMakeToolTip(const QString &pluginname)
+{
+    QString result;
+    Plasma::AbstractRunner* runner = Kickoff::KRunnerModel::runnerManager()->runner(pluginname);
+    if (!runner) {
+        return result;
+    }
+    const QList<Plasma::RunnerSyntax> syntaxes = runner->syntaxes();
+    if (syntaxes.isEmpty()) {
+        return result;
+    }
+    QStringList uniqueexamples;
+    foreach (const  Plasma::RunnerSyntax &syntax, syntaxes) {
+        foreach (const QString &example, syntax.exampleQueriesWithTermDescription()) {
+            uniqueexamples.append(example);
+        }
+    }
+    uniqueexamples.removeDuplicates();
+    if (uniqueexamples.isEmpty()) {
+        return result;
+    }
+    result.append(i18n("<b>Examples:</b><br/>"));
+    foreach (const QString &example, uniqueexamples) {
+        result.append(QString::fromLatin1("<i>%1</i><br/>").arg(Qt::escape(example)));
+    }
+    // qDebug() << Q_FUNC_INFO << result;
+    return result;
+}
 
 class LauncherApplet::Private
 {
@@ -173,6 +205,24 @@ void LauncherApplet::createConfigurationInterface(KConfigDialog *parent)
     );
     connect(d->selector, SIGNAL(changed(bool)), parent, SLOT(settingsModified()));
     parent->addPage(d->selector, i18n("Runners"), "preferences-plugin");
+
+    foreach (const KPluginInfo& plugin, Plasma::RunnerManager::listRunnerInfo()) {
+        Kickoff::KRunnerModel::runnerManager()->loadRunner(plugin.service());
+    }
+    // HACK: setup tooltips for the plugins
+    KCategorizedView* selectorview = d->selector->findChild<KCategorizedView*>();
+    if (selectorview) {
+        QAbstractItemModel* selectormodel = selectorview->model();
+        if (selectormodel) {
+            for (int i = 0; i < selectormodel->rowCount(); i++) {
+                QModelIndex selectorindex = selectormodel->index(i, 0);
+                const QString pluginname = selectormodel->data(selectorindex, s_pluginnamerole).toString();
+                selectormodel->setData(selectorindex, kMakeToolTip(pluginname), Qt::ToolTipRole);
+            }
+        }
+    }
+    // forces unload of the disabled plugins that have been loaded for the tooltip
+    Kickoff::KRunnerModel::runnerManager()->reloadConfiguration();
 
     connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
     connect(parent, SIGNAL(okClicked()), this, SLOT(configAccepted()));

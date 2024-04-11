@@ -19,8 +19,9 @@
 
 // Own
 #include "ui/searchbar.h"
+#include "ui/itemdelegate.h"
 
-// Qt
+// Katie
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
@@ -36,8 +37,6 @@
 
 //Plasma
 #include <Plasma/Theme>
-
-#include "ui/itemdelegate.h"
 
 using namespace Kickoff;
 
