@@ -35,9 +35,11 @@ public:
     CalendarApplet(QObject *parent, const QVariantList &args);
 
     void init() final;
-    void constraintsEvent(Plasma::Constraints constraints) final;
     QGraphicsWidget *graphicsWidget() final;
     void createConfigurationInterface(KConfigDialog *parent) final;
+
+protected:
+    void constraintsEvent(Plasma::Constraints constraints) final;
     void popupEvent(bool show) final;
 
 private slots:

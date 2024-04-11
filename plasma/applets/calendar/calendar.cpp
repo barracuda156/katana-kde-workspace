@@ -105,23 +105,9 @@ void CalendarApplet::init()
     Plasma::ToolTipManager::self()->registerWidget(this);
 }
 
-void CalendarApplet::constraintsEvent(Plasma::Constraints constraints)
-{
-    if (constraints & Plasma::FormFactorConstraint || constraints & Plasma::SizeConstraint) {
-        paintIcon();
-    }
-}
-
 QGraphicsWidget *CalendarApplet::graphicsWidget()
 {
     return m_calendarwidget;
-}
-
-void CalendarApplet::popupEvent(const bool show)
-{
-    if (show) {
-        m_calendarwidget->showToday();
-    }
 }
 
 void CalendarApplet::createConfigurationInterface(KConfigDialog *parent)
@@ -135,6 +121,20 @@ void CalendarApplet::createConfigurationInterface(KConfigDialog *parent)
     connect(parent, SIGNAL(applyClicked()), this, SLOT(slotConfigAccepted()));
     connect(parent, SIGNAL(okClicked()), this, SLOT(slotConfigAccepted()));
     connect(m_kcmclockproxy, SIGNAL(changed(bool)), parent, SLOT(settingsModified()));
+}
+
+void CalendarApplet::constraintsEvent(Plasma::Constraints constraints)
+{
+    if (constraints & Plasma::FormFactorConstraint || constraints & Plasma::SizeConstraint) {
+        paintIcon();
+    }
+}
+
+void CalendarApplet::popupEvent(bool show)
+{
+    if (show) {
+        m_calendarwidget->showToday();
+    }
 }
 
 void CalendarApplet::slotCheckDate()
