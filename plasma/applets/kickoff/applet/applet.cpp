@@ -196,9 +196,10 @@ void LauncherApplet::createConfigurationInterface(KConfigDialog *parent)
     d->ui.setupUi(widget);
     parent->addPage(widget, i18nc("General configuration page", "General"), icon());
 
+    const QList<KPluginInfo> plugins = Plasma::RunnerManager::listRunnerInfo();
     d->selector = new KPluginSelector(widget);
     d->selector->addPlugins(
-        Plasma::RunnerManager::listRunnerInfo(),
+        plugins,
         KPluginSelector::ReadConfigFile,
         i18n("Available Plugins"), QString(),
         Kickoff::componentData().config()
@@ -206,7 +207,7 @@ void LauncherApplet::createConfigurationInterface(KConfigDialog *parent)
     connect(d->selector, SIGNAL(changed(bool)), parent, SLOT(settingsModified()));
     parent->addPage(d->selector, i18n("Runners"), "preferences-plugin");
 
-    foreach (const KPluginInfo& plugin, Plasma::RunnerManager::listRunnerInfo()) {
+    foreach (const KPluginInfo& plugin, plugins) {
         Kickoff::KRunnerModel::runnerManager()->loadRunner(plugin.service());
     }
     // HACK: setup tooltips for the plugins

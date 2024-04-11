@@ -41,9 +41,9 @@
 
 using namespace Kickoff;
 
-Plasma::RunnerManager * _runnerManager = NULL;
+Plasma::RunnerManager* _runnerManager = nullptr;
 
-KService::Ptr serviceForUrl(const KUrl & url)
+static KService::Ptr serviceForUrl(const KUrl &url)
 {
     QString runner = url.host();
     QString id = url.path();
@@ -53,7 +53,7 @@ KService::Ptr serviceForUrl(const KUrl & url)
     }
 
     if (runner != QLatin1String("services")) {
-        return KService::Ptr(NULL);
+        return KService::Ptr(nullptr);
     }
 
     // URL path example: services_kde4-kate.desktop
@@ -62,26 +62,6 @@ KService::Ptr serviceForUrl(const KUrl & url)
 
     return KService::serviceByStorageId(id);
 }
-
-
-class ResultItem {
-public:
-    ResultItem()
-    {
-    }
-
-    ResultItem(QIcon _icon, QString _name, QString _description, QVariant _data)
-        : icon(_icon),
-          name(_name),
-          description(_description),
-          data(_data)
-    {
-    }
-
-    QIcon icon;
-    QString name, description;
-    QVariant data;
-};
 
 bool KRunnerItemHandler::openUrl(const KUrl& url)
 {
@@ -107,14 +87,6 @@ bool KRunnerItemHandler::openUrl(const KUrl& url)
 
 class KRunnerModel::Private {
 public:
-    Private()
-    {
-    }
-
-    ~Private()
-    {
-    }
-
     QBasicTimer searchDelay;
     QString searchQuery;
     DisplayOrder displayOrder;
@@ -124,10 +96,10 @@ KRunnerModel::KRunnerModel(QObject *parent)
         : KickoffModel(parent)
         , d(new Private())
 {
-    connect(runnerManager(),
-            SIGNAL(matchesChanged(QList<Plasma::QueryMatch>)),
-            this,
-            SLOT(matchesChanged(QList<Plasma::QueryMatch>)));
+    connect(
+        runnerManager(), SIGNAL(matchesChanged(QList<Plasma::QueryMatch>)),
+        this, SLOT(matchesChanged(QList<Plasma::QueryMatch>))
+    );
 }
 
 KRunnerModel::~KRunnerModel()
@@ -199,7 +171,7 @@ Qt::ItemFlags KRunnerModel::flags(const QModelIndex &index) const
         KUrl url = data(index, UrlRole).toString();
         QString host = url.host();
         if (host != "services") {
-            flags &= ~ ( Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled );
+            flags &= ~ (Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled);
         }
     } else {
         flags = 0;
@@ -212,7 +184,7 @@ QMimeData * KRunnerModel::mimeData(const QModelIndexList &indexes) const
 {
     KUrl::List urls;
 
-    foreach (const QModelIndex & index, indexes) {
+    foreach (const QModelIndex &index, indexes) {
         KUrl url = data(index, UrlRole).toString();
 
         KService::Ptr service = serviceForUrl(url);
@@ -234,7 +206,7 @@ QMimeData * KRunnerModel::mimeData(const QModelIndexList &indexes) const
 
 Plasma::RunnerManager* KRunnerModel::runnerManager()
 {
-    if (_runnerManager == NULL) {
+    if (!_runnerManager) {
         KConfigGroup conf = componentData().config()->group("Plugins");
         QStringList allowed;
         foreach (KPluginInfo plugin, Plasma::RunnerManager::listRunnerInfo()) {
