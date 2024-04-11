@@ -107,7 +107,7 @@ LunaApplet::LunaApplet(QObject *parent, const QVariantList &args)
     m_timer(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_luna");
-    setAspectRatioMode(Plasma::AspectRatioMode::ConstrainedSquare);
+    setAspectRatioMode(Plasma::AspectRatioMode::Square);
     setBackgroundHints(Plasma::Applet::NoBackground);
 
     m_svg = new Plasma::Svg(this);
