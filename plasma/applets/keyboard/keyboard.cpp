@@ -35,7 +35,7 @@ KeyboardApplet::KeyboardApplet(QObject *parent, const QVariantList &args)
     m_spacer(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_keyboard");
-    setAspectRatioMode(Plasma::AspectRatioMode::ConstrainedSquare);
+    setAspectRatioMode(Plasma::AspectRatioMode::Square);
     setHasConfigurationInterface(true);
     setStatus(Plasma::ItemStatus::PassiveStatus);
 
