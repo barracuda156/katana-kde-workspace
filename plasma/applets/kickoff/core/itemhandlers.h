@@ -40,7 +40,6 @@ public:
     virtual bool openUrl(const KUrl& url);
 
 private Q_SLOTS:
-    void runCommand();
     void logout();
     void lock();
     void switchUser();

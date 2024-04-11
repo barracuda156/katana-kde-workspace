@@ -119,6 +119,8 @@ void LauncherApplet::init()
     d->actions.append(d->switcher);
     connect(d->switcher, SIGNAL(triggered(bool)), this, SLOT(switchMenuStyle()));
 
+    setGlobalShortcut(KShortcut(Qt::ALT+Qt::Key_F2));
+
     configChanged();
     Plasma::ToolTipManager::self()->registerWidget(this);
 }

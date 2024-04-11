@@ -88,10 +88,6 @@ Name[zh_CN]=Windows 方案(有 Win 键)
 Name[zh_TW]=Windows 機制（有 Win 鍵）
 Uses Win Modifier=true
 
-[krunner][Global Shortcuts]
-Run Command=Meta+R
-Show System Activity=Ctrl+Alt+Del
-
 [ksmserver][Global Shortcuts]
 Halt Without Confirmation=none
 Log Out Without Confirmation=none
@@ -162,3 +158,7 @@ Window to Previous Desktop=none
 
 [kxkb][Global Shortcuts]
 Switch to Next Keyboard Layout=Ctrl+Alt+K
+
+[kickoff][Global Shortcuts]
+Run Command=Meta+R
+

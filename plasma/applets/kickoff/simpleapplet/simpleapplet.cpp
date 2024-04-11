@@ -196,7 +196,6 @@ public:
             case RecentlyUsedApplications: return i18n("Recently Used Applications");
             case RecentlyUsedDocuments:    return i18n("Recently Used Documents");
             case Settings:                 return i18n("System Settings");
-            case RunCommand:               return i18n("Run Command...");
             case SwitchUser:               return i18n("Switch User");
             case SaveSession:              return i18n("Save Session");
             case LockScreen:               return i18n("Lock Screen");
@@ -221,7 +220,6 @@ public:
             case RecentlyUsedApplications: return "document-open-recent";
             case RecentlyUsedDocuments:    return "document-open-recent";
             case Settings:                 return "preferences-system";
-            case RunCommand:               return "system-run";
             case SwitchUser:               return "system-switch-user";
             case SaveSession:              return "document-save";
             case LockScreen:               return "system-lock-screen";
@@ -299,7 +297,6 @@ MenuLauncherApplet::MenuLauncherApplet(QObject *parent, const QVariantList &args
         }
         default: { //Default configuration
             d->viewtypes << "RecentlyUsedApplications" << "Applications" << "Favorites";
-            d->viewtypes << "RunCommand";
             d->viewtypes << "Leave";
             d->iconname = "start-here-kde";
         }
@@ -738,8 +735,6 @@ void MenuLauncherApplet::showMenu(bool pressed)
                         m->addAction(KIcon(module.icon()), module.moduleName().replace('&',"&&"))->setData(KUrl("kcm:/" + entry->entryPath()));
                     }
                 }
-            } else if(vtname == "RunCommand") {
-                menuview->addAction(KIcon(d->viewIcon(RunCommand)), d->viewText(RunCommand))->setData(KUrl("leave:/run"));
             } else if(vtname == "SwitchUser") {
                 menuview->addAction(KIcon(d->viewIcon(SwitchUser)), d->viewText(SwitchUser))->setData(KUrl("leave:/switch"));
             } else if(vtname == "SaveSession") {

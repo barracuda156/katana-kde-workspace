@@ -35,13 +35,11 @@
 #include <Plasma/Wallpaper>
 
 #include "kworkspace/kworkspace.h"
-#include "krunner_interface.h"
 #include "screensaver_interface.h"
 
 
 ContextMenu::ContextMenu(QObject *parent, const QVariantList &args)
     : Plasma::ContainmentActions(parent, args),
-      m_runCommandAction(0),
       m_lockScreenAction(0),
       m_logoutAction(0),
       m_separator1(0),
@@ -69,7 +67,7 @@ void ContextMenu::init(const KConfigGroup &config)
         m_actionOrder << "add widgets" << "_add panel" << "lock widgets" << "_context" << "remove";
     } else {
         actions.insert("configure shortcuts", false);
-        m_actionOrder << "_context" << "_run_command" << "add widgets" << "_add panel"
+        m_actionOrder << "_context" << "add widgets" << "_add panel"
                       << "manage activities" << "remove" << "lock widgets" << "_sep1"
                       <<"_lock_screen" << "_logout" << "_sep2" << "configure"
                       << "configure shortcuts" << "_sep3" << "_wallpaper";
@@ -90,11 +88,7 @@ void ContextMenu::init(const KConfigGroup &config)
     if (c->containmentType() == Plasma::Containment::PanelContainment ||
         c->containmentType() == Plasma::Containment::CustomPanelContainment) {
         //FIXME: panel does its own config action atm...
-    } else if (!m_runCommandAction) {
-        m_runCommandAction = new QAction(i18n("Run Command..."), this);
-        m_runCommandAction->setIcon(KIcon("system-run"));
-        connect(m_runCommandAction, SIGNAL(triggered(bool)), this, SLOT(runCommand()));
-
+    } else if (!m_lockScreenAction) {
         m_lockScreenAction = new QAction(i18n("Lock Screen"), this);
         m_lockScreenAction->setIcon(KIcon("system-lock-screen"));
         connect(m_lockScreenAction, SIGNAL(triggered(bool)), this, SLOT(lockScreen()));
@@ -163,8 +157,6 @@ QAction *ContextMenu::action(const QString &name)
         if (c->corona() && c->corona()->immutability() == Plasma::Mutable) {
             return c->corona()->action("add panel");
         }
-    } else if (name == "_run_command") {
-        return m_runCommandAction;
     } else if (name == "_lock_screen") {
         return m_lockScreenAction;
     } else if (name == "_logout") {
@@ -174,13 +166,6 @@ QAction *ContextMenu::action(const QString &name)
         return c->action(name);
     }
     return 0;
-}
-
-void ContextMenu::runCommand()
-{
-    QString interface("org.kde.krunner");
-    org::kde::krunner::App krunner(interface, "/App", QDBusConnection::sessionBus());
-    krunner.display();
 }
 
 void ContextMenu::lockScreen()

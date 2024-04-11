@@ -1,4 +1,0 @@
-[D-BUS Service]
-Name=org.kde.krunner
-Exec=@KDE4_BIN_INSTALL_DIR@/krunner
-

@@ -58,7 +58,6 @@ SessionRunner::SessionRunner(QObject *parent, const QVariantList &args)
     fastUserSwitchSyntax.addExampleQuery(i18n("new session"));
     addSyntax(fastUserSwitchSyntax);
 
-    //"SESSIONS" should not be translated; it's used programmaticaly
     setDefaultSyntax(Plasma::RunnerSyntax("SESSIONS", i18n("Lists all sessions")));
 
 }
@@ -124,9 +123,7 @@ void SessionRunner::match(Plasma::RunnerContext &context)
         return;
     }
 
-    // first compare with SESSIONS. this must *NOT* be translated (i18n)
-    // as it is used as an internal command trigger (e.g. via d-bus),
-    // not as a user supplied query. and yes, "Ugh, magic strings"
+    // first compare with SESSIONS
     bool listAll = (
         term.compare("SESSIONS", Qt::CaseInsensitive) == 0 ||
         term.compare(i18nc("User sessions", "sessions"), Qt::CaseInsensitive) == 0

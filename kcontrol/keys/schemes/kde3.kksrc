@@ -84,10 +84,6 @@ Name[zh_CN]=三个修饰键的 KDE 默认值
 Name[zh_TW]=KDE 預設 3 個變更鍵
 Uses Win Modifier=false
 
-[krunner][Global Shortcuts]
-Run Command=Alt+F2
-Show System Activity=Ctrl+Esc
-
 [ksmserver][Global Shortcuts]
 Halt Without Confirmation=none
 Log Out Without Confirmation=none
@@ -158,3 +154,6 @@ Window to Previous Desktop=none
 
 [kxkb][Global Shortcuts]
 Switch to Next Keyboard Layout=Ctrl+Alt+K
+
+[kickoff][Global Shortcuts]
+Run Command=Alt+F2

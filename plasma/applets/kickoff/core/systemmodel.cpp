@@ -156,17 +156,14 @@ int SystemModel::rowCount(const QModelIndex &parent) const
         return LAST_ROW + 1;
     } else if (!parent.parent().isValid()) {
         switch (parent.row()) {
-        case APPLICATIONS_ROW:
-            return d->appsList.size() + 1;
-            break;
-        case BOOKMARKS_ROW:
-            return d->placesModel->rowCount();
-            break;
-        case REMOVABLE_ROW:
-            return d->placesModel->rowCount();
-            break;
-        default:
-            return 0;
+            case APPLICATIONS_ROW:
+                return d->appsList.size() + 1;
+            case BOOKMARKS_ROW:
+                return d->placesModel->rowCount();
+            case REMOVABLE_ROW:
+                return d->placesModel->rowCount();
+            default:
+                return 0;
         }
     }
 
@@ -196,19 +193,8 @@ QVariant SystemModel::data(const QModelIndex &index, int role) const
         if (d->appsList.count() < index.row()) {
             return QVariant();
         } else if (d->appsList.count() == index.row()) {
-            // "Run Command"
-            switch (role) {
-                case Qt::DisplayRole:
-                    return i18n("Run Command...");
-                case Qt::DecorationRole:
-                    return KIcon("system-run");
-                case SubTitleRole:
-                    return i18n("Run a command or a search query");
-                case UrlRole:
-                    return "run:/";
-                default:
-                    return QVariant();
-            }
+            // used to be "Run Command"
+            return QVariant();
         }
 
         KService::Ptr service = d->appsList[index.row()];

@@ -4,12 +4,8 @@ set(contextmenu_SRCS
     menu.cpp
 )
 
-set(krunner_xml ${CMAKE_SOURCE_DIR}/krunner/dbus/org.kde.krunner.App.xml)
-QT4_ADD_DBUS_INTERFACE(contextmenu_SRCS ${krunner_xml} krunner_interface)
-
 set(screensaver_xml ${CMAKE_SOURCE_DIR}/kscreensaver/org.freedesktop.ScreenSaver.xml)
 QT4_ADD_DBUS_INTERFACE(contextmenu_SRCS ${screensaver_xml} screensaver_interface)
-
 
 kde4_add_plugin(plasma_containmentactions_contextmenu ${contextmenu_SRCS})
 target_link_libraries(plasma_containmentactions_contextmenu KDE4::plasma KDE4::kio kworkspace)

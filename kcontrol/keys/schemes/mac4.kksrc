@@ -89,10 +89,6 @@ Name[zh_CN]=Mac 方案
 Name[zh_TW]=Mac 機制
 Uses Win Modifier=true
 
-[krunner][Global Shortcuts]
-Run Command=Alt+F2
-Show System Activity=Ctrl+Esc
-
 [ksmserver][Global Shortcuts]
 Halt Without Confirmation=none
 Log Out Without Confirmation=none
@@ -163,3 +159,6 @@ Window to Previous Desktop=none
 
 [kxkb][Global Shortcuts]
 Switch to Next Keyboard Layout=Ctrl+Alt+K
+
+[kickoff][Global Shortcuts]
+Run Command=Alt+F2

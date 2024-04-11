@@ -20,13 +20,9 @@
 
 #include "desktop.h"
 
-#include "krunner_interface.h"
-
-#include <KDebug>
-
-#include <Plasma/Corona>
-
 #include <QTimer>
+#include <Plasma/Corona>
+#include <KDebug>
 
 using namespace Plasma;
 
@@ -163,21 +159,6 @@ void DefaultDesktop::dropEvent(QGraphicsSceneDragDropEvent *event)
     dropping = true;
     Containment::dropEvent(event);
     dropping = false;
-}
-
-void DefaultDesktop::keyPressEvent(QKeyEvent *event)
-{
-    // Only non-whitespace and printable characters may trigger KRunner,
-    // otherwise a white-space character is introduced and the term you've
-    // entered is not recognized
-    if (focusItem() == this && !event->text().trimmed().isEmpty() && event->text()[0].isPrint()) {
-        const QString interface("org.kde.krunner");
-        org::kde::krunner::App krunner(interface, "/App", QDBusConnection::sessionBus());
-        krunner.query(event->text());
-        event->accept();
-    } else {
-        event->ignore();
-    }
 }
 
 K_EXPORT_PLASMA_APPLET(desktop, DefaultDesktop)

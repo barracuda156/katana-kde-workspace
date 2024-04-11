@@ -41,13 +41,11 @@ public:
     void save(KConfigGroup &config);
 
 public slots:
-    void runCommand();
     void lockScreen();
     void startLogout();
     void logout();
 
 private:
-    QAction *m_runCommandAction;
     QAction *m_lockScreenAction;
     QAction *m_logoutAction;
     QAction *m_separator1;

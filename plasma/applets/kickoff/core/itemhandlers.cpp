@@ -32,13 +32,13 @@
 #include <Solid/PowerManagement>
 
 // KDE Base
-#include <kworkspace/kworkspace.h>
+#include "kworkspace/kworkspace.h"
+#include "kworkspace/kdisplaymanager.h"
 
 // Local
 #include "core/recentapplications.h"
 
 // DBus
-#include "krunner_interface.h"
 #include "screensaver_interface.h"
 #include "ksmserver_interface.h"
 #include <QtDBus/QDBusConnection>
@@ -106,20 +106,9 @@ bool LeaveItemHandler::openUrl(const KUrl& url)
         // decouple dbus call, otherwise we'll run into a dead-lock
         QTimer::singleShot(0, this, SLOT(suspendHybrid()));
         return true;
-    } else if (m_logoutAction == "run") {
-        // decouple dbus call, otherwise we'll run into a dead-lock
-        QTimer::singleShot(0, this, SLOT(runCommand()));
-        return true;
     }
 
     return false;
-}
-
-void LeaveItemHandler::runCommand()
-{
-    QString interface("org.kde.krunner");
-    org::kde::krunner::App krunner(interface, "/App", QDBusConnection::sessionBus());
-    krunner.display();
 }
 
 void LeaveItemHandler::logout()
@@ -151,9 +140,12 @@ void LeaveItemHandler::lock()
 
 void LeaveItemHandler::switchUser()
 {
-    QString interface("org.kde.krunner");
-    org::kde::krunner::App krunner(interface, "/App", QDBusConnection::sessionBus());
-    krunner.switchUser();
+    QDBusInterface saveriface(
+        "org.freedesktop.ScreenSaver", "/ScreenSaver", "org.freedesktop.ScreenSaver"
+    );
+    saveriface.call("Lock");
+    KDisplayManager dm;
+    dm.newSession();
 }
 
 void LeaveItemHandler::saveSession()

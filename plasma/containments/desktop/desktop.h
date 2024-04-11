@@ -59,7 +59,6 @@ public:
 
 protected:
     void dropEvent(QGraphicsSceneDragDropEvent *event);
-    void keyPressEvent(QKeyEvent *event);
 
 protected Q_SLOTS:
     void onAppletAdded(Plasma::Applet *, const QPointF &);

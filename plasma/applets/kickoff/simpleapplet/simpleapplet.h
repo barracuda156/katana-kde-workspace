@@ -49,7 +49,6 @@ public:
         Computer, ///< Computer Menu
         RecentlyUsed, ///< Recently Used Menu
         Settings, ///< Settings Menu
-        RunCommand, ///< Run Command Action
         SwitchUser, ///< Switch User Action
         SaveSession, ///< Save Session Action (only enabled if restoreSavedSession is enabled)
         LockScreen, ///< Lock Screen Action

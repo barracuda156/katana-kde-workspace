@@ -271,7 +271,6 @@ add_subdirectory(ksysguard)
 
 add_subdirectory(kcontrol)
 add_subdirectory(kmenuedit)
-add_subdirectory(krunner)
 add_subdirectory(kinfocenter)
 
 add_subdirectory(kcminit)

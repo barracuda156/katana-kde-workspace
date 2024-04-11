@@ -83,10 +83,6 @@ Name[x-test]=xxWindowMaker (3 Modifier Keys)xx
 Name[zh_CN]=WindowMaker (三个修饰键)
 Name[zh_TW]=WindowMaker（3 個變更鍵）
 
-[krunner][Global Shortcuts]
-Run Command=Alt+F2
-Show System Activity=Ctrl+Esc
-
 [ksmserver][Global Shortcuts]
 Halt Without Confirmation=none
 Log Out Without Confirmation=none
@@ -157,3 +153,6 @@ Window to Previous Desktop=none
 
 [kxkb][Global Shortcuts]
 Switch to Next Keyboard Layout=Ctrl+Alt+K
+
+[kickoff][Global Shortcuts]
+Run Command=Alt+F2
