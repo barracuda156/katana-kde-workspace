@@ -21,7 +21,6 @@
 #include "applet/applet.h"
 
 // Katie
-#include <QtCore/QProcess>
 #include <QtGui/QAction>
 #include <QtGui/QApplication>
 #include <QtGui/QGraphicsView>
@@ -34,6 +33,7 @@
 #include <KDebug>
 #include <KConfigDialog>
 #include <KPluginSelector>
+#include <KToolInvocation>
 
 // Plasma
 #include <Plasma/IconWidget>
@@ -155,7 +155,7 @@ void LauncherApplet::switchMenuStyle()
 
 void LauncherApplet::startMenuEditor()
 {
-    QProcess::execute("kmenuedit");
+    KToolInvocation::kdeinitExec("kmenuedit");
 }
 
 void LauncherApplet::createConfigurationInterface(KConfigDialog *parent)

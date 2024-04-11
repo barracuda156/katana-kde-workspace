@@ -23,9 +23,8 @@
 #include "simpleapplet/simpleapplet.h"
 #include "simpleapplet/menuview.h"
 
-// Qt
-#include <QtCore/QProcess>
-#include <QtCore/qmetaobject.h>
+// Katie
+#include <QtCore/QMetaObject>
 #include <QtCore/QSharedPointer>
 #include <QtGui/QLabel>
 #include <QtGui/QCheckBox>
@@ -387,7 +386,7 @@ void MenuLauncherApplet::switchMenuStyle()
 
 void MenuLauncherApplet::startMenuEditor()
 {
-    QProcess::execute("kmenuedit");
+    KToolInvocation::kdeinitExec("kmenuedit");
 }
 
 void MenuLauncherApplet::customContextMenuRequested(QMenu* menu, const QPoint& pos)
