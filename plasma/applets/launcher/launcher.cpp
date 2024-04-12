@@ -32,6 +32,7 @@
 #include <KIconLoader>
 #include <KStandardDirs>
 #include <KSycoca>
+#include <KToolInvocation>
 #include <KRun>
 #include <KBookmarkManager>
 #include <KServiceGroup>
@@ -47,6 +48,8 @@
 #include <Plasma/ScrollWidget>
 #include <Plasma/RunnerManager>
 #include <KDebug>
+
+// TODO: mime data for drag-n-drop
 
 static const QString s_defaultpopupicon = QString::fromLatin1("start-here-kde");
 static const QSizeF s_minimumsize = QSizeF(450, 350);
@@ -1018,7 +1021,8 @@ void LauncherAppletWidget::slotTimeout()
 
 LauncherApplet::LauncherApplet(QObject *parent, const QVariantList &args)
     : Plasma::PopupApplet(parent, args),
-    m_launcherwidget(nullptr)
+    m_launcherwidget(nullptr),
+    m_editmenuaction(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_launcher");
     setPopupIcon(s_defaultpopupicon);
@@ -1027,9 +1031,32 @@ LauncherApplet::LauncherApplet(QObject *parent, const QVariantList &args)
     m_launcherwidget = new LauncherAppletWidget(this);
 }
 
-QGraphicsWidget *LauncherApplet::graphicsWidget()
+void LauncherApplet::init()
+{
+    setGlobalShortcut(KShortcut(Qt::ALT+Qt::Key_F2));
+}
+
+QGraphicsWidget* LauncherApplet::graphicsWidget()
 {
     return m_launcherwidget;
+}
+
+QList<QAction*> LauncherApplet::contextualActions()
+{
+    QList<QAction*> result;
+    const KService::Ptr service = KService::serviceByStorageId("kmenuedit");
+    if (!service.isNull()) {
+        if (!m_editmenuaction) {
+            m_editmenuaction = new QAction(this);
+            m_editmenuaction->setText(i18n("Edit Applications..."));
+            connect(
+                m_editmenuaction, SIGNAL(triggered()),
+                this, SLOT(slotEditMenu())
+            );
+        }
+        result.append(m_editmenuaction);
+    }
+    return result;
 }
 
 void LauncherApplet::popupEvent(bool show)
@@ -1037,6 +1064,11 @@ void LauncherApplet::popupEvent(bool show)
     if (show) {
         m_launcherwidget->setFocus();
     }
+}
+
+void LauncherApplet::slotEditMenu()
+{
+    KToolInvocation::kdeinitExec("kmenuedit");
 }
 
 #include "launcher.moc"

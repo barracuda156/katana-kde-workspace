@@ -20,6 +20,7 @@
 #ifndef LAUNCHER_H
 #define LAUNCHER_H
 
+#include <QAction>
 #include <Plasma/PopupApplet>
 
 class LauncherAppletWidget;
@@ -30,8 +31,12 @@ class LauncherApplet : public Plasma::PopupApplet
 public:
     LauncherApplet(QObject *parent, const QVariantList &args);
 
-    // Plasma::PopupApplet reimplementation
+    void init() final;
     QGraphicsWidget* graphicsWidget() final;
+    QList<QAction*> contextualActions() final;
+
+private Q_SLOTS:
+    void slotEditMenu();
 
 protected:
     void popupEvent(bool show) final;
@@ -39,6 +44,7 @@ protected:
 private:
     friend LauncherAppletWidget;
     LauncherAppletWidget *m_launcherwidget;
+    QAction* m_editmenuaction;
 };
 
 K_EXPORT_PLASMA_APPLET(launcher, LauncherApplet)
