@@ -81,6 +81,24 @@ static Plasma::IconWidget* kMakeIconWidget(QGraphicsWidget *parent,
     return iconwidget;
 }
 
+static Plasma::ScrollWidget* kMakeScrollWidget(QGraphicsWidget *parent)
+{
+    Plasma::ScrollWidget* scrollwidget = new Plasma::ScrollWidget(parent);
+    scrollwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // TODO: this really does not work..
+    scrollwidget->setOverShoot(false);
+    return scrollwidget;
+}
+
+static void kRunService(const QString &entrypath)
+{
+    KService::Ptr service = KService::serviceByDesktopPath(entrypath);
+    Q_ASSERT(!service.isNull());
+    if (!KRun::run(*service.data(), KUrl::List(), nullptr)) {
+        kWarning() << "could not run" << entrypath;
+    }
+}
+
 static bool kCanLockScreen()
 {
     return KDBusConnectionPool::isServiceRegistered("org.freedesktop.ScreenSaver", QDBusConnection::sessionBus());
@@ -195,7 +213,7 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
             // TODO: action is set but where is it?
             QAction* matchconfigaction = new QAction(iconwidget);
             matchconfigaction->setText(i18n("Configure"));
-            matchconfigaction->setIcon(KIcon("system-preferences"));
+            matchconfigaction->setIcon(KIcon("preferences-system"));
             matchconfigaction->setProperty("_k_id", match.id());
             connect(
                 matchconfigaction, SIGNAL(triggered()),
@@ -207,11 +225,11 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
         }
         foreach (QAction* action, m_runnermanager->actionsForMatch(match)) {
             iconwidget->addIconAction(action);
+            counter++;
             if (counter >= 4) {
                 // the limit of Plasma::IconWidget
                 break;
             }
-            counter++;
         }
         m_iconwidgets.append(iconwidget);
         m_layout->addItem(iconwidget);
@@ -356,8 +374,7 @@ void LauncherFavorites::slotUpdateLayout()
 void LauncherFavorites::slotActivated()
 {
     Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    const QString iconwidgeturl = iconwidget->property("_k_url").toString();
-    (void)new KRun(KUrl(iconwidgeturl), nullptr);
+    kRunService(iconwidget->property("_k_url").toString());
 }
 
 
@@ -370,7 +387,6 @@ public:
     void appendGroup(Plasma::IconWidget* iconwidget, LauncherServiceWidget* servicewidget);
     void appendApp(Plasma::IconWidget* iconwidget);
     int serviceCount() const;
-    int tabIndex() const;
 
 public Q_SLOTS:
     void slotGroupActivated();
@@ -397,11 +413,6 @@ LauncherServiceWidget::LauncherServiceWidget(QGraphicsWidget *parent, Plasma::Ta
 int LauncherServiceWidget::serviceCount() const
 {
     return m_iconwidgets.size();
-}
-
-int LauncherServiceWidget::tabIndex() const
-{
-    return m_tabindex;
 }
 
 void LauncherServiceWidget::appendGroup(Plasma::IconWidget* iconwidget, LauncherServiceWidget* servicewidget)
@@ -432,8 +443,7 @@ void LauncherServiceWidget::slotGroupActivated()
 void LauncherServiceWidget::slotAppActivated()
 {
     Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    const QString iconwidgeturl = iconwidget->property("_k_url").toString();
-    (void)new KRun(KUrl(iconwidgeturl), nullptr);
+    kRunService(iconwidget->property("_k_url").toString());
 }
 
 class LauncherApplications : public Plasma::TabBar
@@ -481,8 +491,7 @@ void LauncherApplications::slotUpdateLayout()
     delete m_rootscrollwidget;
     m_rootscrollwidget = nullptr;
 
-    m_rootscrollwidget = new Plasma::ScrollWidget(this);
-    m_rootscrollwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_rootscrollwidget = kMakeScrollWidget(this);
     m_root = new LauncherServiceWidget(m_rootscrollwidget, this, 0);
     m_rootscrollwidget->setWidget(m_root);
     addTab(KIcon("applications-other"), "root", m_rootscrollwidget);
@@ -503,9 +512,8 @@ void LauncherApplications::addGroup(LauncherServiceWidget *servicewidget, KServi
 
     const QSizeF iconsize = kIconSize();
     foreach (const KServiceGroup::Ptr subgroup, group->groupEntries(KServiceGroup::NoOptions)) {
-        Plasma::ScrollWidget* scrollwidget = new Plasma::ScrollWidget(this);
-        scrollwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        LauncherServiceWidget* subgroupwidget = new LauncherServiceWidget(scrollwidget, this, servicewidget->tabIndex() + 1);
+        Plasma::ScrollWidget* scrollwidget = kMakeScrollWidget(this);
+        LauncherServiceWidget* subgroupwidget = new LauncherServiceWidget(scrollwidget, this, count());
         addGroup(subgroupwidget, subgroup);
         if (subgroupwidget->serviceCount() < 1) {
             delete subgroupwidget;
@@ -602,8 +610,7 @@ void LauncherRecent::slotUpdateLayout()
 void LauncherRecent::slotActivated()
 {
     Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    const QString iconwidgeturl = iconwidget->property("_k_url").toString();
-    (void)new KRun(KUrl(iconwidgeturl), nullptr);
+    kRunService(iconwidget->property("_k_url").toString());
 }
 
 
@@ -879,8 +886,7 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_tabbar = new Plasma::TabBar(this);
     // has not effect..
     // m_tabbar->nativeWidget()->setShape(QTabBar::RoundedSouth);
-    m_favoritesscrollwidget = new Plasma::ScrollWidget(m_tabbar);
-    m_favoritesscrollwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_favoritesscrollwidget = kMakeScrollWidget(m_tabbar);
     m_favoritesscrollwidget->setMinimumSize(s_minimumsize);
     m_favoriteswidget = new LauncherFavorites(m_favoritesscrollwidget);
     m_favoritesscrollwidget->setWidget(m_favoriteswidget);
@@ -889,22 +895,19 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_applicationswidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_applicationswidget->setMinimumSize(s_minimumsize);
     m_tabbar->addTab(KIcon("applications-other"), i18n("Applications"), m_applicationswidget);
-    m_recentscrollwidget = new Plasma::ScrollWidget(m_tabbar);
-    m_recentscrollwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_recentscrollwidget = kMakeScrollWidget(m_tabbar);
     m_recentscrollwidget->setMinimumSize(s_minimumsize);
     m_recentwidget = new LauncherRecent(m_recentscrollwidget);
     m_recentscrollwidget->setWidget(m_recentwidget);
     m_tabbar->addTab(KIcon("document-open-recent"), i18n("Recently User"), m_recentscrollwidget);
-    m_leavecrollwidget = new Plasma::ScrollWidget(m_tabbar);
-    m_leavecrollwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_leavecrollwidget = kMakeScrollWidget(m_tabbar);
     m_leavecrollwidget->setMinimumSize(s_minimumsize);
     m_leavewidget = new LauncherLeave(m_leavecrollwidget);
     m_leavecrollwidget->setWidget(m_leavewidget);
     m_tabbar->addTab(KIcon("system-shutdown"), i18n("Leave"), m_leavecrollwidget);
     m_layout->addItem(m_tabbar, 1, 0, 1, 3);
 
-    m_searchscrollwidget = new Plasma::ScrollWidget(this);
-    m_searchscrollwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_searchscrollwidget = kMakeScrollWidget(this);
     m_searchscrollwidget->setMinimumSize(s_minimumsize);
     m_searchscrollwidget->setVisible(false);
     m_searchwidget = new LauncherSearch(m_searchscrollwidget);
