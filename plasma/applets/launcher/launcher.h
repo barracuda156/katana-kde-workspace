@@ -1,10 +1,10 @@
 /*
-    Copyright 2008 Andrew Lake <jamboarder@yahoo.com>
+    This file is part of the KDE project
+    Copyright (C) 2024 Ivailo Monev <xakepa10@gmail.com>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    License version 2, as published by the Free Software Foundation.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,22 +17,30 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef CONTENTAREACAP_H
-#define CONTENTAREACAP_H
+#ifndef LAUNCHER_H
+#define LAUNCHER_H
 
-#include <QWidget>
+#include <Plasma/PopupApplet>
 
-class ContentAreaCap: public QWidget
+class LauncherAppletWidget;
+
+class LauncherApplet : public Plasma::PopupApplet
 {
     Q_OBJECT
-
 public:
-    ContentAreaCap(QWidget *parent, bool flip = false);
+    LauncherApplet(QObject *parent, const QVariantList &args);
+
+    // Plasma::PopupApplet reimplementation
+    QGraphicsWidget* graphicsWidget() final;
 
 protected:
-    virtual void paintEvent(QPaintEvent *event);
-    bool flipCap;
+    void popupEvent(bool show) final;
 
+private:
+    friend LauncherAppletWidget;
+    LauncherAppletWidget *m_launcherwidget;
 };
 
-#endif
+K_EXPORT_PLASMA_APPLET(launcher, LauncherApplet)
+
+#endif // LAUNCHER_H

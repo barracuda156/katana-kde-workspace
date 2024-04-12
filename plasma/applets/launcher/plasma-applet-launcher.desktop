@@ -169,10 +169,10 @@ Type=Service
 X-KDE-ServiceTypes=Plasma/Applet
 
 X-KDE-Library=plasma_applet_launcher
-X-KDE-PluginInfo-Author=Robert Knight
-X-KDE-PluginInfo-Email=robertknight@gmail.com
+X-KDE-PluginInfo-Author=Ivailo Monev
+X-KDE-PluginInfo-Email=xakepa10@gmail.com
 X-KDE-PluginInfo-Name=launcher
-X-KDE-PluginInfo-Version=1.0
+X-KDE-PluginInfo-Version=2.0
 X-KDE-PluginInfo-Website=
 X-KDE-PluginInfo-Category=Application Launchers
 X-KDE-PluginInfo-Depends=
