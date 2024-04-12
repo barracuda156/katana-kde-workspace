@@ -58,6 +58,7 @@ static const QStringList s_firsttimeservices = QStringList()
 static const QString s_genericicon = QString::fromLatin1("applications-other");
 static const QString s_favoriteicon = QString::fromLatin1("bookmarks");
 static const QString s_recenticon = QString::fromLatin1("document-open-recent");
+static const int s_searchdelay = 500; // ms
 
 static QSizeF kIconSize()
 {
@@ -226,7 +227,7 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
 {
     // qDebug() << Q_FUNC_INFO;
     QMutexLocker locker(&m_mutex);
-    m_label->setVisible(false);
+    m_label->setVisible(matches.isEmpty());
     adjustSize();
 
     const QSizeF iconsize = kIconSize();
@@ -982,7 +983,7 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
 
     m_timer = new QTimer(this);
     m_timer->setSingleShot(true);
-    m_timer->setInterval(500);
+    m_timer->setInterval(s_searchdelay);
     connect(
         m_timer, SIGNAL(timeout()),
         this, SLOT(slotTimeout())
@@ -1001,7 +1002,9 @@ void LauncherAppletWidget::slotSearch(const QString &text)
         m_tabbar->setVisible(true);
         return;
     }
-    m_searchwidget->prepare();
+    if (!m_timer->isActive()) {
+        m_searchwidget->prepare();
+    }
     m_timer->start();
 }
 
