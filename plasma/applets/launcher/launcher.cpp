@@ -939,10 +939,11 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_label->setWordWrap(false);
     m_label->setText(usertext);
     m_toplayout->addItem(m_label);
-    m_toplayout->setAlignment(m_lineedit, Qt::AlignCenter);
+    m_toplayout->setAlignment(m_label, Qt::AlignCenter);
 
     m_lineedit = new Plasma::LineEdit(this);
     m_lineedit->setClickMessage(i18n("Search"));
+    m_lineedit->setClearButtonShown(true);
     m_toplayout->addItem(m_lineedit);
     m_toplayout->setAlignment(m_lineedit, Qt::AlignCenter);
     setFocusProxy(m_lineedit);
