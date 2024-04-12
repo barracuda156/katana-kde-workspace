@@ -74,6 +74,7 @@ static Plasma::IconWidget* kMakeIconWidget(QGraphicsWidget *parent,
                                            const QString &url)
 {
     Plasma::IconWidget* iconwidget = new Plasma::IconWidget(parent);
+    // TODO: actions are not visible when the orientation is horizontal..
     iconwidget->setOrientation(Qt::Horizontal);
     iconwidget->setMinimumIconSize(iconsize);
     iconwidget->setMaximumIconSize(iconsize);
@@ -100,6 +101,11 @@ static void kRunService(const QString &entrypath)
     if (!KRun::run(*service.data(), KUrl::List(), nullptr)) {
         kWarning() << "could not run" << entrypath;
     }
+}
+
+static void kRunUrl(const QString &urlpath)
+{
+    (void)new KRun(KUrl(urlpath), nullptr);
 }
 
 static QString kGenericIcon(const QString &name)
@@ -237,7 +243,6 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
         }
         int counter = 1;
         if (match.hasConfigurationInterface()) {
-            // TODO: action is set but where is it?
             QAction* matchconfigaction = new QAction(iconwidget);
             matchconfigaction->setText(i18n("Configure"));
             matchconfigaction->setIcon(KIcon("preferences-system"));
@@ -418,6 +423,7 @@ public:
 public Q_SLOTS:
     void slotGroupActivated();
     void slotAppActivated();
+    void slotFavorite();
     
 private:
     Plasma::TabBar* m_tabbar;
@@ -454,6 +460,18 @@ void LauncherServiceWidget::appendGroup(Plasma::IconWidget* iconwidget, Launcher
 
 void LauncherServiceWidget::appendApp(Plasma::IconWidget* iconwidget)
 {
+    // TODO: dual-action to remove
+    QAction* favoriteiconaction = new QAction(iconwidget);
+    favoriteiconaction->setText(i18n("Add to Favorites"));
+    favoriteiconaction->setIcon(KIcon(s_favoriteicon));
+    favoriteiconaction->setProperty("_k_url", iconwidget->property("_k_url"));
+    favoriteiconaction->setVisible(true);
+    favoriteiconaction->setEnabled(true);
+    connect(
+        favoriteiconaction, SIGNAL(triggered()),
+        this, SLOT(slotFavorite())
+    );
+    iconwidget->addIconAction(favoriteiconaction);
     m_iconwidgets.append(iconwidget);
     m_layout->addItem(iconwidget);
     connect(
@@ -471,6 +489,13 @@ void LauncherServiceWidget::slotAppActivated()
 {
     Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
     kRunService(iconwidget->property("_k_url").toString());
+}
+
+void LauncherServiceWidget::slotFavorite()
+{
+    QAction* favoriteiconaction = qobject_cast<QAction*>(sender());
+    qDebug() << Q_FUNC_INFO << favoriteiconaction->property("_k_url").toString();
+    // TODO: implement
 }
 
 class LauncherApplications : public Plasma::TabBar
@@ -638,7 +663,7 @@ void LauncherRecent::slotUpdateLayout()
 void LauncherRecent::slotActivated()
 {
     Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    kRunService(iconwidget->property("_k_url").toString());
+    kRunUrl(iconwidget->property("_k_url").toString());
 }
 
 
