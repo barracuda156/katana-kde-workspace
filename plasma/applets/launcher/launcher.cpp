@@ -55,6 +55,9 @@ static const QStringList s_firsttimeservices = QStringList()
     << QString::fromLatin1("konsole")
     << QString::fromLatin1("dolphin")
     << QString::fromLatin1("systemsettings");
+static const QString s_genericicon = QString::fromLatin1("applications-other");
+static const QString s_favoriteicon = QString::fromLatin1("bookmarks");
+static const QString s_recenticon = QString::fromLatin1("document-open-recent");
 
 static QSizeF kIconSize()
 {
@@ -97,6 +100,30 @@ static void kRunService(const QString &entrypath)
     if (!KRun::run(*service.data(), KUrl::List(), nullptr)) {
         kWarning() << "could not run" << entrypath;
     }
+}
+
+static QString kGenericIcon(const QString &name)
+{
+    if (!name.isEmpty()) {
+        return name;
+    }
+    return s_genericicon;
+}
+
+static QString kFavouriteIcon(const QString &name)
+{
+    if (!name.isEmpty()) {
+        return name;
+    }
+    return s_favoriteicon;
+}
+
+static QString kRecentIcon(const QString &name)
+{
+    if (!name.isEmpty()) {
+        return name;
+    }
+    return s_recenticon;
 }
 
 static bool kCanLockScreen()
@@ -359,7 +386,7 @@ void LauncherFavorites::slotUpdateLayout()
         // qDebug() << Q_FUNC_INFO << service->entryPath() << service->name() << service->comment();
         Plasma::IconWidget* iconwidget = kMakeIconWidget(
             this,
-            iconsize, service->name(), service->genericName(), service->icon(), service->entryPath()
+            iconsize, service->name(), service->genericName(), kFavouriteIcon(service->icon()), service->entryPath()
         );
         m_iconwidgets.append(iconwidget);
         m_layout->addItem(iconwidget);
@@ -494,7 +521,7 @@ void LauncherApplications::slotUpdateLayout()
     m_rootscrollwidget = kMakeScrollWidget(this);
     m_root = new LauncherServiceWidget(m_rootscrollwidget, this, 0);
     m_rootscrollwidget->setWidget(m_root);
-    addTab(KIcon("applications-other"), "root", m_rootscrollwidget);
+    addTab(KIcon(s_genericicon), "root", m_rootscrollwidget);
 
     KServiceGroup::Ptr group = KServiceGroup::root();
     if (group && group->isValid()) {
@@ -519,14 +546,15 @@ void LauncherApplications::addGroup(LauncherServiceWidget *servicewidget, KServi
             delete subgroupwidget;
             delete scrollwidget;
         } else {
+            const QString subgroupicon = kGenericIcon(subgroup->icon());
             scrollwidget->setWidget(subgroupwidget);
             m_tabscrollwidgets.append(scrollwidget);
             Plasma::IconWidget* subgroupiconwidget = kMakeIconWidget(
                 servicewidget,
-                iconsize, subgroup->caption(), subgroup->comment(), subgroup->icon(), QString()
+                iconsize, subgroup->caption(), subgroup->comment(), subgroupicon, QString()
             );
             servicewidget->appendGroup(subgroupiconwidget, subgroupwidget);
-            addTab(KIcon("applications-other"), subgroup->caption(), scrollwidget);
+            addTab(KIcon(subgroupicon), subgroup->caption(), scrollwidget);
         }
     }
 
@@ -537,7 +565,7 @@ void LauncherApplications::addGroup(LauncherServiceWidget *servicewidget, KServi
         }
         Plasma::IconWidget* appiconwidget = kMakeIconWidget(
             servicewidget,
-            iconsize, app->name(), app->comment(), app->icon(), app->entryPath()
+            iconsize, app->name(), app->comment(), kGenericIcon(app->icon()), app->entryPath()
         );
         servicewidget->appendApp(appiconwidget);
     }
@@ -596,7 +624,7 @@ void LauncherRecent::slotUpdateLayout()
         // qDebug() << Q_FUNC_INFO << recentfile.readName() << recentfile.readComment();
         Plasma::IconWidget* iconwidget = kMakeIconWidget(
             this,
-            iconsize, recentfile.readName(), recentfile.readComment(), recentfile.readIcon(), recentfile.readUrl()
+            iconsize, recentfile.readName(), recentfile.readComment(), kRecentIcon(recentfile.readIcon()), recentfile.readUrl()
         );
         m_iconwidgets.append(iconwidget);
         m_layout->addItem(iconwidget);
@@ -890,16 +918,16 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_favoritesscrollwidget->setMinimumSize(s_minimumsize);
     m_favoriteswidget = new LauncherFavorites(m_favoritesscrollwidget);
     m_favoritesscrollwidget->setWidget(m_favoriteswidget);
-    m_tabbar->addTab(KIcon("bookmarks"), i18n("Favorites"), m_favoritesscrollwidget);
+    m_tabbar->addTab(KIcon(s_favoriteicon), i18n("Favorites"), m_favoritesscrollwidget);
     m_applicationswidget = new LauncherApplications(m_tabbar);
     m_applicationswidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_applicationswidget->setMinimumSize(s_minimumsize);
-    m_tabbar->addTab(KIcon("applications-other"), i18n("Applications"), m_applicationswidget);
+    m_tabbar->addTab(KIcon(s_genericicon), i18n("Applications"), m_applicationswidget);
     m_recentscrollwidget = kMakeScrollWidget(m_tabbar);
     m_recentscrollwidget->setMinimumSize(s_minimumsize);
     m_recentwidget = new LauncherRecent(m_recentscrollwidget);
     m_recentscrollwidget->setWidget(m_recentwidget);
-    m_tabbar->addTab(KIcon("document-open-recent"), i18n("Recently User"), m_recentscrollwidget);
+    m_tabbar->addTab(KIcon(s_recenticon), i18n("Recently Used"), m_recentscrollwidget);
     m_leavecrollwidget = kMakeScrollWidget(m_tabbar);
     m_leavecrollwidget->setMinimumSize(s_minimumsize);
     m_leavewidget = new LauncherLeave(m_leavecrollwidget);
