@@ -865,7 +865,8 @@ private Q_SLOTS:
 
 private:
     LauncherApplet* m_launcherapplet;
-    QGraphicsGridLayout* m_layout;
+    QGraphicsLinearLayout* m_layout;
+    QGraphicsLinearLayout* m_toplayout;
     Plasma::IconWidget* m_iconwidget;
     Plasma::Label* m_label;
     Plasma::LineEdit* m_lineedit;
@@ -886,6 +887,7 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     : QGraphicsWidget(auncherapplet),
     m_launcherapplet(auncherapplet),
     m_layout(nullptr),
+    m_toplayout(nullptr),
     m_iconwidget(nullptr),
     m_label(nullptr),
     m_lineedit(nullptr),
@@ -901,7 +903,12 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_searchwidget(nullptr),
     m_timer(nullptr)
 {
-    m_layout = new QGraphicsGridLayout(this);
+    m_layout = new QGraphicsLinearLayout(this);
+    m_layout->setOrientation(Qt::Vertical);
+    m_toplayout = new QGraphicsLinearLayout(m_layout);
+    m_toplayout->setOrientation(Qt::Horizontal);
+    m_toplayout->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    m_layout->addItem(m_toplayout);
 
     const QString hostname = QHostInfo::localHostName();
     KUser user(KUser::UseEffectiveUID);
@@ -910,14 +917,10 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
         usericon = QLatin1String("system-search");
     }
     m_iconwidget = new Plasma::IconWidget(this);
-    const int iconsize = KIconLoader::global()->currentSize(KIconLoader::Toolbar);
-    const QSizeF iconsizef = QSizeF(iconsize, iconsize);
-    m_iconwidget->setMinimumIconSize(iconsizef);
-    m_iconwidget->setMaximumIconSize(iconsizef);
     m_iconwidget->setAcceptHoverEvents(false);
     m_iconwidget->setAcceptedMouseButtons(Qt::NoButton);
     m_iconwidget->setIcon(usericon);
-    m_layout->addItem(m_iconwidget, 0, 0);
+    m_toplayout->addItem(m_iconwidget);
 
     QString usertext;
     QString fullusername = user.property(KUser::FullName);
@@ -929,11 +932,13 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_label = new Plasma::Label(this);
     m_label->setWordWrap(false);
     m_label->setText(usertext);
-    m_layout->addItem(m_label, 0, 1);
+    m_toplayout->addItem(m_label);
+    m_toplayout->setAlignment(m_lineedit, Qt::AlignCenter);
 
     m_lineedit = new Plasma::LineEdit(this);
     m_lineedit->setClickMessage(i18n("Search"));
-    m_layout->addItem(m_lineedit, 0, 2);
+    m_toplayout->addItem(m_lineedit);
+    m_toplayout->setAlignment(m_lineedit, Qt::AlignCenter);
     setFocusProxy(m_lineedit);
 
     m_tabbar = new Plasma::TabBar(this);
@@ -958,14 +963,16 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_leavewidget = new LauncherLeave(m_leavecrollwidget);
     m_leavecrollwidget->setWidget(m_leavewidget);
     m_tabbar->addTab(KIcon("system-shutdown"), i18n("Leave"), m_leavecrollwidget);
-    m_layout->addItem(m_tabbar, 1, 0, 1, 3);
+    m_layout->addItem(m_tabbar);
+    // squeeze the icon
+    m_layout->setStretchFactor(m_tabbar, 100);
 
     m_searchscrollwidget = kMakeScrollWidget(this);
     m_searchscrollwidget->setMinimumSize(s_minimumsize);
     m_searchscrollwidget->setVisible(false);
     m_searchwidget = new LauncherSearch(m_searchscrollwidget);
     m_searchscrollwidget->setWidget(m_searchwidget);
-    m_layout->addItem(m_searchscrollwidget, 2, 0, 1, 3);
+    m_layout->addItem(m_searchscrollwidget);
     connect(
         m_lineedit, SIGNAL(textChanged(QString)),
         this, SLOT(slotSearch(QString))
@@ -980,7 +987,6 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     );
 
     setLayout(m_layout);
-    m_layout->setColumnStretchFactor(2, 100);
 }
 
 void LauncherAppletWidget::slotSearch(const QString &text)
