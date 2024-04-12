@@ -540,16 +540,18 @@ void LauncherApplications::slotUpdateLayout()
     m_tabwidgets.clear();
     delete m_root;
     m_root = nullptr;
+    qDeleteAll(m_tabscrollwidgets);
+    m_tabscrollwidgets.clear();
     delete m_rootscrollwidget;
     m_rootscrollwidget = nullptr;
 
-    m_rootscrollwidget = kMakeScrollWidget(this);
-    m_root = new LauncherServiceWidget(m_rootscrollwidget, this, 0);
-    m_rootscrollwidget->setWidget(m_root);
-    addTab(KIcon(s_genericicon), "root", m_rootscrollwidget);
-
     KServiceGroup::Ptr group = KServiceGroup::root();
     if (group && group->isValid()) {
+        m_rootscrollwidget = kMakeScrollWidget(this);
+        m_root = new LauncherServiceWidget(m_rootscrollwidget, this, 0);
+        m_rootscrollwidget->setWidget(m_root);
+        addTab(KIcon(group->icon()), group->caption(), m_rootscrollwidget);
+
         addGroup(m_root, group);
     }
 }
