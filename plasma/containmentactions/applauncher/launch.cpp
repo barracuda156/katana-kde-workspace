@@ -63,9 +63,11 @@ void AppLauncher::makeMenu()
 {
     m_menu->clear();
 
-    //add the whole kmenu
+    // add the whole kmenu
     KServiceGroup::Ptr group = KServiceGroup::root();
     if (group && group->isValid()) {
+        m_menu->setTitle(group->caption());
+        m_menu->setIcon(KIcon(group->icon()));
         addApp(m_menu, group);
     }
 }
