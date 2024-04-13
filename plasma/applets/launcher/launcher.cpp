@@ -1077,7 +1077,11 @@ void LauncherApplet::popupEvent(bool show)
 
 void LauncherApplet::slotEditMenu()
 {
-    KToolInvocation::kdeinitExec("kmenuedit");
+    if (KToolInvocation::kdeinitExec("kmenuedit") == 0) {
+        hidePopup();
+    } else {
+        showMessage(KIcon("dialog-error"), i18n("Failed to launch menu editor"), Plasma::MessageButton::ButtonOk);
+    }
 }
 
 #include "launcher.moc"
