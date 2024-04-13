@@ -38,9 +38,6 @@ public:
 private Q_SLOTS:
     void slotEditMenu();
 
-protected:
-    void popupEvent(bool show) final;
-
 private:
     friend LauncherAppletWidget;
     LauncherAppletWidget* m_launcherwidget;

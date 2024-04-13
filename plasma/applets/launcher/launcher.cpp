@@ -1038,6 +1038,7 @@ LauncherApplet::LauncherApplet(QObject *parent, const QVariantList &args)
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
 
     m_launcherwidget = new LauncherAppletWidget(this);
+    setFocusProxy(m_launcherwidget);
 }
 
 void LauncherApplet::init()
@@ -1066,13 +1067,6 @@ QList<QAction*> LauncherApplet::contextualActions()
         result.append(m_editmenuaction);
     }
     return result;
-}
-
-void LauncherApplet::popupEvent(bool show)
-{
-    if (show) {
-        m_launcherwidget->setFocus();
-    }
 }
 
 void LauncherApplet::slotEditMenu()
