@@ -515,16 +515,10 @@ private:
     void addGroup(LauncherServiceWidget *servicewidget, KServiceGroup::Ptr group);
 
     QMutex m_mutex;
-    Plasma::ScrollWidget* m_rootscrollwidget;
-    LauncherServiceWidget* m_root;
-    QList<Plasma::ScrollWidget*> m_tabscrollwidgets;
-    QList<LauncherServiceWidget*> m_tabwidgets;
 };
 
 LauncherApplications::LauncherApplications(QGraphicsWidget *parent)
-    : Plasma::TabBar(parent),
-    m_rootscrollwidget(nullptr),
-    m_root(nullptr)
+    : Plasma::TabBar(parent)
 {
     // TODO: navigation bar instead
     // setTabBarShown(false);
@@ -540,23 +534,22 @@ LauncherApplications::LauncherApplications(QGraphicsWidget *parent)
 void LauncherApplications::slotUpdateLayout()
 {
     QMutexLocker locker(&m_mutex);
-    qDeleteAll(m_tabwidgets);
-    m_tabwidgets.clear();
-    delete m_root;
-    m_root = nullptr;
-    qDeleteAll(m_tabscrollwidgets);
-    m_tabscrollwidgets.clear();
-    delete m_rootscrollwidget;
-    m_rootscrollwidget = nullptr;
+
+    int counter = count();
+    while (counter) {
+        counter--;
+        // NOTE: deletes items too which in this case is the scroll and service widget
+        removeTab(counter);
+    }
 
     KServiceGroup::Ptr group = KServiceGroup::root();
     if (group && group->isValid()) {
-        m_rootscrollwidget = kMakeScrollWidget(this);
-        m_root = new LauncherServiceWidget(m_rootscrollwidget, this, 0);
-        m_rootscrollwidget->setWidget(m_root);
-        addTab(KIcon(group->icon()), group->caption(), m_rootscrollwidget);
+        Plasma::ScrollWidget* rootscrollwidget = kMakeScrollWidget(this);
+        LauncherServiceWidget* rootwidget = new LauncherServiceWidget(rootscrollwidget, this, 0);
+        rootscrollwidget->setWidget(rootwidget);
+        addTab(KIcon(group->icon()), group->caption(), rootscrollwidget);
 
-        addGroup(m_root, group);
+        addGroup(rootwidget, group);
     }
 }
 
@@ -579,7 +572,6 @@ void LauncherApplications::addGroup(LauncherServiceWidget *servicewidget, KServi
         } else {
             const QString subgroupicon = kGenericIcon(subgroup->icon());
             scrollwidget->setWidget(subgroupwidget);
-            m_tabscrollwidgets.append(scrollwidget);
             Plasma::IconWidget* subgroupiconwidget = kMakeIconWidget(
                 servicewidget,
                 iconsize, subgroup->caption(), subgroup->comment(), subgroupicon, QString()
