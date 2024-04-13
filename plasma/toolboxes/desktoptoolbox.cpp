@@ -31,6 +31,7 @@
 #include <QtCore/qsharedpointer.h>
 
 #include <KDebug>
+#include <QToolButton>
 #include <KIconLoader>
 #include <Plasma/Animation>
 #include <Plasma/Applet>
@@ -156,9 +157,6 @@ void DesktopToolBox::init()
 {
     m_icon = KIcon("plasma");
     m_toolBacker = 0;
-    m_animCircleFrame = 0;
-    m_animHighlightFrame = 0;
-    m_hovering = false;
     m_background = new Plasma::FrameSvg(this);
     m_background->setImagePath("widgets/toolbox");
 
@@ -260,8 +258,6 @@ QRectF DesktopToolBox::boundingRect() const
 
 void DesktopToolBox::updateTheming()
 {
-    m_bgColor = Plasma::Theme::defaultTheme()->color(Plasma::Theme::BackgroundColor);
-    m_fgColor = Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
     update();
 }
 
@@ -279,14 +275,8 @@ void DesktopToolBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
     Q_UNUSED(option)
     Q_UNUSED(widget)
 
-    QPainterPath p = shape();
-
-    QPoint iconPos;
-    QRect backgroundRect;
     const QRectF rect = boundingRect();
-
     QString cornerElement;
-
     switch (corner()) {
     case TopLeft:
         cornerElement = "desktop-northwest";
@@ -304,10 +294,6 @@ void DesktopToolBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
         break;
     }
 
-    QString activityName;
-
-    QSize textSize;
-
     adjustBackgroundBorders();
     m_background->resizeFrame(rect.size());
 
@@ -317,92 +303,10 @@ void DesktopToolBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
         m_background->paintFrame(painter, rect.topLeft());
     }
 
-
-    QRect iconRect;
-    QRect textRect;
-
-    if (corner() == Left || corner() == Right) {
-        Qt::Alignment alignment;
-
-        if (activityName.isNull()) {
-            alignment = Qt::Alignment(Qt::AlignCenter);
-        } else {
-            alignment = Qt::Alignment(Qt::AlignHCenter|Qt::AlignTop);
-        }
-
-        iconRect = QStyle::alignedRect(QApplication::layoutDirection(), alignment, iconSize(), m_background->contentsRect().toRect());
-
-        QRect boundRect(QPoint(m_background->contentsRect().top(),
-                               m_background->contentsRect().left()),
-                        QSize(m_background->contentsRect().height(),
-                              m_background->contentsRect().width()));
-
-        textRect = QStyle::alignedRect(QApplication::layoutDirection(), Qt::AlignRight|Qt::AlignVCenter, textSize, boundRect);
-        textRect.moveTopLeft(textRect.topLeft() + QPoint(rect.top() - iconSize().height(), rect.left()));
-    } else {
-        Qt::Alignment alignment;
-
-        if (activityName.isNull()) {
-            alignment = Qt::Alignment(Qt::AlignCenter);
-        } else {
-            alignment = Qt::Alignment(Qt::AlignLeft|Qt::AlignVCenter);
-        }
-
-        iconRect = QStyle::alignedRect(QApplication::layoutDirection(), alignment, iconSize(), m_background->contentsRect().toRect());
-
-        textRect = QStyle::alignedRect(QApplication::layoutDirection(), Qt::AlignRight|Qt::AlignVCenter, textSize, m_background->contentsRect().toRect());
-        textRect.moveTopLeft(textRect.topLeft() + QPoint(rect.top() - iconSize().height(), rect.left()));
-    }
-
+    QRect iconRect = QStyle::alignedRect(QApplication::layoutDirection(), Qt::AlignCenter, iconSize(), m_background->contentsRect().toRect());
     iconRect.moveTopLeft(iconRect.topLeft() + rect.topLeft().toPoint());
 
-
-    iconPos = iconRect.topLeft();
-
-    const qreal progress = m_animHighlightFrame;
-
-    if (qFuzzyCompare(qreal(1.0), progress)) {
-        m_icon.paint(painter, QRect(iconPos, iconSize()));
-    } else if (qFuzzyCompare(qreal(1.0), 1 + progress)) {
-        m_icon.paint(painter, QRect(iconPos, iconSize()),
-                      Qt::AlignCenter, QIcon::Disabled, QIcon::Off);
-    } else {
-        QPixmap disabled = m_icon.pixmap(iconSize(), QIcon::Disabled, QIcon::Off);
-        QPixmap enabled = m_icon.pixmap(iconSize());
-        QPixmap result = Plasma::PaintUtils::transition(
-            m_icon.pixmap(iconSize(), QIcon::Disabled, QIcon::Off),
-            m_icon.pixmap(iconSize()), progress);
-        painter->drawPixmap(QRect(iconPos, iconSize()), result);
-    }
-
-    if (!cornerElement.isNull() || activityName.isNull()) {
-        return;
-    }
-
-    QColor textColor = Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor);
-    QColor shadowColor;
-    QPoint shadowOffset;
-
-    if (qGray(textColor.rgb()) > 192) {
-        shadowColor = Qt::black;
-        shadowOffset = QPoint(1,1);
-    } else {
-        shadowColor = Qt::white;
-        shadowOffset = QPoint(0,0);
-    }
-
-    QPixmap shadowText = Plasma::PaintUtils::shadowText(activityName, textColor, shadowColor, shadowOffset);
-
-    painter->save();
-    if (corner() == Left || corner() == Right) {
-        painter->rotate(90);
-        painter->translate(textRect.left(), -textRect.top()-textRect.height());
-        painter->drawPixmap(QPoint(0,0), shadowText);
-    } else {
-        painter->drawPixmap(textRect.topLeft(), shadowText);
-    }
-
-    painter->restore();
+    m_icon.paint(painter, QRect(iconRect.topLeft(), iconSize()), Qt::AlignCenter, QIcon::Disabled, QIcon::Off);
 }
 
 QPainterPath DesktopToolBox::shape() const
@@ -436,18 +340,6 @@ QPainterPath DesktopToolBox::shape() const
     return path;
 }
 
-void DesktopToolBox::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
-{
-    if (isShowing() || m_hovering) {
-        QGraphicsItem::hoverEnterEvent(event);
-        return;
-    }
-
-    highlight(true);
-
-    QGraphicsItem::hoverEnterEvent(event);
-}
-
 QGraphicsWidget *DesktopToolBox::toolParent()
 {
     if (!m_toolBacker) {
@@ -479,7 +371,7 @@ void DesktopToolBox::showToolBox()
     fadeAnim->setProperty("startOpacity", 0);
     fadeAnim->setProperty("targetOpacity", 1);
     fadeAnim->start(QAbstractAnimation::DeleteWhenStopped);
-    highlight(true);
+    update();
     setFocus();
 }
 
@@ -494,15 +386,13 @@ void DesktopToolBox::addTool(QAction *action)
     }
 
     InternalToolBox::addTool(action);
-    Plasma::IconWidget *tool = new Plasma::IconWidget(toolParent());
+    Plasma::ToolButton *tool = new Plasma::ToolButton(toolParent());
 
-    tool->setTextBackgroundColor(QColor());
-    tool->setAction(action);
-    tool->setDrawBackground(true);
-    tool->setOrientation(Qt::Horizontal);
-    tool->resize(tool->sizeFromIconSize(KIconLoader::SizeSmallMedium));
-    tool->setPreferredIconSize(QSizeF(KIconLoader::SizeSmallMedium, KIconLoader::SizeSmallMedium));
+    QToolButton* nativetool = tool->nativeWidget();
     tool->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    nativetool->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    nativetool->setIconSize(QSize(KIconLoader::SizeSmallMedium, KIconLoader::SizeSmallMedium));
+    tool->setAction(action);
 
     tool->hide();
     const int height = static_cast<int>(tool->boundingRect().height());
@@ -510,8 +400,8 @@ void DesktopToolBox::addTool(QAction *action)
     tool->setZValue(zValue() + 10);
     tool->setToolTip(action->text());
 
-    //make enabled/disabled tools appear/disappear instantly
-    connect(tool, SIGNAL(changed()), this, SLOT(updateToolBox()));
+    // make enabled/disabled tools appear/disappear instantly
+    connect(action, SIGNAL(changed()), this, SLOT(updateToolBox()));
 
     ToolType type = AbstractToolBox::MiscTool;
     if (!action->data().isNull() && action->data().type() == QVariant::Int) {
@@ -527,9 +417,9 @@ void DesktopToolBox::addTool(QAction *action)
 
 void DesktopToolBox::updateToolBox()
 {
-    Plasma::IconWidget *tool = qobject_cast<Plasma::IconWidget *>(sender());
+    Plasma::ToolButton *tool = qobject_cast<Plasma::ToolButton *>(sender());
     if (tool && !tool->action()) {
-        QMutableMapIterator<ToolType, Plasma::IconWidget *> it(m_tools);
+        QMutableMapIterator<ToolType, Plasma::ToolButton *> it(m_tools);
         while (it.hasNext()) {
             it.next();
             if (it.value() == tool) {
@@ -553,10 +443,10 @@ void DesktopToolBox::updateToolBox()
 
 void DesktopToolBox::removeTool(QAction *action)
 {
-    QMutableMapIterator<ToolType, Plasma::IconWidget *> it(m_tools);
+    QMutableMapIterator<ToolType, Plasma::ToolButton *> it(m_tools);
     while (it.hasNext()) {
         it.next();
-        Plasma::IconWidget *tool = it.value();
+        Plasma::ToolButton *tool = it.value();
         //kDebug() << "checking tool" << tool
         if (tool && tool->action() == action) {
             //kDebug() << "tool found!";
@@ -574,17 +464,16 @@ void DesktopToolBox::adjustToolBackerGeometry()
     }
 
     m_toolBacker->clearLayout();
-    QMapIterator<ToolType, Plasma::IconWidget *> it(m_tools);
+    QMapIterator<ToolType, Plasma::ToolButton *> it(m_tools);
     while (it.hasNext()) {
         it.next();
-        Plasma::IconWidget *icon = it.value();
-        //kDebug() << "showing off" << it.key() << icon->text();
-        if (icon->isEnabled()) {
-            icon->show();
-            icon->setDrawBackground(false);
-            m_toolBacker->addToLayout(icon);
+        Plasma::ToolButton *tool = it.value();
+        //kDebug() << "showing off" << it.key() << tool->text();
+        if (tool->isEnabled()) {
+            tool->show();
+            m_toolBacker->addToLayout(tool);
         } else {
-            icon->hide();
+            tool->hide();
         }
     }
 
@@ -649,20 +538,6 @@ void DesktopToolBox::adjustToolBackerGeometry()
     }
 }
 
-void DesktopToolBox::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
-{
-    //kDebug() << event->pos() << event->scenePos()
-    //         << m_toolBacker->rect().contains(event->scenePos().toPoint());
-    if (!m_hovering || isShowing()) {
-        QGraphicsItem::hoverLeaveEvent(event);
-        return;
-    }
-
-    highlight(false);
-
-    QGraphicsItem::hoverLeaveEvent(event);
-}
-
 void DesktopToolBox::hideToolBox()
 {
     if (m_toolBacker) {
@@ -673,59 +548,11 @@ void DesktopToolBox::hideToolBox()
         fadeAnim->setProperty("targetOpacity", 0);
         fadeAnim->start(QAbstractAnimation::DeleteWhenStopped);
     }
-
-    highlight(false);
 }
 
 void DesktopToolBox::hideToolBacker()
 {
     m_toolBacker->hide();
-}
-
-void DesktopToolBox::highlight(bool highlighting)
-{
-    if (m_hovering == highlighting) {
-        return;
-    }
-
-    m_hovering = highlighting;
-
-    QPropertyAnimation *anim = m_anim.data();
-    if (m_hovering) {
-        if (anim) {
-            anim->stop();
-            m_anim.clear();
-        }
-        anim = new QPropertyAnimation(this, "highlight", this);
-        m_anim = anim;
-    }
-
-    if (anim->state() != QAbstractAnimation::Stopped) {
-        anim->stop();
-    }
-
-    anim->setDuration(250);
-    anim->setStartValue(0);
-    anim->setEndValue(1);
-
-    if (m_hovering) {
-        anim->start();
-    } else {
-        anim->setDirection(QAbstractAnimation::Backward);
-        anim->start(QAbstractAnimation::DeleteWhenStopped);
-
-    }
-}
-
-void DesktopToolBox::setHighlight(qreal progress)
-{
-    m_animHighlightFrame = progress;
-    update();
-}
-
-qreal DesktopToolBox::highlight()
-{
-    return m_animHighlightFrame;
 }
 
 void DesktopToolBox::toggle()
@@ -806,6 +633,8 @@ void DesktopToolBox::logout()
     KWorkSpace::requestShutDown();
 }
 
+// TODO: what is the focus for if key events are not passed to tools and the toolbox is hidden right
+// away? that means action shortcuts are non-operational!
 void DesktopToolBox::keyPressEvent(QKeyEvent *event)
 {
     m_containment->setFocus();

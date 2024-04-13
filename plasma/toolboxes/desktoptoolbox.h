@@ -28,7 +28,7 @@
 #include <KIcon>
 
 #include <Plasma/Animator>
-#include <Plasma/IconWidget>
+#include <Plasma/ToolButton>
 
 #include "internaltoolbox.h"
 
@@ -39,7 +39,6 @@ class DesktopToolBoxPrivate;
 class DesktopToolBox : public InternalToolBox
 {
     Q_OBJECT
-    Q_PROPERTY(qreal highlight READ highlight WRITE setHighlight)
 
 public:
     explicit DesktopToolBox(Plasma::Containment *parent = 0);
@@ -67,13 +66,9 @@ public Q_SLOTS:
 protected:
     void init();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
-    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 protected Q_SLOTS:
-    void setHighlight(qreal progress);
-    qreal highlight();
     void updateTheming();
     void toolTriggered(bool);
     void hideToolBacker();
@@ -88,22 +83,14 @@ protected Q_SLOTS:
     void lockScreen();
 
 private:
-    void highlight(bool highlighting);
     void adjustToolBackerGeometry();
     void adjustBackgroundBorders() const;
 
     Plasma::Containment *m_containment;
     Plasma::FrameSvg *m_background;
-    QMultiMap<Plasma::AbstractToolBox::ToolType, Plasma::IconWidget *> m_tools;
+    QMultiMap<Plasma::AbstractToolBox::ToolType, Plasma::ToolButton *> m_tools;
     KIcon m_icon;
     EmptyGraphicsItem *m_toolBacker;
-    QWeakPointer<QPropertyAnimation> m_anim;
-    qreal m_animCircleFrame;
-    qreal m_animHighlightFrame;
-    QRect m_shapeRect;
-    QColor m_fgColor;
-    QColor m_bgColor;
-    bool m_hovering;
 };
 
 K_EXPORT_PLASMA_TOOLBOX(desktoptoolbox, DesktopToolBox)
