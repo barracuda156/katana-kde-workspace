@@ -98,8 +98,11 @@ static Plasma::ScrollWidget* kMakeScrollWidget(QGraphicsWidget *parent)
     return scrollwidget;
 }
 
-static void kRunService(const QString &entrypath)
+static void kRunService(const QString &entrypath, LauncherApplet* launcherapplet)
 {
+    Q_ASSERT(launcherapplet != nullptr);
+    launcherapplet->hidePopup();
+
     KService::Ptr service = KService::serviceByDesktopPath(entrypath);
     Q_ASSERT(!service.isNull());
     if (!KRun::run(*service.data(), KUrl::List(), nullptr)) {
@@ -107,8 +110,11 @@ static void kRunService(const QString &entrypath)
     }
 }
 
-static void kRunUrl(const QString &urlpath)
+static void kRunUrl(const QString &urlpath, LauncherApplet* launcherapplet)
 {
+    Q_ASSERT(launcherapplet != nullptr);
+    launcherapplet->hidePopup();
+
     (void)new KRun(KUrl(urlpath), nullptr);
 }
 
@@ -300,7 +306,7 @@ class LauncherFavorites : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    LauncherFavorites(QGraphicsWidget *parent);
+    LauncherFavorites(QGraphicsWidget *parent, LauncherApplet* launcherapplet);
 
 private Q_SLOTS:
     void slotUpdateLayout();
@@ -308,14 +314,16 @@ private Q_SLOTS:
 
 private:
     QMutex m_mutex;
+    LauncherApplet* m_launcherapplet;
     QGraphicsLinearLayout* m_layout;
     QList<Plasma::IconWidget*> m_iconwidgets;
     KBookmarkManager* m_bookmarkmanager;
 };
 
 // TODO: context menu to remove
-LauncherFavorites::LauncherFavorites(QGraphicsWidget *parent)
+LauncherFavorites::LauncherFavorites(QGraphicsWidget *parent, LauncherApplet* launcherapplet)
     : QGraphicsWidget(parent),
+    m_launcherapplet(launcherapplet),
     m_layout(nullptr),
     m_bookmarkmanager(nullptr)
 {
@@ -410,7 +418,7 @@ void LauncherFavorites::slotUpdateLayout()
 void LauncherFavorites::slotActivated()
 {
     Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    kRunService(iconwidget->property("_k_url").toString());
+    kRunService(iconwidget->property("_k_url").toString(), m_launcherapplet);
 }
 
 
@@ -418,7 +426,8 @@ class LauncherServiceWidget : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    LauncherServiceWidget(QGraphicsWidget *parent, Plasma::TabBar *tabbar, const int tabindex);
+    LauncherServiceWidget(QGraphicsWidget *parent, LauncherApplet *launcherapplet,
+                          Plasma::TabBar *tabbar, const int tabindex);
 
     void appendGroup(Plasma::IconWidget* iconwidget, LauncherServiceWidget* servicewidget);
     void appendApp(Plasma::IconWidget* iconwidget);
@@ -430,14 +439,17 @@ public Q_SLOTS:
     void slotFavorite();
     
 private:
+    LauncherApplet* m_launcherapplet;
     Plasma::TabBar* m_tabbar;
     int m_tabindex;
     QGraphicsLinearLayout* m_layout;
     QList<Plasma::IconWidget*> m_iconwidgets;
 };
 
-LauncherServiceWidget::LauncherServiceWidget(QGraphicsWidget *parent, Plasma::TabBar *tabbar, const int tabindex)
+LauncherServiceWidget::LauncherServiceWidget(QGraphicsWidget *parent, LauncherApplet *launcherapplet,
+                                             Plasma::TabBar *tabbar, const int tabindex)
     : QGraphicsWidget(parent),
+    m_launcherapplet(launcherapplet),
     m_tabbar(tabbar),
     m_tabindex(tabindex),
     m_layout(nullptr)
@@ -492,7 +504,7 @@ void LauncherServiceWidget::slotGroupActivated()
 void LauncherServiceWidget::slotAppActivated()
 {
     Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    kRunService(iconwidget->property("_k_url").toString());
+    kRunService(iconwidget->property("_k_url").toString(), m_launcherapplet);
 }
 
 void LauncherServiceWidget::slotFavorite()
@@ -506,7 +518,7 @@ class LauncherApplications : public Plasma::TabBar
 {
     Q_OBJECT
 public:
-    LauncherApplications(QGraphicsWidget *parent);
+    LauncherApplications(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
 
 private Q_SLOTS:
     void slotUpdateLayout();
@@ -515,10 +527,12 @@ private:
     void addGroup(LauncherServiceWidget *servicewidget, KServiceGroup::Ptr group);
 
     QMutex m_mutex;
+    LauncherApplet* m_launcherapplet;
 };
 
-LauncherApplications::LauncherApplications(QGraphicsWidget *parent)
-    : Plasma::TabBar(parent)
+LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
+    : Plasma::TabBar(parent),
+    m_launcherapplet(launcherapplet)
 {
     // TODO: navigation bar instead
     // setTabBarShown(false);
@@ -545,7 +559,7 @@ void LauncherApplications::slotUpdateLayout()
     KServiceGroup::Ptr group = KServiceGroup::root();
     if (group && group->isValid()) {
         Plasma::ScrollWidget* rootscrollwidget = kMakeScrollWidget(this);
-        LauncherServiceWidget* rootwidget = new LauncherServiceWidget(rootscrollwidget, this, 0);
+        LauncherServiceWidget* rootwidget = new LauncherServiceWidget(rootscrollwidget, m_launcherapplet, this, 0);
         rootscrollwidget->setWidget(rootwidget);
         addTab(KIcon(group->icon()), group->caption(), rootscrollwidget);
 
@@ -564,7 +578,7 @@ void LauncherApplications::addGroup(LauncherServiceWidget *servicewidget, KServi
     const QSizeF iconsize = kIconSize();
     foreach (const KServiceGroup::Ptr subgroup, group->groupEntries(KServiceGroup::NoOptions)) {
         Plasma::ScrollWidget* scrollwidget = kMakeScrollWidget(this);
-        LauncherServiceWidget* subgroupwidget = new LauncherServiceWidget(scrollwidget, this, count());
+        LauncherServiceWidget* subgroupwidget = new LauncherServiceWidget(scrollwidget, m_launcherapplet, this, count());
         addGroup(subgroupwidget, subgroup);
         if (subgroupwidget->serviceCount() < 1) {
             delete subgroupwidget;
@@ -599,7 +613,7 @@ class LauncherRecent : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    LauncherRecent(QGraphicsWidget *parent);
+    LauncherRecent(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
 
 private Q_SLOTS:
     void slotUpdateLayout();
@@ -607,13 +621,15 @@ private Q_SLOTS:
 
 private:
     QMutex m_mutex;
+    LauncherApplet* m_launcherapplet;
     QGraphicsLinearLayout* m_layout;
     QList<Plasma::IconWidget*> m_iconwidgets;
     KDirWatch* m_dirwatch;
 };
 
-LauncherRecent::LauncherRecent(QGraphicsWidget *parent)
+LauncherRecent::LauncherRecent(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
     : QGraphicsWidget(parent),
+    m_launcherapplet(launcherapplet),
     m_layout(nullptr),
     m_dirwatch(nullptr)
 {
@@ -661,7 +677,7 @@ void LauncherRecent::slotUpdateLayout()
 void LauncherRecent::slotActivated()
 {
     Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    kRunUrl(iconwidget->property("_k_url").toString());
+    kRunUrl(iconwidget->property("_k_url").toString(), m_launcherapplet);
 }
 
 
@@ -945,16 +961,16 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     // m_tabbar->nativeWidget()->setShape(QTabBar::RoundedSouth);
     m_favoritesscrollwidget = kMakeScrollWidget(m_tabbar);
     m_favoritesscrollwidget->setMinimumSize(s_minimumsize);
-    m_favoriteswidget = new LauncherFavorites(m_favoritesscrollwidget);
+    m_favoriteswidget = new LauncherFavorites(m_favoritesscrollwidget, m_launcherapplet);
     m_favoritesscrollwidget->setWidget(m_favoriteswidget);
     m_tabbar->addTab(KIcon(s_favoriteicon), i18n("Favorites"), m_favoritesscrollwidget);
-    m_applicationswidget = new LauncherApplications(m_tabbar);
+    m_applicationswidget = new LauncherApplications(m_tabbar, m_launcherapplet);
     m_applicationswidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_applicationswidget->setMinimumSize(s_minimumsize);
     m_tabbar->addTab(KIcon(s_genericicon), i18n("Applications"), m_applicationswidget);
     m_recentscrollwidget = kMakeScrollWidget(m_tabbar);
     m_recentscrollwidget->setMinimumSize(s_minimumsize);
-    m_recentwidget = new LauncherRecent(m_recentscrollwidget);
+    m_recentwidget = new LauncherRecent(m_recentscrollwidget, m_launcherapplet);
     m_recentscrollwidget->setWidget(m_recentwidget);
     m_tabbar->addTab(KIcon(s_recenticon), i18n("Recently Used"), m_recentscrollwidget);
     m_leavecrollwidget = kMakeScrollWidget(m_tabbar);

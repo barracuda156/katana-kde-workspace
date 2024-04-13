@@ -43,7 +43,7 @@ protected:
 
 private:
     friend LauncherAppletWidget;
-    LauncherAppletWidget *m_launcherwidget;
+    LauncherAppletWidget* m_launcherwidget;
     QAction* m_editmenuaction;
 };
 
