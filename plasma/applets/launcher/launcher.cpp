@@ -101,7 +101,7 @@ static Plasma::ScrollWidget* kMakeScrollWidget(QGraphicsWidget *parent)
 static void kRunService(const QString &entrypath, LauncherApplet* launcherapplet)
 {
     Q_ASSERT(launcherapplet != nullptr);
-    launcherapplet->hidePopup();
+    launcherapplet->resetState();
 
     KService::Ptr service = KService::serviceByDesktopPath(entrypath);
     Q_ASSERT(!service.isNull());
@@ -113,7 +113,7 @@ static void kRunService(const QString &entrypath, LauncherApplet* launcherapplet
 static void kRunUrl(const QString &urlpath, LauncherApplet* launcherapplet)
 {
     Q_ASSERT(launcherapplet != nullptr);
-    launcherapplet->hidePopup();
+    launcherapplet->resetState();
 
     (void)new KRun(KUrl(urlpath), nullptr);
 }
@@ -160,7 +160,7 @@ class LauncherSearch : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    LauncherSearch(QGraphicsWidget *parent);
+    LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
 
     void prepare();
     void query(const QString &text);
@@ -173,14 +173,16 @@ private Q_SLOTS:
 
 private:
     QMutex m_mutex;
+    LauncherApplet* m_launcherapplet;
     QGraphicsLinearLayout* m_layout;
     QList<Plasma::IconWidget*> m_iconwidgets;
     Plasma::Label* m_label;
     Plasma::RunnerManager* m_runnermanager;
 };
 
-LauncherSearch::LauncherSearch(QGraphicsWidget *parent)
+LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
     : QGraphicsWidget(parent),
+    m_launcherapplet(launcherapplet),
     m_layout(nullptr),
     m_label(nullptr),
     m_runnermanager(nullptr)
@@ -286,6 +288,7 @@ void LauncherSearch::slotActivated()
 {
     Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
     const QString iconwidgeturl = iconwidget->property("_k_url").toString();
+    m_launcherapplet->resetState();
     m_runnermanager->run(iconwidgeturl);
 }
 
@@ -873,6 +876,8 @@ class LauncherAppletWidget : public QGraphicsWidget
 public:
     LauncherAppletWidget(LauncherApplet* auncherapplet);
 
+    void resetSearch();
+
 private Q_SLOTS:
     void slotSearch(const QString &text);
     void slotTimeout();
@@ -985,7 +990,7 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_searchscrollwidget = kMakeScrollWidget(this);
     m_searchscrollwidget->setMinimumSize(s_minimumsize);
     m_searchscrollwidget->setVisible(false);
-    m_searchwidget = new LauncherSearch(m_searchscrollwidget);
+    m_searchwidget = new LauncherSearch(m_searchscrollwidget, m_launcherapplet);
     m_searchscrollwidget->setWidget(m_searchwidget);
     m_layout->addItem(m_searchscrollwidget);
     connect(
@@ -1002,6 +1007,11 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     );
 
     setLayout(m_layout);
+}
+
+void LauncherAppletWidget::resetSearch()
+{
+    m_lineedit->setText(QString());
 }
 
 void LauncherAppletWidget::slotSearch(const QString &text)
@@ -1067,6 +1077,12 @@ QList<QAction*> LauncherApplet::contextualActions()
         result.append(m_editmenuaction);
     }
     return result;
+}
+
+void LauncherApplet::resetState()
+{
+    hidePopup();
+    m_launcherwidget->resetSearch();
 }
 
 void LauncherApplet::slotEditMenu()

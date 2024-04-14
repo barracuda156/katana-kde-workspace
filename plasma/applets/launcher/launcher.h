@@ -35,6 +35,9 @@ public:
     QGraphicsWidget* graphicsWidget() final;
     QList<QAction*> contextualActions() final;
 
+    // internal
+    void resetState();
+
 private Q_SLOTS:
     void slotEditMenu();
 
