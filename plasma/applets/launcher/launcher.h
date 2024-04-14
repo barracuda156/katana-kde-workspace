@@ -21,6 +21,9 @@
 #define LAUNCHER_H
 
 #include <QAction>
+#include <KConfigDialog>
+#include <KPluginSelector>
+#include <KSharedConfig>
 #include <Plasma/PopupApplet>
 
 class LauncherAppletWidget;
@@ -34,17 +37,22 @@ public:
     void init() final;
     QGraphicsWidget* graphicsWidget() final;
     QList<QAction*> contextualActions() final;
+    void createConfigurationInterface(KConfigDialog *parent) final;
 
     // internal
     void resetState();
 
 private Q_SLOTS:
     void slotEditMenu();
+    void slotConfigAccepted();
 
 private:
     friend LauncherAppletWidget;
     LauncherAppletWidget* m_launcherwidget;
     QAction* m_editmenuaction;
+    KPluginSelector* m_selector;
+    KSharedConfig::Ptr m_shareconfig;
+    KConfigGroup m_configgroup;
 };
 
 K_EXPORT_PLASMA_APPLET(launcher, LauncherApplet)

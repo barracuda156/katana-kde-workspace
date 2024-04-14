@@ -152,12 +152,26 @@ static void kLockScreen()
     screensaver.call("Lock");
 }
 
+static QStringList kAllowedRunners(KConfigGroup configgroup)
+{
+    QStringList result;
+    foreach (KPluginInfo &plugin, Plasma::RunnerManager::listRunnerInfo()) {
+        plugin.load(configgroup);
+        if (plugin.isPluginEnabled()) {
+            result.append(plugin.pluginName());
+        }
+    }
+    // qDebug() << Q_FUNC_INFO << result << configgroup.name();
+    return result;
+}
+
 class LauncherSearch : public QGraphicsWidget
 {
     Q_OBJECT
 public:
     LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
 
+    void setAllowedRunners(const QStringList &runners);
     void prepare();
     void query(const QString &text);
     void finish();
@@ -192,14 +206,18 @@ LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcher
     m_label->setAlignment(Qt::AlignCenter);
     m_label->setText(i18n("No matches found"));
     m_layout->addItem(m_label);
+}
 
+void LauncherSearch::setAllowedRunners(const QStringList &runners)
+{
+    // NOTE: Plasma::RunnerManager basically never unloads, have to re-create it
+    delete m_runnermanager;
     m_runnermanager = new Plasma::RunnerManager(this);
     connect(
         m_runnermanager, SIGNAL(matchesChanged(QList<Plasma::QueryMatch>)),
         this, SLOT(slotUpdateLayout(QList<Plasma::QueryMatch>))
     );
-    // TODO: option to disable and enable runners
-    // m_runnermanager->setAllowedRunners(s_allowedrunners);
+    m_runnermanager->setAllowedRunners(runners);
 }
 
 void LauncherSearch::prepare()
@@ -908,6 +926,7 @@ public:
     LauncherAppletWidget(LauncherApplet* auncherapplet);
 
     void resetSearch();
+    void setAllowedRunners(const QStringList &runners);
 
 private Q_SLOTS:
     void slotSearch(const QString &text);
@@ -1045,6 +1064,12 @@ void LauncherAppletWidget::resetSearch()
     m_lineedit->setText(QString());
 }
 
+
+void LauncherAppletWidget::setAllowedRunners(const QStringList &runners)
+{
+    m_searchwidget->setAllowedRunners(runners);
+}
+
 void LauncherAppletWidget::slotSearch(const QString &text)
 {
     const QString query = text.trimmed();
@@ -1072,11 +1097,14 @@ void LauncherAppletWidget::slotTimeout()
 LauncherApplet::LauncherApplet(QObject *parent, const QVariantList &args)
     : Plasma::PopupApplet(parent, args),
     m_launcherwidget(nullptr),
-    m_editmenuaction(nullptr)
+    m_editmenuaction(nullptr),
+    m_selector(nullptr),
+    m_shareconfig(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_launcher");
     setPopupIcon(s_defaultpopupicon);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
+    setHasConfigurationInterface(true);
 
     m_launcherwidget = new LauncherAppletWidget(this);
     setFocusProxy(m_launcherwidget);
@@ -1085,6 +1113,9 @@ LauncherApplet::LauncherApplet(QObject *parent, const QVariantList &args)
 void LauncherApplet::init()
 {
     setGlobalShortcut(KShortcut(Qt::ALT+Qt::Key_F2));
+    m_shareconfig = KSharedConfig::openConfig(globalConfig().config()->name());
+    m_configgroup = m_shareconfig->group("Plugins");
+    m_launcherwidget->setAllowedRunners(kAllowedRunners(m_configgroup));
 }
 
 QGraphicsWidget* LauncherApplet::graphicsWidget()
@@ -1110,6 +1141,23 @@ QList<QAction*> LauncherApplet::contextualActions()
     return result;
 }
 
+void LauncherApplet::createConfigurationInterface(KConfigDialog *parent)
+{
+    QWidget *widget = new QWidget();
+    m_selector = new KPluginSelector(widget);
+    m_selector->addPlugins(
+        Plasma::RunnerManager::listRunnerInfo(),
+        KPluginSelector::ReadConfigFile,
+        i18n("Available Plugins"), QString(),
+        m_shareconfig
+    );
+    connect(m_selector, SIGNAL(changed(bool)), parent, SLOT(settingsModified()));
+    parent->addPage(m_selector, i18n("Runners"), "preferences-plugin");
+
+    connect(parent, SIGNAL(applyClicked()), this, SLOT(slotConfigAccepted()));
+    connect(parent, SIGNAL(okClicked()), this, SLOT(slotConfigAccepted()));
+}
+
 void LauncherApplet::resetState()
 {
     hidePopup();
@@ -1123,6 +1171,18 @@ void LauncherApplet::slotEditMenu()
     } else {
         showMessage(KIcon("dialog-error"), i18n("Failed to launch menu editor"), Plasma::MessageButton::ButtonOk);
     }
+}
+
+void LauncherApplet::slotConfigAccepted()
+{
+    Q_ASSERT(m_selector != nullptr);
+    Q_ASSERT(m_shareconfig != nullptr);
+    m_selector->save();
+    m_configgroup.sync();
+    m_shareconfig->sync();
+    m_launcherwidget->setAllowedRunners(kAllowedRunners(m_configgroup));
+    m_launcherwidget->resetSearch();
+    emit configNeedsSaving();
 }
 
 #include "launcher.moc"
