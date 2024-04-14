@@ -676,6 +676,11 @@ void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
             this, SLOT(slotAppActivated())
         );
     }
+    const QString serviceid = servicegroup->relPath();
+    if (serviceid.isEmpty() || serviceid == QLatin1String("/")) {
+        // hide the navigator when the root group is empty
+        m_launchernavigator->setVisible(m_iconwidgets.size() > 0);
+    }
 }
 
 void LauncherApplications::slotNavigate(const QString &id)
