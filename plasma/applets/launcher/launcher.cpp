@@ -45,6 +45,8 @@
 #include <Plasma/Label>
 #include <Plasma/LineEdit>
 #include <Plasma/TabBar>
+#include <Plasma/SvgWidget>
+#include <Plasma/ToolButton>
 #include <Plasma/ScrollWidget>
 #include <Plasma/RunnerManager>
 #include <KDebug>
@@ -70,7 +72,14 @@ static QSizeF kIconSize()
     return QSizeF(iconsize, iconsize);
 }
 
-// TODO: custom widget to catch hover events from anywhere in the widget rect?
+static QGraphicsWidget* kMakeSpacer(QGraphicsWidget *parent)
+{
+    QGraphicsWidget* widget = new QGraphicsWidget(parent);
+    widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    widget->setMinimumSize(0, 0);
+    return widget;
+}
+
 static Plasma::IconWidget* kMakeIconWidget(QGraphicsWidget *parent,
                                            const QSizeF &iconsize,
                                            const QString &text,
@@ -127,7 +136,7 @@ static QString kGenericIcon(const QString &name)
     return s_genericicon;
 }
 
-static QString kFavouriteIcon(const QString &name)
+static QString kFavoriteIcon(const QString &name)
 {
     if (!name.isEmpty()) {
         return name;
@@ -279,7 +288,7 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
             );
             iconwidget->addIconAction(matchconfigaction);
             counter++;
-            qDebug() << Q_FUNC_INFO << match.id();
+            // qDebug() << Q_FUNC_INFO << match.id();
         }
         foreach (QAction* action, m_runnermanager->actionsForMatch(match)) {
             iconwidget->addIconAction(action);
@@ -420,7 +429,7 @@ void LauncherFavorites::slotUpdateLayout()
         // qDebug() << Q_FUNC_INFO << service->entryPath() << service->name() << service->comment();
         Plasma::IconWidget* iconwidget = kMakeIconWidget(
             this,
-            iconsize, service->name(), service->genericName(), kFavouriteIcon(service->icon()), service->entryPath()
+            iconsize, service->name(), service->genericName(), kFavoriteIcon(service->icon()), service->entryPath()
         );
         m_iconwidgets.append(iconwidget);
         m_layout->addItem(iconwidget);
@@ -439,99 +448,109 @@ void LauncherFavorites::slotActivated()
 }
 
 
-class LauncherServiceWidget : public QGraphicsWidget
+class LauncherNavigatorStruct
+{
+public:
+    LauncherNavigatorStruct(Plasma::SvgWidget* _svgwidget, Plasma::ToolButton *_toolbutton, const QString &_id)
+        : svgwidget(_svgwidget), toolbutton(_toolbutton), id(_id)
+    {
+    }
+
+    Plasma::SvgWidget* svgwidget;
+    Plasma::ToolButton* toolbutton;
+    QString id;
+};
+
+class LauncherNavigator : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    LauncherServiceWidget(QGraphicsWidget *parent, LauncherApplet *launcherapplet,
-                          Plasma::TabBar *tabbar, const int tabindex);
+    LauncherNavigator(QGraphicsWidget *parent);
 
-    void appendGroup(Plasma::IconWidget* iconwidget, LauncherServiceWidget* servicewidget);
-    void appendApp(Plasma::IconWidget* iconwidget);
-    int serviceCount() const;
+    void reset();
+    void addNavigation(const QString &id, const QString &text);
 
-public Q_SLOTS:
-    void slotGroupActivated();
-    void slotAppActivated();
-    void slotFavorite();
-    
+Q_SIGNALS:
+    void navigate(const QString &id);
+
+private Q_SLOTS:
+    void slotReleased();
+
 private:
-    LauncherApplet* m_launcherapplet;
-    Plasma::TabBar* m_tabbar;
-    int m_tabindex;
+    QMutex m_mutex;
     QGraphicsLinearLayout* m_layout;
-    QList<Plasma::IconWidget*> m_iconwidgets;
+    QList<LauncherNavigatorStruct*> m_navigations;
+    QGraphicsWidget* m_spacer;
 };
 
-LauncherServiceWidget::LauncherServiceWidget(QGraphicsWidget *parent, LauncherApplet *launcherapplet,
-                                             Plasma::TabBar *tabbar, const int tabindex)
-    : QGraphicsWidget(parent),
-    m_launcherapplet(launcherapplet),
-    m_tabbar(tabbar),
-    m_tabindex(tabindex),
-    m_layout(nullptr)
+LauncherNavigator::LauncherNavigator(QGraphicsWidget *parent)
+    : m_layout(nullptr),
+    m_spacer(nullptr)
 {
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
     setLayout(m_layout);
+
+    m_spacer = kMakeSpacer(this);
+    m_layout->addItem(m_spacer);
 }
 
-int LauncherServiceWidget::serviceCount() const
+void LauncherNavigator::reset()
 {
-    return m_iconwidgets.size();
+    QMutexLocker locker(&m_mutex);
+    foreach (LauncherNavigatorStruct *navigation, m_navigations) {
+        m_layout->removeItem(navigation->toolbutton);
+        delete navigation->toolbutton;
+        m_layout->removeItem(navigation->svgwidget);
+        delete navigation->svgwidget;
+    }
+    qDeleteAll(m_navigations);
+    m_navigations.clear();
+    if (m_spacer) {
+        m_layout->removeItem(m_spacer);
+        delete m_spacer;
+        m_spacer = nullptr;
+    }
+    m_spacer = kMakeSpacer(this);
+    m_layout->addItem(m_spacer);
 }
 
-void LauncherServiceWidget::appendGroup(Plasma::IconWidget* iconwidget, LauncherServiceWidget* servicewidget)
+void LauncherNavigator::addNavigation(const QString &id, const QString &text)
 {
-    m_iconwidgets.append(iconwidget);
-    m_layout->addItem(iconwidget);
+    // qDebug() << Q_FUNC_INFO << id << text;
+    QMutexLocker locker(&m_mutex);
+    Plasma::Svg* svg = new Plasma::Svg(this);
+    svg->setImagePath("widgets/arrows");
+    Plasma::SvgWidget* svgwidget = new Plasma::SvgWidget(this);
+    svgwidget->setElementID("right-arrow");
+    svgwidget->setSvg(svg);
+    m_layout->addItem(svgwidget);
+    Plasma::ToolButton* toolbutton = new Plasma::ToolButton(this);
+    toolbutton->setText(text);
+    toolbutton->setProperty("_k_id", id);
+    m_layout->addItem(toolbutton);
     connect(
-        iconwidget, SIGNAL(activated()),
-        servicewidget, SLOT(slotGroupActivated())
+        toolbutton, SIGNAL(released()),
+        this, SLOT(slotReleased())
     );
+    if (m_spacer) {
+        m_layout->removeItem(m_spacer);
+        delete m_spacer;
+        m_spacer = nullptr;
+    }
+    m_spacer = kMakeSpacer(this);
+    m_layout->addItem(m_spacer);
+    m_navigations.append(new LauncherNavigatorStruct(svgwidget, toolbutton, id));
 }
 
-void LauncherServiceWidget::appendApp(Plasma::IconWidget* iconwidget)
+void LauncherNavigator::slotReleased()
 {
-    // TODO: dual-action to remove
-    QAction* favoriteiconaction = new QAction(iconwidget);
-    favoriteiconaction->setText(i18n("Add to Favorites"));
-    favoriteiconaction->setIcon(KIcon(s_favoriteicon));
-    favoriteiconaction->setProperty("_k_url", iconwidget->property("_k_url"));
-    favoriteiconaction->setVisible(true);
-    favoriteiconaction->setEnabled(true);
-    connect(
-        favoriteiconaction, SIGNAL(triggered()),
-        this, SLOT(slotFavorite())
-    );
-    iconwidget->addIconAction(favoriteiconaction);
-    m_iconwidgets.append(iconwidget);
-    m_layout->addItem(iconwidget);
-    connect(
-        iconwidget, SIGNAL(activated()),
-        this, SLOT(slotAppActivated())
-    );
+    Plasma::ToolButton* toolbutton = qobject_cast<Plasma::ToolButton*>(sender());
+    emit navigate(toolbutton->property("_k_id").toString());
 }
 
-void LauncherServiceWidget::slotGroupActivated()
-{
-    m_tabbar->setCurrentIndex(m_tabindex);
-}
-
-void LauncherServiceWidget::slotAppActivated()
-{
-    Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    kRunService(iconwidget->property("_k_url").toString(), m_launcherapplet);
-}
-
-void LauncherServiceWidget::slotFavorite()
-{
-    QAction* favoriteiconaction = qobject_cast<QAction*>(sender());
-    qDebug() << Q_FUNC_INFO << favoriteiconaction->property("_k_url").toString();
-    // TODO: implement
-}
-
-class LauncherApplications : public Plasma::TabBar
+// TODO: context menu to add or remove from favorites, animated layout update
+class LauncherApplications : public QGraphicsWidget
 {
     Q_OBJECT
 public:
@@ -539,23 +558,42 @@ public:
 
 private Q_SLOTS:
     void slotUpdateLayout();
+    void slotNavigate(const QString &id);
+    void slotDelayedNavigate();
+    void slotGroupActivated();
+    void slotAppActivated();
 
 private:
-    void addGroup(LauncherServiceWidget *servicewidget, KServiceGroup::Ptr group);
+    int serviceCount(KServiceGroup::Ptr servicegroup);
+    void addGroup(KServiceGroup::Ptr servicegroup);
 
     QMutex m_mutex;
     LauncherApplet* m_launcherapplet;
+    QGraphicsLinearLayout* m_layout;
+    LauncherNavigator* m_launchernavigator;
+    QList<Plasma::IconWidget*> m_iconwidgets;
+    QString m_id;
 };
 
 LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
-    : Plasma::TabBar(parent),
-    m_launcherapplet(launcherapplet)
+    : QGraphicsWidget(parent),
+    m_launcherapplet(launcherapplet),
+    m_layout(nullptr),
+    m_launchernavigator(nullptr)
 {
-    // TODO: navigation bar instead
-    // setTabBarShown(false);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
+    setLayout(m_layout);
+
+    m_launchernavigator = new LauncherNavigator(this);
+    m_layout->addItem(m_launchernavigator);
 
     slotUpdateLayout();
 
+    connect(
+        m_launchernavigator, SIGNAL(navigate(QString)),
+        this, SLOT(slotNavigate(QString))
+    );
     connect(
         KSycoca::self(), SIGNAL(databaseChanged(QStringList)),
         this, SLOT(slotUpdateLayout())
@@ -565,66 +603,140 @@ LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherAppl
 void LauncherApplications::slotUpdateLayout()
 {
     QMutexLocker locker(&m_mutex);
-
-    int counter = count();
-    while (counter) {
-        counter--;
-        // NOTE: deletes items too which in this case is the scroll and service widget
-        removeTab(counter);
+    foreach (Plasma::IconWidget* iconwidget, m_iconwidgets) {
+        m_layout->removeItem(iconwidget);
     }
+    qDeleteAll(m_iconwidgets);
+    m_iconwidgets.clear();
 
-    KServiceGroup::Ptr group = KServiceGroup::root();
-    if (group && group->isValid()) {
-        Plasma::ScrollWidget* rootscrollwidget = kMakeScrollWidget(this);
-        LauncherServiceWidget* rootwidget = new LauncherServiceWidget(rootscrollwidget, m_launcherapplet, this, 0);
-        rootscrollwidget->setWidget(rootwidget);
-        addTab(KIcon(group->icon()), group->caption(), rootscrollwidget);
+    m_launchernavigator->reset();
 
-        addGroup(rootwidget, group);
+    adjustSize();
+
+    m_id.clear();
+    KServiceGroup::Ptr rootgroup = KServiceGroup::root();
+    if (!rootgroup.isNull() && rootgroup->isValid()) {
+        m_id = rootgroup->relPath();
+        m_launchernavigator->addNavigation(m_id, rootgroup->caption());
+        addGroup(rootgroup);
     }
 }
 
-void LauncherApplications::addGroup(LauncherServiceWidget *servicewidget, KServiceGroup::Ptr group)
+int LauncherApplications::serviceCount(KServiceGroup::Ptr servicegroup)
 {
-    const QString name = group->name();
-    if (name.isEmpty() || group->noDisplay()) {
-        kDebug() << "hidden or invalid group" << name;
+    int result = 0;
+    foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
+        if (serviceCount(subgroup) > 0) {
+            result++;
+        }
+    }
+    foreach (const KService::Ptr appservice, servicegroup->serviceEntries(KServiceGroup::NoOptions)) {
+        if (appservice->noDisplay()) {
+            kDebug() << "hidden entry" << appservice->name();
+            continue;
+        }
+        result++;
+    }
+    return result;
+}
+
+void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
+{
+    const QSizeF iconsize = kIconSize();
+    foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
+        if (serviceCount(subgroup) > 0) {
+            Plasma::IconWidget* iconwidget = kMakeIconWidget(
+                this,
+                iconsize, subgroup->caption(), subgroup->comment(), kGenericIcon(subgroup->icon()), subgroup->relPath()
+            );
+            m_iconwidgets.append(iconwidget);
+            m_layout->addItem(iconwidget);
+            connect(
+                iconwidget, SIGNAL(activated()),
+                this, SLOT(slotGroupActivated())
+            );
+        }
+    }
+    foreach (const KService::Ptr appservice, servicegroup->serviceEntries(KServiceGroup::NoOptions)) {
+        if (appservice->noDisplay()) {
+            kDebug() << "hidden entry" << appservice->name();
+            continue;
+        }
+        Plasma::IconWidget* iconwidget = kMakeIconWidget(
+            this,
+            iconsize, appservice->name(), appservice->comment(), kGenericIcon(appservice->icon()), appservice->entryPath()
+        );
+        m_iconwidgets.append(iconwidget);
+        m_layout->addItem(iconwidget);
+        connect(
+            iconwidget, SIGNAL(activated()),
+            this, SLOT(slotAppActivated())
+        );
+    }
+}
+
+void LauncherApplications::slotNavigate(const QString &id)
+{
+    if (id == m_id) {
         return;
     }
 
-    const QSizeF iconsize = kIconSize();
-    foreach (const KServiceGroup::Ptr subgroup, group->groupEntries(KServiceGroup::NoOptions)) {
-        Plasma::ScrollWidget* scrollwidget = kMakeScrollWidget(this);
-        LauncherServiceWidget* subgroupwidget = new LauncherServiceWidget(scrollwidget, m_launcherapplet, this, count());
-        addGroup(subgroupwidget, subgroup);
-        if (subgroupwidget->serviceCount() < 1) {
-            delete subgroupwidget;
-            delete scrollwidget;
-        } else {
-            const QString subgroupicon = kGenericIcon(subgroup->icon());
-            scrollwidget->setWidget(subgroupwidget);
-            Plasma::IconWidget* subgroupiconwidget = kMakeIconWidget(
-                servicewidget,
-                iconsize, subgroup->caption(), subgroup->comment(), subgroupicon, QString()
-            );
-            servicewidget->appendGroup(subgroupiconwidget, subgroupwidget);
-            addTab(KIcon(subgroupicon), subgroup->caption(), scrollwidget);
-        }
-    }
+    m_id = id;
+    // delayed because this is connected to widgets that will be destroyed
+    QTimer::singleShot(100, this, SLOT(slotDelayedNavigate()));
+}
 
-    foreach (const KService::Ptr app, group->serviceEntries(KServiceGroup::NoOptions)) {
-        if (app->noDisplay()) {
-            kDebug() << "hidden entry" << app->name();
-            continue;
+void LauncherApplications::slotDelayedNavigate()
+{
+    QMutexLocker locker(&m_mutex);
+    foreach (Plasma::IconWidget* iconwidget, m_iconwidgets) {
+        m_layout->removeItem(iconwidget);
+    }
+    qDeleteAll(m_iconwidgets);
+    m_iconwidgets.clear();
+
+    m_launchernavigator->reset();
+
+    adjustSize();
+
+    // qDebug() << Q_FUNC_INFO << m_id;
+    KServiceGroup::Ptr servicegroup = KServiceGroup::group(m_id);
+    if (!servicegroup.isNull() && servicegroup->isValid()) {
+        KServiceGroup::Ptr rootgroup = KServiceGroup::root();
+        if (!rootgroup.isNull() && rootgroup->isValid()) {
+            m_launchernavigator->addNavigation(rootgroup->relPath(), rootgroup->caption());
+        } else {
+            kWarning() << "root group is not valid";
         }
-        Plasma::IconWidget* appiconwidget = kMakeIconWidget(
-            servicewidget,
-            iconsize, app->name(), app->comment(), kGenericIcon(app->icon()), app->entryPath()
-        );
-        servicewidget->appendApp(appiconwidget);
+
+        QString groupid;
+        foreach (const QString &subname, m_id.split(QLatin1Char('/'), QString::SkipEmptyParts)) {
+            groupid.append(subname);
+            groupid.append(QLatin1Char('/'));
+            KServiceGroup::Ptr subgroup = KServiceGroup::group(groupid);
+            if (subgroup.isNull() || !subgroup->isValid()) {
+                kWarning() << "invalid subgroup" << subname;
+                continue;
+            }
+            m_launchernavigator->addNavigation(groupid, subgroup->caption());
+        }
+        addGroup(servicegroup);
+    } else {
+        kWarning() << "invalid group" << m_id;
     }
 }
 
+void LauncherApplications::slotGroupActivated()
+{
+    Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
+    slotNavigate(iconwidget->property("_k_url").toString());
+}
+
+void LauncherApplications::slotAppActivated()
+{
+    Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
+    kRunService(iconwidget->property("_k_url").toString(), m_launcherapplet);
+}
 
 class LauncherRecent : public QGraphicsWidget
 {
@@ -942,6 +1054,7 @@ private:
     Plasma::TabBar* m_tabbar;
     Plasma::ScrollWidget* m_favoritesscrollwidget;
     LauncherFavorites* m_favoriteswidget;
+    Plasma::ScrollWidget* m_applicationsscrollwidget;
     LauncherApplications* m_applicationswidget;
     Plasma::ScrollWidget* m_recentscrollwidget;
     LauncherRecent* m_recentwidget;
@@ -963,6 +1076,7 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_tabbar(nullptr),
     m_favoritesscrollwidget(nullptr),
     m_favoriteswidget(nullptr),
+    m_applicationsscrollwidget(nullptr),
     m_applicationswidget(nullptr),
     m_recentscrollwidget(nullptr),
     m_recentwidget(nullptr),
@@ -1019,10 +1133,11 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_favoriteswidget = new LauncherFavorites(m_favoritesscrollwidget, m_launcherapplet);
     m_favoritesscrollwidget->setWidget(m_favoriteswidget);
     m_tabbar->addTab(KIcon(s_favoriteicon), i18n("Favorites"), m_favoritesscrollwidget);
-    m_applicationswidget = new LauncherApplications(m_tabbar, m_launcherapplet);
-    m_applicationswidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_applicationswidget->setMinimumSize(s_minimumsize);
-    m_tabbar->addTab(KIcon(s_genericicon), i18n("Applications"), m_applicationswidget);
+    m_applicationsscrollwidget = kMakeScrollWidget(m_tabbar);
+    m_applicationsscrollwidget->setMinimumSize(s_minimumsize);
+    m_applicationswidget = new LauncherApplications(m_applicationsscrollwidget, m_launcherapplet);
+    m_applicationsscrollwidget->setWidget(m_applicationswidget);
+    m_tabbar->addTab(KIcon(s_genericicon), i18n("Applications"), m_applicationsscrollwidget);
     m_recentscrollwidget = kMakeScrollWidget(m_tabbar);
     m_recentscrollwidget->setMinimumSize(s_minimumsize);
     m_recentwidget = new LauncherRecent(m_recentscrollwidget, m_launcherapplet);
