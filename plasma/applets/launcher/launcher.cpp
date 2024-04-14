@@ -45,6 +45,7 @@
 #include <Plasma/Label>
 #include <Plasma/LineEdit>
 #include <Plasma/TabBar>
+#include <Plasma/Frame>
 #include <Plasma/SvgWidget>
 #include <Plasma/ToolButton>
 #include <Plasma/ScrollWidget>
@@ -461,7 +462,7 @@ public:
     QString id;
 };
 
-class LauncherNavigator : public QGraphicsWidget
+class LauncherNavigator : public Plasma::Frame
 {
     Q_OBJECT
 public:
@@ -484,10 +485,12 @@ private:
 };
 
 LauncherNavigator::LauncherNavigator(QGraphicsWidget *parent)
-    : m_layout(nullptr),
+    : Plasma::Frame(parent),
+    m_layout(nullptr),
     m_spacer(nullptr)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    setFrameShadow(Plasma::Frame::Sunken);
     m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
     setLayout(m_layout);
 
@@ -564,7 +567,7 @@ private Q_SLOTS:
     void slotAppActivated();
 
 private:
-    int serviceCount(KServiceGroup::Ptr servicegroup);
+    static int serviceCount(KServiceGroup::Ptr servicegroup);
     void addGroup(KServiceGroup::Ptr servicegroup);
 
     QMutex m_mutex;
@@ -737,6 +740,7 @@ void LauncherApplications::slotAppActivated()
     Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
     kRunService(iconwidget->property("_k_url").toString(), m_launcherapplet);
 }
+
 
 class LauncherRecent : public QGraphicsWidget
 {
