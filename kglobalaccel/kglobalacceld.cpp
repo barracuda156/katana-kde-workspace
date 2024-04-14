@@ -209,6 +209,7 @@ void KGlobalAccelDPrivate::_k_newGlobalShortcutNotification()
 
         KNotification *notification = new KNotification(q->parent());
         notification->setEventID("kglobalaccel/newshortcutregistered");
+        notification->setFlags(KNotification::Persistent);
         notification->setText(i18n("The application %1 has registered a new global shortcut", component->friendlyName()));
         notification->setActions(QStringList(i18n("Open Global Shortcuts Editor")));
         QObject::connect(notification, SIGNAL(action1Activated()), component, SLOT(showKCM()));
