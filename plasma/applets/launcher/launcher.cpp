@@ -62,6 +62,7 @@ static const QString s_genericicon = QString::fromLatin1("applications-other");
 static const QString s_favoriteicon = QString::fromLatin1("bookmarks");
 static const QString s_recenticon = QString::fromLatin1("document-open-recent");
 static const int s_searchdelay = 500; // ms
+static const int s_leavetimeout = 5000; // ms
 
 static QSizeF kIconSize()
 {
@@ -140,11 +141,6 @@ static QString kRecentIcon(const QString &name)
         return name;
     }
     return s_recenticon;
-}
-
-static bool kCanLockScreen()
-{
-    return KDBusConnectionPool::isServiceRegistered("org.freedesktop.ScreenSaver", QDBusConnection::sessionBus());
 }
 
 static void kLockScreen()
@@ -693,28 +689,47 @@ public:
 private Q_SLOTS:
     void slotUpdateLayout();
     void slotActivated();
+    void slotTimeout();
 
 private:
     QMutex m_mutex;
     QGraphicsLinearLayout* m_layout;
     QList<Plasma::IconWidget*> m_iconwidgets;
     Plasma::Separator* m_systemseparator;
+    QTimer* m_timer;
+    bool m_canlock;
+    bool m_canswitch;
+    bool m_canreboot;
+    bool m_canshutdown;
 };
 
-// TODO: check for lock and switchable state changes
 LauncherLeave::LauncherLeave(QGraphicsWidget *parent)
     : QGraphicsWidget(parent),
-    m_systemseparator(nullptr)
+    m_systemseparator(nullptr),
+    m_timer(nullptr),
+    m_canlock(false),
+    m_canswitch(false),
+    m_canreboot(false),
+    m_canshutdown(false)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
     setLayout(m_layout);
 
+    m_timer = new QTimer(this);
+    m_timer->setInterval(s_leavetimeout);
+
+    slotTimeout();
     slotUpdateLayout();
     connect(
         Solid::PowerManagement::notifier(), SIGNAL(supportedSleepStatesChanged()),
         this, SLOT(slotUpdateLayout())
     );
+    connect(
+        m_timer, SIGNAL(timeout()),
+        this, SLOT(slotTimeout())
+    );
+    m_timer->start();
 }
 
 void LauncherLeave::slotUpdateLayout()
@@ -736,7 +751,7 @@ void LauncherLeave::slotUpdateLayout()
 
     const QSizeF iconsize = kIconSize();
     bool hassessionicon = false;
-    if (kCanLockScreen()) {
+    if (m_canlock) {
         Plasma::IconWidget* iconwidget = kMakeIconWidget(
             this,
             iconsize, i18n("Lock"), i18n("Lock screen"), "system-lock-screen", "lock"
@@ -749,7 +764,7 @@ void LauncherLeave::slotUpdateLayout()
         );
         hassessionicon = true;
     }
-    if (KDisplayManager().isSwitchable()) {
+    if (m_canswitch) {
         Plasma::IconWidget* iconwidget = kMakeIconWidget(
             this,
             iconsize, i18n("Switch user"), i18n("Start a parallel session as a different user"), "system-switch-user", "switch"
@@ -806,7 +821,7 @@ void LauncherLeave::slotUpdateLayout()
         );
     }
 
-    if (KWorkSpace::canShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeReboot)) {
+    if (m_canreboot) {
         Plasma::IconWidget* iconwidget = kMakeIconWidget(
             this,
             iconsize, i18nc("Restart computer", "Restart"), i18n("Restart computer"), "system-reboot", "restart"
@@ -818,7 +833,7 @@ void LauncherLeave::slotUpdateLayout()
             this, SLOT(slotActivated())
         );
     }
-    if (KWorkSpace::canShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeHalt)) {
+    if (m_canshutdown) {
         Plasma::IconWidget* iconwidget = kMakeIconWidget(
             this,
             iconsize, i18n("Shut down"), i18n("Turn off computer"), "system-shutdown", "shutdown"
@@ -866,6 +881,22 @@ void LauncherLeave::slotActivated()
     } else {
         Q_ASSERT(false);
         kWarning() << "invalid url" << iconwidgeturl;
+    }
+}
+
+void LauncherLeave::slotTimeout()
+{
+    const bool oldcanlock = m_canlock;
+    const bool oldcanswitch = m_canswitch;
+    const bool oldcanreboot = m_canreboot;
+    const bool oldcanshutdown = m_canshutdown;
+    m_canlock = KDBusConnectionPool::isServiceRegistered("org.freedesktop.ScreenSaver", QDBusConnection::sessionBus());
+    m_canswitch = KDisplayManager().isSwitchable();
+    m_canreboot = KWorkSpace::canShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeReboot);
+    m_canshutdown = KWorkSpace::canShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeHalt);
+    if (oldcanlock != m_canlock || oldcanswitch != m_canswitch ||
+        oldcanreboot != m_canreboot || oldcanshutdown != m_canshutdown) {
+        slotUpdateLayout();
     }
 }
 
