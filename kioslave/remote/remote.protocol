@@ -11,5 +11,5 @@ moving=true
 Icon=folder-remote
 maxInstances=4
 #TODO DocPath=kioslave/file.html
-Class=:local
+local=true
 deleteRecursive=true

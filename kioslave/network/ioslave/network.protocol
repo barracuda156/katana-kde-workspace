@@ -6,4 +6,4 @@ exec=kio_network
 listing=true
 reading=true
 determineMimetypeFromExtension=false
-Class=:internet
+local=false

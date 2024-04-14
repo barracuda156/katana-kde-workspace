@@ -10,6 +10,6 @@ makedir=false
 moving=false
 source=false
 Icon=edit-find
-Class=:local
+local=true
 determineMimetypeFromExtension=false
 maxInstances=10

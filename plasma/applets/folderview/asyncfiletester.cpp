@@ -59,7 +59,7 @@ void AsyncFileTester::checkIfFolder(const QModelIndex &index, QObject *object, c
                 return;
             }
             
-            if (KProtocolInfo::protocolClass(url.protocol()) == QString(":local")) {
+            if (KProtocolInfo::protocolIsLocal(url.protocol())) {
                 AsyncFileTester *tester = new AsyncFileTester(index, object, method);
                 tester->delayedFolderCheck(url);
                 return;

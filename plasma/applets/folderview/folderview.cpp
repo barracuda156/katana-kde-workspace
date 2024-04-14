@@ -472,7 +472,7 @@ void FolderView::init()
 
 void FolderView::networkStatusChanged(const KNetworkManager::KNetworkStatus status)
 {
-    if (KProtocolInfo::protocolClass(m_url.protocol()) != ":local") {
+    if (!KProtocolInfo::protocolIsLocal(m_url.protocol())) {
         if (status == KNetworkManager::ConnectedStatus) {
             m_dirLister->openUrl(m_url);
         } else {
@@ -1419,7 +1419,7 @@ void FolderView::setUrl(const KUrl &url)
     m_url = url;
     setAssociatedApplicationUrls(KUrl::List() << m_url);
 
-    if (KProtocolInfo::protocolClass(m_url.protocol()) == ":local") {
+    if (KProtocolInfo::protocolIsLocal(m_url.protocol())) {
         m_dirLister->openUrl(m_url);
     } else if (m_networkManager->status() != KNetworkManager::ConnectedStatus) {
         QString networkStatus(i18n("Network is not reachable"));

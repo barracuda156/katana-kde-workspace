@@ -10,4 +10,4 @@ linking=false
 moving=false
 Icon=camera-photo
 maxInstances=1
-Class=:local
+local=true
