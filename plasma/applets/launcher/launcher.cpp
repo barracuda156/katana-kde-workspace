@@ -251,7 +251,6 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
 void LauncherWidget::setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext)
 {
     m_iconwidget->setMinimumIconSize(iconsize);
-    m_iconwidget->setMaximumIconSize(iconsize);
     m_iconwidget->setIcon(icon);
     m_textwidget->setText(text);
     m_subtextwidget->setText(subtext);
