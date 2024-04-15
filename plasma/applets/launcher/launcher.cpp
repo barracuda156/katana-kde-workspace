@@ -86,8 +86,6 @@ static Plasma::ScrollWidget* kMakeScrollWidget(QGraphicsWidget *parent)
 {
     Plasma::ScrollWidget* scrollwidget = new Plasma::ScrollWidget(parent);
     scrollwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    // TODO: this really does not work..
-    scrollwidget->setOverShoot(false);
     return scrollwidget;
 }
 
@@ -278,7 +276,7 @@ void LauncherWidget::setData(const QString &data)
 
 void LauncherWidget::addAction(QAction *action)
 {
-    qDebug() << Q_FUNC_INFO << m_actioncounter << action;
+    // qDebug() << Q_FUNC_INFO << m_actioncounter << action;
     // 4 actions are packed into a small area, the text is getting in the way
     action->setText(QString());
     if (action->icon().isNull()) {
@@ -496,6 +494,7 @@ public:
 private Q_SLOTS:
     void slotUpdateLayout();
     void slotActivated();
+    void slotTriggered();
 
 private:
     QMutex m_mutex;
@@ -522,6 +521,10 @@ LauncherFavorites::LauncherFavorites(QGraphicsWidget *parent, LauncherApplet* la
     slotUpdateLayout();
     connect(
         m_bookmarkmanager, SIGNAL(changed(QString,QString)),
+        this, SLOT(slotUpdateLayout())
+    );
+    connect(
+        m_bookmarkmanager, SIGNAL(bookmarksChanged(QString)),
         this, SLOT(slotUpdateLayout())
     );
     connect(
@@ -591,6 +594,16 @@ void LauncherFavorites::slotUpdateLayout()
             iconsize, kFavoriteIcon(service->icon()), service->name(), service->genericName()
         );
         launcherwidget->setData(service->entryPath());
+        QAction* favoriteaction = new QAction(launcherwidget);
+        favoriteaction->setText(i18n("Remove"));
+        favoriteaction->setIcon(KIcon("edit-delete"));
+        favoriteaction->setProperty("_k_id", serviceentrypath);
+        connect(
+            favoriteaction, SIGNAL(triggered()),
+            this, SLOT(slotTriggered()),
+            Qt::QueuedConnection
+        );
+        launcherwidget->addAction(favoriteaction);
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -605,6 +618,23 @@ void LauncherFavorites::slotActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
     kRunService(launcherwidget->data(), m_launcherapplet);
+}
+
+void LauncherFavorites::slotTriggered()
+{
+    QAction* favoriteaction = qobject_cast<QAction*>(sender());
+    const QString favoriteid = favoriteaction->property("_k_id").toString();
+    KBookmarkGroup bookmarkgroup = m_bookmarkmanager->root();
+    KBookmark bookmark = bookmarkgroup.first();
+    while (!bookmark.isNull()) {
+        if (bookmark.url().url() == favoriteid) {
+            bookmarkgroup.deleteBookmark(bookmark);
+            m_bookmarkmanager->emitChanged(bookmarkgroup);
+            return;
+        }
+        bookmark = bookmarkgroup.next(bookmark);
+    }
+    kWarning() << "invalid bookmark" << favoriteid;
 }
 
 
