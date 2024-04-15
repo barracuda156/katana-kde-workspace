@@ -277,7 +277,11 @@ void LauncherWidget::setData(const QString &data)
 void LauncherWidget::addAction(QAction *action)
 {
     // qDebug() << Q_FUNC_INFO << m_actioncounter << action;
-    // 4 actions are packed into a small area, the text is getting in the way
+    // 4 actions are packed into a small area, the text is getting in the way, however if there is
+    // no tooltip use the text as tooltip
+    if (action->toolTip().isEmpty() && !action->text().isEmpty()) {
+        action->setToolTip(action->text());
+    }
     action->setText(QString());
     if (action->icon().isNull()) {
         kWarning() << "action does not have icon" << action;
@@ -422,8 +426,8 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
         int counter = 1;
         if (match.hasConfigurationInterface()) {
             QAction* matchconfigaction = new QAction(launcherwidget);
-            matchconfigaction->setText(i18n("Configure"));
             matchconfigaction->setIcon(KIcon("preferences-system"));
+            matchconfigaction->setToolTip(i18n("Configure"));
             matchconfigaction->setProperty("_k_id", match.id());
             connect(
                 matchconfigaction, SIGNAL(triggered()),
@@ -595,8 +599,8 @@ void LauncherFavorites::slotUpdateLayout()
         );
         launcherwidget->setData(service->entryPath());
         QAction* favoriteaction = new QAction(launcherwidget);
-        favoriteaction->setText(i18n("Remove"));
         favoriteaction->setIcon(KIcon("edit-delete"));
+        favoriteaction->setToolTip(i18n("Remove"));
         favoriteaction->setProperty("_k_id", serviceentrypath);
         connect(
             favoriteaction, SIGNAL(triggered()),
