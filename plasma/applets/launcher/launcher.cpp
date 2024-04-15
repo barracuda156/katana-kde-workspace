@@ -1170,6 +1170,7 @@ private:
     bool m_canswitch;
     bool m_canreboot;
     bool m_canshutdown;
+    KDisplayManager m_displaymanager;
 };
 
 LauncherLeave::LauncherLeave(QGraphicsWidget *parent)
@@ -1342,7 +1343,7 @@ void LauncherLeave::slotActivated()
         kLockScreen();
     } else if (launcherwidgetdata == QLatin1String("switch")) {
         kLockScreen();
-        KDisplayManager().newSession();
+        m_displaymanager.newSession();
     } else if (launcherwidgetdata == QLatin1String("suspendram")) {
         Solid::PowerManagement::requestSleep(Solid::PowerManagement::SuspendState);
     } else if (launcherwidgetdata == QLatin1String("suspenddisk")) {
@@ -1368,7 +1369,7 @@ void LauncherLeave::slotTimeout()
     const bool oldcanreboot = m_canreboot;
     const bool oldcanshutdown = m_canshutdown;
     m_canlock = KDBusConnectionPool::isServiceRegistered("org.freedesktop.ScreenSaver", QDBusConnection::sessionBus());
-    m_canswitch = KDisplayManager().isSwitchable();
+    m_canswitch = m_displaymanager.isSwitchable();
     m_canreboot = KWorkSpace::canShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeReboot);
     m_canshutdown = KWorkSpace::canShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeHalt);
     if (oldcanlock != m_canlock || oldcanswitch != m_canswitch ||
