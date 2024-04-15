@@ -23,7 +23,7 @@
 // Own
 #include "TerminalDisplay.h"
 
-// Qt
+// Katie
 #include <QApplication>
 #include <QClipboard>
 #include <QEvent>
@@ -291,6 +291,7 @@ TerminalDisplay::TerminalDisplay(QWidget* parent)
     , _ctrlRequiredForDrag(true)
     , _tripleClickMode(Enum::SelectWholeLine)
     , _possibleTripleClick(false)
+    , _resizeFrame(0)
     , _resizeWidget(0)
     , _resizeTimer(0)
     , _flowControlWarningEnabled(false)
@@ -786,8 +787,8 @@ void TerminalDisplay::scrollImage(int lines , const QRect& screenWindowRegion)
             || this->_lines <= region.height()) return;
 
     // hide terminal size label to prevent it being scrolled
-    if (_resizeWidget && _resizeWidget->isVisible())
-        _resizeWidget->hide();
+    if (_resizeFrame && _resizeFrame->isVisible())
+        _resizeFrame->hide();
 
     // Note:  With Qt 4.4 the left edge of the scrolled area must be at 0
     // to get the correct (newly exposed) part of the widget repainted.
@@ -1083,24 +1084,37 @@ void TerminalDisplay::updateImage()
 void TerminalDisplay::showResizeNotification()
 {
     if (_showTerminalSizeHint && isVisible()) {
-        if (!_resizeWidget) {
-            _resizeWidget = new QLabel(i18n("Size: XXX x XXX"), this);
-            _resizeWidget->setMinimumWidth(_resizeWidget->fontMetrics().width(i18n("Size: XXX x XXX")));
-            _resizeWidget->setMinimumHeight(_resizeWidget->sizeHint().height());
-            _resizeWidget->setAlignment(Qt::AlignCenter);
+        if (!_resizeFrame) {
+            _resizeFrame = new KHBox(this);
+            _resizeFrame->setFrameShadow(QFrame::Plain);
+            _resizeFrame->setAutoFillBackground(true);
+            _resizeFrame->setBackgroundRole(QPalette::Dark);
+            _resizeFrame->layout()->setContentsMargins(2, 2, 2, 2);
+        }
 
-            _resizeWidget->setStyleSheet("background-color:palette(window);border-style:solid;border-width:1px;border-color:palette(dark)");
+        if (!_resizeWidget) {
+            _resizeWidget = new QLabel(_resizeFrame);
+            _resizeWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            _resizeWidget->setContentsMargins(2, 2, 2, 2);
+            _resizeWidget->setAlignment(Qt::AlignCenter);
+            _resizeWidget->setAutoFillBackground(true);
+            _resizeWidget->setBackgroundRole(QPalette::Base);
 
             _resizeTimer = new QTimer(this);
             _resizeTimer->setInterval(SIZE_HINT_DURATION);
             _resizeTimer->setSingleShot(true);
-            connect(_resizeTimer, SIGNAL(timeout()), _resizeWidget, SLOT(hide()));
+            connect(_resizeTimer, SIGNAL(timeout()), _resizeFrame, SLOT(hide()));
         }
-        QString sizeStr = i18n("Size: %1 x %2", _columns, _lines);
-        _resizeWidget->setText(sizeStr);
-        _resizeWidget->move((width() - _resizeWidget->width()) / 2,
-                            (height() - _resizeWidget->height()) / 2 + 20);
-        _resizeWidget->show();
+
+        QPalette pal = _resizeWidget->palette();
+        KColorScheme::adjustBackground(pal, KColorScheme::NeutralBackground);
+        _resizeWidget->setPalette(pal);
+
+        _resizeWidget->setText(i18n("Size: %1 x %2", _columns, _lines));
+        _resizeFrame->adjustSize();
+        _resizeFrame->move((width() - _resizeFrame->width()) / 2,
+                            (height() - _resizeFrame->height()) / 2);
+        _resizeFrame->show();
         _resizeTimer->start();
     }
 }

@@ -21,18 +21,10 @@
 #ifndef TERMINALDISPLAY_H
 #define TERMINALDISPLAY_H
 
-// Qt
-#include <QtGui/QColor>
-#include <QtCore/QPointer>
+// Katie
+#include <QColor>
+#include <QPointer>
 #include <QWidget>
-
-// Konsole
-#include "Character.h"
-#include "konsoleprivate_export.h"
-#include "ScreenWindow.h"
-#include "ColorScheme.h"
-#include "Enumeration.h"
-
 #include <QDrag>
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -45,6 +37,16 @@
 #include <QShowEvent>
 #include <QHideEvent>
 #include <QTimerEvent>
+
+// Konsole
+#include "Character.h"
+#include "konsoleprivate_export.h"
+#include "ScreenWindow.h"
+#include "ColorScheme.h"
+#include "Enumeration.h"
+
+// KDE
+#include <KHBox>
 
 namespace Konsole
 {
@@ -841,6 +843,7 @@ private:
     bool _possibleTripleClick;  // is set in mouseDoubleClickEvent and deleted
     // after QApplication::doubleClickInterval() delay
 
+    KHBox* _resizeFrame;
     QLabel* _resizeWidget;
     QTimer* _resizeTimer;
 
