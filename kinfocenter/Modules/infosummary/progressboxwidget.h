@@ -24,7 +24,7 @@
 #define PROGRESSBOXWIDGET
 
 // Katie
-#include <QFrame>
+#include <QGroupBox>
 #include <QGridLayout>
 #include <QLabel>
 #include <QProgressBar>
@@ -33,7 +33,7 @@
 #include <KIcon>
 #include <KPixmapWidget>
 
-class ProgressBoxWidget : public QFrame
+class ProgressBoxWidget : public QGroupBox
 {
   Q_OBJECT
   

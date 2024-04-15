@@ -50,7 +50,8 @@ void InfoSumPlugin::createDisplay()
   
   createOsBox();
   createCpuBox();
-  //createMemBox(); // Awaiting Mem class from kdereview 
+#warning implment memory info
+  // createMemBox();
   createHdBox();
   m_layout->addStretch();
 }
@@ -106,7 +107,7 @@ void InfoSumPlugin::createMemBox()
 {
   ProgressBoxWidget *memWidget = new ProgressBoxWidget();
   
-  memWidget->setIcon(KIcon("memory"));
+  memWidget->setIcon(KIcon("media-flash-memory-stick"));
   memWidget->setLabelTitles(i18n("Memory Amount"),i18n("Memory Used/Free"));
   m_layout->addWidget(memWidget);
 }
