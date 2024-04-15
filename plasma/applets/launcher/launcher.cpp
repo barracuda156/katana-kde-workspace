@@ -81,25 +81,6 @@ static QGraphicsWidget* kMakeSpacer(QGraphicsWidget *parent)
     return widget;
 }
 
-static Plasma::IconWidget* kMakeIconWidget(QGraphicsWidget *parent,
-                                           const QSizeF &iconsize,
-                                           const QString &text,
-                                           const QString &infotext,
-                                           const QString &icon,
-                                           const QString &url)
-{
-    Plasma::IconWidget* iconwidget = new Plasma::IconWidget(parent);
-    // TODO: actions are not visible when the orientation is horizontal..
-    iconwidget->setOrientation(Qt::Horizontal);
-    iconwidget->setMinimumIconSize(iconsize);
-    iconwidget->setMaximumIconSize(iconsize);
-    iconwidget->setText(text);
-    iconwidget->setInfoText(infotext);
-    iconwidget->setIcon(icon);
-    iconwidget->setProperty("_k_url", url);
-    return iconwidget;
-}
-
 static Plasma::ScrollWidget* kMakeScrollWidget(QGraphicsWidget *parent)
 {
     Plasma::ScrollWidget* scrollwidget = new Plasma::ScrollWidget(parent);
@@ -129,28 +110,28 @@ static void kRunUrl(const QString &urlpath, LauncherApplet* launcherapplet)
     (void)new KRun(KUrl(urlpath), nullptr);
 }
 
-static QString kGenericIcon(const QString &name)
+static KIcon kGenericIcon(const QString &name)
 {
     if (!name.isEmpty()) {
-        return name;
+        return KIcon(name);
     }
-    return s_genericicon;
+    return KIcon(s_genericicon);
 }
 
-static QString kFavoriteIcon(const QString &name)
+static KIcon kFavoriteIcon(const QString &name)
 {
     if (!name.isEmpty()) {
-        return name;
+        return KIcon(name);
     }
-    return s_favoriteicon;
+    return KIcon(s_favoriteicon);
 }
 
-static QString kRecentIcon(const QString &name)
+static KIcon kRecentIcon(const QString &name)
 {
     if (!name.isEmpty()) {
-        return name;
+        return KIcon(name);
     }
-    return s_recenticon;
+    return KIcon(s_recenticon);
 }
 
 static void kLockScreen()
@@ -175,6 +156,138 @@ static QStringList kAllowedRunners(KConfigGroup configgroup)
     return result;
 }
 
+class LauncherWidget : public QGraphicsWidget
+{
+    Q_OBJECT
+public:
+    LauncherWidget(QGraphicsWidget *parent);
+
+    void setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext);
+    void disableHover();
+
+    QString data() const;
+    void setData(const QString &data);
+
+    void addAction(QAction *action);
+
+Q_SIGNALS:
+    void activated();
+
+private Q_SLOTS:
+    void slotUpdateFonts();
+
+private:
+    QGraphicsLinearLayout* m_layout;
+    Plasma::IconWidget* m_iconwidget;
+    QGraphicsLinearLayout* m_textlayout;
+    Plasma::Label* m_textwidget;
+    Plasma::Label* m_subtextwidget;
+    QGraphicsLinearLayout* m_actionslayout;
+    Plasma::IconWidget* m_action1widget;
+    Plasma::IconWidget* m_action2widget;
+    Plasma::IconWidget* m_action3widget;
+    Plasma::IconWidget* m_action4widget;
+    QString m_data;
+};
+
+LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
+    : QGraphicsWidget(parent),
+    m_layout(nullptr),
+    m_iconwidget(nullptr),
+    m_textlayout(nullptr),
+    m_textwidget(nullptr),
+    m_subtextwidget(nullptr),
+    m_actionslayout(nullptr),
+    m_action1widget(nullptr),
+    m_action2widget(nullptr),
+    m_action3widget(nullptr),
+    m_action4widget(nullptr)
+{
+    m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
+    setLayout(m_layout);
+
+    m_iconwidget = new Plasma::IconWidget(this);
+    m_layout->addItem(m_iconwidget);
+    connect(
+        m_iconwidget, SIGNAL(activated()),
+        this, SIGNAL(activated())
+    );
+
+    m_textlayout = new QGraphicsLinearLayout(Qt::Vertical, m_layout);
+    m_textlayout->setContentsMargins(6, 6, 6, 6);
+    m_layout->addItem(m_textlayout);
+    m_layout->setStretchFactor(m_textlayout, 100);
+    m_textwidget = new Plasma::Label(this);
+    m_textwidget->setWordWrap(false);
+    m_textlayout->addItem(m_textwidget);
+    m_subtextwidget = new Plasma::Label(this);
+    m_subtextwidget->setWordWrap(false);
+    m_textlayout->addItem(m_subtextwidget);
+
+    m_actionslayout = new QGraphicsLinearLayout(Qt::Vertical, m_layout);
+    m_layout->addItem(m_actionslayout);
+    m_action1widget = new Plasma::IconWidget(this);
+    m_action1widget->setMinimumSize(0, 0);
+    m_actionslayout->addItem(m_action1widget);
+    m_action2widget = new Plasma::IconWidget(this);
+    m_action2widget->setMinimumSize(0, 0);
+    m_actionslayout->addItem(m_action2widget);
+    m_action3widget = new Plasma::IconWidget(this);
+    m_action3widget->setMinimumSize(0, 0);
+    m_actionslayout->addItem(m_action3widget);
+    m_action4widget = new Plasma::IconWidget(this);
+    m_action4widget->setMinimumSize(0, 0);
+    m_actionslayout->addItem(m_action4widget);
+    m_actionslayout->addStretch();
+
+    slotUpdateFonts();
+    connect(
+        KGlobalSettings::self(), SIGNAL(kdisplayFontChanged()),
+        this, SLOT(slotUpdateFonts())
+    );
+}
+
+void LauncherWidget::setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext)
+{
+    m_iconwidget->setMinimumIconSize(iconsize);
+    m_iconwidget->setMaximumIconSize(iconsize);
+    m_iconwidget->setIcon(icon);
+    m_textwidget->setText(text);
+    m_subtextwidget->setText(subtext);
+    m_subtextwidget->setVisible(!subtext.isEmpty());
+}
+
+void LauncherWidget::disableHover()
+{
+    m_iconwidget->setAcceptHoverEvents(false);
+    m_iconwidget->setAcceptedMouseButtons(Qt::NoButton);
+}
+
+QString LauncherWidget::data() const
+{
+    return m_data;
+}
+
+void LauncherWidget::setData(const QString &data)
+{
+    m_data = data;
+}
+
+void LauncherWidget::addAction(QAction *action)
+{
+    // TODO:
+}
+
+void LauncherWidget::slotUpdateFonts()
+{
+    QFont textfont = KGlobalSettings::generalFont();
+    textfont.setBold(true);
+    m_textwidget->setFont(textfont);
+    QFont subtextfont = KGlobalSettings::smallestReadableFont();
+    subtextfont.setItalic(true);
+    m_subtextwidget->setFont(subtextfont);
+}
+
 class LauncherSearch : public QGraphicsWidget
 {
     Q_OBJECT
@@ -195,7 +308,7 @@ private:
     QMutex m_mutex;
     LauncherApplet* m_launcherapplet;
     QGraphicsLinearLayout* m_layout;
-    QList<Plasma::IconWidget*> m_iconwidgets;
+    QList<LauncherWidget*> m_launcherwidgets;
     Plasma::Label* m_label;
     Plasma::RunnerManager* m_runnermanager;
 };
@@ -234,11 +347,11 @@ void LauncherSearch::prepare()
 {
     // qDebug() << Q_FUNC_INFO;
     QMutexLocker locker(&m_mutex);
-    foreach (Plasma::IconWidget* iconwidget, m_iconwidgets) {
-        m_layout->removeItem(iconwidget);
+    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
+        m_layout->removeItem(launcherwidget);
     }
-    qDeleteAll(m_iconwidgets);
-    m_iconwidgets.clear();
+    qDeleteAll(m_launcherwidgets);
+    m_launcherwidgets.clear();
 
     m_label->setVisible(true);
     adjustSize();
@@ -268,18 +381,17 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
     const QSizeF iconsize = kIconSize();
     foreach (const Plasma::QueryMatch &match, matches) {
         // qDebug() << Q_FUNC_INFO << match.text() << match.subtext();
-        Plasma::IconWidget* iconwidget = kMakeIconWidget(
-            this,
-            iconsize, match.text(), match.subtext(), QString(), match.id()
+        LauncherWidget* launcherwidget = new LauncherWidget(this);
+        launcherwidget->setup(
+            iconsize, match.icon(), match.text(), match.subtext()
         );
-        iconwidget->setIcon(match.icon());
+        launcherwidget->setData(match.id());
         if (match.type() == Plasma::QueryMatch::InformationalMatch) {
-            iconwidget->setAcceptHoverEvents(false);
-            iconwidget->setAcceptedMouseButtons(Qt::NoButton);
+            launcherwidget->disableHover();
         }
         int counter = 1;
         if (match.hasConfigurationInterface()) {
-            QAction* matchconfigaction = new QAction(iconwidget);
+            QAction* matchconfigaction = new QAction(launcherwidget);
             matchconfigaction->setText(i18n("Configure"));
             matchconfigaction->setIcon(KIcon("preferences-system"));
             matchconfigaction->setProperty("_k_id", match.id());
@@ -287,22 +399,22 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
                 matchconfigaction, SIGNAL(triggered()),
                 this, SLOT(slotTriggered())
             );
-            iconwidget->addIconAction(matchconfigaction);
+            launcherwidget->addAction(matchconfigaction);
             counter++;
             // qDebug() << Q_FUNC_INFO << match.id();
         }
         foreach (QAction* action, m_runnermanager->actionsForMatch(match)) {
-            iconwidget->addIconAction(action);
+            launcherwidget->addAction(action);
             counter++;
             if (counter >= 4) {
-                // the limit of Plasma::IconWidget
+                // the limit of LauncherWidget
                 break;
             }
         }
-        m_iconwidgets.append(iconwidget);
-        m_layout->addItem(iconwidget);
+        m_launcherwidgets.append(launcherwidget);
+        m_layout->addItem(launcherwidget);
         connect(
-            iconwidget, SIGNAL(activated()),
+            launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
     }
@@ -310,10 +422,9 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
 
 void LauncherSearch::slotActivated()
 {
-    Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    const QString iconwidgeturl = iconwidget->property("_k_url").toString();
+    LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
     m_launcherapplet->resetState();
-    m_runnermanager->run(iconwidgeturl);
+    m_runnermanager->run(launcherwidget->data());
 }
 
 void LauncherSearch::slotTriggered()
@@ -343,7 +454,7 @@ private:
     QMutex m_mutex;
     LauncherApplet* m_launcherapplet;
     QGraphicsLinearLayout* m_layout;
-    QList<Plasma::IconWidget*> m_iconwidgets;
+    QList<LauncherWidget*> m_launcherwidgets;
     KBookmarkManager* m_bookmarkmanager;
 };
 
@@ -375,11 +486,11 @@ LauncherFavorites::LauncherFavorites(QGraphicsWidget *parent, LauncherApplet* la
 void LauncherFavorites::slotUpdateLayout()
 {
     QMutexLocker locker(&m_mutex);
-    foreach (Plasma::IconWidget* iconwidget, m_iconwidgets) {
-        m_layout->removeItem(iconwidget);
+    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
+        m_layout->removeItem(launcherwidget);
     }
-    qDeleteAll(m_iconwidgets);
-    m_iconwidgets.clear();
+    qDeleteAll(m_launcherwidgets);
+    m_launcherwidgets.clear();
 
     adjustSize();
 
@@ -428,14 +539,15 @@ void LauncherFavorites::slotUpdateLayout()
             continue;
         }
         // qDebug() << Q_FUNC_INFO << service->entryPath() << service->name() << service->comment();
-        Plasma::IconWidget* iconwidget = kMakeIconWidget(
-            this,
-            iconsize, service->name(), service->genericName(), kFavoriteIcon(service->icon()), service->entryPath()
+        LauncherWidget* launcherwidget = new LauncherWidget(this);
+        launcherwidget->setup(
+            iconsize, kFavoriteIcon(service->icon()), service->name(), service->genericName()
         );
-        m_iconwidgets.append(iconwidget);
-        m_layout->addItem(iconwidget);
+        launcherwidget->setData(service->entryPath());
+        m_launcherwidgets.append(launcherwidget);
+        m_layout->addItem(launcherwidget);
         connect(
-            iconwidget, SIGNAL(activated()),
+            launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
         bookmark = bookmarkgroup.next(bookmark);
@@ -444,15 +556,15 @@ void LauncherFavorites::slotUpdateLayout()
 
 void LauncherFavorites::slotActivated()
 {
-    Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    kRunService(iconwidget->property("_k_url").toString(), m_launcherapplet);
+    LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
+    kRunService(launcherwidget->data(), m_launcherapplet);
 }
 
 
 class LauncherNavigatorStruct
 {
 public:
-    LauncherNavigatorStruct(Plasma::SvgWidget* _svgwidget, Plasma::ToolButton *_toolbutton)
+    LauncherNavigatorStruct(Plasma::SvgWidget *_svgwidget, Plasma::ToolButton *_toolbutton)
         : svgwidget(_svgwidget), toolbutton(_toolbutton)
     {
     }
@@ -479,6 +591,7 @@ private Q_SLOTS:
 private:
     QMutex m_mutex;
     QGraphicsLinearLayout* m_layout;
+    Plasma::Svg* m_svg;
     QList<LauncherNavigatorStruct*> m_navigations;
     QGraphicsWidget* m_spacer;
 };
@@ -486,12 +599,16 @@ private:
 LauncherNavigator::LauncherNavigator(QGraphicsWidget *parent)
     : Plasma::Frame(parent),
     m_layout(nullptr),
+    m_svg(nullptr),
     m_spacer(nullptr)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     setFrameShadow(Plasma::Frame::Sunken);
     m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
     setLayout(m_layout);
+
+    m_svg = new Plasma::Svg(this);
+    m_svg->setImagePath("widgets/arrows");
 }
 
 void LauncherNavigator::reset()
@@ -518,11 +635,9 @@ void LauncherNavigator::addNavigation(const QString &id, const QString &text)
 {
     // qDebug() << Q_FUNC_INFO << id << text;
     QMutexLocker locker(&m_mutex);
-    Plasma::Svg* svg = new Plasma::Svg(this);
-    svg->setImagePath("widgets/arrows");
     Plasma::SvgWidget* svgwidget = new Plasma::SvgWidget(this);
     svgwidget->setElementID("right-arrow");
-    svgwidget->setSvg(svg);
+    svgwidget->setSvg(m_svg);
     m_layout->addItem(svgwidget);
     Plasma::ToolButton* toolbutton = new Plasma::ToolButton(this);
     toolbutton->setText(text);
@@ -571,9 +686,9 @@ private:
     QGraphicsLinearLayout* m_layout;
     LauncherNavigator* m_launchernavigator;
     Plasma::ScrollWidget* m_scrollwidget;
-    QGraphicsWidget* m_iconswidget;
-    QGraphicsLinearLayout* m_iconslayout;
-    QList<Plasma::IconWidget*> m_iconwidgets;
+    QGraphicsWidget* m_launchersswidget;
+    QGraphicsLinearLayout* m_launcherslayout;
+    QList<LauncherWidget*> m_launcherwidgets;
     QString m_id;
 };
 
@@ -583,8 +698,8 @@ LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherAppl
     m_layout(nullptr),
     m_launchernavigator(nullptr),
     m_scrollwidget(nullptr),
-    m_iconswidget(nullptr),
-    m_iconslayout(nullptr)
+    m_launchersswidget(nullptr),
+    m_launcherslayout(nullptr)
     
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -595,10 +710,11 @@ LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherAppl
     m_layout->addItem(m_launchernavigator);
 
     m_scrollwidget = kMakeScrollWidget(this);
-    m_iconswidget = new QGraphicsWidget(m_scrollwidget);
-    m_iconslayout = new QGraphicsLinearLayout(Qt::Vertical, m_iconswidget);
-    m_iconswidget->setLayout(m_iconslayout);
-    m_scrollwidget->setWidget(m_iconswidget);
+    m_launchersswidget = new QGraphicsWidget(m_scrollwidget);
+    m_launchersswidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_launcherslayout = new QGraphicsLinearLayout(Qt::Vertical, m_launchersswidget);
+    m_launchersswidget->setLayout(m_launcherslayout);
+    m_scrollwidget->setWidget(m_launchersswidget);
     m_layout->addItem(m_scrollwidget);
 
     slotUpdateLayout();
@@ -616,14 +732,15 @@ LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherAppl
 void LauncherApplications::slotUpdateLayout()
 {
     QMutexLocker locker(&m_mutex);
-    foreach (Plasma::IconWidget* iconwidget, m_iconwidgets) {
-        m_iconslayout->removeItem(iconwidget);
+    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
+        m_launcherslayout->removeItem(launcherwidget);
     }
-    qDeleteAll(m_iconwidgets);
-    m_iconwidgets.clear();
+    qDeleteAll(m_launcherwidgets);
+    m_launcherwidgets.clear();
 
     m_launchernavigator->reset();
 
+    m_launchersswidget->adjustSize();
     adjustSize();
 
     m_id.clear();
@@ -658,14 +775,15 @@ void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
     const QSizeF iconsize = kIconSize();
     foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
         if (serviceCount(subgroup) > 0) {
-            Plasma::IconWidget* iconwidget = kMakeIconWidget(
-                m_iconswidget,
-                iconsize, subgroup->caption(), subgroup->comment(), kGenericIcon(subgroup->icon()), subgroup->relPath()
+            LauncherWidget* launcherwidget = new LauncherWidget(m_launchersswidget);
+            launcherwidget->setup(
+                iconsize, kGenericIcon(subgroup->icon()), subgroup->caption(), subgroup->comment()
             );
-            m_iconwidgets.append(iconwidget);
-            m_iconslayout->addItem(iconwidget);
+            launcherwidget->setData(subgroup->relPath());
+            m_launcherwidgets.append(launcherwidget);
+            m_launcherslayout->addItem(launcherwidget);
             connect(
-                iconwidget, SIGNAL(activated()),
+                launcherwidget, SIGNAL(activated()),
                 this, SLOT(slotGroupActivated())
             );
         }
@@ -675,21 +793,22 @@ void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
             kDebug() << "hidden entry" << appservice->name();
             continue;
         }
-        Plasma::IconWidget* iconwidget = kMakeIconWidget(
-            m_iconswidget,
-            iconsize, appservice->name(), appservice->comment(), kGenericIcon(appservice->icon()), appservice->entryPath()
+        LauncherWidget* launcherwidget = new LauncherWidget(m_launchersswidget);
+        launcherwidget->setup(
+            iconsize, kGenericIcon(appservice->icon()), appservice->name(), appservice->comment()
         );
-        m_iconwidgets.append(iconwidget);
-        m_iconslayout->addItem(iconwidget);
+        launcherwidget->setData(appservice->entryPath());
+        m_launcherwidgets.append(launcherwidget);
+        m_launcherslayout->addItem(launcherwidget);
         connect(
-            iconwidget, SIGNAL(activated()),
+            launcherwidget, SIGNAL(activated()),
             this, SLOT(slotAppActivated())
         );
     }
     const QString serviceid = servicegroup->relPath();
     if (serviceid.isEmpty() || serviceid == QLatin1String("/")) {
         // hide the navigator when the root group is empty
-        m_launchernavigator->setVisible(m_iconwidgets.size() > 0);
+        m_launchernavigator->setVisible(m_launcherwidgets.size() > 0);
     }
 }
 
@@ -707,14 +826,15 @@ void LauncherApplications::slotNavigate(const QString &id)
 void LauncherApplications::slotDelayedNavigate()
 {
     QMutexLocker locker(&m_mutex);
-    foreach (Plasma::IconWidget* iconwidget, m_iconwidgets) {
-        m_layout->removeItem(iconwidget);
+    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
+        m_layout->removeItem(launcherwidget);
     }
-    qDeleteAll(m_iconwidgets);
-    m_iconwidgets.clear();
+    qDeleteAll(m_launcherwidgets);
+    m_launcherwidgets.clear();
 
     m_launchernavigator->reset();
 
+    m_launchersswidget->adjustSize();
     adjustSize();
 
     // qDebug() << Q_FUNC_INFO << m_id;
@@ -746,14 +866,14 @@ void LauncherApplications::slotDelayedNavigate()
 
 void LauncherApplications::slotGroupActivated()
 {
-    Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    slotNavigate(iconwidget->property("_k_url").toString());
+    LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
+    slotNavigate(launcherwidget->data());
 }
 
 void LauncherApplications::slotAppActivated()
 {
-    Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    kRunService(iconwidget->property("_k_url").toString(), m_launcherapplet);
+    LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
+    kRunService(launcherwidget->data(), m_launcherapplet);
 }
 
 
@@ -771,7 +891,7 @@ private:
     QMutex m_mutex;
     LauncherApplet* m_launcherapplet;
     QGraphicsLinearLayout* m_layout;
-    QList<Plasma::IconWidget*> m_iconwidgets;
+    QList<LauncherWidget*> m_launcherwidgets;
     KDirWatch* m_dirwatch;
 };
 
@@ -797,11 +917,11 @@ LauncherRecent::LauncherRecent(QGraphicsWidget *parent, LauncherApplet *launcher
 void LauncherRecent::slotUpdateLayout()
 {
     QMutexLocker locker(&m_mutex);
-    foreach (Plasma::IconWidget* iconwidget, m_iconwidgets) {
-        m_layout->removeItem(iconwidget);
+    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
+        m_layout->removeItem(launcherwidget);
     }
-    qDeleteAll(m_iconwidgets);
-    m_iconwidgets.clear();
+    qDeleteAll(m_launcherwidgets);
+    m_launcherwidgets.clear();
 
     adjustSize();
 
@@ -809,14 +929,15 @@ void LauncherRecent::slotUpdateLayout()
     foreach (const QString &recent, KRecentDocument::recentDocuments()) {
         KDesktopFile recentfile(recent);
         // qDebug() << Q_FUNC_INFO << recentfile.readName() << recentfile.readComment();
-        Plasma::IconWidget* iconwidget = kMakeIconWidget(
-            this,
-            iconsize, recentfile.readName(), recentfile.readComment(), kRecentIcon(recentfile.readIcon()), recentfile.readUrl()
+        LauncherWidget* launcherwidget = new LauncherWidget(this);
+        launcherwidget->setup(
+            iconsize, kRecentIcon(recentfile.readIcon()), recentfile.readName(), recentfile.readComment()
         );
-        m_iconwidgets.append(iconwidget);
-        m_layout->addItem(iconwidget);
+        launcherwidget->setData(recentfile.readUrl());
+        m_launcherwidgets.append(launcherwidget);
+        m_layout->addItem(launcherwidget);
         connect(
-            iconwidget, SIGNAL(activated()),
+            launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
     }
@@ -824,8 +945,8 @@ void LauncherRecent::slotUpdateLayout()
 
 void LauncherRecent::slotActivated()
 {
-    Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    kRunUrl(iconwidget->property("_k_url").toString(), m_launcherapplet);
+    LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
+    kRunUrl(launcherwidget->data(), m_launcherapplet);
 }
 
 
@@ -843,7 +964,7 @@ private Q_SLOTS:
 private:
     QMutex m_mutex;
     QGraphicsLinearLayout* m_layout;
-    QList<Plasma::IconWidget*> m_iconwidgets;
+    QList<LauncherWidget*> m_launcherwidgets;
     Plasma::Separator* m_systemseparator;
     QTimer* m_timer;
     bool m_canlock;
@@ -884,11 +1005,11 @@ LauncherLeave::LauncherLeave(QGraphicsWidget *parent)
 void LauncherLeave::slotUpdateLayout()
 {
     QMutexLocker locker(&m_mutex);
-    foreach (Plasma::IconWidget* iconwidget, m_iconwidgets) {
-        m_layout->removeItem(iconwidget);
+    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
+        m_layout->removeItem(launcherwidget);
     }
-    qDeleteAll(m_iconwidgets);
-    m_iconwidgets.clear();
+    qDeleteAll(m_launcherwidgets);
+    m_launcherwidgets.clear();
 
     if (m_systemseparator) {
         m_layout->removeItem(m_systemseparator);
@@ -901,27 +1022,29 @@ void LauncherLeave::slotUpdateLayout()
     const QSizeF iconsize = kIconSize();
     bool hassessionicon = false;
     if (m_canlock) {
-        Plasma::IconWidget* iconwidget = kMakeIconWidget(
-            this,
-            iconsize, i18n("Lock"), i18n("Lock screen"), "system-lock-screen", "lock"
+        LauncherWidget* launcherwidget = new LauncherWidget(this);
+        launcherwidget->setup(
+            iconsize, KIcon("system-lock-screen"), i18n("Lock"), i18n("Lock screen")
         );
-        m_iconwidgets.append(iconwidget);
-        m_layout->addItem(iconwidget);
+        launcherwidget->setData("lock");
+        m_launcherwidgets.append(launcherwidget);
+        m_layout->addItem(launcherwidget);
         connect(
-            iconwidget, SIGNAL(activated()),
+            launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
         hassessionicon = true;
     }
     if (m_canswitch) {
-        Plasma::IconWidget* iconwidget = kMakeIconWidget(
-            this,
-            iconsize, i18n("Switch user"), i18n("Start a parallel session as a different user"), "system-switch-user", "switch"
+        LauncherWidget* launcherwidget = new LauncherWidget(this);
+        launcherwidget->setup(
+            iconsize, KIcon("system-switch-user"), i18n("Switch user"), i18n("Start a parallel session as a different user")
         );
-        m_iconwidgets.append(iconwidget);
-        m_layout->addItem(iconwidget);
+        launcherwidget->setData("switch");
+        m_launcherwidgets.append(launcherwidget);
+        m_layout->addItem(launcherwidget);
         connect(
-            iconwidget, SIGNAL(activated()),
+            launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
         hassessionicon = true;
@@ -934,102 +1057,108 @@ void LauncherLeave::slotUpdateLayout()
 
     const QSet<Solid::PowerManagement::SleepState> sleepsates = Solid::PowerManagement::supportedSleepStates();
     if (sleepsates.contains(Solid::PowerManagement::SuspendState)) {
-        Plasma::IconWidget* iconwidget = kMakeIconWidget(
-            this,
-            iconsize, i18n("Sleep"), i18n("Suspend to RAM"), "system-suspend", "suspendram"
+        LauncherWidget* launcherwidget = new LauncherWidget(this);
+        launcherwidget->setup(
+            iconsize, KIcon("system-suspend"), i18n("Sleep"), i18n("Suspend to RAM")
         );
-        m_iconwidgets.append(iconwidget);
-        m_layout->addItem(iconwidget);
+        launcherwidget->setData("suspendram");
+        m_launcherwidgets.append(launcherwidget);
+        m_layout->addItem(launcherwidget);
         connect(
-            iconwidget, SIGNAL(activated()),
+            launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
     }
     if (sleepsates.contains(Solid::PowerManagement::HibernateState)) {
-        Plasma::IconWidget* iconwidget = kMakeIconWidget(
-            this,
-            iconsize, i18n("Hibernate"), i18n("Suspend to disk"), "system-suspend-hibernate", "suspenddisk"
+        LauncherWidget* launcherwidget = new LauncherWidget(this);
+        launcherwidget->setup(
+            iconsize, KIcon("system-suspend-hibernate"), i18n("Hibernate"), i18n("Suspend to disk")
         );
-        m_iconwidgets.append(iconwidget);
-        m_layout->addItem(iconwidget);
+        launcherwidget->setData("suspenddisk");
+        m_launcherwidgets.append(launcherwidget);
+        m_layout->addItem(launcherwidget);
         connect(
-            iconwidget, SIGNAL(activated()),
+            launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
     }
     if (sleepsates.contains(Solid::PowerManagement::HybridSuspendState)) {
-        Plasma::IconWidget* iconwidget = kMakeIconWidget(
-            this,
-            iconsize, i18n("Hybrid Suspend"), i18n("Hybrid Suspend"), "system-suspend", "suspendhybrid"
+        LauncherWidget* launcherwidget = new LauncherWidget(this);
+        launcherwidget->setup(
+            iconsize, KIcon("system-suspend"), i18n("Hybrid Suspend"), i18n("Hybrid Suspend")
         );
-        m_iconwidgets.append(iconwidget);
-        m_layout->addItem(iconwidget);
+        launcherwidget->setData("suspendhybrid");
+        m_launcherwidgets.append(launcherwidget);
+        m_layout->addItem(launcherwidget);
         connect(
-            iconwidget, SIGNAL(activated()),
+            launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
     }
 
     if (m_canreboot) {
-        Plasma::IconWidget* iconwidget = kMakeIconWidget(
-            this,
-            iconsize, i18nc("Restart computer", "Restart"), i18n("Restart computer"), "system-reboot", "restart"
+        LauncherWidget* launcherwidget = new LauncherWidget(this);
+        launcherwidget->setup(
+            iconsize, KIcon("system-reboot"), i18nc("Restart computer", "Restart"), i18n("Restart computer")
         );
-        m_iconwidgets.append(iconwidget);
-        m_layout->addItem(iconwidget);
+        launcherwidget->setData("restart");
+        m_launcherwidgets.append(launcherwidget);
+        m_layout->addItem(launcherwidget);
         connect(
-            iconwidget, SIGNAL(activated()),
+            launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
     }
     if (m_canshutdown) {
-        Plasma::IconWidget* iconwidget = kMakeIconWidget(
-            this,
-            iconsize, i18n("Shut down"), i18n("Turn off computer"), "system-shutdown", "shutdown"
+        LauncherWidget* launcherwidget = new LauncherWidget(this);
+        launcherwidget->setup(
+            iconsize, KIcon("system-shutdown"), i18n("Shut down"), i18n("Turn off computer")
         );
-        m_iconwidgets.append(iconwidget);
-        m_layout->addItem(iconwidget);
+        launcherwidget->setData("shutdown");
+        m_launcherwidgets.append(launcherwidget);
+        m_layout->addItem(launcherwidget);
         connect(
-            iconwidget, SIGNAL(activated()),
+            launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
     }
-    Plasma::IconWidget* iconwidget = kMakeIconWidget(
-        this,
-        iconsize, i18n("Log out"), i18n("End session"), "system-log-out", "logout"
+    LauncherWidget* launcherwidget = new LauncherWidget(this);
+    launcherwidget->setup(
+        iconsize, KIcon("system-log-out"), i18n("Log out"), i18n("End session")
     );
-    m_iconwidgets.append(iconwidget);
-    m_layout->addItem(iconwidget);
+    launcherwidget->setData("logout");
+    m_launcherwidgets.append(launcherwidget);
+    m_layout->addItem(launcherwidget);
     connect(
-        iconwidget, SIGNAL(activated()),
+        launcherwidget, SIGNAL(activated()),
         this, SLOT(slotActivated())
     );
 }
 
 void LauncherLeave::slotActivated()
 {
-    Plasma::IconWidget* iconwidget = qobject_cast<Plasma::IconWidget*>(sender());
-    const QString iconwidgeturl = iconwidget->property("_k_url").toString();
-    if (iconwidgeturl == QLatin1String("lock")) {
+    LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
+    const QString launcherwidgetdata = launcherwidget->data();
+    if (launcherwidgetdata == QLatin1String("lock")) {
         kLockScreen();
-    } else if (iconwidgeturl == QLatin1String("switch")) {
+    } else if (launcherwidgetdata == QLatin1String("switch")) {
         kLockScreen();
         KDisplayManager().newSession();
-    } else if (iconwidgeturl == QLatin1String("suspendram")) {
+    } else if (launcherwidgetdata == QLatin1String("suspendram")) {
         Solid::PowerManagement::requestSleep(Solid::PowerManagement::SuspendState);
-    } else if (iconwidgeturl == QLatin1String("suspenddisk")) {
+    } else if (launcherwidgetdata == QLatin1String("suspenddisk")) {
         Solid::PowerManagement::requestSleep(Solid::PowerManagement::HibernateState);
-    } else if (iconwidgeturl == QLatin1String("suspendhybrid")) {
+    } else if (launcherwidgetdata == QLatin1String("suspendhybrid")) {
         Solid::PowerManagement::requestSleep(Solid::PowerManagement::HybridSuspendState);
-    } else if (iconwidgeturl == QLatin1String("restart")) {
+    } else if (launcherwidgetdata == QLatin1String("restart")) {
         KWorkSpace::requestShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeReboot);
-    } else if (iconwidgeturl == QLatin1String("shutdown")) {
+    } else if (launcherwidgetdata == QLatin1String("shutdown")) {
         KWorkSpace::requestShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeHalt);
-    } else if (iconwidgeturl == QLatin1String("logout")) {
+    } else if (launcherwidgetdata == QLatin1String("logout")) {
         KWorkSpace::requestShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeNone);
     } else {
         Q_ASSERT(false);
-        kWarning() << "invalid url" << iconwidgeturl;
+        kWarning() << "invalid url" << launcherwidgetdata;
     }
 }
 
