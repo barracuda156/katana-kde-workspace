@@ -188,6 +188,7 @@ private:
     Plasma::IconWidget* m_action3widget;
     Plasma::IconWidget* m_action4widget;
     QString m_data;
+    int m_actioncounter;
 };
 
 LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
@@ -201,7 +202,8 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_action1widget(nullptr),
     m_action2widget(nullptr),
     m_action3widget(nullptr),
-    m_action4widget(nullptr)
+    m_action4widget(nullptr),
+    m_actioncounter(0)
 {
     m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
     setLayout(m_layout);
@@ -275,7 +277,35 @@ void LauncherWidget::setData(const QString &data)
 
 void LauncherWidget::addAction(QAction *action)
 {
-    // TODO:
+    qDebug() << Q_FUNC_INFO << m_actioncounter << action;
+    // 4 actions are packed into a small area, the text is getting in the way
+    action->setText(QString());
+    if (action->icon().isNull()) {
+        kWarning() << "action does not have icon" << action;
+        return;
+    }
+    switch (m_actioncounter) {
+        case 0: {
+            m_action1widget->setAction(action);
+            break;
+        }
+        case 1: {
+            m_action2widget->setAction(action);
+            break;
+        }
+        case 2: {
+            m_action3widget->setAction(action);
+            break;
+        }
+        case 3: {
+            m_action4widget->setAction(action);
+            break;
+        }
+        default: {
+            return;
+        }
+    }
+    m_actioncounter++;
 }
 
 void LauncherWidget::slotUpdateFonts()
@@ -301,8 +331,9 @@ public:
 
 private Q_SLOTS:
     void slotUpdateLayout(const QList<Plasma::QueryMatch> &matches);
-    void slotActivated();
+    void slotConfigureTriggered();
     void slotTriggered();
+    void slotActivated();
 
 private:
     QMutex m_mutex;
@@ -397,17 +428,24 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
             matchconfigaction->setProperty("_k_id", match.id());
             connect(
                 matchconfigaction, SIGNAL(triggered()),
-                this, SLOT(slotTriggered())
+                this, SLOT(slotConfigureTriggered())
             );
             launcherwidget->addAction(matchconfigaction);
             counter++;
             // qDebug() << Q_FUNC_INFO << match.id();
         }
-        foreach (QAction* action, m_runnermanager->actionsForMatch(match)) {
+        const QList<QAction*> matchactions = m_runnermanager->actionsForMatch(match);
+        // qDebug() << Q_FUNC_INFO << match.id() << matchactions.size();
+        foreach (QAction* action, matchactions) {
+            action->setProperty("_k_id", match.id());
             launcherwidget->addAction(action);
+            connect(
+                action, SIGNAL(triggered()),
+                this, SLOT(slotTriggered())
+            );
             counter++;
             if (counter >= 4) {
-                // the limit of LauncherWidget
+                kWarning() << "the limit of LauncherWidget actions has been reached" << matchactions.size();
                 break;
             }
         }
@@ -420,6 +458,26 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
     }
 }
 
+void LauncherSearch::slotConfigureTriggered()
+{
+    // TODO: implement
+}
+
+void LauncherSearch::slotTriggered()
+{
+    QAction* matchaction = qobject_cast<QAction*>(sender());
+    const QString matchid = matchaction->property("_k_id").toString();
+    foreach (Plasma::QueryMatch match, m_runnermanager->matches()) {
+        if (match.id() == matchid) {
+            match.setSelectedAction(matchaction);
+            m_launcherapplet->resetState();
+            m_runnermanager->run(match);
+            return;
+        }
+    }
+    kWarning() << "could not find match for" << matchid;
+}
+
 void LauncherSearch::slotActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
@@ -427,18 +485,6 @@ void LauncherSearch::slotActivated()
     m_runnermanager->run(launcherwidget->data());
 }
 
-void LauncherSearch::slotTriggered()
-{
-    QAction* matchconfigaction = qobject_cast<QAction*>(sender());
-    const QString matchconfigid = matchconfigaction->property("_k_id").toString();
-    Plasma::AbstractRunner* runner = m_runnermanager->runner(m_runnermanager->runnerName(matchconfigid));
-    if (!runner) {
-        kWarning() << "no runner for" << matchconfigid;
-        return;
-    }
-    // TODO: implement
-    qDebug() << Q_FUNC_INFO << matchconfigid;
-}
 
 class LauncherFavorites : public QGraphicsWidget
 {
