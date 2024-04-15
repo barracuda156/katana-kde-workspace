@@ -276,7 +276,7 @@ void LauncherWidget::setData(const QString &data)
 void LauncherWidget::addAction(QAction *action)
 {
     // qDebug() << Q_FUNC_INFO << m_actioncounter << action;
-    // 4 actions are packed into a small area, the text is getting in the way, however if there is
+    // 4 actions are packed into a small area, the text is getting in the way. however if there is
     // no tooltip use the text as tooltip
     if (action->toolTip().isEmpty() && !action->text().isEmpty()) {
         action->setToolTip(action->text());
@@ -661,6 +661,7 @@ public:
 
     void reset();
     void addNavigation(const QString &id, const QString &text);
+    void finish();
 
 Q_SIGNALS:
     void navigate(const QString &id);
@@ -735,6 +736,17 @@ void LauncherNavigator::addNavigation(const QString &id, const QString &text)
     m_spacer = kMakeSpacer(this);
     m_layout->addItem(m_spacer);
     m_navigations.append(new LauncherNavigatorStruct(svgwidget, toolbutton));
+}
+
+void LauncherNavigator::finish()
+{
+    QMutexLocker locker(&m_mutex);
+    if (m_navigations.size() > 0) {
+        // make the last navigator button match the tabbar
+        LauncherNavigatorStruct *navigation =  m_navigations.last();
+        navigation->toolbutton->setAutoRaise(false);
+        navigation->toolbutton->setAcceptedMouseButtons(Qt::NoButton);
+    }
 }
 
 void LauncherNavigator::slotReleased()
@@ -829,6 +841,7 @@ void LauncherApplications::slotUpdateLayout()
         m_id = rootgroup->relPath();
         m_launchernavigator->addNavigation(m_id, rootgroup->caption());
         addGroup(rootgroup);
+        m_launchernavigator->finish();
     }
 }
 
@@ -942,6 +955,7 @@ void LauncherApplications::slotDelayedNavigate()
     } else {
         kWarning() << "invalid group" << m_id;
     }
+    m_launchernavigator->finish();
 }
 
 void LauncherApplications::slotGroupActivated()
