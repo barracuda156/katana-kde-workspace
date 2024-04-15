@@ -52,7 +52,7 @@
 #include <Plasma/RunnerManager>
 #include <KDebug>
 
-// TODO: mime data for drag-n-drop
+// TODO: mime data for drag-n-drop, animated layout updates
 
 static const QString s_defaultpopupicon = QString::fromLatin1("start-here-kde");
 static const QSizeF s_minimumsize = QSizeF(450, 350);
@@ -168,6 +168,7 @@ public:
     void setData(const QString &data);
 
     void addAction(QAction *action);
+    void removeAction(const int action);
 
 Q_SIGNALS:
     void activated();
@@ -181,11 +182,11 @@ private:
     QGraphicsLinearLayout* m_textlayout;
     Plasma::Label* m_textwidget;
     Plasma::Label* m_subtextwidget;
-    QGraphicsLinearLayout* m_actionslayout;
-    Plasma::IconWidget* m_action1widget;
-    Plasma::IconWidget* m_action2widget;
-    Plasma::IconWidget* m_action3widget;
-    Plasma::IconWidget* m_action4widget;
+    QGraphicsGridLayout* m_actionslayout;
+    Plasma::ToolButton* m_action1widget;
+    Plasma::ToolButton* m_action2widget;
+    Plasma::ToolButton* m_action3widget;
+    Plasma::ToolButton* m_action4widget;
     QString m_data;
     int m_actioncounter;
 };
@@ -225,21 +226,20 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_subtextwidget->setWordWrap(false);
     m_textlayout->addItem(m_subtextwidget);
 
-    m_actionslayout = new QGraphicsLinearLayout(Qt::Vertical, m_layout);
+    m_actionslayout = new QGraphicsGridLayout(m_layout);
     m_layout->addItem(m_actionslayout);
-    m_action1widget = new Plasma::IconWidget(this);
-    m_action1widget->setMinimumSize(0, 0);
-    m_actionslayout->addItem(m_action1widget);
-    m_action2widget = new Plasma::IconWidget(this);
-    m_action2widget->setMinimumSize(0, 0);
-    m_actionslayout->addItem(m_action2widget);
-    m_action3widget = new Plasma::IconWidget(this);
-    m_action3widget->setMinimumSize(0, 0);
-    m_actionslayout->addItem(m_action3widget);
-    m_action4widget = new Plasma::IconWidget(this);
-    m_action4widget->setMinimumSize(0, 0);
-    m_actionslayout->addItem(m_action4widget);
-    m_actionslayout->addStretch();
+    m_action1widget = new Plasma::ToolButton(this);
+    m_action1widget->setVisible(false);
+    m_actionslayout->addItem(m_action1widget, 0, 0);
+    m_action2widget = new Plasma::ToolButton(this);
+    m_action2widget->setVisible(false);
+    m_actionslayout->addItem(m_action2widget, 1, 0);
+    m_action3widget = new Plasma::ToolButton(this);
+    m_action3widget->setVisible(false);
+    m_actionslayout->addItem(m_action3widget, 0, 1);
+    m_action4widget = new Plasma::ToolButton(this);
+    m_action4widget->setVisible(false);
+    m_actionslayout->addItem(m_action4widget, 1, 1);
 
     slotUpdateFonts();
     connect(
@@ -288,18 +288,22 @@ void LauncherWidget::addAction(QAction *action)
     }
     switch (m_actioncounter) {
         case 0: {
+            m_action1widget->setVisible(true);
             m_action1widget->setAction(action);
             break;
         }
         case 1: {
+            m_action2widget->setVisible(true);
             m_action2widget->setAction(action);
             break;
         }
         case 2: {
+            m_action3widget->setVisible(true);
             m_action3widget->setAction(action);
             break;
         }
         case 3: {
+            m_action4widget->setVisible(true);
             m_action4widget->setAction(action);
             break;
         }
@@ -308,6 +312,43 @@ void LauncherWidget::addAction(QAction *action)
         }
     }
     m_actioncounter++;
+}
+
+void LauncherWidget::removeAction(const int actionnumber)
+{
+    QAction* action = nullptr;
+    switch (actionnumber) {
+        case 0: {
+            m_action1widget->setVisible(false);
+            action = m_action1widget->action();
+            break;
+        }
+        case 1: {
+            m_action2widget->setVisible(false);
+            action = m_action2widget->action();
+            break;
+        }
+        case 2: {
+            m_action3widget->setVisible(false);
+            action = m_action3widget->action();
+            break;
+        }
+        case 3: {
+            m_action4widget->setVisible(false);
+            action = m_action4widget->action();
+            break;
+        }
+        default: {
+            kWarning() << "invalid action number" << action;
+            return;
+        }
+    }
+    if (action) {
+        action->deleteLater();
+        if (m_actioncounter > 0) {
+            m_actioncounter--;
+        }
+    }
 }
 
 void LauncherWidget::slotUpdateFonts()
@@ -502,25 +543,21 @@ private Q_SLOTS:
 private:
     QMutex m_mutex;
     LauncherApplet* m_launcherapplet;
+    KBookmarkManager* m_bookmarkmanager;
     QGraphicsLinearLayout* m_layout;
     QList<LauncherWidget*> m_launcherwidgets;
-    KBookmarkManager* m_bookmarkmanager;
 };
 
-// TODO: context menu to remove
 LauncherFavorites::LauncherFavorites(QGraphicsWidget *parent, LauncherApplet* launcherapplet)
     : QGraphicsWidget(parent),
     m_launcherapplet(launcherapplet),
-    m_layout(nullptr),
-    m_bookmarkmanager(nullptr)
+    m_bookmarkmanager(launcherapplet->bookmarkManager()),
+    m_layout(nullptr)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
     setLayout(m_layout);
 
-    const QString bookmarfile = KStandardDirs::locateLocal("data", "plasma/bookmarks.xml");
-    m_bookmarkmanager = KBookmarkManager::managerForFile(bookmarfile, "launcher");
-    // m_bookmarkmanager->slotEditBookmarks();
     slotUpdateLayout();
     connect(
         m_bookmarkmanager, SIGNAL(changed(QString,QString)),
@@ -755,7 +792,6 @@ void LauncherNavigator::slotReleased()
     emit navigate(toolbutton->property("_k_id").toString());
 }
 
-// TODO: context menu to add or remove from favorites, animated layout update
 class LauncherApplications : public QGraphicsWidget
 {
     Q_OBJECT
@@ -768,6 +804,8 @@ private Q_SLOTS:
     void slotDelayedNavigate();
     void slotGroupActivated();
     void slotAppActivated();
+    void slotCheckBookmarks();
+    void slotTriggered();
 
 private:
     static int serviceCount(KServiceGroup::Ptr servicegroup);
@@ -775,6 +813,7 @@ private:
 
     QMutex m_mutex;
     LauncherApplet* m_launcherapplet;
+    KBookmarkManager* m_bookmarkmanager;
     QGraphicsLinearLayout* m_layout;
     LauncherNavigator* m_launchernavigator;
     Plasma::ScrollWidget* m_scrollwidget;
@@ -787,6 +826,7 @@ private:
 LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
     : QGraphicsWidget(parent),
     m_launcherapplet(launcherapplet),
+    m_bookmarkmanager(launcherapplet->bookmarkManager()),
     m_layout(nullptr),
     m_launchernavigator(nullptr),
     m_scrollwidget(nullptr),
@@ -816,6 +856,14 @@ LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherAppl
         this, SLOT(slotNavigate(QString))
     );
     connect(
+        m_bookmarkmanager, SIGNAL(changed(QString,QString)),
+        this, SLOT(slotCheckBookmarks())
+    );
+    connect(
+        m_bookmarkmanager, SIGNAL(bookmarksChanged(QString)),
+        this, SLOT(slotCheckBookmarks())
+    );
+    connect(
         KSycoca::self(), SIGNAL(databaseChanged(QStringList)),
         this, SLOT(slotUpdateLayout())
     );
@@ -843,6 +891,9 @@ void LauncherApplications::slotUpdateLayout()
         addGroup(rootgroup);
         m_launchernavigator->finish();
     }
+
+    locker.unlock();
+    slotCheckBookmarks();
 }
 
 int LauncherApplications::serviceCount(KServiceGroup::Ptr servicegroup)
@@ -886,11 +937,12 @@ void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
             kDebug() << "hidden entry" << appservice->name();
             continue;
         }
+        const QString entrypath = appservice->entryPath();
         LauncherWidget* launcherwidget = new LauncherWidget(m_launchersswidget);
         launcherwidget->setup(
             iconsize, kGenericIcon(appservice->icon()), appservice->name(), appservice->comment()
         );
-        launcherwidget->setData(appservice->entryPath());
+        launcherwidget->setData(entrypath);
         m_launcherwidgets.append(launcherwidget);
         m_launcherslayout->addItem(launcherwidget);
         connect(
@@ -956,6 +1008,9 @@ void LauncherApplications::slotDelayedNavigate()
         kWarning() << "invalid group" << m_id;
     }
     m_launchernavigator->finish();
+
+    locker.unlock();
+    slotCheckBookmarks();
 }
 
 void LauncherApplications::slotGroupActivated()
@@ -968,6 +1023,56 @@ void LauncherApplications::slotAppActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
     kRunService(launcherwidget->data(), m_launcherapplet);
+}
+
+void LauncherApplications::slotCheckBookmarks()
+{
+    QMutexLocker locker(&m_mutex);
+    KBookmarkGroup bookmarkgroup = m_bookmarkmanager->root();
+    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
+        const QString launcherdata = launcherwidget->data();
+        KBookmark bookmark = bookmarkgroup.first();
+        bool isinfavorites = false;
+        while (!bookmark.isNull()) {
+            if (bookmark.url().url() == launcherdata) {
+                isinfavorites = true;
+                break;
+            }
+            bookmark = bookmarkgroup.next(bookmark);
+        }
+        // qDebug() << Q_FUNC_INFO << launcherdata << isinfavorites;
+        // there is only one action, it is known which one is that
+        launcherwidget->removeAction(0);
+        if (!isinfavorites) {
+            KService::Ptr service = KService::serviceByDesktopPath(launcherdata);
+            if (!service.isNull() && service->isValid()) {
+                QAction* favoriteaction = new QAction(launcherwidget);
+                favoriteaction->setIcon(KIcon(s_favoriteicon));
+                favoriteaction->setToolTip(i18n("Add to Favorites"));
+                favoriteaction->setProperty("_k_id", launcherdata);
+                launcherwidget->addAction(favoriteaction);
+                connect(
+                    favoriteaction, SIGNAL(triggered()),
+                    this, SLOT(slotTriggered())
+                );
+            }
+        }
+    }
+}
+
+void LauncherApplications::slotTriggered()
+{
+    QAction* favoriteaction = qobject_cast<QAction*>(sender());
+    const QString favoriteid = favoriteaction->property("_k_id").toString();
+    KService::Ptr service = KService::serviceByDesktopPath(favoriteid);
+    if (!service.isNull()) {
+        KBookmarkGroup bookmarkgroup = m_bookmarkmanager->root();
+        bookmarkgroup.addBookmark(service->desktopEntryName(), KUrl(service->entryPath()), service->icon());
+        m_bookmarkmanager->emitChanged(bookmarkgroup);
+        favoriteaction->setVisible(false);
+    } else {
+        kWarning() << "invalid favorite serivce" << favoriteid;
+    }
 }
 
 
@@ -1447,6 +1552,7 @@ void LauncherAppletWidget::slotTimeout()
 LauncherApplet::LauncherApplet(QObject *parent, const QVariantList &args)
     : Plasma::PopupApplet(parent, args),
     m_launcherwidget(nullptr),
+    m_bookmarkmanager(nullptr),
     m_editmenuaction(nullptr),
     m_selector(nullptr),
     m_shareconfig(nullptr)
@@ -1455,6 +1561,10 @@ LauncherApplet::LauncherApplet(QObject *parent, const QVariantList &args)
     setPopupIcon(s_defaultpopupicon);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
     setHasConfigurationInterface(true);
+
+    const QString bookmarfile = KStandardDirs::locateLocal("data", "plasma/bookmarks.xml");
+    m_bookmarkmanager = KBookmarkManager::managerForFile(bookmarfile, "launcher");
+    // m_bookmarkmanager->slotEditBookmarks();
 
     m_launcherwidget = new LauncherAppletWidget(this);
     setFocusProxy(m_launcherwidget);
@@ -1512,6 +1622,11 @@ void LauncherApplet::resetState()
 {
     hidePopup();
     m_launcherwidget->resetSearch();
+}
+
+KBookmarkManager* LauncherApplet::bookmarkManager() const
+{
+    return m_bookmarkmanager;
 }
 
 void LauncherApplet::slotEditMenu()

@@ -21,6 +21,7 @@
 #define LAUNCHER_H
 
 #include <QAction>
+#include <KBookmarkManager>
 #include <KConfigDialog>
 #include <KPluginSelector>
 #include <KSharedConfig>
@@ -41,6 +42,7 @@ public:
 
     // internal
     void resetState();
+    KBookmarkManager* bookmarkManager() const;
 
 private Q_SLOTS:
     void slotEditMenu();
@@ -49,6 +51,7 @@ private Q_SLOTS:
 private:
     friend LauncherAppletWidget;
     LauncherAppletWidget* m_launcherwidget;
+    KBookmarkManager* m_bookmarkmanager;
     QAction* m_editmenuaction;
     KPluginSelector* m_selector;
     KSharedConfig::Ptr m_shareconfig;
