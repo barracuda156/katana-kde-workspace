@@ -20,15 +20,16 @@
 #ifndef INCREMENTALSEARCHBAR_H
 #define INCREMENTALSEARCHBAR_H
 
-// Qt
+// Katie
 #include <QWidget>
-#include <QtCore/QBitArray>
-
+#include <QBitArray>
 #include <QAction>
 #include <QLabel>
 #include <QTimer>
-class KLineEdit;
 #include <QToolButton>
+#include <QKeyEvent>
+
+class KLineEdit;
 
 namespace Konsole
 {

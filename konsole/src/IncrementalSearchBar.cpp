@@ -20,13 +20,12 @@
 // Own
 #include "IncrementalSearchBar.h"
 
-// Qt
+// Katie
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QtGui/qevent.h>
-#include <QtCore/QTimer>
 #include <QToolButton>
 #include <QMenu>
+#include <QApplication>
 
 // KDE
 #include <KColorScheme>
@@ -242,27 +241,21 @@ void IncrementalSearchBar::setVisible(bool visible)
 void IncrementalSearchBar::setFoundMatch(bool match)
 {
     if (!match && !_searchEdit->text().isEmpty()) {
-        KStatefulBrush backgroundBrush(KColorScheme::View, KColorScheme::NegativeBackground);
-
-        QString matchStyleSheet = QString("QLineEdit{ background-color:%1 }")
-                                  .arg(backgroundBrush.brush(_searchEdit).color().name());
-
-        _searchEdit->setStyleSheet(matchStyleSheet);
+        QPalette pal = palette();
+        KColorScheme::adjustBackground(pal, KColorScheme::NegativeBackground);
+        _searchEdit->setPalette(pal);
     } else if (_searchEdit->text().isEmpty()) {
         clearLineEdit();
     } else {
-        KStatefulBrush backgroundBrush(KColorScheme::View, KColorScheme::PositiveBackground);
-
-        QString matchStyleSheet = QString("QLineEdit{ background-color:%1 }")
-                                  .arg(backgroundBrush.brush(_searchEdit).color().name());
-
-        _searchEdit->setStyleSheet(matchStyleSheet);
+        QPalette pal = palette();
+        KColorScheme::adjustBackground(pal, KColorScheme::PositiveBackground);
+        _searchEdit->setPalette(pal);
     }
 }
 
 void IncrementalSearchBar::clearLineEdit()
 {
-    _searchEdit->setStyleSheet(QString());
+    _searchEdit->setPalette(palette());
 }
 
 void IncrementalSearchBar::focusLineEdit()
