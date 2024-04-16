@@ -41,11 +41,11 @@ BookmarksRunner::BookmarksRunner( QObject* parent, const QVariantList &args )
     Q_UNUSED(args)
     kDebug(kdbg_code) << "Creating BookmarksRunner";
     setObjectName( QLatin1String("Bookmarks" ));
-    addSyntax(Plasma::RunnerSyntax(":q:", i18n("Finds web browser bookmarks matching :q:.")));
-    setDefaultSyntax(
+    addSyntax(
         Plasma::RunnerSyntax(i18nc("list of all web browser bookmarks", "bookmarks"),
         i18n("List all web browser bookmarks"))
     );
+    addSyntax(Plasma::RunnerSyntax(":q:", i18n("Finds web browser bookmarks matching :q:.")));
 
     connect(this, SIGNAL(prepare()), this, SLOT(prep()));
 }
@@ -68,7 +68,7 @@ void BookmarksRunner::match(Plasma::RunnerContext &context)
 {
     if(! m_browser) return;
     const QString term = context.query();
-    if ((term.length() < 3) && (!context.singleRunnerQueryMode())) {
+    if (term.length() < 3) {
         return;
     }
 

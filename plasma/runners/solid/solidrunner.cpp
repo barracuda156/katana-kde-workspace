@@ -54,7 +54,7 @@ SolidRunner::SolidRunner(QObject *parent, const QVariantList &args)
 
     addSyntax(Plasma::RunnerSyntax(":q:", i18n("Finds devices whose name match :q:")));
 
-    setDefaultSyntax(
+    addSyntax(
         Plasma::RunnerSyntax(
             i18nc("Note this is a KRunner keyword", "device"),
             i18n("Lists all devices and allows them to be mounted, unmounted or ejected.")

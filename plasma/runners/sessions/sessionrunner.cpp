@@ -58,8 +58,7 @@ SessionRunner::SessionRunner(QObject *parent, const QVariantList &args)
     fastUserSwitchSyntax.addExampleQuery(i18n("new session"));
     addSyntax(fastUserSwitchSyntax);
 
-    setDefaultSyntax(Plasma::RunnerSyntax("SESSIONS", i18n("Lists all sessions")));
-
+    addSyntax(Plasma::RunnerSyntax("SESSIONS", i18n("Lists all sessions")));
 }
 
 SessionRunner::~SessionRunner()

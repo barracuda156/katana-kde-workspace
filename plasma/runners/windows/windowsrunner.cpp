@@ -44,7 +44,7 @@ WindowsRunner::WindowsRunner(QObject* parent, const QVariantList& args)
                                    "It is possible to interact with the windows by using one of the following keywords: "
                                    "activate, close, min(imize), max(imize), fullscreen, shade, keep above and keep below.")));
     addSyntax(Plasma::RunnerSyntax(":q:", i18n("Switch to desktop named :q:")));
-    setDefaultSyntax(Plasma::RunnerSyntax(i18nc("Note this is a KRunner keyword", "window"),
+    addSyntax(Plasma::RunnerSyntax(i18nc("Note this is a KRunner keyword", "window"),
                                    i18n("Lists all windows and allows to activate them. "
                                    "With name=, class=, role= and desktop= the list can be reduced to "
                                    "windows matching these restrictions. "
@@ -117,8 +117,7 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
     }
 
     QString term = context.query();
-
-    if (!context.singleRunnerQueryMode() && (term.length() < 3)) {
+    if (term.length() < 3) {
         return;
     }
     QList<Plasma::QueryMatch> matches;
