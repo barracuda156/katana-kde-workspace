@@ -1648,7 +1648,9 @@ void LauncherAppletWidget::slotUserTimeout()
     if (usericon.isEmpty()) {
         usericon = s_usericon;
     }
-    m_iconwidget->setIcon(usericon);
+    // NOTE: the only way to force reload of the icon is to create an icon from pixmap created from
+    // image because QPixmap caches internally (the path may be the same but the data not)
+    m_iconwidget->setIcon(QIcon(QPixmap::fromImage(QImage(usericon))));
 
     QString usertext;
     QString fullusername = m_user->property(KUser::FullName);
@@ -1658,6 +1660,8 @@ void LauncherAppletWidget::slotUserTimeout()
         usertext = i18nc("full name, login name, hostname", "<b>%1 (%2)</b> on <b>%3</b>", fullusername, m_user->loginName(), hostname);
     }
     m_label->setText(usertext);
+
+    // qDebug() << Q_FUNC_INFO << usericon << usertext;
 }
 
 void LauncherAppletWidget::slotSearchTimeout()
