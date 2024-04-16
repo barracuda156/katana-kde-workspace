@@ -503,17 +503,16 @@ LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcher
     m_label->setAlignment(Qt::AlignCenter);
     m_label->setText(i18n("No matches found"));
     m_layout->addItem(m_label);
-}
 
-void LauncherSearch::setAllowedRunners(const QStringList &runners)
-{
-    // NOTE: Plasma::RunnerManager basically never unloads, have to re-create it
-    delete m_runnermanager;
     m_runnermanager = new Plasma::RunnerManager(this);
     connect(
         m_runnermanager, SIGNAL(matchesChanged(QList<Plasma::QueryMatch>)),
         this, SLOT(slotUpdateLayout(QList<Plasma::QueryMatch>))
     );
+}
+
+void LauncherSearch::setAllowedRunners(const QStringList &runners)
+{
     m_runnermanager->setAllowedRunners(runners);
 }
 
