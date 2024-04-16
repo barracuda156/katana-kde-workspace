@@ -50,6 +50,7 @@
 #include <Plasma/ToolButton>
 #include <Plasma/ScrollWidget>
 #include <Plasma/RunnerManager>
+#include <Plasma/Animation>
 #include <KDebug>
 
 // TODO: mime data for drag-n-drop, animated layout updates
@@ -160,9 +161,11 @@ class LauncherWidget : public QGraphicsWidget
     Q_OBJECT
 public:
     LauncherWidget(QGraphicsWidget *parent);
+    ~LauncherWidget();
 
     void setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext);
     void disableHover();
+    void disableAnimations();
 
     QString data() const;
     void setData(const QString &data);
@@ -176,7 +179,14 @@ Q_SIGNALS:
 private Q_SLOTS:
     void slotUpdateFonts();
 
+protected:
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) final;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) final;
+
 private:
+    void animateFadeIn(Plasma::Animation *animation, Plasma::ToolButton *toolbutton);
+    void animateFadeOut(Plasma::Animation *animation, Plasma::ToolButton *toolbutton);
+
     QGraphicsLinearLayout* m_layout;
     Plasma::IconWidget* m_iconwidget;
     QGraphicsLinearLayout* m_textlayout;
@@ -189,6 +199,10 @@ private:
     Plasma::ToolButton* m_action4widget;
     QString m_data;
     int m_actioncounter;
+    Plasma::Animation* m_action1animation;
+    Plasma::Animation* m_action2animation;
+    Plasma::Animation* m_action3animation;
+    Plasma::Animation* m_action4animation;
 };
 
 LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
@@ -203,8 +217,14 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_action2widget(nullptr),
     m_action3widget(nullptr),
     m_action4widget(nullptr),
+    m_action1animation(nullptr),
+    m_action2animation(nullptr),
+    m_action3animation(nullptr),
+    m_action4animation(nullptr),
     m_actioncounter(0)
 {
+    setAcceptHoverEvents(true);
+
     m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
     setLayout(m_layout);
 
@@ -248,6 +268,26 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     );
 }
 
+LauncherWidget::~LauncherWidget()
+{
+    if (m_action1animation) {
+        m_action1animation->stop();
+        delete m_action1animation;
+    }
+    if (m_action2animation) {
+        m_action2animation->stop();
+        delete m_action2animation;
+    }
+    if (m_action3animation) {
+        m_action3animation->stop();
+        delete m_action3animation;
+    }
+    if (m_action4animation) {
+        m_action4animation->stop();
+        delete m_action4animation;
+    }
+}
+
 void LauncherWidget::setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext)
 {
     m_iconwidget->setMinimumIconSize(iconsize);
@@ -261,6 +301,11 @@ void LauncherWidget::disableHover()
 {
     m_iconwidget->setAcceptHoverEvents(false);
     m_iconwidget->setAcceptedMouseButtons(Qt::NoButton);
+}
+
+void LauncherWidget::disableAnimations()
+{
+    setAcceptHoverEvents(false);
 }
 
 QString LauncherWidget::data() const
@@ -289,21 +334,25 @@ void LauncherWidget::addAction(QAction *action)
     switch (m_actioncounter) {
         case 0: {
             m_action1widget->setVisible(true);
+            m_action1widget->setOpacity(0.0);
             m_action1widget->setAction(action);
             break;
         }
         case 1: {
             m_action2widget->setVisible(true);
+            m_action2widget->setOpacity(0.0);
             m_action2widget->setAction(action);
             break;
         }
         case 2: {
             m_action3widget->setVisible(true);
+            m_action3widget->setOpacity(0.0);
             m_action3widget->setAction(action);
             break;
         }
         case 3: {
             m_action4widget->setVisible(true);
+            m_action4widget->setOpacity(0.0);
             m_action4widget->setAction(action);
             break;
         }
@@ -349,6 +398,58 @@ void LauncherWidget::removeAction(const int actionnumber)
             m_actioncounter--;
         }
     }
+}
+
+void LauncherWidget::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+    animateFadeIn(m_action1animation, m_action1widget);
+    animateFadeIn(m_action2animation, m_action2widget);
+    animateFadeIn(m_action3animation, m_action3widget);
+    animateFadeIn(m_action4animation, m_action4widget);
+}
+
+void LauncherWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    animateFadeOut(m_action1animation, m_action1widget);
+    animateFadeOut(m_action2animation, m_action2widget);
+    animateFadeOut(m_action3animation, m_action3widget);
+    animateFadeOut(m_action4animation, m_action4widget);
+}
+
+void LauncherWidget::animateFadeIn(Plasma::Animation *animation, Plasma::ToolButton *toolbutton)
+{
+    if (!toolbutton->isVisible()) {
+        return;
+    }
+    if (animation) {
+        animation->stop();
+    }
+    if (!animation) {
+        animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation);
+        Q_ASSERT(animation != nullptr);
+        animation->setTargetWidget(toolbutton);
+    }
+    animation->setProperty("startOpacity", 0.0);
+    animation->setProperty("targetOpacity", 1.0);
+    animation->start(QAbstractAnimation::KeepWhenStopped);
+}
+
+void LauncherWidget::animateFadeOut(Plasma::Animation *animation, Plasma::ToolButton *toolbutton)
+{
+    if (!toolbutton->isVisible()) {
+        return;
+    }
+    if (animation) {
+        animation->stop();
+    }
+    if (!animation) {
+        animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation);
+        Q_ASSERT(animation != nullptr);
+        animation->setTargetWidget(toolbutton);
+    }
+    animation->setProperty("startOpacity", 1.0);
+    animation->setProperty("targetOpacity", 0.0);
+    animation->start(QAbstractAnimation::KeepWhenStopped);
 }
 
 void LauncherWidget::slotUpdateFonts()
@@ -1133,6 +1234,7 @@ void LauncherRecent::slotUpdateLayout()
             iconsize, kRecentIcon(recentfile.readIcon()), recentfile.readName(), recentfile.readComment()
         );
         launcherwidget->setData(recentfile.readUrl());
+        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1227,6 +1329,7 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-lock-screen"), i18n("Lock"), i18n("Lock screen")
         );
         launcherwidget->setData("lock");
+        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1241,6 +1344,7 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-switch-user"), i18n("Switch user"), i18n("Start a parallel session as a different user")
         );
         launcherwidget->setData("switch");
+        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1262,6 +1366,7 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-suspend"), i18n("Sleep"), i18n("Suspend to RAM")
         );
         launcherwidget->setData("suspendram");
+        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1275,6 +1380,7 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-suspend-hibernate"), i18n("Hibernate"), i18n("Suspend to disk")
         );
         launcherwidget->setData("suspenddisk");
+        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1288,6 +1394,7 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-suspend"), i18n("Hybrid Suspend"), i18n("Hybrid Suspend")
         );
         launcherwidget->setData("suspendhybrid");
+        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1302,6 +1409,7 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-reboot"), i18nc("Restart computer", "Restart"), i18n("Restart computer")
         );
         launcherwidget->setData("restart");
+        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1315,6 +1423,7 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-shutdown"), i18n("Shut down"), i18n("Turn off computer")
         );
         launcherwidget->setData("shutdown");
+        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1327,6 +1436,7 @@ void LauncherLeave::slotUpdateLayout()
         iconsize, KIcon("system-log-out"), i18n("Log out"), i18n("End session")
     );
     launcherwidget->setData("logout");
+    launcherwidget->disableAnimations();
     m_launcherwidgets.append(launcherwidget);
     m_layout->addItem(launcherwidget);
     connect(
