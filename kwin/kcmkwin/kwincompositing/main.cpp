@@ -494,7 +494,7 @@ void KWinCompositingConfig::checkLoadedEffects()
             ui.messageBox->setText(i18ncp("Error Message shown when a desktop effect could not be loaded",
                                           "One desktop effect could not be loaded.",
                                           "%1 desktop effects could not be loaded.", disabledEffects.count()));
-            ui.messageBox->animatedShow();
+            ui.messageBox->show();
         } else {
             foreach (QWidget *w, m_showDetailedErrors->associatedWidgets())
                 w->setVisible(false);
@@ -573,7 +573,7 @@ void KWinCompositingConfig::warn(QString message, QString details, QString dontA
     m_externErrorDetails = details.isNull() ? "" : details;
     foreach (QWidget *w, m_showDetailedErrors->associatedWidgets())
         w->setVisible(!m_externErrorDetails.isEmpty());
-    ui.messageBox->animatedShow();
+    ui.messageBox->show();
 }
 
 void KWinCompositingConfig::blockFutureWarnings() {
@@ -586,7 +586,7 @@ void KWinCompositingConfig::blockFutureWarnings() {
     KConfig cfg(l.count() > 1 ? l.at(0) : "kwin_dialogsrc");
     KConfigGroup(&cfg, "Notification Messages").writeEntry(l.last(), false);
     cfg.sync();
-    ui.messageBox->animatedHide();
+    ui.messageBox->hide();
 }
 
 void KWinCompositingConfig::configChanged(bool reinitCompositing)

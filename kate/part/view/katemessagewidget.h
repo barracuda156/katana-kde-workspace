@@ -34,7 +34,6 @@ namespace KTextEditor
 }
 
 class KMessageWidget;
-class KateAnimation;
 
 /**
  * This class implements a message widget based on KMessageWidget.
@@ -91,8 +90,6 @@ class KATEPARTINTERFACES_EXPORT KateMessageWidget : public QWidget
     QHash<KTextEditor::Message*, QList<QSharedPointer<QAction> > > m_messageHash;
     // the message widget, showing the actual contents
     KMessageWidget* m_messageWidget;
-    // the show / hide effect controller
-    KateAnimation* m_animation;
 
   private: // some state variables
     // autoHide only once user interaction took place

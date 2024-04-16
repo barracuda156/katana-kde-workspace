@@ -259,7 +259,7 @@ void DolphinViewContainer::showMessage(const QString& msg, MessageType type)
     const int unwrappedWidth = m_messageWidget->sizeHint().width();
     m_messageWidget->setWordWrap(unwrappedWidth > size().width());
 
-    m_messageWidget->animatedShow();
+    m_messageWidget->show();
 }
 
 void DolphinViewContainer::readSettings()

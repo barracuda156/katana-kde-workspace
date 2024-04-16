@@ -100,7 +100,7 @@ void KateProjectInfoViewCodeAnalysis::slotStartStopClicked ()
    */
   if (m_messageWidget) {
     delete m_messageWidget;
-    m_messageWidget=0;
+    m_messageWidget = 0;
   }
 
   if (KStandardDirs::findExe("cppcheck").isEmpty()) {
@@ -110,7 +110,7 @@ void KateProjectInfoViewCodeAnalysis::slotStartStopClicked ()
     m_messageWidget->setWordWrap(false);
     m_messageWidget->setText(i18n("Please install 'cppcheck'."));
     static_cast<QVBoxLayout*>(layout ())->insertWidget(0, m_messageWidget);
-    m_messageWidget->animatedShow();
+    m_messageWidget->show();
     return;
   }
 

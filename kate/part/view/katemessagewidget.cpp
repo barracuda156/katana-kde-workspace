@@ -23,7 +23,6 @@
 
 #include <ktexteditor/messageinterface.h>
 #include <kmessagewidget.h>
-#include <kateanimation.h>
 
 #include <kdeversion.h>
 #include <kdebug.h>
@@ -38,7 +37,6 @@ static const int s_defaultAutoHideTime = 6 * 1000;
 
 KateMessageWidget::KateMessageWidget(QWidget* parent, bool applyFadeEffect)
   : QWidget(parent)
-  , m_animation(0)
   , m_autoHideTimer(new QTimer(this))
   , m_autoHideTime(-1)
 {
@@ -60,10 +58,6 @@ KateMessageWidget::KateMessageWidget(QWidget* parent, bool applyFadeEffect)
   // by default, hide widgets
   m_messageWidget->hide();
   hide();
-
-  // create animation controller, and connect widgetHidden() to showNextMessage()
-  m_animation = new KateAnimation(m_messageWidget, applyFadeEffect);
-  connect(m_animation, SIGNAL(widgetHidden()), this, SLOT(showNextMessage()));
 
   // setup autoHide timer details
   m_autoHideTimer->setSingleShot(true);
@@ -136,7 +130,7 @@ void KateMessageWidget::showNextMessage()
 
   // finally show
   show();
-  m_animation->show();
+  m_messageWidget->show();
 }
 
 void KateMessageWidget::setWordWrap(KTextEditor::Message* message)
@@ -197,7 +191,7 @@ void KateMessageWidget::postMessage(KTextEditor::Message* message,
   // catch if the message gets deleted
   connect(message, SIGNAL(closed(KTextEditor::Message*)), SLOT(messageDestroyed(KTextEditor::Message*)));
 
-  if (i == 0 && !m_animation->hideAnimationActive()) {
+  if (i == 0) {
     // if message has higher priority than the one currently shown,
     // then hide the current one and then show the new one.
     if (m_currentMessage) {
@@ -218,7 +212,7 @@ void KateMessageWidget::postMessage(KTextEditor::Message* message,
                  m_messageWidget, SLOT(setIcon(const QIcon&)));
 
       m_currentMessage = 0;
-      m_animation->hide();
+      m_messageWidget->hide();
     } else {
       showNextMessage();
     }
@@ -253,7 +247,7 @@ void KateMessageWidget::messageDestroyed(KTextEditor::Message* message)
   // if deleted message is the current message, launch hide animation
   if (message == m_currentMessage) {
     m_currentMessage = 0;
-    m_animation->hide();
+    m_messageWidget->hide();
   }
 }
 
@@ -263,8 +257,6 @@ void KateMessageWidget::startAutoHideTimer()
   if ( !m_currentMessage           // no message, nothing to do
     || m_autoHideTime < 0          // message does not want auto-hide
     || m_autoHideTimer->isActive() // auto-hide timer is already active
-    || m_animation->hideAnimationActive() // widget is in hide animation phase
-    || m_animation->showAnimationActive() // widget is in show animation phase
   ) {
     return;
   }
