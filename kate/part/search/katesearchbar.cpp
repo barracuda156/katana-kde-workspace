@@ -302,7 +302,7 @@ void KateSearchBar::updateMessage(QPointer<KTextEditor::Message>& message, bool 
 void KateSearchBar::showInfoMessage(const QString& text)
 {
     typedef KTextEditor::Message KTEM;
-    updateMessage(m_infoMessage, true, text, KTEM::Positive, KTEM::BottomInView, KTEM::AfterUserInteraction, 3000, false);
+    updateMessage(m_infoMessage, true, text, KTEM::Information, KTEM::BottomInView, KTEM::AfterUserInteraction, 3000, false);
 }
 
 void KateSearchBar::highlightMatch(const Range & range) {

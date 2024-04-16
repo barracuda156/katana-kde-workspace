@@ -217,7 +217,7 @@ void MessageTest::testPriority()
     // - m1 should be hidden in favour of m2
     // - changing text of m1 while m2 is displayed should not change the displayed text
     //
-    QPointer<Message> m1 = new Message("m1", Message::Positive);
+    QPointer<Message> m1 = new Message("m1", Message::Information);
     m1->setPosition(Message::TopInView);
     QVERIFY(m1->priority() == 0);
 
@@ -273,7 +273,7 @@ void MessageTest::testCreateView()
     // - verify that both views get the message
     // - verify that, once the message is deleted, both views hide the message
     //
-    QPointer<Message> m1 = new Message("message", Message::Positive);
+    QPointer<Message> m1 = new Message("message", Message::Information);
     m1->setPosition(Message::TopInView);
     QVERIFY(m1->priority() == 0);
 
