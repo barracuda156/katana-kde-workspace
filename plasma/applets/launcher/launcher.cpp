@@ -62,11 +62,12 @@ static const QStringList s_firsttimeservices = QStringList()
     << QString::fromLatin1("konsole")
     << QString::fromLatin1("dolphin")
     << QString::fromLatin1("systemsettings");
+static const QString s_usericon = QString::fromLatin1("user-identity");
 static const QString s_genericicon = QString::fromLatin1("applications-other");
 static const QString s_favoriteicon = QString::fromLatin1("bookmarks");
 static const QString s_recenticon = QString::fromLatin1("document-open-recent");
 static const int s_searchdelay = 500; // ms
-static const int s_leavetimeout = 5000; // ms
+static const int s_polltimeout = 5000; // ms
 
 static QSizeF kIconSize()
 {
@@ -1269,7 +1270,7 @@ LauncherLeave::LauncherLeave(QGraphicsWidget *parent)
     setLayout(m_layout);
 
     m_timer = new QTimer(this);
-    m_timer->setInterval(s_leavetimeout);
+    m_timer->setInterval(s_polltimeout);
 
     slotTimeout();
     slotUpdateLayout();
@@ -1474,13 +1475,15 @@ class LauncherAppletWidget : public QGraphicsWidget
     Q_OBJECT
 public:
     LauncherAppletWidget(LauncherApplet* auncherapplet);
+    ~LauncherAppletWidget();
 
     void resetSearch();
     void setAllowedRunners(const QStringList &runners);
 
 private Q_SLOTS:
     void slotSearch(const QString &text);
-    void slotTimeout();
+    void slotUserTimeout();
+    void slotSearchTimeout();
 
 private:
     LauncherApplet* m_launcherapplet;
@@ -1499,7 +1502,9 @@ private:
     LauncherLeave* m_leavewidget;
     Plasma::ScrollWidget* m_searchscrollwidget;
     LauncherSearch* m_searchwidget;
-    QTimer* m_timer;
+    KUser* m_user;
+    QTimer* m_usertimer;
+    QTimer* m_searchtimer;
 };
 
 LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
@@ -1520,7 +1525,9 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_leavewidget(nullptr),
     m_searchscrollwidget(nullptr),
     m_searchwidget(nullptr),
-    m_timer(nullptr)
+    m_user(nullptr),
+    m_usertimer(nullptr),
+    m_searchtimer(nullptr)
 {
     m_layout = new QGraphicsLinearLayout(this);
     m_layout->setOrientation(Qt::Vertical);
@@ -1529,28 +1536,16 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_toplayout->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     m_layout->addItem(m_toplayout);
 
-    const QString hostname = QHostInfo::localHostName();
-    KUser user(KUser::UseEffectiveUID);
-    QString usericon = user.faceIconPath();
-    if (usericon.isEmpty()) {
-        usericon = QLatin1String("system-search");
-    }
+    m_user = new KUser(KUser::UseEffectiveUID);
+
     m_iconwidget = new Plasma::IconWidget(this);
     m_iconwidget->setAcceptHoverEvents(false);
     m_iconwidget->setAcceptedMouseButtons(Qt::NoButton);
-    m_iconwidget->setIcon(usericon);
+    m_iconwidget->setIcon(s_usericon);
     m_toplayout->addItem(m_iconwidget);
 
-    QString usertext;
-    QString fullusername = user.property(KUser::FullName);
-    if (fullusername.isEmpty()) {
-        usertext = i18nc("login name, hostname", "User <b>%1</b> on <b>%2</b>", user.loginName(), hostname);
-    } else {
-        usertext = i18nc("full name, login name, hostname", "<b>%1 (%2)</b> on <b>%3</b>", fullusername, user.loginName(), hostname);
-    }
     m_label = new Plasma::Label(this);
     m_label->setWordWrap(false);
-    m_label->setText(usertext);
     m_toplayout->addItem(m_label);
     m_toplayout->setAlignment(m_label, Qt::AlignCenter);
 
@@ -1595,15 +1590,29 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
         this, SLOT(slotSearch(QString))
     );
 
-    m_timer = new QTimer(this);
-    m_timer->setSingleShot(true);
-    m_timer->setInterval(s_searchdelay);
+    m_usertimer = new QTimer(this);
+    m_usertimer->setInterval(s_polltimeout);
     connect(
-        m_timer, SIGNAL(timeout()),
-        this, SLOT(slotTimeout())
+        m_usertimer, SIGNAL(timeout()),
+        this, SLOT(slotUserTimeout())
+    );
+    slotUserTimeout();
+    m_usertimer->start();
+
+    m_searchtimer = new QTimer(this);
+    m_searchtimer->setSingleShot(true);
+    m_searchtimer->setInterval(s_searchdelay);
+    connect(
+        m_searchtimer, SIGNAL(timeout()),
+        this, SLOT(slotSearchTimeout())
     );
 
     setLayout(m_layout);
+}
+
+LauncherAppletWidget::~LauncherAppletWidget()
+{
+    delete m_user;
 }
 
 void LauncherAppletWidget::resetSearch()
@@ -1620,19 +1629,38 @@ void LauncherAppletWidget::slotSearch(const QString &text)
 {
     const QString query = text.trimmed();
     if (query.isEmpty()) {
-        m_timer->stop();
+        m_searchtimer->stop();
         m_searchwidget->finish();
         m_searchscrollwidget->setVisible(false);
         m_tabbar->setVisible(true);
         return;
     }
-    if (!m_timer->isActive()) {
+    if (!m_searchtimer->isActive()) {
         m_searchwidget->prepare();
     }
-    m_timer->start();
+    m_searchtimer->start();
 }
 
-void LauncherAppletWidget::slotTimeout()
+void LauncherAppletWidget::slotUserTimeout()
+{
+    const QString hostname = QHostInfo::localHostName();
+    QString usericon = m_user->faceIconPath();
+    if (usericon.isEmpty()) {
+        usericon = s_usericon;
+    }
+    m_iconwidget->setIcon(usericon);
+
+    QString usertext;
+    QString fullusername = m_user->property(KUser::FullName);
+    if (fullusername.isEmpty()) {
+        usertext = i18nc("login name, hostname", "User <b>%1</b> on <b>%2</b>", m_user->loginName(), hostname);
+    } else {
+        usertext = i18nc("full name, login name, hostname", "<b>%1 (%2)</b> on <b>%3</b>", fullusername, m_user->loginName(), hostname);
+    }
+    m_label->setText(usertext);
+}
+
+void LauncherAppletWidget::slotSearchTimeout()
 {
     m_searchwidget->query(m_lineedit->text());
     m_tabbar->setVisible(false);
