@@ -20,7 +20,6 @@
 
 #include <QWidget>
 #include <QPushButton>
-
 #include <KDebug>
 #include <KIcon>
 #include <KLocale>
@@ -29,26 +28,16 @@
 #include <KStandardDirs>
 #include <KToolInvocation>
 
-#include <Plasma/Theme>
-
-#include "shell_config.h"
-
 ShellRunner::ShellRunner(QObject *parent, const QVariantList &args)
-    : Plasma::AbstractRunner(parent, args),
-      m_inTerminal(false)
+    : Plasma::AbstractRunner(parent, args)
 {
     setObjectName( QLatin1String("Command" ));
     setPriority(AbstractRunner::HighestPriority);
-    setHasRunOptions(true);
     setIgnoredTypes(Plasma::RunnerContext::Directory | Plasma::RunnerContext::File |
                     Plasma::RunnerContext::NetworkLocation | Plasma::RunnerContext::UnknownType |
                     Plasma::RunnerContext::Help);
 
     addSyntax(Plasma::RunnerSyntax(":q:", i18n("Finds commands that match :q:, using common shell syntax")));
-}
-
-ShellRunner::~ShellRunner()
-{
 }
 
 void ShellRunner::match(Plasma::RunnerContext &context)
@@ -68,39 +57,25 @@ void ShellRunner::match(Plasma::RunnerContext &context)
 
 void ShellRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
 {
-    Q_UNUSED(match);
-
-    // filter match's id to remove runner's name
-    // as this is the command we want to run
-
-    if (m_inTerminal) {
+    bool interminal = false;
+    if (match.selectedAction() != nullptr) {
+        interminal = match.selectedAction()->data().toBool();
+    }
+    if (interminal) {
         KToolInvocation::invokeTerminal(context.query());
     } else {
-        KRun::runCommand(context.query(), NULL);
+        KRun::runCommand(context.query(), nullptr);
     }
-
-    // reset for the next run!
-    m_inTerminal = false;
 }
 
-void ShellRunner::createRunOptions(QWidget *parent)
+QList<QAction*> ShellRunner::actionsForMatch(const Plasma::QueryMatch &match)
 {
-    //TODO: for multiple runners?
-    //TODO: sync palette on theme changes
-    ShellConfig *configWidget = new ShellConfig(config(), parent);
-
-    QPalette pal = configWidget->palette();
-    Plasma::Theme *theme = Plasma::Theme::defaultTheme();
-    pal.setColor(QPalette::Normal, QPalette::Window, theme->color(Plasma::Theme::BackgroundColor));
-    pal.setColor(QPalette::Normal, QPalette::WindowText, theme->color(Plasma::Theme::TextColor));
-    configWidget->setPalette(pal);
-
-    connect(configWidget->m_ui.cbRunInTerminal, SIGNAL(clicked(bool)), this, SLOT(setRunInTerminal(bool)));
-}
-
-void ShellRunner::setRunInTerminal(bool runInTerminal)
-{
-    m_inTerminal = runInTerminal;
+    Q_UNUSED(match)
+    QList<QAction*> result;
+    QAction* matchaction = addAction("run_in_terminal", KIcon("utilities-terminal"), i18n("Run in &terminal window"));
+    matchaction->setData(true);
+    result.append(matchaction);
+    return result;
 }
 
 #include "moc_shellrunner.cpp"

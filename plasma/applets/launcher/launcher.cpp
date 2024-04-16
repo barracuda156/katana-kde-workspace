@@ -217,11 +217,11 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_action2widget(nullptr),
     m_action3widget(nullptr),
     m_action4widget(nullptr),
+    m_actioncounter(0),
     m_action1animation(nullptr),
     m_action2animation(nullptr),
     m_action3animation(nullptr),
-    m_action4animation(nullptr),
-    m_actioncounter(0)
+    m_action4animation(nullptr)
 {
     setAcceptHoverEvents(true);
 
@@ -475,7 +475,6 @@ public:
 
 private Q_SLOTS:
     void slotUpdateLayout(const QList<Plasma::QueryMatch> &matches);
-    void slotConfigureTriggered();
     void slotTriggered();
     void slotActivated();
 
@@ -564,20 +563,7 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
         if (match.type() == Plasma::QueryMatch::InformationalMatch) {
             launcherwidget->disableHover();
         }
-        int counter = 1;
-        if (match.hasConfigurationInterface()) {
-            QAction* matchconfigaction = new QAction(launcherwidget);
-            matchconfigaction->setIcon(KIcon("preferences-system"));
-            matchconfigaction->setToolTip(i18n("Configure"));
-            matchconfigaction->setProperty("_k_id", match.id());
-            connect(
-                matchconfigaction, SIGNAL(triggered()),
-                this, SLOT(slotConfigureTriggered())
-            );
-            launcherwidget->addAction(matchconfigaction);
-            counter++;
-            // qDebug() << Q_FUNC_INFO << match.id();
-        }
+        int counter = 0;
         const QList<QAction*> matchactions = m_runnermanager->actionsForMatch(match);
         // qDebug() << Q_FUNC_INFO << match.id() << matchactions.size();
         foreach (QAction* action, matchactions) {
@@ -600,11 +586,6 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
             this, SLOT(slotActivated())
         );
     }
-}
-
-void LauncherSearch::slotConfigureTriggered()
-{
-    // TODO: implement
 }
 
 void LauncherSearch::slotTriggered()

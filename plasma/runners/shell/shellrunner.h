@@ -31,20 +31,12 @@
 class ShellRunner : public Plasma::AbstractRunner
 {
     Q_OBJECT
+public:
+    ShellRunner(QObject *parent, const QVariantList &args);
 
-    public:
-        ShellRunner(QObject *parent, const QVariantList &args);
-        ~ShellRunner();
-
-        void match(Plasma::RunnerContext &context);
-        void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &action);
-        void createRunOptions(QWidget *parent);
-
-    private Q_SLOTS:
-        void setRunInTerminal(bool runInTerminal);
-
-    private:
-        bool m_inTerminal;
+    void match(Plasma::RunnerContext &context);
+    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &action);
+    QList<QAction*> actionsForMatch(const Plasma::QueryMatch &match);
 };
 
 K_EXPORT_PLASMA_RUNNER(shell, ShellRunner)
