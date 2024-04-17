@@ -1087,19 +1087,19 @@ void LauncherApplications::slotAppActivated()
 
 void LauncherApplications::slotCheckBookmarks()
 {
-    QMutexLocker locker(&m_mutex);
+    QStringList bookmarkurls;
     KBookmarkGroup bookmarkgroup = m_bookmarkmanager->root();
+    KBookmark bookmark = bookmarkgroup.first();
+    bool isinfavorites = false;
+    while (!bookmark.isNull()) {
+        bookmarkurls.append(bookmark.url().url());
+        bookmark = bookmarkgroup.next(bookmark);
+    }
+
+    QMutexLocker locker(&m_mutex);
     foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
         const QString launcherdata = launcherwidget->data();
-        KBookmark bookmark = bookmarkgroup.first();
-        bool isinfavorites = false;
-        while (!bookmark.isNull()) {
-            if (bookmark.url().url() == launcherdata) {
-                isinfavorites = true;
-                break;
-            }
-            bookmark = bookmarkgroup.next(bookmark);
-        }
+        const bool isinfavorites = bookmarkurls.contains(launcherdata);
         // qDebug() << Q_FUNC_INFO << launcherdata << isinfavorites;
         // there is only one action, it is known which one is that
         launcherwidget->removeAction(0);
