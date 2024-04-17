@@ -162,7 +162,6 @@ class LauncherWidget : public QGraphicsWidget
     Q_OBJECT
 public:
     LauncherWidget(QGraphicsWidget *parent);
-    ~LauncherWidget();
 
     void setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext);
     void disableHover();
@@ -267,26 +266,6 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
         KGlobalSettings::self(), SIGNAL(kdisplayFontChanged()),
         this, SLOT(slotUpdateFonts())
     );
-}
-
-LauncherWidget::~LauncherWidget()
-{
-    if (m_action1animation) {
-        m_action1animation->stop();
-        delete m_action1animation;
-    }
-    if (m_action2animation) {
-        m_action2animation->stop();
-        delete m_action2animation;
-    }
-    if (m_action3animation) {
-        m_action3animation->stop();
-        delete m_action3animation;
-    }
-    if (m_action4animation) {
-        m_action4animation->stop();
-        delete m_action4animation;
-    }
 }
 
 void LauncherWidget::setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext)
@@ -424,9 +403,8 @@ void LauncherWidget::animateFadeIn(Plasma::Animation *animation, Plasma::ToolBut
     }
     if (animation) {
         animation->stop();
-    }
-    if (!animation) {
-        animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation);
+    } else {
+        animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation, this);
         Q_ASSERT(animation != nullptr);
         animation->setTargetWidget(toolbutton);
     }
@@ -442,9 +420,8 @@ void LauncherWidget::animateFadeOut(Plasma::Animation *animation, Plasma::ToolBu
     }
     if (animation) {
         animation->stop();
-    }
-    if (!animation) {
-        animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation);
+    } else {
+        animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation, this);
         Q_ASSERT(animation != nullptr);
         animation->setTargetWidget(toolbutton);
     }
