@@ -538,7 +538,7 @@ void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
             iconsize, match.icon(), match.text(), match.subtext()
         );
         launcherwidget->setData(match.id());
-        if (match.type() == Plasma::QueryMatch::InformationalMatch) {
+        if (!match.isEnabled() || match.type() == Plasma::QueryMatch::InformationalMatch) {
             launcherwidget->disableHover();
         }
         int counter = 0;
