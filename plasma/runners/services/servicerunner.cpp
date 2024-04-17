@@ -116,7 +116,7 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
 
         Plasma::QueryMatch match(this);
         setupMatch(service, match);
-        qreal relevance(0.6);
+        qreal relevance = 0.6;
 
         // If the term was < 3 chars and NOT at the beginning of the App's name or Exec, then
         // chances are the user doesn't want that app.
@@ -141,13 +141,13 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
         }
 
         if (service->categories().contains("KDE") || service->serviceTypes().contains("KCModule")) {
-            //kDebug() << "found a kde thing" << id << match.subtext() << relevance;
+            // kDebug() << "found a kde thing" << id << match.subtext() << relevance;
             if (!id.startsWith("kde-")) {
                 relevance += 0.1;
             }
         }
 
-        //kDebug() << service->name() << "is this relevant:" << relevance;
+        // kDebug() << service->name() << "is this relevant:" << relevance;
         match.setRelevance(relevance);
         matches << match;
     }
@@ -194,7 +194,7 @@ void ServiceRunner::run(const Plasma::RunnerContext &context, const Plasma::Quer
     Q_UNUSED(context);
     KService::Ptr service = KService::serviceByStorageId(match.data().toString());
     if (service) {
-        KRun::run(*service, KUrl::List(), 0);
+        KRun::run(*service, KUrl::List(), nullptr);
     }
 }
 

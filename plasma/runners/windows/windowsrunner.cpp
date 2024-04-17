@@ -30,9 +30,7 @@
 #endif
 
 WindowsRunner::WindowsRunner(QObject* parent, const QVariantList& args)
-    : AbstractRunner(parent, args),
-      m_inSession(false),
-      m_ready(false)
+    : AbstractRunner(parent, args)
 {
     setObjectName( QLatin1String("Windows" ));
 
@@ -51,17 +49,13 @@ WindowsRunner::WindowsRunner(QObject* parent, const QVariantList& args)
                                    "activate, close, min(imize), max(imize), fullscreen, shade, keep above and keep below.")));
     addSyntax(Plasma::RunnerSyntax(i18nc("Note this is a KRunner keyword", "desktop"),
                                    i18n("Lists all other desktops and allows to switch to them.")));
-
-    connect(this, SIGNAL(prepare()), this, SLOT(prepareForMatchSession()));
-    connect(this, SIGNAL(teardown()), this, SLOT(matchSessionComplete()));
 }
 
-void WindowsRunner::gatherInfo()
+void WindowsRunner::match(Plasma::RunnerContext& context)
 {
-    if (!m_inSession) {
-        return;
-    }
-
+    m_desktopNames.clear();
+    m_icons.clear();
+    m_windows.clear();
     foreach (const WId w, KWindowSystem::windows()) {
         KWindowInfo info = KWindowSystem::windowInfo(
             w,
@@ -89,31 +83,6 @@ void WindowsRunner::gatherInfo()
 
     for (int i = 1; i<=KWindowSystem::numberOfDesktops(); i++) {
         m_desktopNames << KWindowSystem::desktopName(i);
-    }
-
-    m_ready = true;
-}
-
-void WindowsRunner::prepareForMatchSession()
-{
-    m_inSession = true;
-    m_ready = false;
-    QTimer::singleShot(0, this, SLOT(gatherInfo()));
-}
-
-void WindowsRunner::matchSessionComplete()
-{
-    m_inSession = false;
-    m_ready = false;
-    m_desktopNames.clear();
-    m_icons.clear();
-    m_windows.clear();
-}
-
-void WindowsRunner::match(Plasma::RunnerContext& context)
-{
-    if (!m_ready) {
-        return;
     }
 
     QString term = context.query();
@@ -276,19 +245,19 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
         const QStringList parts = term.split(" ");
         if (parts.size() == 1) {
             // only keyword - list all desktops
-            for (int i=1; i<=KWindowSystem::numberOfDesktops(); i++) {
+            for (int i =1 ; i <= KWindowSystem::numberOfDesktops(); i++) {
                 if (i == KWindowSystem::currentDesktop()) {
                     continue;
                 }
-                matches << desktopMatch(i);
+                matches << desktopMatch(i, 1.0);
                 desktopAdded = true;
             }
         } else {
             // keyword + desktop - restrict matches
-            bool isInt;
+            bool isInt = false;
             int desktop = term.mid(parts[0].length() + 1).toInt(&isInt);
             if (isInt && desktop != KWindowSystem::currentDesktop()) {
-                matches << desktopMatch(desktop);
+                matches << desktopMatch(desktop, 1.0);
                 desktopAdded = true;
             }
         }

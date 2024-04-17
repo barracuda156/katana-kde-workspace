@@ -32,11 +32,6 @@ public:
     void match(Plasma::RunnerContext &context) final;
     void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) final;
 
-private Q_SLOTS:
-    void prepareForMatchSession();
-    void matchSessionComplete();
-    void gatherInfo();
-
 private:
     enum WindowAction {
         ActivateAction,
@@ -48,16 +43,13 @@ private:
         KeepAboveAction,
         KeepBelowAction
     };
-    Plasma::QueryMatch desktopMatch(int desktop, qreal relevance = 1.0);
+    Plasma::QueryMatch desktopMatch(int desktop, qreal relevance);
     Plasma::QueryMatch windowMatch(const KWindowInfo &info, WindowAction action, qreal relevance);
     bool actionSupported(const KWindowInfo& info, WindowAction action);
 
     QHash<WId, KWindowInfo> m_windows;
     QHash<WId, QIcon> m_icons;
     QStringList m_desktopNames;
-
-    bool m_inSession;
-    bool m_ready;
 };
 
 K_EXPORT_PLASMA_RUNNER(windows, WindowsRunner)
