@@ -210,7 +210,7 @@ void JobFrame::slotIcon0Activated()
     if (!stopped) {
         JobTrackerAdaptor::self()->stopJob(m_name);
     } else {
-        Plasma::Animation *animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation);
+        Plasma::Animation *animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation, this);
         Q_ASSERT(animation != nullptr);
         disconnect(m_iconwidget0, 0, this, 0);
         disconnect(m_iconwidget1, 0, this, 0);

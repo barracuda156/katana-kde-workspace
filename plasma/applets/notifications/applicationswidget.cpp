@@ -171,7 +171,7 @@ void ApplicationFrame::slotRemoveActivated()
     QGraphicsGridLayout* framelayout = static_cast<QGraphicsGridLayout*>(layout());
     Q_ASSERT(framelayout != nullptr);
     kClearButtons(framelayout);
-    Plasma::Animation *animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation);
+    Plasma::Animation *animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation, this);
     Q_ASSERT(animation != nullptr);
     disconnect(m_removewidget, 0, this, 0);
     disconnect(m_configurewidget, 0, this, 0);

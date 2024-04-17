@@ -153,7 +153,7 @@ WId TasksSvg::task() const
 void TasksSvg::animatedShow()
 {
     show();
-    Plasma::Animation *animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation);
+    Plasma::Animation *animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation, this);
     Q_ASSERT(animation != nullptr);
     animation->setTargetWidget(this);
     animation->setProperty("startOpacity", 0.0);
@@ -163,7 +163,7 @@ void TasksSvg::animatedShow()
 
 void TasksSvg::animatedRemove()
 {
-    Plasma::Animation *animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation);
+    Plasma::Animation *animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation, this);
     Q_ASSERT(animation != nullptr);
     connect(animation, SIGNAL(finished()), this, SLOT(deleteLater()));
     animation->setTargetWidget(this);
