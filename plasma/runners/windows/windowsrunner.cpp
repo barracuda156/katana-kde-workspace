@@ -34,7 +34,6 @@ WindowsRunner::WindowsRunner(QObject* parent, const QVariantList& args)
       m_inSession(false),
       m_ready(false)
 {
-    Q_UNUSED(args)
     setObjectName( QLatin1String("Windows" ));
 
     addSyntax(Plasma::RunnerSyntax(":q:", i18n("Finds windows whose name, window class or window role match :q:. "
@@ -57,10 +56,6 @@ WindowsRunner::WindowsRunner(QObject* parent, const QVariantList& args)
     connect(this, SIGNAL(teardown()), this, SLOT(matchSessionComplete()));
 }
 
-WindowsRunner::~WindowsRunner()
-{
-}
-
 void WindowsRunner::gatherInfo()
 {
     if (!m_inSession) {
@@ -68,15 +63,20 @@ void WindowsRunner::gatherInfo()
     }
 
     foreach (const WId w, KWindowSystem::windows()) {
-        KWindowInfo info = KWindowSystem::windowInfo(w, NET::WMWindowType | NET::WMDesktop |
-                                                        NET::WMState | NET::XAWMState |
-                                                        NET::WMName,
-                                                    NET::WM2WindowClass | NET::WM2WindowRole | NET::WM2AllowedActions);
+        KWindowInfo info = KWindowSystem::windowInfo(
+            w,
+            NET::WMWindowType | NET::WMDesktop |
+            NET::WMState | NET::XAWMState |
+            NET::WMName,
+            NET::WM2WindowClass | NET::WM2WindowRole | NET::WM2AllowedActions
+        );
         if (info.valid()) {
             // ignore NET::Tool and other special window types
-            NET::WindowType wType = info.windowType(NET::NormalMask | NET::DesktopMask | NET::DockMask |
-                                                    NET::ToolbarMask | NET::MenuMask | NET::DialogMask |
-                                                    NET::UtilityMask | NET::SplashMask);
+            NET::WindowType wType = info.windowType(
+                NET::NormalMask | NET::DesktopMask | NET::DockMask |
+                NET::ToolbarMask | NET::MenuMask | NET::DialogMask |
+                NET::UtilityMask | NET::SplashMask
+            );
 
             if (wType != NET::Normal && wType != NET::Unknown &&
                 wType != NET::Dialog && wType != NET::Utility) {
@@ -195,7 +195,7 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
         QString windowClass;
         QString windowRole;
         int desktop = -1;
-        foreach (const QString& keyword, keywords) {
+        foreach (const QString &keyword, keywords) {
             if (keyword.endsWith('=')) {
                 continue;
             }
@@ -258,7 +258,7 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
             }
             // blacklisted everything else: we have a match
             if (actionSupported(info, action)){
-                matches << windowMatch(info, action);
+                matches << windowMatch(info, action, 1.0, Plasma::QueryMatch::ExactMatch);
             }
         }
 
@@ -316,7 +316,7 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
     }
 
     // check for matching desktops by name
-    foreach (const QString& desktopName, m_desktopNames) {
+    foreach (const QString &desktopName, m_desktopNames) {
         int desktop = m_desktopNames.indexOf(desktopName) +1;
         if (desktopName.contains(term, Qt::CaseInsensitive)) {
             // desktop name matches - offer switch to
@@ -342,7 +342,7 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
     }
 }
 
-void WindowsRunner::run(const Plasma::RunnerContext& context, const Plasma::QueryMatch& match)
+void WindowsRunner::run(const Plasma::RunnerContext& context, const Plasma::QueryMatch &match)
 {
     Q_UNUSED(context)
     // check if it's a desktop
@@ -356,57 +356,63 @@ void WindowsRunner::run(const Plasma::RunnerContext& context, const Plasma::Quer
     WId w = WId(parts[1].toULong());
     KWindowInfo info = m_windows[w];
     switch (action) {
-    case ActivateAction:
-        KWindowSystem::forceActiveWindow(w);
-        break;
-    case CloseAction:
-        {
-        NETRootInfo ri(QX11Info::display(), NET::CloseWindow);
-        ri.closeWindowRequest(w);
-        break;
+        case ActivateAction: {
+            KWindowSystem::forceActiveWindow(w);
+            break;
         }
-    case MinimizeAction:
-        if (info.isMinimized()) {
-            KWindowSystem::unminimizeWindow(w);
-        } else {
-            KWindowSystem::minimizeWindow(w);
+        case CloseAction: {
+            NETRootInfo ri(QX11Info::display(), NET::CloseWindow);
+            ri.closeWindowRequest(w);
+            break;
         }
-        break;
-    case MaximizeAction:
-        if (info.hasState(NET::Max)) {
-            KWindowSystem::clearState(w, NET::Max);
-        } else {
-            KWindowSystem::setState(w, NET::Max);
+        case MinimizeAction: {
+            if (info.isMinimized()) {
+                KWindowSystem::unminimizeWindow(w);
+            } else {
+                KWindowSystem::minimizeWindow(w);
+            }
+            break;
         }
-        break;
-    case FullscreenAction:
-        if (info.hasState(NET::FullScreen)) {
-            KWindowSystem::clearState(w, NET::FullScreen);
-        } else {
-            KWindowSystem::setState(w, NET::FullScreen);
+        case MaximizeAction: {
+            if (info.hasState(NET::Max)) {
+                KWindowSystem::clearState(w, NET::Max);
+            } else {
+                KWindowSystem::setState(w, NET::Max);
+            }
+            break;
         }
-        break;
-    case ShadeAction:
-        if (info.hasState(NET::Shaded)) {
-            KWindowSystem::clearState(w, NET::Shaded);
-        } else {
-            KWindowSystem::setState(w, NET::Shaded);
+        case FullscreenAction: {
+            if (info.hasState(NET::FullScreen)) {
+                KWindowSystem::clearState(w, NET::FullScreen);
+            } else {
+                KWindowSystem::setState(w, NET::FullScreen);
+            }
+            break;
         }
-        break;
-    case KeepAboveAction:
-        if (info.hasState(NET::KeepAbove)) {
-            KWindowSystem::clearState(w, NET::KeepAbove);
-        } else {
-            KWindowSystem::setState(w, NET::KeepAbove);
+        case ShadeAction: {
+            if (info.hasState(NET::Shaded)) {
+                KWindowSystem::clearState(w, NET::Shaded);
+            } else {
+                KWindowSystem::setState(w, NET::Shaded);
+            }
+            break;
         }
-        break;
-    case KeepBelowAction:
-        if (info.hasState(NET::KeepBelow)) {
-            KWindowSystem::clearState(w, NET::KeepBelow);
-        } else {
-            KWindowSystem::setState(w, NET::KeepBelow);
+        case KeepAboveAction: {
+            if (info.hasState(NET::KeepAbove)) {
+                KWindowSystem::clearState(w, NET::KeepAbove);
+            } else {
+                KWindowSystem::setState(w, NET::KeepAbove);
+            }
+            break;
         }
-        break;
+        case KeepBelowAction: {
+            if (info.hasState(NET::KeepBelow)) {
+                KWindowSystem::clearState(w, NET::KeepBelow);
+            } else {
+                KWindowSystem::setState(w, NET::KeepBelow);
+            }
+            break;
+        }
     }
 }
 
@@ -433,7 +439,7 @@ Plasma::QueryMatch WindowsRunner::windowMatch(const KWindowInfo& info, WindowAct
 {
     Plasma::QueryMatch match(this);
     match.setType(type);
-    match.setData(QString(QString::number((int)action) + "_" + QString::number(info.win())));
+    match.setData(QString::number((int)action) + QLatin1String("_") + QString::number(info.win()));
     match.setIcon(m_icons[info.win()]);
     match.setText(info.name());
     QString desktopName;
@@ -447,55 +453,70 @@ Plasma::QueryMatch WindowsRunner::windowMatch(const KWindowInfo& info, WindowAct
         desktopName = KWindowSystem::desktopName(desktop);
     }
     switch (action) {
-    case CloseAction:
-        match.setSubtext(i18n("Close running window on %1", desktopName));
-        break;
-    case MinimizeAction:
-        match.setSubtext(i18n("(Un)minimize running window on %1", desktopName));
-        break;
-    case MaximizeAction:
-        match.setSubtext(i18n("Maximize/restore running window on %1", desktopName));
-        break;
-    case FullscreenAction:
-        match.setSubtext(i18n("Toggle fullscreen for running window on %1", desktopName));
-        break;
-    case ShadeAction:
-        match.setSubtext(i18n("(Un)shade running window on %1", desktopName));
-        break;
-    case KeepAboveAction:
-        match.setSubtext(i18n("Toggle keep above for running window on %1", desktopName));
-        break;
-    case KeepBelowAction:
-        match.setSubtext(i18n("Toggle keep below running window on %1", desktopName));
-        break;
-    case ActivateAction:
-    default:
-        match.setSubtext(i18n("Activate running window on %1", desktopName));
-        break;
+        case CloseAction: {
+            match.setSubtext(i18n("Close running window on %1", desktopName));
+            break;
+        }
+        case MinimizeAction: {
+            match.setSubtext(i18n("(Un)minimize running window on %1", desktopName));
+            break;
+        }
+        case MaximizeAction: {
+            match.setSubtext(i18n("Maximize/restore running window on %1", desktopName));
+            break;
+        }
+        case FullscreenAction: {
+            match.setSubtext(i18n("Toggle fullscreen for running window on %1", desktopName));
+            break;
+        }
+        case ShadeAction: {
+            match.setSubtext(i18n("(Un)shade running window on %1", desktopName));
+            break;
+        }
+        case KeepAboveAction: {
+            match.setSubtext(i18n("Toggle keep above for running window on %1", desktopName));
+            break;
+        }
+        case KeepBelowAction: {
+            match.setSubtext(i18n("Toggle keep below running window on %1", desktopName));
+            break;
+        }
+        case ActivateAction:
+        default: {
+            match.setSubtext(i18n("Activate running window on %1", desktopName));
+            break;
+        }
     }
     match.setRelevance(relevance);
     return match;
 }
 
-bool WindowsRunner::actionSupported(const KWindowInfo& info, WindowAction action)
+bool WindowsRunner::actionSupported(const KWindowInfo &info, WindowAction action)
 {
     switch (action) {
-    case CloseAction:
-        return info.actionSupported(NET::ActionClose);
-    case MinimizeAction:
-        return info.actionSupported(NET::ActionMinimize);
-    case MaximizeAction:
-        return info.actionSupported(NET::ActionMax);
-    case ShadeAction:
-        return info.actionSupported(NET::ActionShade);
-    case FullscreenAction:
-        return info.actionSupported(NET::ActionFullScreen);
-    case KeepAboveAction:
-    case KeepBelowAction:
-    case ActivateAction:
-    default:
-        return true;
+        case CloseAction: {
+            return info.actionSupported(NET::ActionClose);
+        }
+        case MinimizeAction: {
+            return info.actionSupported(NET::ActionMinimize);
+        }
+        case MaximizeAction: {
+            return info.actionSupported(NET::ActionMax);
+        }
+        case ShadeAction: {
+            return info.actionSupported(NET::ActionShade);
+        }
+        case FullscreenAction: {
+            return info.actionSupported(NET::ActionFullScreen);
+        }
+        case KeepAboveAction:
+        case KeepBelowAction:
+        case ActivateAction:
+        default: {
+            return true;
+        }
     }
+    Q_UNREACHABLE();
 }
 
 #include "moc_windowsrunner.cpp"
