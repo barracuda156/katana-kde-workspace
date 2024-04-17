@@ -33,7 +33,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <kconfiggroup.h>
 #include <kdebug.h>
 #include <kmessagebox.h>
-#include <ksettings/dispatcher.h>
 #include <kpluginselector.h>
 #include <kservicetypetrader.h>
 #include <kplugininfo.h>
@@ -182,7 +181,9 @@ KWinCompositingConfig::~KWinCompositingConfig()
 
 void KWinCompositingConfig::reparseConfiguration(const QByteArray& conf)
 {
-    KSettings::Dispatcher::reparseConfiguration(conf);
+    KComponentData component(conf);
+    KSharedConfig::Ptr config = component.config();
+    config->reparseConfiguration();
 }
 
 void KWinCompositingConfig::initEffectSelector()
