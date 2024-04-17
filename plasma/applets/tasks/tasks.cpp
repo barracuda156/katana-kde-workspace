@@ -338,6 +338,7 @@ TasksApplet::TasksApplet(QObject *parent, const QVariantList &args)
     m_spacer = new QGraphicsWidget(this);
     m_spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_spacer->setMinimumSize(0, 0);
+    m_spacer->setFlag(QGraphicsItem::ItemHasNoContents);
     m_layout->addItem(m_spacer);
 }
 

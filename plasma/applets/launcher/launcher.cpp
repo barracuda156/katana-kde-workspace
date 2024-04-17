@@ -81,6 +81,7 @@ static QGraphicsWidget* kMakeSpacer(QGraphicsWidget *parent)
     widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     widget->setMinimumSize(0, 0);
     widget->setPreferredSize(0, 0);
+    widget->setFlag(QGraphicsItem::ItemHasNoContents);
     return widget;
 }
 
