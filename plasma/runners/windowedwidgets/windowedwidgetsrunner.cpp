@@ -68,10 +68,8 @@ void WindowedWidgetsRunner::match(Plasma::RunnerContext &context)
             Plasma::QueryMatch match(this);
             setupMatch(service, match);
             if (service->name().compare(term, Qt::CaseInsensitive) == 0) {
-                match.setType(Plasma::QueryMatch::ExactMatch);
                 match.setRelevance(1);
             } else {
-                match.setType(Plasma::QueryMatch::PossibleMatch);
                 match.setRelevance(0.7);
             }
             matches << match;

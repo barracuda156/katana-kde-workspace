@@ -61,7 +61,6 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
             foreach (const KService::Ptr &service, services) {
                 if (!service->noDisplay() && service->property("NotShowIn", QVariant::String) != "KDE") {
                     Plasma::QueryMatch match(this);
-                    match.setType(Plasma::QueryMatch::ExactMatch);
                     setupMatch(service, match);
                     match.setRelevance(1);
                     matches << match;
@@ -116,7 +115,6 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
         seen.insert(exec);
 
         Plasma::QueryMatch match(this);
-        match.setType(Plasma::QueryMatch::PossibleMatch);
         setupMatch(service, match);
         qreal relevance(0.6);
 
@@ -172,7 +170,6 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
                 continue;
             }
             Plasma::QueryMatch match(this);
-            match.setType(Plasma::QueryMatch::PossibleMatch);
             setupMatch(service, match);
 
             qreal relevance = 0.6;

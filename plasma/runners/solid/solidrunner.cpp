@@ -340,7 +340,6 @@ void SolidRunner::addDeviceMatch(const QString &term, Plasma::RunnerContext &con
                                  const Solid::Device &soliddevice, const SolidMatchType solidmatchtype)
 {
     Plasma::QueryMatch match(this);
-    match.setType(Plasma::QueryMatch::PossibleMatch);
     match.setId(soliddevice.udi());
     match.setData(static_cast<int>(solidmatchtype));
     match.setIcon(KIcon(soliddevice.icon()));

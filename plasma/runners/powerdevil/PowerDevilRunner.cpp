@@ -160,7 +160,6 @@ void PowerDevilRunner::match(Plasma::RunnerContext &context)
 void PowerDevilRunner::addSuspendMatch(const Solid::PowerManagement::SleepState value, QList<Plasma::QueryMatch> &matches)
 {
     Plasma::QueryMatch match(this);
-    match.setType(Plasma::QueryMatch::ExactMatch);
 
     switch (value) {
         case Solid::PowerManagement::SuspendState: {

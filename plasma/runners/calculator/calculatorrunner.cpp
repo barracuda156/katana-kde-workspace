@@ -220,11 +220,11 @@ void CalculatorRunner::match(Plasma::RunnerContext &context)
         }
 
         Plasma::QueryMatch match(this);
-        match.setType(Plasma::QueryMatch::InformationalMatch);
         match.setIcon(KIcon("accessories-calculator"));
         match.setText(result);
         match.setData(result);
         match.setId(term);
+        match.setEnabled(false);
         context.addMatch(term, match);
     }
 }

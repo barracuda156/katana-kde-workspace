@@ -32,25 +32,19 @@ BookmarkMatch::BookmarkMatch(Favicon *favicon, const QString& searchTerm, const 
 
 Plasma::QueryMatch BookmarkMatch::asQueryMatch( Plasma::AbstractRunner* runner )
 {
-    Plasma::QueryMatch::Type type = Plasma::QueryMatch::NoMatch;
     qreal relevance = 0;
 
     if (m_bookmarkTitle.compare(m_searchTerm, Qt::CaseInsensitive) == 0 ||
           (!m_description.isEmpty() && m_description.compare(m_searchTerm, Qt::CaseInsensitive) == 0)
     ) {
-        type = Plasma::QueryMatch::ExactMatch;
         relevance = 1.0;
     } else if (m_bookmarkTitle.contains(m_searchTerm, Qt::CaseInsensitive)) {
-        type = Plasma::QueryMatch::PossibleMatch;
         relevance = 0.45;
     } else if (!m_description.isEmpty() && m_description.contains(m_searchTerm, Qt::CaseInsensitive)) {
-        type = Plasma::QueryMatch::PossibleMatch;
         relevance = 0.3;
     } else if (m_bookmarkURL.contains(m_searchTerm, Qt::CaseInsensitive)) {
-        type = Plasma::QueryMatch::PossibleMatch;
         relevance = 0.2;
     } else {
-        type = Plasma::QueryMatch::PossibleMatch;
         relevance = 0.18;
     }
     
@@ -58,7 +52,6 @@ Plasma::QueryMatch BookmarkMatch::asQueryMatch( Plasma::AbstractRunner* runner )
     bool isDescriptionEmpty = m_description.isEmpty();
 
     Plasma::QueryMatch match(runner);
-    match.setType(type);
     match.setRelevance(relevance);
     match.setIcon(m_favicon->iconFor(m_bookmarkURL));
     match.setSubtext(m_bookmarkURL);

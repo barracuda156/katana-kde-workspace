@@ -40,7 +40,6 @@ WebshortcutRunner::WebshortcutRunner(QObject *parent, const QVariantList& args)
 
     m_icon = KIcon("internet-web-browser");
 
-    m_match.setType(Plasma::QueryMatch::ExactMatch);
     m_match.setRelevance(0.9);
 
     // Listen for KUriFilter plugin config changes and update state...

@@ -87,7 +87,7 @@ void WindowsRunner::gatherInfo()
         }
     }
 
-    for (int i=1; i<=KWindowSystem::numberOfDesktops(); i++) {
+    for (int i = 1; i<=KWindowSystem::numberOfDesktops(); i++) {
         m_desktopNames << KWindowSystem::desktopName(i);
     }
 
@@ -258,7 +258,7 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
             }
             // blacklisted everything else: we have a match
             if (actionSupported(info, action)){
-                matches << windowMatch(info, action, 1.0, Plasma::QueryMatch::ExactMatch);
+                matches << windowMatch(info, action, 1.0);
             }
         }
 
@@ -307,11 +307,11 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
         QString className = QString::fromUtf8(info.windowClassName());
         if (info.name().startsWith(term, Qt::CaseInsensitive) ||
             className.startsWith(term, Qt::CaseInsensitive)) {
-            matches << windowMatch(info, action, 0.8, Plasma::QueryMatch::ExactMatch);
+            matches << windowMatch(info, action, 0.8);
         } else if ((info.name().contains(term, Qt::CaseInsensitive) ||
              className.contains(term, Qt::CaseInsensitive)) && 
             actionSupported(info, action)) {
-            matches << windowMatch(info, action, 0.7, Plasma::QueryMatch::PossibleMatch);
+            matches << windowMatch(info, action, 0.7);
         }
     }
 
@@ -331,7 +331,7 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
                 it.next();
                 KWindowInfo info = it.value();
                 if (info.isOnDesktop(desktop) && actionSupported(info, action)) {
-                    matches << windowMatch(info, action, 0.5, Plasma::QueryMatch::PossibleMatch);
+                    matches << windowMatch(info, action, 0.5);
                 }
             }
         }
@@ -342,7 +342,7 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
     }
 }
 
-void WindowsRunner::run(const Plasma::RunnerContext& context, const Plasma::QueryMatch &match)
+void WindowsRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
 {
     Q_UNUSED(context)
     // check if it's a desktop
@@ -419,7 +419,6 @@ void WindowsRunner::run(const Plasma::RunnerContext& context, const Plasma::Quer
 Plasma::QueryMatch WindowsRunner::desktopMatch(int desktop, qreal relevance)
 {
     Plasma::QueryMatch match(this);
-    match.setType(Plasma::QueryMatch::ExactMatch);
     match.setData(desktop);
     match.setId("desktop-" + QString::number(desktop));
     match.setIcon(KIcon("user-desktop"));
@@ -435,10 +434,9 @@ Plasma::QueryMatch WindowsRunner::desktopMatch(int desktop, qreal relevance)
     return match;
 }
 
-Plasma::QueryMatch WindowsRunner::windowMatch(const KWindowInfo& info, WindowAction action, qreal relevance, Plasma::QueryMatch::Type type)
+Plasma::QueryMatch WindowsRunner::windowMatch(const KWindowInfo& info, WindowAction action, qreal relevance)
 {
     Plasma::QueryMatch match(this);
-    match.setType(type);
     match.setData(QString::number((int)action) + QLatin1String("_") + QString::number(info.win()));
     match.setIcon(m_icons[info.win()]);
     match.setText(info.name());

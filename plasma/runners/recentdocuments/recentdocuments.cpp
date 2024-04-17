@@ -81,7 +81,6 @@ void RecentDocuments::match(Plasma::RunnerContext &context)
             KConfig _config( document, KConfig::SimpleConfig);
             KConfigGroup config(&_config, "Desktop Entry" );
             Plasma::QueryMatch match(this);
-            match.setType(Plasma::QueryMatch::PossibleMatch);
             match.setRelevance(1.0);
             match.setIcon(KIcon(config.readEntry("Icon")));
             match.setData(document); // TODO: Read URL[$e], or can we just pass the path to the .desktop file?

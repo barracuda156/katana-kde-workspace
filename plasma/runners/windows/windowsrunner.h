@@ -49,8 +49,7 @@ private:
         KeepBelowAction
     };
     Plasma::QueryMatch desktopMatch(int desktop, qreal relevance = 1.0);
-    Plasma::QueryMatch windowMatch(const KWindowInfo &info, WindowAction action, qreal relevance,
-                                   Plasma::QueryMatch::Type type);
+    Plasma::QueryMatch windowMatch(const KWindowInfo &info, WindowAction action, qreal relevance);
     bool actionSupported(const KWindowInfo& info, WindowAction action);
 
     QHash<WId, KWindowInfo> m_windows;

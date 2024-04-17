@@ -55,7 +55,6 @@ void LocationsRunner::match(Plasma::RunnerContext &context)
 
     if (type == Plasma::RunnerContext::Directory || type == Plasma::RunnerContext::File) {
         Plasma::QueryMatch match(this);
-        match.setType(Plasma::QueryMatch::ExactMatch);
         match.setText(i18n("Open %1", term));
 
         if (type == Plasma::RunnerContext::File) {
@@ -66,7 +65,6 @@ void LocationsRunner::match(Plasma::RunnerContext &context)
 
         match.setRelevance(1);
         match.setData(term);
-        match.setType(Plasma::QueryMatch::ExactMatch);
 
         if (type == Plasma::RunnerContext::Directory) {
             match.setId("opendir");
@@ -77,11 +75,9 @@ void LocationsRunner::match(Plasma::RunnerContext &context)
     } else if (type == Plasma::RunnerContext::Help) {
         //kDebug() << "Locations matching because of" << type;
         Plasma::QueryMatch match(this);
-        match.setType(Plasma::QueryMatch::ExactMatch);
         match.setText(i18n("Open %1", term));
         match.setIcon(KIcon("system-help"));
         match.setRelevance(1);
-        match.setType(Plasma::QueryMatch::ExactMatch);
         match.setId("help");
         context.addMatch(term, match);
     } else if (type == Plasma::RunnerContext::NetworkLocation || type == Plasma::RunnerContext::UnknownType) {
@@ -117,11 +113,9 @@ void LocationsRunner::match(Plasma::RunnerContext &context)
         if (type == Plasma::RunnerContext::UnknownType) {
             match.setId("openunknown");
             match.setRelevance(0.5);
-            match.setType(Plasma::QueryMatch::PossibleMatch);
         } else {
             match.setId("opennetwork");
             match.setRelevance(0.7);
-            match.setType(Plasma::QueryMatch::ExactMatch);
         }
 
         context.addMatch(term, match);

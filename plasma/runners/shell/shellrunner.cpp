@@ -47,7 +47,6 @@ void ShellRunner::match(Plasma::RunnerContext &context)
         const QString term = context.query();
         Plasma::QueryMatch match(this);
         match.setId(term);
-        match.setType(Plasma::QueryMatch::ExactMatch);
         match.setIcon(KIcon("system-run"));
         match.setText(i18n("Run %1", term));
         match.setRelevance(0.7);

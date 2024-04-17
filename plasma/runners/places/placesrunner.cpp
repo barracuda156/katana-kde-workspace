@@ -90,21 +90,17 @@ void PlacesRunnerHelper::match(Plasma::RunnerContext *c)
     }
     for (int i = 0; i <= m_places.rowCount(); i++) {
         QModelIndex current_index = m_places.index(i, 0);
-        Plasma::QueryMatch::Type type = Plasma::QueryMatch::NoMatch;
-        qreal relevance = 0;
+        qreal relevance = 0.0;
 
         const QString text = m_places.text(current_index);
         if ((all && !text.isEmpty()) || text.compare(term, Qt::CaseInsensitive) == 0) {
-            type = Plasma::QueryMatch::ExactMatch;
             relevance = all ? 0.9 : 1.0;
         } else if (text.contains(term, Qt::CaseInsensitive)) {
-            type = Plasma::QueryMatch::PossibleMatch;
             relevance = 0.7;
         }
 
-        if (type != Plasma::QueryMatch::NoMatch) {
+        if (relevance != 0.0) {
             Plasma::QueryMatch match(static_cast<PlacesRunner *>(parent()));
-            match.setType(type);
             match.setRelevance(relevance);
             match.setIcon(KIcon(m_places.icon(current_index)));
             match.setText(text);
