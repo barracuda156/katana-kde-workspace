@@ -57,6 +57,8 @@ BookmarksRunner::~BookmarksRunner()
 
 void BookmarksRunner::init()
 {
+    Plasma::AbstractRunner::init();
+
     m_browser = m_browserFactory->find(findBrowserName(), this);
     m_browser->prepare();
 }
