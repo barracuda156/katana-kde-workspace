@@ -50,6 +50,7 @@
 #include <Plasma/SvgWidget>
 #include <Plasma/ToolButton>
 #include <Plasma/ScrollWidget>
+#include <Plasma/BusyWidget>
 #include <Plasma/RunnerManager>
 #include <Plasma/Animation>
 #include <KDebug>
@@ -522,6 +523,7 @@ private:
     QGraphicsLinearLayout* m_layout;
     QList<LauncherWidget*> m_launcherwidgets;
     Plasma::Label* m_label;
+    Plasma::BusyWidget* m_busywidget;
     Plasma::RunnerManager* m_runnermanager;
 };
 
@@ -530,6 +532,7 @@ LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcher
     m_launcherapplet(launcherapplet),
     m_layout(nullptr),
     m_label(nullptr),
+    m_busywidget(nullptr),
     m_runnermanager(nullptr)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -539,8 +542,11 @@ LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcher
     m_label = new Plasma::Label(this);
     m_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_label->setAlignment(Qt::AlignCenter);
-    m_label->setText(i18n("No matches found"));
     m_layout->addItem(m_label);
+
+    m_busywidget = new Plasma::BusyWidget(this);
+    m_busywidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_layout->addItem(m_busywidget);
 
     m_runnermanager = new Plasma::RunnerManager(this);
     connect(
@@ -565,6 +571,9 @@ void LauncherSearch::prepare()
     m_launcherwidgets.clear();
 
     m_label->setVisible(true);
+    m_label->setText(i18n("Searching.."));
+    m_busywidget->setVisible(true);
+    m_busywidget->setRunning(true);
     adjustSize();
 
     m_runnermanager->reset();
@@ -581,7 +590,14 @@ void LauncherSearch::slotUpdateLayout()
     // qDebug() << Q_FUNC_INFO;
     QMutexLocker locker(&m_mutex);
     const QList<Plasma::QueryMatch> matches = m_runnermanager->matches();
-    m_label->setVisible(matches.isEmpty());
+    m_busywidget->setRunning(false);
+    m_busywidget->setVisible(false);
+    if (matches.isEmpty()) {
+        m_label->setVisible(true);
+        m_label->setText(i18n("No matches found"));
+    } else {
+        m_label->setVisible(false);
+    }
     adjustSize();
 
     const QSizeF iconsize = kIconSize();
