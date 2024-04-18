@@ -210,7 +210,7 @@ private:
     Plasma::Animation* m_action4animation;
     QString m_data;
     int m_actioncounter;
-    QMimeData* m_mimedata;
+    QPointer<QMimeData> m_mimedata;
 };
 
 LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
@@ -419,10 +419,8 @@ void LauncherWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 
 void LauncherWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (m_mimedata) {
-        if (handleMouseEvent(event)) {
-            return;
-        }
+    if (m_mimedata && handleMouseEvent(event)) {
+        return;
     }
     QGraphicsWidget::mouseMoveEvent(event);
 }
@@ -431,7 +429,7 @@ bool LauncherWidget::sceneEventFilter(QGraphicsItem *item, QEvent *event)
 {
     if ((item == m_iconwidget || item == m_textwidget) && event->type() == QEvent::GraphicsSceneMouseMove) {
         QGraphicsSceneMouseEvent* mouseevent = static_cast<QGraphicsSceneMouseEvent*>(event);
-        if (handleMouseEvent(mouseevent)) {
+        if (m_mimedata && handleMouseEvent(mouseevent)) {
             return true;
         }
     }
@@ -477,6 +475,7 @@ bool LauncherWidget::handleMouseEvent(QGraphicsSceneMouseEvent *event)
     if (event->buttons() & Qt::LeftButton &&
         (event->pos() - event->buttonDownPos(Qt::LeftButton)).manhattanLength() > KGlobalSettings::dndEventDelay())
     {
+        // TODO: QDrag takes ownership of m_mimedata, this works only once
         event->accept();
         QDrag* drag = new QDrag(event->widget());
         drag->setMimeData(m_mimedata);
