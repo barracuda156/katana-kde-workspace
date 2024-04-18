@@ -33,9 +33,10 @@ ShellRunner::ShellRunner(QObject *parent, const QVariantList &args)
 {
     setObjectName( QLatin1String("Command" ));
     setPriority(AbstractRunner::HighestPriority);
-    setIgnoredTypes(Plasma::RunnerContext::Directory | Plasma::RunnerContext::File |
-                    Plasma::RunnerContext::NetworkLocation | Plasma::RunnerContext::UnknownType |
-                    Plasma::RunnerContext::Help);
+    setIgnoredTypes(
+        Plasma::RunnerContext::Directory | Plasma::RunnerContext::File |
+        Plasma::RunnerContext::NetworkLocation | Plasma::RunnerContext::UnknownType
+    );
 
     addSyntax(Plasma::RunnerSyntax(":q:", i18n("Finds commands that match :q:, using common shell syntax")));
 }
