@@ -475,10 +475,16 @@ bool LauncherWidget::handleMouseEvent(QGraphicsSceneMouseEvent *event)
     if (event->buttons() & Qt::LeftButton &&
         (event->pos() - event->buttonDownPos(Qt::LeftButton)).manhattanLength() > KGlobalSettings::dndEventDelay())
     {
-        // TODO: QDrag takes ownership of m_mimedata, this works only once
+        // NOTE QDrag takes ownership of QMimeData, have to copy
+        QMimeData* dragmimedata = new QMimeData();
+        dragmimedata->setText(m_mimedata->text());
+        dragmimedata->setUrls(m_mimedata->urls());
+        foreach (const QString &mimeformat, m_mimedata->formats()) {
+            dragmimedata->setData(mimeformat, m_mimedata->data(mimeformat));
+        }
         event->accept();
         QDrag* drag = new QDrag(event->widget());
-        drag->setMimeData(m_mimedata);
+        drag->setMimeData(dragmimedata);
         drag->start();
         return true;
     }
