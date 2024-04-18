@@ -189,9 +189,8 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
     context.addMatches(term, matches);
 }
 
-void ServiceRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void ServiceRunner::run(const Plasma::QueryMatch &match)
 {
-    Q_UNUSED(context);
     KService::Ptr service = KService::serviceByStorageId(match.data().toString());
     if (service) {
         KRun::run(*service, KUrl::List(), nullptr);

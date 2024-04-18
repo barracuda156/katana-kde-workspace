@@ -25,15 +25,15 @@ class LocationsRunner : public Plasma::AbstractRunner
 {
     Q_OBJECT
 
-    public:
-        LocationsRunner(QObject *parent, const QVariantList& args);
-        ~LocationsRunner();
+public:
+    LocationsRunner(QObject *parent, const QVariantList& args);
+    ~LocationsRunner();
 
-        void match(Plasma::RunnerContext &context);
-        void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &action);
+    void match(Plasma::RunnerContext &context);
+    void run(const Plasma::QueryMatch &action);
 
-    protected Q_SLOTS:
-        QMimeData * mimeDataForMatch(const Plasma::QueryMatch *match);
+protected Q_SLOTS:
+    QMimeData* mimeDataForMatch(const Plasma::QueryMatch *match);
 };
 
 K_EXPORT_PLASMA_RUNNER(locations, LocationsRunner)

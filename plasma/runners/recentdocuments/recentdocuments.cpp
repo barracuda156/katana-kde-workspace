@@ -91,9 +91,8 @@ void RecentDocuments::match(Plasma::RunnerContext &context)
     }
 }
 
-void RecentDocuments::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void RecentDocuments::run(const Plasma::QueryMatch &match)
 {
-    Q_UNUSED(context)
     const QString url = match.data().toString();
     kDebug() << "Opening Recent Document" << url;
     new KRun(url, 0);

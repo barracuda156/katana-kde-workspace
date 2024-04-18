@@ -47,6 +47,7 @@ void ShellRunner::match(Plasma::RunnerContext &context)
         const QString term = context.query();
         Plasma::QueryMatch match(this);
         match.setId(term);
+        match.setData(term);
         match.setIcon(KIcon("system-run"));
         match.setText(i18n("Run %1", term));
         match.setRelevance(0.7);
@@ -54,16 +55,17 @@ void ShellRunner::match(Plasma::RunnerContext &context)
     }
 }
 
-void ShellRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void ShellRunner::run(const Plasma::QueryMatch &match)
 {
     bool interminal = false;
     if (match.selectedAction() != nullptr) {
         interminal = match.selectedAction()->data().toBool();
     }
+    const QString command = match.data().toString();
     if (interminal) {
-        KToolInvocation::invokeTerminal(context.query());
+        KToolInvocation::invokeTerminal(command);
     } else {
-        KRun::runCommand(context.query(), nullptr);
+        KRun::runCommand(command, nullptr);
     }
 }
 

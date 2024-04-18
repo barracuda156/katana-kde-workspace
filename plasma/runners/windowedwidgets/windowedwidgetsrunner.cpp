@@ -41,10 +41,6 @@ WindowedWidgetsRunner::WindowedWidgetsRunner(QObject *parent, const QVariantList
     addSyntax(Plasma::RunnerSyntax(i18nc("Note this is a KRunner keyword", "mobile applications"), i18n("list all Plasma widgets that can run as standalone applications")));
 }
 
-WindowedWidgetsRunner::~WindowedWidgetsRunner()
-{
-}
-
 void WindowedWidgetsRunner::match(Plasma::RunnerContext &context)
 {
     const QString term = context.query();
@@ -85,9 +81,8 @@ void WindowedWidgetsRunner::match(Plasma::RunnerContext &context)
     context.addMatches(term, matches);
 }
 
-void WindowedWidgetsRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void WindowedWidgetsRunner::run(const Plasma::QueryMatch &match)
 {
-    Q_UNUSED(context);
     KService::Ptr service = KService::serviceByStorageId(match.data().toString());
     if (service) {
         QProcess::startDetached("plasma-windowed", QStringList() << service->property("X-KDE-PluginInfo-Name", QVariant::String).toString());

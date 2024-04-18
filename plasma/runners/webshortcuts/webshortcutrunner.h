@@ -26,29 +26,21 @@
 class WebshortcutRunner : public Plasma::AbstractRunner {
     Q_OBJECT
 
-    public:
-        WebshortcutRunner( QObject *parent, const QVariantList& args );
-        ~WebshortcutRunner();
+public:
+    WebshortcutRunner( QObject *parent, const QVariantList& args );
+    ~WebshortcutRunner();
 
-        void match(Plasma::RunnerContext &context);
-        void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match);
+    void match(Plasma::RunnerContext &context);
+    void run(const Plasma::QueryMatch &match);
 
-    private:
-        void loadSyntaxes();
+private:
+    void loadSyntaxes();
 
-    private Q_SLOTS:
-        void readFiltersConfig();
-        void resetState();
+private Q_SLOTS:
+    void readFiltersConfig();
 
-    private:
-        KIcon m_icon;
-        Plasma::QueryMatch m_match;
-        bool m_filterBeforeRun;
-
-        QChar m_delimiter;
-        QString m_lastFailedKey;
-        QString m_lastKey;
-        QString m_lastProvider;
+private:
+    QChar m_delimiter;
 };
 
 K_EXPORT_PLASMA_RUNNER(webshortcuts, WebshortcutRunner)

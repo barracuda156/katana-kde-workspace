@@ -30,7 +30,7 @@ public:
     WindowsRunner(QObject* parent, const QVariantList &args);
 
     void match(Plasma::RunnerContext &context) final;
-    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match) final;
+    void run(const Plasma::QueryMatch &match) final;
 
 private:
     enum WindowAction {

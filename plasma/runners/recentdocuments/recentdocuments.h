@@ -30,7 +30,7 @@ public:
     ~RecentDocuments();
 
     void match(Plasma::RunnerContext &context);
-    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match);
+    void run(const Plasma::QueryMatch &match);
 
 private Q_SLOTS:
     QMimeData* mimeDataForMatch(const Plasma::QueryMatch *match);

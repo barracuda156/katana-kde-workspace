@@ -39,14 +39,12 @@ class WindowedWidgetsRunner : public Plasma::AbstractRunner
 
 public:
     WindowedWidgetsRunner(QObject *parent, const QVariantList &args);
-    ~WindowedWidgetsRunner();
 
     void match(Plasma::RunnerContext &context);
-    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &action);
+    void run(const Plasma::QueryMatch &action);
 
 protected slots:
     QMimeData * mimeDataForMatch(const Plasma::QueryMatch *match);
-
 
 protected:
     void setupMatch(const KService::Ptr &service, Plasma::QueryMatch &action);

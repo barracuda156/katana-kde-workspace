@@ -35,7 +35,7 @@ public:
     ShellRunner(QObject *parent, const QVariantList &args);
 
     void match(Plasma::RunnerContext &context);
-    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &action);
+    void run(const Plasma::QueryMatch &action);
     QList<QAction*> actionsForMatch(const Plasma::QueryMatch &match);
 };
 

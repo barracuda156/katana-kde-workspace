@@ -120,10 +120,8 @@ void KillRunner::match(Plasma::RunnerContext &context)
     context.addMatches(term, matches);
 }
 
-void KillRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void KillRunner::run(const Plasma::QueryMatch &match)
 {
-    Q_UNUSED(context)
-
     QVariantList data = match.data().value<QVariantList>();
     quint64 pid = data[0].toUInt();
     QString user = data[1].toString();

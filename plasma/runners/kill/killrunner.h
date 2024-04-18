@@ -36,7 +36,7 @@ public:
     ~KillRunner();
 
     void match(Plasma::RunnerContext &context);
-    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match);
+    void run(const Plasma::QueryMatch &match);
     QList<QAction*> actionsForMatch(const Plasma::QueryMatch &match);
     void reloadConfiguration();
 

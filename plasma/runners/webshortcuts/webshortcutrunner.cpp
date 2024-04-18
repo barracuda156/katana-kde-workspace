@@ -31,28 +31,17 @@
 #include <QtDBus/QtDBus>
 
 WebshortcutRunner::WebshortcutRunner(QObject *parent, const QVariantList& args)
-    : Plasma::AbstractRunner(parent, args),
-      m_match(this), m_filterBeforeRun(false)
+    : Plasma::AbstractRunner(parent, args)
 {
-    Q_UNUSED(args);
     setObjectName( QLatin1String("Web Shortcut" ));
     setIgnoredTypes(Plasma::RunnerContext::Directory | Plasma::RunnerContext::File | Plasma::RunnerContext::Executable);
-
-    m_icon = KIcon("internet-web-browser");
-
-    m_match.setRelevance(0.9);
 
     // Listen for KUriFilter plugin config changes and update state...
     QDBusConnection sessionDbus = QDBusConnection::sessionBus();
     sessionDbus.connect(QString(), "/", "org.kde.KUriFilterPlugin",
                         "configure", this, SLOT(readFiltersConfig()));
 
-    connect(this, SIGNAL(teardown()), this, SLOT(resetState()));
     readFiltersConfig();
-}
-
-WebshortcutRunner::~WebshortcutRunner()
-{
 }
 
 void WebshortcutRunner::readFiltersConfig()
@@ -83,14 +72,6 @@ void WebshortcutRunner::loadSyntaxes()
     setSyntaxes(syns);
 }
 
-void WebshortcutRunner::resetState()
-{
-    kDebug();
-    m_lastFailedKey.clear();
-    m_lastProvider.clear();
-    m_lastKey.clear();
-}
-
 void WebshortcutRunner::match(Plasma::RunnerContext &context)
 {
     const QString term = context.query();
@@ -105,58 +86,29 @@ void WebshortcutRunner::match(Plasma::RunnerContext &context)
         return;
 
     const QString key = term.left(delimIndex);
-
-    if (key == m_lastFailedKey) {
-        return;    // we already know it's going to suck ;)
-    }
-
     if (!context.isValid()) {
         kDebug() << "invalid context";
         return;
     }
 
-    // Do a fake user feedback text update if the keyword has not changed.
-    // There is no point filtering the request on every key stroke.
-    // filtering
-    if (m_lastKey == key) {
-        m_filterBeforeRun = true;
-        m_match.setText(i18n("Search %1 for %2", m_lastProvider, term.mid(delimIndex + 1)));
-        context.addMatch(term, m_match);
-        return;
-    }
-
     KUriFilterData filterData(term);
     if (!KUriFilter::self()->filterSearchUri(filterData, KUriFilter::WebShortcutFilter)) {
-        m_lastFailedKey = key;
         return;
     }
 
-    m_lastFailedKey.clear();
-    m_lastKey = key;
-    m_lastProvider = filterData.searchProvider();
+    Plasma::QueryMatch match(this);
+    match.setRelevance(0.9);
+    match.setData(filterData.uri().url());
+    match.setId("WebShortcut:" + key);
 
-    m_match.setData(filterData.uri().url());
-    m_match.setId("WebShortcut:" + key);
-
-    m_match.setIcon(KIcon(filterData.iconName()));
-    m_match.setText(i18n("Search %1 for %2", m_lastProvider, filterData.searchTerm()));
-    context.addMatch(term, m_match);
+    match.setIcon(KIcon(filterData.iconName()));
+    match.setText(i18n("Search %1 for %2", filterData.searchProvider(), filterData.searchTerm()));
+    context.addMatch(term, match);
 }
 
-void WebshortcutRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void WebshortcutRunner::run(const Plasma::QueryMatch &match)
 {
-    QString location;
-
-    //kDebug() << "filter before run?" << m_filterBeforeRun;
-    if (m_filterBeforeRun) {
-        m_filterBeforeRun = false;
-        //kDebug() << "look up webshortcut:" << context.query();
-        KUriFilterData filterData (context.query());
-        if (KUriFilter::self()->filterSearchUri(filterData, KUriFilter::WebShortcutFilter))
-            location = filterData.uri().url();
-    } else {
-        location = match.data().toString();
-    }
+    QString location = match.data().toString();
 
     //kDebug() << location;
     if (!location.isEmpty()) {

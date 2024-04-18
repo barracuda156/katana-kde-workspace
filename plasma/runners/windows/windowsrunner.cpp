@@ -311,9 +311,8 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
     }
 }
 
-void WindowsRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void WindowsRunner::run(const Plasma::QueryMatch &match)
 {
-    Q_UNUSED(context)
     // check if it's a desktop
     if (match.id().startsWith("windows_desktop")) {
         KWindowSystem::setCurrentDesktop(match.data().toInt());

@@ -77,6 +77,7 @@ void LocationsRunner::match(Plasma::RunnerContext &context)
         Plasma::QueryMatch match(this);
         match.setText(i18n("Open %1", term));
         match.setIcon(KIcon("system-help"));
+        match.setData(term);
         match.setRelevance(1);
         match.setId("help");
         context.addMatch(term, match);
@@ -122,18 +123,15 @@ void LocationsRunner::match(Plasma::RunnerContext &context)
     }
 }
 
-void LocationsRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void LocationsRunner::run(const Plasma::QueryMatch &match)
 {
-    Q_UNUSED(match)
-
-    QString location = context.query();
+    QString location = match.data().toString();
 
     if (location.isEmpty()) {
         return;
     }
 
-    //kDebug() << "command: " << context.query();
-    //kDebug() << "url: " << location << data;
+    // kDebug() << "url: " << location << data;
 
     KUrl urlToRun(KUriFilter::self()->filteredUri(location, QStringList() << QLatin1String("kshorturifilter")));
 

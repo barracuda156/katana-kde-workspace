@@ -28,11 +28,11 @@ class PowerDevilRunner : public Plasma::AbstractRunner
     Q_OBJECT
 
 public:
-    PowerDevilRunner( QObject *parent, const QVariantList &args );
+    PowerDevilRunner(QObject *parent, const QVariantList &args);
     ~PowerDevilRunner();
 
-    void match( Plasma::RunnerContext &context );
-    void run( const Plasma::RunnerContext &context, const Plasma::QueryMatch &action );
+    void match(Plasma::RunnerContext &context);
+    void run(const Plasma::QueryMatch &action);
 
 private slots:
     void updateStatus();

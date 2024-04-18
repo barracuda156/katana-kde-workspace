@@ -570,11 +570,11 @@ void LauncherSearch::slotTriggered()
 {
     QAction* matchaction = qobject_cast<QAction*>(sender());
     const QString matchid = matchaction->property("_k_id").toString();
+    m_launcherapplet->resetState();
     foreach (Plasma::QueryMatch match, m_runnermanager->matches()) {
         if (match.id() == matchid) {
             match.setSelectedAction(matchaction);
-            m_launcherapplet->resetState();
-            m_runnermanager->run(match);
+            match.run();
             return;
         }
     }
@@ -585,7 +585,14 @@ void LauncherSearch::slotActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
     m_launcherapplet->resetState();
-    m_runnermanager->run(launcherwidget->data());
+    const QString matchid = launcherwidget->data();
+    foreach (const Plasma::QueryMatch &match, m_runnermanager->matches()) {
+        if (match.id() == matchid) {
+            match.run();
+            return;
+        }
+    }
+    kWarning() << "could not find match for" << matchid;
 }
 
 

@@ -206,7 +206,7 @@ void SolidRunner::match(Plasma::RunnerContext &context)
     }
 }
 
-void SolidRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void SolidRunner::run(const Plasma::QueryMatch &match)
 {
     QAction* action = match.selectedAction();
     if (action) {

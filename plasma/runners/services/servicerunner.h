@@ -36,18 +36,18 @@ class ServiceRunner : public Plasma::AbstractRunner
 {
     Q_OBJECT
 
-    public:
-        ServiceRunner(QObject *parent, const QVariantList &args);
-        ~ServiceRunner();
+public:
+    ServiceRunner(QObject *parent, const QVariantList &args);
+    ~ServiceRunner();
 
-        void match(Plasma::RunnerContext &context);
-        void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &action);
+    void match(Plasma::RunnerContext &context);
+    void run(const Plasma::QueryMatch &action);
 
-    protected slots:
-        QMimeData * mimeDataForMatch(const Plasma::QueryMatch *match);
+protected slots:
+    QMimeData* mimeDataForMatch(const Plasma::QueryMatch *match);
 
-    protected:
-        void setupMatch(const KService::Ptr &service, Plasma::QueryMatch &action);
+protected:
+    void setupMatch(const KService::Ptr &service, Plasma::QueryMatch &action);
 };
 
 K_EXPORT_PLASMA_RUNNER(services, ServiceRunner)

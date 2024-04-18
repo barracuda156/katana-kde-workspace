@@ -123,9 +123,8 @@ void PlacesRunnerHelper::match(Plasma::RunnerContext *c)
 }
 
 
-void PlacesRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &action)
+void PlacesRunner::run(const Plasma::QueryMatch &action)
 {
-    Q_UNUSED(context);
     //I don't just pass the model index because the list could change before the user clicks on it, which would make everything go wrong. Ideally we don't want things to go wrong.
     if (action.data().canConvert<KUrl>()) {
         new KRun(action.data().value<KUrl>().url(), 0);

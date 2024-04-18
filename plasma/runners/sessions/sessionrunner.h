@@ -31,21 +31,26 @@ class SessionRunner : public Plasma::AbstractRunner
 {
     Q_OBJECT
 
-    public:
-        SessionRunner(QObject *parent, const QVariantList &args);
-        ~SessionRunner();
+public:
+    enum {
+        LogoutAction = 1,
+        ShutdownAction,
+        RestartAction,
+        LockAction
+    };
 
-        void match(Plasma::RunnerContext &context);
-        void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &action);
+    SessionRunner(QObject *parent, const QVariantList &args);
+    ~SessionRunner();
 
-        enum { LogoutAction = 1, ShutdownAction, RestartAction, LockAction };
+    void match(Plasma::RunnerContext &context);
+    void run(const Plasma::QueryMatch &action);
 
-    private:
-        void lock();
-        void matchCommands(QList<Plasma::QueryMatch> &matches, const QString& term);
+private:
+    void lock();
+    void matchCommands(QList<Plasma::QueryMatch> &matches, const QString& term);
 
-        QString m_triggerWord;
-        KDisplayManager dm;
+    QString m_triggerWord;
+    KDisplayManager dm;
 };
 
 K_EXPORT_PLASMA_RUNNER(sessions, SessionRunner)

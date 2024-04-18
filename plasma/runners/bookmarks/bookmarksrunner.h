@@ -40,7 +40,7 @@ class BookmarksRunner : public Plasma::AbstractRunner
         ~BookmarksRunner();
 
         void match(Plasma::RunnerContext &context);
-        void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &action);
+        void run(const Plasma::QueryMatch &action);
 
     private:
         

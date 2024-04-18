@@ -49,7 +49,7 @@ public:
     ~PlacesRunner();
 
     void match(Plasma::RunnerContext &context);
-    void run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &action);
+    void run(const Plasma::QueryMatch &action);
 
 Q_SIGNALS:
     void doMatch(Plasma::RunnerContext *context);

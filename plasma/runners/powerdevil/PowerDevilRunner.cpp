@@ -187,10 +187,8 @@ void PowerDevilRunner::addSuspendMatch(const Solid::PowerManagement::SleepState 
     matches.append(match);
 }
 
-void PowerDevilRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void PowerDevilRunner::run(const Plasma::QueryMatch &match)
 {
-    Q_UNUSED(context)
-
     if (match.id().startsWith("PowerDevil_Suspend")) {
         const Solid::PowerManagement::SleepState matchvalue = static_cast<Solid::PowerManagement::SleepState>(match.data().toInt());
         switch (matchvalue) {

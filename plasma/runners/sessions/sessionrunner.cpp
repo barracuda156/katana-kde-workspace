@@ -188,9 +188,8 @@ void SessionRunner::match(Plasma::RunnerContext &context)
     context.addMatches(term, matches);
 }
 
-void SessionRunner::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
+void SessionRunner::run(const Plasma::QueryMatch &match)
 {
-    Q_UNUSED(context);
     if (match.data().type() == QVariant::Int) {
         KWorkSpace::ShutdownType type = KWorkSpace::ShutdownTypeDefault;
 
