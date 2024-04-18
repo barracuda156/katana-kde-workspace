@@ -26,6 +26,7 @@
 #include <QGraphicsGridLayout>
 #include <QHostInfo>
 #include <QDBusInterface>
+#include <QGraphicsSceneMouseEvent>
 #include <KUser>
 #include <kdbusconnectionpool.h>
 #include <KIcon>
@@ -171,6 +172,8 @@ public:
     QString data() const;
     void setData(const QString &data);
 
+    void setMimeData(QMimeData *mimedata);
+
     void addAction(QAction *action);
     void removeAction(const int action);
 
@@ -183,10 +186,13 @@ private Q_SLOTS:
 protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) final;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) final;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) final;
+    bool sceneEventFilter(QGraphicsItem *item, QEvent *event) final;
 
 private:
     void animateFadeIn(Plasma::Animation *animation, Plasma::ToolButton *toolbutton);
     void animateFadeOut(Plasma::Animation *animation, Plasma::ToolButton *toolbutton);
+    bool handleMouseEvent(QGraphicsSceneMouseEvent *event);
 
     QGraphicsLinearLayout* m_layout;
     Plasma::IconWidget* m_iconwidget;
@@ -198,12 +204,13 @@ private:
     Plasma::ToolButton* m_action2widget;
     Plasma::ToolButton* m_action3widget;
     Plasma::ToolButton* m_action4widget;
-    QString m_data;
-    int m_actioncounter;
     Plasma::Animation* m_action1animation;
     Plasma::Animation* m_action2animation;
     Plasma::Animation* m_action3animation;
     Plasma::Animation* m_action4animation;
+    QString m_data;
+    int m_actioncounter;
+    QMimeData* m_mimedata;
 };
 
 LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
@@ -218,11 +225,12 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_action2widget(nullptr),
     m_action3widget(nullptr),
     m_action4widget(nullptr),
-    m_actioncounter(0),
     m_action1animation(nullptr),
     m_action2animation(nullptr),
     m_action3animation(nullptr),
-    m_action4animation(nullptr)
+    m_action4animation(nullptr),
+    m_actioncounter(0),
+    m_mimedata(nullptr)
 {
     setAcceptHoverEvents(true);
 
@@ -297,6 +305,18 @@ QString LauncherWidget::data() const
 void LauncherWidget::setData(const QString &data)
 {
     m_data = data;
+}
+
+void LauncherWidget::setMimeData(QMimeData *mimedata)
+{
+    if (mimedata) {
+        m_mimedata = mimedata;
+        setAcceptedMouseButtons(Qt::LeftButton);
+        m_iconwidget->setAcceptedMouseButtons(Qt::LeftButton);
+        m_iconwidget->installSceneEventFilter(this);
+        m_textwidget->setAcceptedMouseButtons(Qt::LeftButton);
+        m_textwidget->installSceneEventFilter(this);
+    }
 }
 
 void LauncherWidget::addAction(QAction *action)
@@ -397,6 +417,27 @@ void LauncherWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     animateFadeOut(m_action4animation, m_action4widget);
 }
 
+void LauncherWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (m_mimedata) {
+        if (handleMouseEvent(event)) {
+            return;
+        }
+    }
+    QGraphicsWidget::mouseMoveEvent(event);
+}
+
+bool LauncherWidget::sceneEventFilter(QGraphicsItem *item, QEvent *event)
+{
+    if ((item == m_iconwidget || item == m_textwidget) && event->type() == QEvent::GraphicsSceneMouseMove) {
+        QGraphicsSceneMouseEvent* mouseevent = static_cast<QGraphicsSceneMouseEvent*>(event);
+        if (handleMouseEvent(mouseevent)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void LauncherWidget::animateFadeIn(Plasma::Animation *animation, Plasma::ToolButton *toolbutton)
 {
     if (!toolbutton->isVisible()) {
@@ -429,6 +470,20 @@ void LauncherWidget::animateFadeOut(Plasma::Animation *animation, Plasma::ToolBu
     animation->setProperty("startOpacity", 1.0);
     animation->setProperty("targetOpacity", 0.0);
     animation->start(QAbstractAnimation::KeepWhenStopped);
+}
+
+bool LauncherWidget::handleMouseEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (event->buttons() & Qt::LeftButton &&
+        (event->pos() - event->buttonDownPos(Qt::LeftButton)).manhattanLength() > KGlobalSettings::dndEventDelay())
+    {
+        event->accept();
+        QDrag* drag = new QDrag(event->widget());
+        drag->setMimeData(m_mimedata);
+        drag->start();
+        return true;
+    }
+    return false;
 }
 
 void LauncherWidget::slotUpdateFonts()
@@ -551,6 +606,7 @@ void LauncherSearch::slotUpdateLayout()
                 break;
             }
         }
+        launcherwidget->setMimeData(m_runnermanager->mimeDataForMatch(match));
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
