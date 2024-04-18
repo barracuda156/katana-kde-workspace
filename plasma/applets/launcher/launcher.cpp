@@ -567,8 +567,8 @@ void LauncherSearch::prepare()
     qDeleteAll(m_launcherwidgets);
     m_launcherwidgets.clear();
 
-    m_label->setVisible(true);
     m_label->setText(i18n("Searching.."));
+    m_label->setVisible(true);
     m_busywidget->setVisible(true);
     m_busywidget->setRunning(true);
     adjustSize();
@@ -588,8 +588,8 @@ void LauncherSearch::slotUpdateLayout()
     m_busywidget->setRunning(false);
     m_busywidget->setVisible(false);
     if (matches.isEmpty()) {
-        m_label->setVisible(true);
         m_label->setText(i18n("No matches found"));
+        m_label->setVisible(true);
     } else {
         m_label->setVisible(false);
     }
