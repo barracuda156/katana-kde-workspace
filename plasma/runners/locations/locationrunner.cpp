@@ -71,7 +71,7 @@ void LocationsRunner::match(Plasma::RunnerContext &context)
         } else {
             match.setId("openfile");
         }
-        context.addMatch(term, match);
+        context.addMatch(match);
     } else if (type == Plasma::RunnerContext::Help) {
         //kDebug() << "Locations matching because of" << type;
         Plasma::QueryMatch match(this);
@@ -80,7 +80,7 @@ void LocationsRunner::match(Plasma::RunnerContext &context)
         match.setData(term);
         match.setRelevance(1);
         match.setId("help");
-        context.addMatch(term, match);
+        context.addMatch(match);
     } else if (type == Plasma::RunnerContext::NetworkLocation || type == Plasma::RunnerContext::UnknownType) {
         const bool filtered = KUriFilter::self()->filterUri(term, QStringList() << QLatin1String("kshorturifilter"));
 
@@ -119,7 +119,7 @@ void LocationsRunner::match(Plasma::RunnerContext &context)
             match.setRelevance(0.7);
         }
 
-        context.addMatch(term, match);
+        context.addMatch(match);
     }
 }
 

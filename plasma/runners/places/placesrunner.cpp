@@ -119,7 +119,7 @@ void PlacesRunnerHelper::match(Plasma::RunnerContext *c)
         }
     }
 
-    context.addMatches(term, matches);
+    context.addMatches(matches);
 }
 
 

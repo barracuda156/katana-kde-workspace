@@ -82,7 +82,7 @@ void BookmarksRunner::match(Plasma::RunnerContext &context)
     foreach(BookmarkMatch match, matches) {
         if(!context.isValid())
             return;
-        context.addMatch(term, match.asQueryMatch(this));
+        context.addMatch(match.asQueryMatch(this));
     }
 }
 

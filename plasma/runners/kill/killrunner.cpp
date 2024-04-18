@@ -117,7 +117,7 @@ void KillRunner::match(Plasma::RunnerContext &context)
     }
 
     kDebug() << "match count is" << matches.count();
-    context.addMatches(term, matches);
+    context.addMatches(matches);
 }
 
 void KillRunner::run(const Plasma::QueryMatch &match)

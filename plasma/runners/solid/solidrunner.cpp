@@ -138,7 +138,7 @@ void SolidRunner::match(Plasma::RunnerContext &context)
         term.startsWith(QLatin1String("device"), Qt::CaseInsensitive)) {
         const QList<Solid::Device> soliddevices = solidDevices(term, SolidRunner::MatchDevice);
         foreach (const Solid::Device &soliddevice, soliddevices) {
-            addDeviceMatch(term, context, soliddevice, SolidRunner::MatchDevice);
+            addDeviceMatch(context, soliddevice, SolidRunner::MatchDevice);
         }
     } else if (term.startsWith(i18nc("Note this is a KRunner keyword", "mount"), Qt::CaseInsensitive) ||
         term.startsWith(QLatin1String("mount"), Qt::CaseInsensitive)) {
@@ -148,7 +148,7 @@ void SolidRunner::match(Plasma::RunnerContext &context)
             if (!solidstorageaccess || solidstorageaccess->isAccessible()) {
                 continue;
             }
-            addDeviceMatch(term, context, soliddevice, SolidRunner::MatchMount);
+            addDeviceMatch(context, soliddevice, SolidRunner::MatchMount);
         }
     } else if (term.startsWith(i18nc("Note this is a KRunner keyword", "unmount"), Qt::CaseInsensitive) ||
         term.startsWith(QLatin1String("unmount"), Qt::CaseInsensitive)) {
@@ -158,7 +158,7 @@ void SolidRunner::match(Plasma::RunnerContext &context)
             if (!solidstorageaccess || !solidstorageaccess->isAccessible()) {
                 continue;
             }
-            addDeviceMatch(term, context, soliddevice, SolidRunner::MatchUnmount);
+            addDeviceMatch(context, soliddevice, SolidRunner::MatchUnmount);
         }
     } else if (term.startsWith(i18nc("Note this is a KRunner keyword", "eject"), Qt::CaseInsensitive) ||
         term.startsWith(QLatin1String("eject"), Qt::CaseInsensitive)) {
@@ -168,7 +168,7 @@ void SolidRunner::match(Plasma::RunnerContext &context)
             if (!solidopticaldrive) {
                 continue;
             }
-            addDeviceMatch(term, context, soliddevice, SolidRunner::MatchEject);
+            addDeviceMatch(context, soliddevice, SolidRunner::MatchEject);
         }
     } else if (term.startsWith(i18nc("Note this is a KRunner keyword", "unlock"), Qt::CaseInsensitive) ||
         term.startsWith(QLatin1String("unlock"), Qt::CaseInsensitive)) {
@@ -182,7 +182,7 @@ void SolidRunner::match(Plasma::RunnerContext &context)
             if (!solidstoragevolume || solidstoragevolume->usage() != Solid::StorageVolume::Encrypted) {
                 continue;
             }
-            addDeviceMatch(term, context, soliddevice, SolidRunner::MatchUnlock);
+            addDeviceMatch(context, soliddevice, SolidRunner::MatchUnlock);
         }
     } else if (term.startsWith(i18nc("Note this is a KRunner keyword", "lock"), Qt::CaseInsensitive) ||
         term.startsWith(QLatin1String("lock"), Qt::CaseInsensitive)) {
@@ -196,12 +196,12 @@ void SolidRunner::match(Plasma::RunnerContext &context)
             if (!solidstoragevolume || solidstoragevolume->usage() != Solid::StorageVolume::Encrypted) {
                 continue;
             }
-            addDeviceMatch(term, context, soliddevice, SolidRunner::MatchLock);
+            addDeviceMatch(context, soliddevice, SolidRunner::MatchLock);
         }
     } else if (term.size() >= 3) {
         const QList<Solid::Device> soliddevices = solidDevices(term, SolidRunner::MatchAny);
         foreach (const Solid::Device &soliddevice, soliddevices) {
-            addDeviceMatch(term, context, soliddevice, SolidRunner::MatchAny);
+            addDeviceMatch(context, soliddevice, SolidRunner::MatchAny);
         }
     }
 }
@@ -336,7 +336,7 @@ QList<Solid::Device> SolidRunner::solidDevices(const QString &term, const SolidM
     return result;
 }
 
-void SolidRunner::addDeviceMatch(const QString &term, Plasma::RunnerContext &context,
+void SolidRunner::addDeviceMatch(Plasma::RunnerContext &context,
                                  const Solid::Device &soliddevice, const SolidMatchType solidmatchtype)
 {
     Plasma::QueryMatch match(this);
@@ -369,7 +369,7 @@ void SolidRunner::addDeviceMatch(const QString &term, Plasma::RunnerContext &con
             }
         }
     }
-    context.addMatch(term, match);
+    context.addMatch(match);
 }
 
 #include "moc_solidrunner.cpp"

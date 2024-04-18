@@ -225,7 +225,7 @@ void CalculatorRunner::match(Plasma::RunnerContext &context)
         match.setData(result);
         match.setId(term);
         match.setEnabled(false);
-        context.addMatch(term, match);
+        context.addMatch(match);
     }
 }
 

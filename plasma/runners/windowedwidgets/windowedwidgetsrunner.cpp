@@ -78,7 +78,7 @@ void WindowedWidgetsRunner::match(Plasma::RunnerContext &context)
         return;
     }
 
-    context.addMatches(term, matches);
+    context.addMatches(matches);
 }
 
 void WindowedWidgetsRunner::run(const Plasma::QueryMatch &match)

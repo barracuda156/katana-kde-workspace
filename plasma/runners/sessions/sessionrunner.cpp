@@ -185,7 +185,7 @@ void SessionRunner::match(Plasma::RunnerContext &context)
         }
     }
 
-    context.addMatches(term, matches);
+    context.addMatches(matches);
 }
 
 void SessionRunner::run(const Plasma::QueryMatch &match)

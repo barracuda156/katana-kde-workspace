@@ -153,7 +153,7 @@ void PowerDevilRunner::match(Plasma::RunnerContext &context)
     }
 
     if (!matches.isEmpty()) {
-        context.addMatches(term, matches);
+        context.addMatches(matches);
     }
 }
 

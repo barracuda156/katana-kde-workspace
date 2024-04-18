@@ -47,7 +47,7 @@ protected:
 
 private:
     QList<Solid::Device> solidDevices(const QString &term, const SolidMatchType solidmatchtype) const;
-    void addDeviceMatch(const QString &term, Plasma::RunnerContext &context,
+    void addDeviceMatch(Plasma::RunnerContext &context,
                         const Solid::Device &soliddevice, const SolidMatchType solidmatchtype);
 
     bool m_onlyremovable;

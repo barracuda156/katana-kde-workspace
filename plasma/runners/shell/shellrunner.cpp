@@ -51,7 +51,7 @@ void ShellRunner::match(Plasma::RunnerContext &context)
         match.setIcon(KIcon("system-run"));
         match.setText(i18n("Run %1", term));
         match.setRelevance(0.7);
-        context.addMatch(term, match);
+        context.addMatch(match);
     }
 }
 

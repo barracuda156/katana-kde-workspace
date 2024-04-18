@@ -244,7 +244,7 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
 
         if (!matches.isEmpty()) {
             // the window keyword found matches - do not process other syntax possibilities
-            context.addMatches(context.query(), matches);
+            context.addMatches(matches);
             return;
         }
     }
@@ -318,7 +318,7 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
     }
 
     if (!matches.isEmpty()) {
-        context.addMatches(context.query(), matches);
+        context.addMatches(matches);
     }
 }
 

@@ -78,7 +78,7 @@ void RecentDocuments::match(Plasma::RunnerContext &context)
         }
 
         if (document.contains(term, Qt::CaseInsensitive)) {
-            KConfig _config( document, KConfig::SimpleConfig);
+            KConfig _config(document, KConfig::SimpleConfig);
             KConfigGroup config(&_config, "Desktop Entry" );
             Plasma::QueryMatch match(this);
             match.setRelevance(1.0);
@@ -86,7 +86,7 @@ void RecentDocuments::match(Plasma::RunnerContext &context)
             match.setData(document); // TODO: Read URL[$e], or can we just pass the path to the .desktop file?
             match.setText(config.readEntry("Name"));
             match.setSubtext(i18n("Recent Document"));
-            context.addMatch(term, match);
+            context.addMatch(match);
         }
     }
 }

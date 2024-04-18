@@ -95,10 +95,9 @@ void WebshortcutRunner::match(Plasma::RunnerContext &context)
     match.setRelevance(0.9);
     match.setData(filterData.uri().url());
     match.setId("WebShortcut:" + term.left(delimIndex));
-
     match.setIcon(KIcon(filterData.iconName()));
     match.setText(i18n("Search %1 for %2", filterData.searchProvider(), filterData.searchTerm()));
-    context.addMatch(term, match);
+    context.addMatch(match);
 }
 
 void WebshortcutRunner::run(const Plasma::QueryMatch &match)

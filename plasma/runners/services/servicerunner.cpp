@@ -186,7 +186,7 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
         }
     }
 
-    context.addMatches(term, matches);
+    context.addMatches(matches);
 }
 
 void ServiceRunner::run(const Plasma::QueryMatch &match)
