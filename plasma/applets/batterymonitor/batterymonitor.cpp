@@ -406,6 +406,8 @@ BatteryMonitor::~BatteryMonitor()
 
 void BatteryMonitor::init()
 {
+    Plasma::PopupApplet::init();
+
     configChanged();
     QTimer::singleShot(500, m_batterywidget, SLOT(slotUpdateLayout()));
 }

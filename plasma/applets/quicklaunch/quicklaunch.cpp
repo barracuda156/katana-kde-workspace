@@ -108,6 +108,8 @@ Quicklaunch::~Quicklaunch()
 
 void Quicklaunch::init()
 {
+    Applet::init();
+
     // Initialize outer layout
     m_layout = new QGraphicsLinearLayout();
     m_layout->setContentsMargins(2, 2, 2, 2);

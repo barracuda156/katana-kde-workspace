@@ -88,6 +88,8 @@ SystemTrayApplet::~SystemTrayApplet()
 
 void SystemTrayApplet::init()
 {
+    Plasma::Applet::init();
+
     m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
     m_layout->setContentsMargins(s_margin, s_margin, s_margin, s_margin);
     m_layout->setSpacing(s_spacing);

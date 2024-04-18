@@ -68,6 +68,8 @@ IconApplet::IconApplet(QObject *parent, const QVariantList &args)
 
 void IconApplet::init()
 {
+    Plasma::Applet::init();
+
     QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);

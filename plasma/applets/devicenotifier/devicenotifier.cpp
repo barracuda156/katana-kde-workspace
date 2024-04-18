@@ -356,6 +356,8 @@ DeviceNotifier::~DeviceNotifier()
 
 void DeviceNotifier::init()
 {
+    Plasma::PopupApplet::init();
+
     KConfigGroup configgroup = config();
     m_devicenotifierwidget->onlyremovable = configgroup.readEntry("showOnlyRemovable", true);
     QTimer::singleShot(500, m_devicenotifierwidget, SLOT(slotUpdateLayout()));

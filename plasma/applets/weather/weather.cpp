@@ -764,6 +764,8 @@ WeatherApplet::~WeatherApplet()
 
 void WeatherApplet::init()
 {
+    Plasma::PopupApplet::init();
+
     KConfigGroup configgroup = config();
     m_tempunit = static_cast<KTemperature::KTempUnit>(configgroup.readEntry("weatherTempUnit", static_cast<int>(s_defaulttempunit)));
     m_location = configgroup.readEntry("weatherLocation", QString());

@@ -88,6 +88,8 @@ NotesApplet::NotesApplet(QObject *parent, const QVariantList &args)
 
 void NotesApplet::init()
 {
+    Plasma::PopupApplet::init();
+
     configChanged();
 }
 

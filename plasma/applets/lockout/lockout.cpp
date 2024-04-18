@@ -260,6 +260,8 @@ LockoutApplet::~LockoutApplet()
 
 void LockoutApplet::init()
 {
+    Plasma::Applet::init();
+
     m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
     m_layout->setContentsMargins(0, 0, 0, 0);
     m_layout->setSpacing(s_spacing);

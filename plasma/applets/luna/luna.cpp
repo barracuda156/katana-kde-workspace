@@ -122,6 +122,8 @@ LunaApplet::LunaApplet(QObject *parent, const QVariantList &args)
 
 void LunaApplet::init()
 {
+    Plasma::Applet::init();
+
     Plasma::ToolTipManager::self()->registerWidget(this);
     slotTimeout();
     m_timer->start();

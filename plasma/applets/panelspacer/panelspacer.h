@@ -28,7 +28,7 @@ class PanelSpacer : public Plasma::Applet
     Q_OBJECT
 public:
     PanelSpacer(QObject *parent, const QVariantList &args);
-    ~PanelSpacer();
+
     void init();
     void paintInterface(QPainter *p, const QStyleOptionGraphicsItem *option, const QRect &contentsRect);
     void constraintsEvent(Plasma::Constraints constraints);

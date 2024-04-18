@@ -43,10 +43,6 @@ PanelSpacer::PanelSpacer(QObject *parent, const QVariantList &args)
     setCacheMode(DeviceCoordinateCache);
 }
 
-PanelSpacer::~PanelSpacer()
-{
-}
-
 QList<QAction *> PanelSpacer::contextualActions()
 {
     return m_actions;
@@ -73,6 +69,8 @@ void PanelSpacer::toggleFixed(bool flexible)
 
 void PanelSpacer::init()
 {
+    Plasma::Applet::init();
+
     if (containment()) {
         connect(containment(), SIGNAL(toolBoxVisibilityChanged(bool)), this, SLOT(updateConfigurationMode(bool)));
     }

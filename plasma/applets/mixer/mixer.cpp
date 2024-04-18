@@ -982,6 +982,8 @@ MixerApplet::~MixerApplet()
 
 void MixerApplet::init()
 {
+    Plasma::PopupApplet::init();
+
     slotThemeChanged();
     connect(Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()), this, SLOT(slotThemeChanged()));
 }

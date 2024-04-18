@@ -344,6 +344,8 @@ TasksApplet::TasksApplet(QObject *parent, const QVariantList &args)
 
 void TasksApplet::init()
 {
+    Plasma::Applet::init();
+
     KConfigGroup configgroup = config();
     m_tooltipmode = static_cast<TasksApplet::ToolTipMode>(configgroup.readEntry("tooltipMode", static_cast<int>(s_defaultooltipmode)));
 

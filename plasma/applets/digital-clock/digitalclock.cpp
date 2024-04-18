@@ -93,6 +93,8 @@ DigitalClockApplet::DigitalClockApplet(QObject *parent, const QVariantList &args
 
 void DigitalClockApplet::init()
 {
+    Plasma::Applet::init();
+
     m_timer->start();
     Plasma::ToolTipManager::self()->registerWidget(this);
 }

@@ -100,6 +100,8 @@ CalendarApplet::CalendarApplet(QObject *parent, const QVariantList &args)
 
 void CalendarApplet::init()
 {
+    Plasma::PopupApplet::init();
+
     Plasma::ToolTipManager::self()->registerWidget(this);
     slotTimeout();
     m_timer->start();

@@ -48,6 +48,8 @@ KeyboardApplet::KeyboardApplet(QObject *parent, const QVariantList &args)
 
 void KeyboardApplet::init()
 {
+    Plasma::Applet::init();
+
     KConfigGroup configgroup = config();
     m_showflag = configgroup.readEntry("showFlag", false);
     m_showtext = configgroup.readEntry("showText", true);

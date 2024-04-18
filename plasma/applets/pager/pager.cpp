@@ -328,6 +328,8 @@ PagerApplet::PagerApplet(QObject *parent, const QVariantList &args)
 
 void PagerApplet::init()
 {
+    Plasma::Applet::init();
+
     KConfigGroup configgroup = config();
     const PagerApplet::PagerMode oldpagermode = m_pagermode;
     m_pagermode = static_cast<PagerApplet::PagerMode>(configgroup.readEntry("pagerMode", static_cast<int>(s_defaultpagermode)));
