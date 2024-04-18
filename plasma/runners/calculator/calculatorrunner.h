@@ -32,22 +32,20 @@ class CalculatorRunner : public Plasma::AbstractRunner
 {
     Q_OBJECT
 
-    public:
-        CalculatorRunner(QObject* parent, const QVariantList &args);
-        ~CalculatorRunner();
+public:
+    CalculatorRunner(QObject* parent, const QVariantList &args);
+    ~CalculatorRunner();
 
-        void match(Plasma::RunnerContext &context);
+    void match(Plasma::RunnerContext &context);
+    QMimeData* mimeDataForMatch(const Plasma::QueryMatch &match);
 
-    protected slots:
-        QMimeData * mimeDataForMatch(const Plasma::QueryMatch *match);
+private:
+    QString calculate(const QString& term);
+    void userFriendlySubstitutions(QString& cmd);
+    void powSubstitutions(QString& cmd);
+    void hexSubstitutions(QString& cmd);
 
-    private:
-        QString calculate(const QString& term);
-        void userFriendlySubstitutions(QString& cmd);
-        void powSubstitutions(QString& cmd);
-        void hexSubstitutions(QString& cmd);
-
-        QalculateEngine* m_engine;
+    QalculateEngine* m_engine;
 };
 
 K_EXPORT_PLASMA_RUNNER(calculatorrunner, CalculatorRunner)

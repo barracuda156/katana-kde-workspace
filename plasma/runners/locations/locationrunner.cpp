@@ -36,7 +36,6 @@
 LocationsRunner::LocationsRunner(QObject *parent, const QVariantList& args)
     : Plasma::AbstractRunner(parent, args)
 {
-    Q_UNUSED(args);
     // set the name shown after the result in krunner window
     setObjectName(QLatin1String("Locations"));
     setIgnoredTypes(Plasma::RunnerContext::Executable | Plasma::RunnerContext::ShellCommand);
@@ -135,12 +134,12 @@ void LocationsRunner::run(const Plasma::QueryMatch &match)
 
     KUrl urlToRun(KUriFilter::self()->filteredUri(location, QStringList() << QLatin1String("kshorturifilter")));
 
-    new KRun(urlToRun, 0);
+    new KRun(urlToRun, nullptr);
 }
 
-QMimeData * LocationsRunner::mimeDataForMatch(const Plasma::QueryMatch *match)
+QMimeData* LocationsRunner::mimeDataForMatch(const Plasma::QueryMatch &match)
 {
-    const QString data = match->data().toString();
+    const QString data = match.data().toString();
     if (!data.isEmpty()) {
         KUrl url(data);
         QList<QUrl> list;
@@ -151,7 +150,7 @@ QMimeData * LocationsRunner::mimeDataForMatch(const Plasma::QueryMatch *match)
         return result;
     }
 
-    return 0;
+    return nullptr;
 }
 
 

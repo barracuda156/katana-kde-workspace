@@ -112,14 +112,14 @@ void BookmarksRunner::run(const Plasma::QueryMatch &action)
     KToolInvocation::invokeBrowser(url.url());
 }
 
-QMimeData * BookmarksRunner::mimeDataForMatch(const Plasma::QueryMatch * match)
+QMimeData* BookmarksRunner::mimeDataForMatch(const Plasma::QueryMatch &match)
 {
     QMimeData * result = new QMimeData();
     QList<QUrl> urls;
-    urls << QUrl(match->data().toString());
+    urls << QUrl(match.data().toString());
     result->setUrls(urls);
 
-    result->setText(match->data().toString());
+    result->setText(match.data().toString());
 
     return result;
 }

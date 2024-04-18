@@ -34,29 +34,26 @@ class KJob;
 class BookmarksRunner : public Plasma::AbstractRunner
 {
     Q_OBJECT
+public:
+    BookmarksRunner(QObject* parent, const QVariantList &args);
+    ~BookmarksRunner();
 
-    public:
-        BookmarksRunner(QObject* parent, const QVariantList &args);
-        ~BookmarksRunner();
+    void match(Plasma::RunnerContext &context);
+    void run(const Plasma::QueryMatch &action);
+    QMimeData* mimeDataForMatch(const Plasma::QueryMatch &match);
 
-        void match(Plasma::RunnerContext &context);
-        void run(const Plasma::QueryMatch &action);
+private:
+    /** @returns the browser to get the bookmarks from
+        * @see Browser
+        */
+    QString findBrowserName();
 
-    private:
-        
-        /** @returns the browser to get the bookmarks from
-          * @see Browser
-          */
-        QString findBrowserName();
+private:
+    Browser *m_browser;
+    BrowserFactory * const m_browserFactory;
 
-    private:
-        Browser *m_browser;
-        BrowserFactory * const m_browserFactory;
-    protected Q_SLOTS:
-        QMimeData * mimeDataForMatch(const Plasma::QueryMatch *match);
-
-    private Q_SLOTS:
-        void prep();
+private Q_SLOTS:
+    void prep();
 };
 
 K_EXPORT_PLASMA_RUNNER(bookmarksrunner, BookmarksRunner)

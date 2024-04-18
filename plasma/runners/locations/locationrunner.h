@@ -31,9 +31,7 @@ public:
 
     void match(Plasma::RunnerContext &context);
     void run(const Plasma::QueryMatch &action);
-
-protected Q_SLOTS:
-    QMimeData* mimeDataForMatch(const Plasma::QueryMatch *match);
+    QMimeData* mimeDataForMatch(const Plasma::QueryMatch &match);
 };
 
 K_EXPORT_PLASMA_RUNNER(locations, LocationsRunner)

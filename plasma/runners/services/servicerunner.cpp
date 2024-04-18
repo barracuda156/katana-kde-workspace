@@ -197,6 +197,20 @@ void ServiceRunner::run(const Plasma::QueryMatch &match)
     }
 }
 
+QMimeData * ServiceRunner::mimeDataForMatch(const Plasma::QueryMatch &match)
+{
+    KService::Ptr service = KService::serviceByStorageId(match.data().toString());
+    if (service) {
+        QMimeData * result = new QMimeData();
+        QList<QUrl> urls;
+        urls << KUrl(service->entryPath());
+        kDebug() << urls;
+        result->setUrls(urls);
+        return result;
+    }
+    return nullptr;
+}
+
 void ServiceRunner::setupMatch(const KService::Ptr &service, Plasma::QueryMatch &match)
 {
     const QString name = service->name();
@@ -213,21 +227,6 @@ void ServiceRunner::setupMatch(const KService::Ptr &service, Plasma::QueryMatch 
     if (!service->icon().isEmpty()) {
         match.setIcon(KIcon(service->icon()));
     }
-}
-
-QMimeData * ServiceRunner::mimeDataForMatch(const Plasma::QueryMatch *match)
-{
-    KService::Ptr service = KService::serviceByStorageId(match->data().toString());
-    if (service) {
-        QMimeData * result = new QMimeData();
-        QList<QUrl> urls;
-        urls << KUrl(service->entryPath());
-        kDebug() << urls;
-        result->setUrls(urls);
-        return result;
-    }
-
-    return 0;
 }
 
 #include "moc_servicerunner.cpp"

@@ -42,9 +42,7 @@ public:
 
     void match(Plasma::RunnerContext &context);
     void run(const Plasma::QueryMatch &action);
-
-protected slots:
-    QMimeData * mimeDataForMatch(const Plasma::QueryMatch *match);
+    QMimeData* mimeDataForMatch(const Plasma::QueryMatch &match);
 
 protected:
     void setupMatch(const KService::Ptr &service, Plasma::QueryMatch &action);

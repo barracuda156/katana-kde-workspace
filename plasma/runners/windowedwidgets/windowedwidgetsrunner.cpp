@@ -89,6 +89,20 @@ void WindowedWidgetsRunner::run(const Plasma::QueryMatch &match)
     }
 }
 
+QMimeData* WindowedWidgetsRunner::mimeDataForMatch(const Plasma::QueryMatch &match)
+{
+    KService::Ptr service = KService::serviceByStorageId(match.data().toString());
+    if (service) {
+
+        QMimeData *data = new QMimeData();
+        data->setData("text/x-plasmoidservicename",
+                      service->property("X-KDE-PluginInfo-Name", QVariant::String).toString().toUtf8());
+        return data;
+
+    }
+    return nullptr;
+}
+
 void WindowedWidgetsRunner::setupMatch(const KService::Ptr &service, Plasma::QueryMatch &match)
 {
     const QString name = service->name();
@@ -106,22 +120,6 @@ void WindowedWidgetsRunner::setupMatch(const KService::Ptr &service, Plasma::Que
         match.setIcon(KIcon(service->icon()));
     }
 }
-
-QMimeData * WindowedWidgetsRunner::mimeDataForMatch(const Plasma::QueryMatch *match)
-{
-    KService::Ptr service = KService::serviceByStorageId(match->data().toString());
-    if (service) {
-
-        QMimeData *data = new QMimeData();
-        data->setData("text/x-plasmoidservicename",
-                      service->property("X-KDE-PluginInfo-Name", QVariant::String).toString().toUtf8());
-        return data;
-
-    }
-
-    return 0;
-}
-
 
 #include "moc_windowedwidgetsrunner.cpp"
 

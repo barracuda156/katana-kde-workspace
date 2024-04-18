@@ -170,13 +170,12 @@ void CalculatorRunner::userFriendlySubstitutions(QString& cmd)
     }
 }
 
-
 void CalculatorRunner::match(Plasma::RunnerContext &context)
 {
     const QString term = context.query();
     QString cmd = term;
 
-    //no meanless space between friendly guys: helps simplify code
+    // no meanless space between friendly guys: helps simplify code
     cmd = cmd.trimmed().remove(' ');
 
     if (cmd.length() < 3) {
@@ -229,19 +228,19 @@ void CalculatorRunner::match(Plasma::RunnerContext &context)
     }
 }
 
+QMimeData* CalculatorRunner::mimeDataForMatch(const Plasma::QueryMatch &match)
+{
+    // kDebug();
+    QMimeData *result = new QMimeData();
+    result->setText(match.text());
+    return result;
+}
+
 QString CalculatorRunner::calculate(const QString& term)
 {
     const QChar decimalSymbol = KGlobal::locale()->toLocale().decimalPoint();
     QString result = m_engine->evaluate(term);
     return result.replace('.', decimalSymbol, Qt::CaseInsensitive);
-}
-
-QMimeData * CalculatorRunner::mimeDataForMatch(const Plasma::QueryMatch *match)
-{
-    //kDebug();
-    QMimeData *result = new QMimeData();
-    result->setText(match->text());
-    return result;
 }
 
 #include "moc_calculatorrunner.cpp"

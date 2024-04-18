@@ -31,9 +31,7 @@ public:
 
     void match(Plasma::RunnerContext &context);
     void run(const Plasma::QueryMatch &match);
-
-private Q_SLOTS:
-    QMimeData* mimeDataForMatch(const Plasma::QueryMatch *match);
+    QMimeData* mimeDataForMatch(const Plasma::QueryMatch &match);
 
 private Q_SLOTS:
     void loadRecentDocuments();

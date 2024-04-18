@@ -98,10 +98,10 @@ void RecentDocuments::run(const Plasma::QueryMatch &match)
     new KRun(url, 0);
 }
 
-QMimeData* RecentDocuments::mimeDataForMatch(const Plasma::QueryMatch *match)
+QMimeData* RecentDocuments::mimeDataForMatch(const Plasma::QueryMatch &match)
 {
     QMimeData* result = new QMimeData();
-    const QString url = match->data().toString();
+    const QString url = match.data().toString();
     QList<QUrl> urls;
     urls << QUrl(url);
     result->setUrls(urls);
