@@ -28,7 +28,6 @@ class WebshortcutRunner : public Plasma::AbstractRunner {
 
 public:
     WebshortcutRunner( QObject *parent, const QVariantList& args );
-    ~WebshortcutRunner();
 
     void match(Plasma::RunnerContext &context);
     void run(const Plasma::QueryMatch &match);
