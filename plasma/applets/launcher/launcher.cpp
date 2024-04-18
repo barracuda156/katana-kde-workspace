@@ -484,6 +484,12 @@ bool LauncherWidget::handleMouseEvent(QGraphicsSceneMouseEvent *event) const
         event->accept();
         QDrag* drag = new QDrag(event->widget());
         drag->setMimeData(dragmimedata);
+        const QPixmap iconpixmap = m_iconwidget->icon().pixmap(kIconSize().toSize());
+        if (!iconpixmap.isNull()) {
+            drag->setPixmap(iconpixmap);
+            // same as the one in KColorMimeData and KPixmapWidget
+            drag->setHotSpot(QPoint(-5,-7));
+        }
         drag->start();
         return true;
     }
