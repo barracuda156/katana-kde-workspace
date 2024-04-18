@@ -160,7 +160,7 @@ void SessionRunner::match(Plasma::RunnerContext &context)
             }
 
             QString name = KDisplayManager::sess2Str(session);
-            qreal relevance = 0.7;
+            qreal relevance = 0.0;
 
             if (listAll) {
                 relevance = 1.0;
