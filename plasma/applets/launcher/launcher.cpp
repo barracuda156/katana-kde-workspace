@@ -54,7 +54,7 @@
 #include <Plasma/Animation>
 #include <KDebug>
 
-// TODO: mime data for drag-n-drop, animated layout updates
+// TODO: maybe favorites moving, animated layout updates
 
 static const QString s_defaultpopupicon = QString::fromLatin1("start-here-kde");
 static const QSizeF s_minimumsize = QSizeF(450, 350);
