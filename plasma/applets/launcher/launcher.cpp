@@ -450,10 +450,9 @@ public:
     void setAllowedRunners(const QStringList &runners);
     void prepare();
     void query(const QString &text);
-    void finish();
 
 private Q_SLOTS:
-    void slotUpdateLayout(const QList<Plasma::QueryMatch> &matches);
+    void slotUpdateLayout();
     void slotTriggered();
     void slotActivated();
 
@@ -485,8 +484,8 @@ LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcher
 
     m_runnermanager = new Plasma::RunnerManager(this);
     connect(
-        m_runnermanager, SIGNAL(matchesChanged(QList<Plasma::QueryMatch>)),
-        this, SLOT(slotUpdateLayout(QList<Plasma::QueryMatch>))
+        m_runnermanager, SIGNAL(queryFinished()),
+        this, SLOT(slotUpdateLayout())
     );
 }
 
@@ -517,16 +516,11 @@ void LauncherSearch::query(const QString &text)
     m_runnermanager->launchQuery(text);
 }
 
-void LauncherSearch::finish()
-{
-    // qDebug() << Q_FUNC_INFO;
-    m_runnermanager->matchSessionComplete();
-}
-
-void LauncherSearch::slotUpdateLayout(const QList<Plasma::QueryMatch> &matches)
+void LauncherSearch::slotUpdateLayout()
 {
     // qDebug() << Q_FUNC_INFO;
     QMutexLocker locker(&m_mutex);
+    const QList<Plasma::QueryMatch> matches = m_runnermanager->matches();
     m_label->setVisible(matches.isEmpty());
     adjustSize();
 
@@ -1615,7 +1609,6 @@ void LauncherAppletWidget::slotSearch(const QString &text)
     const QString query = text.trimmed();
     if (query.isEmpty()) {
         m_searchtimer->stop();
-        m_searchwidget->finish();
         m_searchscrollwidget->setVisible(false);
         m_tabbar->setVisible(true);
         return;

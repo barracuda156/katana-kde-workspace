@@ -53,7 +53,7 @@ private:
     BrowserFactory * const m_browserFactory;
 
 private Q_SLOTS:
-    void prep();
+    void init();
 };
 
 K_EXPORT_PLASMA_RUNNER(bookmarksrunner, BookmarksRunner)

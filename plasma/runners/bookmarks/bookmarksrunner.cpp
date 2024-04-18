@@ -36,7 +36,9 @@
 #include "bookmarksrunner_defs.h"
 
 BookmarksRunner::BookmarksRunner( QObject* parent, const QVariantList &args )
-    : Plasma::AbstractRunner(parent, args), m_browser(0), m_browserFactory(new BrowserFactory(this))
+    : Plasma::AbstractRunner(parent, args),
+    m_browser(nullptr),
+    m_browserFactory(new BrowserFactory(this))
 {
     Q_UNUSED(args)
     kDebug(kdbg_code) << "Creating BookmarksRunner";
@@ -46,23 +48,18 @@ BookmarksRunner::BookmarksRunner( QObject* parent, const QVariantList &args )
         i18n("List all web browser bookmarks"))
     );
     addSyntax(Plasma::RunnerSyntax(":q:", i18n("Finds web browser bookmarks matching :q:.")));
-
-    connect(this, SIGNAL(prepare()), this, SLOT(prep()));
 }
 
 BookmarksRunner::~BookmarksRunner()
 {
+    m_browser->teardown();
 }
 
-
-void BookmarksRunner::prep()
+void BookmarksRunner::init()
 {
     m_browser = m_browserFactory->find(findBrowserName(), this);
-    connect(this, SIGNAL(teardown()), dynamic_cast<QObject*>(m_browser), SLOT(teardown()));
     m_browser->prepare();
 }
-
-
 
 void BookmarksRunner::match(Plasma::RunnerContext &context)
 {
