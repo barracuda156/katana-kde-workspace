@@ -41,11 +41,6 @@ public:
     void reloadConfiguration();
 
 private:
-    /** @param uid the uid of the user
-      * @return the username of the user with the UID uid
-      */
-    QString getUserName(qlonglong uid);
-
     /** The trigger word */
     QString m_triggerWord;
 

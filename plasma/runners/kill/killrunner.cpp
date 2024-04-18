@@ -88,7 +88,14 @@ void KillRunner::match(Plasma::RunnerContext &context)
 
         const quint64 pid = process->pid;
         const qlonglong uid = process->uid;
-        const QString user = getUserName(uid);
+        QString user;
+        KUser kuser(uid);
+        if (kuser.isValid()) {
+            user = kuser.loginName();
+        } else {
+            kWarning() << "No user with UID" << uid << "was found";
+            user = QLatin1String("root");
+        }
 
         QVariantList data;
         data << pid << user;
@@ -154,16 +161,6 @@ QList<QAction*> KillRunner::actionsForMatch(const Plasma::QueryMatch &match)
     }
     ret << action("SIGTERM") << action("SIGKILL");
     return ret;
-}
-
-QString KillRunner::getUserName(qlonglong uid)
-{
-    KUser user(uid);
-    if (user.isValid()) {
-        return user.loginName();
-    }
-    kDebug() << QString("No user with UID %1 was found").arg(uid);
-    return "root";//No user with UID uid was found, so root is used
 }
 
 #include "moc_killrunner.cpp"
