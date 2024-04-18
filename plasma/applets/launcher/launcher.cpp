@@ -156,7 +156,6 @@ static QStringList kAllowedRunners(KConfigGroup configgroup)
             result.append(plugin.pluginName());
         }
     }
-    // qDebug() << Q_FUNC_INFO << result << configgroup.name();
     return result;
 }
 
@@ -322,7 +321,6 @@ void LauncherWidget::setMimeData(QMimeData *mimedata)
 
 void LauncherWidget::addAction(QAction *action)
 {
-    // qDebug() << Q_FUNC_INFO << m_actioncounter << action;
     // 4 actions are packed into a small area, the text is getting in the way. however if there is
     // no tooltip use the text as tooltip
     if (action->toolTip().isEmpty() && !action->text().isEmpty()) {
@@ -562,7 +560,6 @@ void LauncherSearch::setAllowedRunners(const QStringList &runners)
 
 void LauncherSearch::prepare()
 {
-    // qDebug() << Q_FUNC_INFO;
     QMutexLocker locker(&m_mutex);
     foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
         m_layout->removeItem(launcherwidget);
@@ -581,13 +578,11 @@ void LauncherSearch::prepare()
 
 void LauncherSearch::query(const QString &text)
 {
-    // qDebug() << Q_FUNC_INFO << text;
     m_runnermanager->launchQuery(text);
 }
 
 void LauncherSearch::slotUpdateLayout()
 {
-    // qDebug() << Q_FUNC_INFO;
     QMutexLocker locker(&m_mutex);
     const QList<Plasma::QueryMatch> matches = m_runnermanager->matches();
     m_busywidget->setRunning(false);
@@ -602,7 +597,6 @@ void LauncherSearch::slotUpdateLayout()
 
     const QSizeF iconsize = kIconSize();
     foreach (const Plasma::QueryMatch &match, matches) {
-        // qDebug() << Q_FUNC_INFO << match.text() << match.subtext();
         LauncherWidget* launcherwidget = new LauncherWidget(this);
         launcherwidget->setup(
             iconsize, match.icon(), match.text(), match.subtext()
@@ -613,7 +607,6 @@ void LauncherSearch::slotUpdateLayout()
         }
         int counter = 0;
         const QList<QAction*> matchactions = m_runnermanager->actionsForMatch(match);
-        // qDebug() << Q_FUNC_INFO << match.id() << matchactions.size();
         foreach (QAction* action, matchactions) {
             action->setProperty("_k_id", match.id());
             launcherwidget->addAction(action);
@@ -751,7 +744,6 @@ void LauncherFavorites::slotUpdateLayout()
     const QSizeF iconsize = kIconSize();
     bookmark = bookmarkgroup.first();
     while (!bookmark.isNull()) {
-        // qDebug() << Q_FUNC_INFO << bookmark.text() << bookmark.description() << bookmark.icon() << bookmark.url();
         if (bookmark.isSeparator()) {
             bookmark = bookmarkgroup.next(bookmark);
             continue;
@@ -766,7 +758,6 @@ void LauncherFavorites::slotUpdateLayout()
             bookmark = bookmarkgroup.next(bookmark);
             continue;
         }
-        // qDebug() << Q_FUNC_INFO << service->entryPath() << service->name() << service->comment();
         LauncherWidget* launcherwidget = new LauncherWidget(this);
         launcherwidget->setup(
             iconsize, kFavoriteIcon(service->icon()), service->name(), service->genericName()
@@ -889,7 +880,6 @@ void LauncherNavigator::reset()
 
 void LauncherNavigator::addNavigation(const QString &id, const QString &text)
 {
-    // qDebug() << Q_FUNC_INFO << id << text;
     QMutexLocker locker(&m_mutex);
     Plasma::SvgWidget* svgwidget = new Plasma::SvgWidget(this);
     svgwidget->setElementID("right-arrow");
@@ -1044,7 +1034,6 @@ int LauncherApplications::serviceCount(KServiceGroup::Ptr servicegroup)
     }
     foreach (const KService::Ptr appservice, servicegroup->serviceEntries(KServiceGroup::NoOptions)) {
         if (appservice->noDisplay()) {
-            kDebug() << "hidden entry" << appservice->name();
             continue;
         }
         result++;
@@ -1072,7 +1061,6 @@ void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
     }
     foreach (const KService::Ptr appservice, servicegroup->serviceEntries(KServiceGroup::NoOptions)) {
         if (appservice->noDisplay()) {
-            kDebug() << "hidden entry" << appservice->name();
             continue;
         }
         const QString entrypath = appservice->entryPath();
@@ -1120,7 +1108,6 @@ void LauncherApplications::slotDelayedNavigate()
     m_launchersswidget->adjustSize();
     adjustSize();
 
-    // qDebug() << Q_FUNC_INFO << m_id;
     KServiceGroup::Ptr servicegroup = KServiceGroup::group(m_id);
     if (!servicegroup.isNull() && servicegroup->isValid()) {
         KServiceGroup::Ptr rootgroup = KServiceGroup::root();
@@ -1178,7 +1165,6 @@ void LauncherApplications::slotCheckBookmarks()
     foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
         const QString launcherdata = launcherwidget->data();
         const bool isinfavorites = bookmarkurls.contains(launcherdata);
-        // qDebug() << Q_FUNC_INFO << launcherdata << isinfavorites;
         // there is only one action, it is known which one is that
         launcherwidget->removeAction(0);
         if (!isinfavorites) {
@@ -1265,7 +1251,6 @@ void LauncherRecent::slotUpdateLayout()
     const QSizeF iconsize = kIconSize();
     foreach (const QString &recent, KRecentDocument::recentDocuments()) {
         KDesktopFile recentfile(recent);
-        // qDebug() << Q_FUNC_INFO << recentfile.readName() << recentfile.readComment();
         LauncherWidget* launcherwidget = new LauncherWidget(this);
         launcherwidget->setup(
             iconsize, kRecentIcon(recentfile.readIcon()), recentfile.readName(), recentfile.readComment()
@@ -1715,8 +1700,6 @@ void LauncherAppletWidget::slotUserTimeout()
         usertext = i18nc("full name, login name, hostname", "<b>%1 (%2)</b> on <b>%3</b>", fullusername, m_user->loginName(), hostname);
     }
     m_label->setText(usertext);
-
-    // qDebug() << Q_FUNC_INFO << usericon << usertext;
 }
 
 void LauncherAppletWidget::slotSearchTimeout()
