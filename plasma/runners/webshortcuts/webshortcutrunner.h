@@ -32,9 +32,6 @@ public:
     void match(Plasma::RunnerContext &context);
     void run(const Plasma::QueryMatch &match);
 
-private:
-    void loadSyntaxes();
-
 private Q_SLOTS:
     void readFiltersConfig();
 

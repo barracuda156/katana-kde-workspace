@@ -46,12 +46,6 @@ WebshortcutRunner::WebshortcutRunner(QObject *parent, const QVariantList& args)
 
 void WebshortcutRunner::readFiltersConfig()
 {
-    // Make sure that the searchEngines cache, etc. is refreshed when the config file is changed.
-    loadSyntaxes();
-}
-
-void WebshortcutRunner::loadSyntaxes()
-{
     KUriFilterData filterData (QLatin1String(":q"));
     filterData.setSearchFilteringOptions(KUriFilterData::RetrieveAvailableSearchProvidersOnly);
     if (KUriFilter::self()->filterSearchUri(filterData, KUriFilter::NormalTextFilter)) {
@@ -76,8 +70,9 @@ void WebshortcutRunner::match(Plasma::RunnerContext &context)
 {
     const QString term = context.query();
 
-    if (term.length() < 3 || !term.contains(m_delimiter))
+    if (term.length() < 3 || !term.contains(m_delimiter)) {
         return;
+    }
 
     // kDebug() << "checking term" << term;
 
