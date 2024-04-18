@@ -122,7 +122,6 @@ private Q_SLOTS:
     void configureContainment(Plasma::Containment*);
     void setWmClass(WId id);
     void relocatePanels();
-    void executeCommands(const QList < QVariant > & commands);
     void captureDesktop();
     void captureCurrentWindow();
 

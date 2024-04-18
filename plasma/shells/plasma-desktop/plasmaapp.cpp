@@ -35,7 +35,6 @@
 #include <KGlobalAccel>
 #include <KGlobalSettings>
 #include <KNotification>
-#include <KRun>
 #include <KWindowSystem>
 #include <KService>
 #include <KIconLoader>
@@ -877,13 +876,6 @@ QString PlasmaApp::supportInformation() const
     }
 
     return streambuffer;
-}
-
-void PlasmaApp::executeCommands(const QList < QVariant > & commands)
-{
-    foreach (const QVariant & command, commands) {
-        KRun::runCommand(command.toString(), 0);
-    }
 }
 
 void PlasmaApp::captureDesktop()
