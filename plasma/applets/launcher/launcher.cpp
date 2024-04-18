@@ -192,7 +192,7 @@ protected:
 private:
     void animateFadeIn(Plasma::Animation *animation, Plasma::ToolButton *toolbutton);
     void animateFadeOut(Plasma::Animation *animation, Plasma::ToolButton *toolbutton);
-    bool handleMouseEvent(QGraphicsSceneMouseEvent *event);
+    bool handleMouseEvent(QGraphicsSceneMouseEvent *event) const;
 
     QGraphicsLinearLayout* m_layout;
     Plasma::IconWidget* m_iconwidget;
@@ -470,7 +470,7 @@ void LauncherWidget::animateFadeOut(Plasma::Animation *animation, Plasma::ToolBu
     animation->start(QAbstractAnimation::KeepWhenStopped);
 }
 
-bool LauncherWidget::handleMouseEvent(QGraphicsSceneMouseEvent *event)
+bool LauncherWidget::handleMouseEvent(QGraphicsSceneMouseEvent *event) const
 {
     if (event->buttons() & Qt::LeftButton &&
         (event->pos() - event->buttonDownPos(Qt::LeftButton)).manhattanLength() > KGlobalSettings::dndEventDelay())
