@@ -89,67 +89,78 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
     if (term.length() < 3) {
         return;
     }
-    QList<Plasma::QueryMatch> matches;
 
+    const QString activatel10n = i18nc("Note this is a KRunner keyword", "activate");
+    const QString closel10n = i18nc("Note this is a KRunner keyword", "close");
+    const QString minl10n = i18nc("Note this is a KRunner keyword", "min");
+    const QString minimizel10n = i18nc("Note this is a KRunner keyword", "minimize");
+    const QString maxl10n = i18nc("Note this is a KRunner keyword", "max");
+    const QString maximizel10n = i18nc("Note this is a KRunner keyword", "maximize");
+    const QString fullscreenl10n = i18nc("Note this is a KRunner keyword", "fullscreen");
+    const QString shadel10n = i18nc("Note this is a KRunner keyword", "shade");
+    const QString keepabovel10n = i18nc("Note this is a KRunner keyword", "keep above");
+    const QString keepbellowl10n = i18nc("Note this is a KRunner keyword", "keep below");
+
+    QList<Plasma::QueryMatch> matches;
     // check if the search term ends with an action keyword
     WindowAction action = ActivateAction;
-    if (term.endsWith(i18nc("Note this is a KRunner keyword", "activate"), Qt::CaseInsensitive)) {
+    if (term.endsWith(activatel10n, Qt::CaseInsensitive)) {
         action = ActivateAction;
-        term = term.left(term.lastIndexOf(i18nc("Note this is a KRunner keyword", "activate")) - 1);
+        term = term.left(term.lastIndexOf(activatel10n) - 1);
     } else if (term.endsWith(QLatin1String("activate"), Qt::CaseInsensitive)) {
         action = ActivateAction;
         term = term.left(term.lastIndexOf(QLatin1String("activate")) - 1);
-    } else if (term.endsWith(i18nc("Note this is a KRunner keyword", "close") , Qt::CaseInsensitive)) {
+    } else if (term.endsWith(closel10n , Qt::CaseInsensitive)) {
         action = CloseAction;
-        term = term.left(term.lastIndexOf(i18nc("Note this is a KRunner keyword", "close")) - 1);
+        term = term.left(term.lastIndexOf(closel10n) - 1);
     } else if (term.endsWith(QLatin1String("close") , Qt::CaseInsensitive)) {
         action = CloseAction;
         term = term.left(term.lastIndexOf(QLatin1String("close")) - 1);
-    } else if (term.endsWith(i18nc("Note this is a KRunner keyword", "min") , Qt::CaseInsensitive)) {
+    } else if (term.endsWith(minl10n, Qt::CaseInsensitive)) {
         action = MinimizeAction;
-        term = term.left(term.lastIndexOf(i18nc("Note this is a KRunner keyword", "min")) - 1);
+        term = term.left(term.lastIndexOf(minl10n) - 1);
     } else if (term.endsWith(QLatin1String("min") , Qt::CaseInsensitive)) {
         action = MinimizeAction;
         term = term.left(term.lastIndexOf(QLatin1String("min")) - 1);
-    } else if (term.endsWith(i18nc("Note this is a KRunner keyword", "minimize") , Qt::CaseInsensitive)) {
+    } else if (term.endsWith(minimizel10n , Qt::CaseInsensitive)) {
         action = MinimizeAction;
-        term = term.left(term.lastIndexOf(i18nc("Note this is a KRunner keyword", "minimize")) - 1);
+        term = term.left(term.lastIndexOf(minimizel10n) - 1);
     } else if (term.endsWith(QLatin1String("minimize") , Qt::CaseInsensitive)) {
         action = MinimizeAction;
         term = term.left(term.lastIndexOf(QLatin1String("minimize")) - 1);
-    } else if (term.endsWith(i18nc("Note this is a KRunner keyword", "max") , Qt::CaseInsensitive)) {
+    } else if (term.endsWith(maxl10n , Qt::CaseInsensitive)) {
         action = MaximizeAction;
-        term = term.left(term.lastIndexOf(i18nc("Note this is a KRunner keyword", "max")) - 1);
+        term = term.left(term.lastIndexOf(maxl10n) - 1);
     } else if (term.endsWith(QLatin1String("max") , Qt::CaseInsensitive)) {
         action = MaximizeAction;
         term = term.left(term.lastIndexOf(QLatin1String("max")) - 1);
-    } else if (term.endsWith(i18nc("Note this is a KRunner keyword", "maximize") , Qt::CaseInsensitive)) {
+    } else if (term.endsWith(maximizel10n , Qt::CaseInsensitive)) {
         action = MaximizeAction;
-        term = term.left(term.lastIndexOf(i18nc("Note this is a KRunner keyword", "maximize")) - 1);
+        term = term.left(term.lastIndexOf(maximizel10n) - 1);
     } else if (term.endsWith(QLatin1String("maximize") , Qt::CaseInsensitive)) {
         action = MaximizeAction;
         term = term.left(term.lastIndexOf(QLatin1String("maximize")) - 1);
-    } else if (term.endsWith(i18nc("Note this is a KRunner keyword", "fullscreen") , Qt::CaseInsensitive)) {
+    } else if (term.endsWith(fullscreenl10n , Qt::CaseInsensitive)) {
         action = FullscreenAction;
-        term = term.left(term.lastIndexOf(i18nc("Note this is a KRunner keyword", "fullscreen")) - 1);
+        term = term.left(term.lastIndexOf(fullscreenl10n) - 1);
     } else if (term.endsWith(QLatin1String("fullscreen") , Qt::CaseInsensitive)) {
         action = FullscreenAction;
         term = term.left(term.lastIndexOf(QLatin1String("fullscreen")) - 1);
-    } else if (term.endsWith(i18nc("Note this is a KRunner keyword", "shade") , Qt::CaseInsensitive)) {
+    } else if (term.endsWith(shadel10n , Qt::CaseInsensitive)) {
         action = ShadeAction;
-        term = term.left(term.lastIndexOf(i18nc("Note this is a KRunner keyword", "shade")) - 1);
+        term = term.left(term.lastIndexOf(shadel10n) - 1);
     } else if (term.endsWith(QLatin1String("shade") , Qt::CaseInsensitive)) {
         action = ShadeAction;
         term = term.left(term.lastIndexOf(QLatin1String("shade")) - 1);
-    } else if (term.endsWith(i18nc("Note this is a KRunner keyword", "keep above") , Qt::CaseInsensitive)) {
+    } else if (term.endsWith(keepabovel10n , Qt::CaseInsensitive)) {
         action = KeepAboveAction;
-        term = term.left(term.lastIndexOf(i18nc("Note this is a KRunner keyword", "keep above")) - 1);
+        term = term.left(term.lastIndexOf(keepabovel10n) - 1);
     } else if (term.endsWith(QLatin1String("keep above") , Qt::CaseInsensitive)) {
         action = KeepAboveAction;
         term = term.left(term.lastIndexOf(QLatin1String("keep above")) - 1);
-    } else if (term.endsWith(i18nc("Note this is a KRunner keyword", "keep below"), Qt::CaseInsensitive)) {
+    } else if (term.endsWith(keepbellowl10n, Qt::CaseInsensitive)) {
         action = KeepBelowAction;
-        term = term.left(term.lastIndexOf(i18nc("Note this is a KRunner keyword", "keep below")) - 1);
+        term = term.left(term.lastIndexOf(keepbellowl10n) - 1);
     } else if (term.endsWith(QLatin1String("keep below") , Qt::CaseInsensitive)) {
         action = KeepBelowAction;
         term = term.left(term.lastIndexOf(QLatin1String("keep below")) - 1);
@@ -278,7 +289,7 @@ void WindowsRunner::match(Plasma::RunnerContext& context)
             className.startsWith(term, Qt::CaseInsensitive)) {
             matches << windowMatch(info, action, 0.8);
         } else if ((info.name().contains(term, Qt::CaseInsensitive) ||
-             className.contains(term, Qt::CaseInsensitive)) && 
+            className.contains(term, Qt::CaseInsensitive)) &&
             actionSupported(info, action)) {
             matches << windowMatch(info, action, 0.7);
         }
