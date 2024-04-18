@@ -82,10 +82,10 @@ void WebshortcutRunner::match(Plasma::RunnerContext &context)
     // kDebug() << "checking term" << term;
 
     const int delimIndex = term.indexOf(m_delimiter);
-    if (delimIndex == term.length() - 1)
+    if (delimIndex == term.length() - 1) {
         return;
+    }
 
-    const QString key = term.left(delimIndex);
     if (!context.isValid()) {
         kDebug() << "invalid context";
         return;
@@ -99,7 +99,7 @@ void WebshortcutRunner::match(Plasma::RunnerContext &context)
     Plasma::QueryMatch match(this);
     match.setRelevance(0.9);
     match.setData(filterData.uri().url());
-    match.setId("WebShortcut:" + key);
+    match.setId("WebShortcut:" + term.left(delimIndex));
 
     match.setIcon(KIcon(filterData.iconName()));
     match.setText(i18n("Search %1 for %2", filterData.searchProvider(), filterData.searchTerm()));
@@ -110,7 +110,7 @@ void WebshortcutRunner::run(const Plasma::QueryMatch &match)
 {
     QString location = match.data().toString();
 
-    //kDebug() << location;
+    // kDebug() << location;
     if (!location.isEmpty()) {
         KToolInvocation::invokeBrowser(location);
     }
