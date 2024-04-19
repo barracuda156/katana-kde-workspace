@@ -99,10 +99,8 @@ PlasmaApp* PlasmaApp::self()
 
 PlasmaApp::PlasmaApp()
     : KUniqueApplication(),
-      m_corona(0),
-      m_panelHidden(0),
-      m_mapper(new QSignalMapper(this)),
-      m_unlockCorona(false)
+    m_corona(nullptr),
+    m_panelHidden(0)
 {
     kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "plasma app ctor start" << "(line:" << __LINE__ << ")";
 
@@ -168,10 +166,10 @@ PlasmaApp::~PlasmaApp()
         qDeleteAll(panels);
 
         delete m_corona;
-        m_corona = 0;
+        m_corona = nullptr;
 
         delete m_panelShadows;
-        m_panelShadows = 0;
+        m_panelShadows = nullptr;
 
         //TODO: This manual sync() should not be necessary. Remove it when
         // KConfig was fixed

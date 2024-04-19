@@ -34,8 +34,6 @@
 #include <fixx11h.h>
 #endif
 
-#include <QSignalMapper>
-
 #include "desktoptracker.h"
 
 namespace Plasma
@@ -139,9 +137,7 @@ private:
     QTimer m_panelViewCreationTimer;
     QTimer m_desktopViewCreationTimer;
     int m_panelHidden;
-    QSignalMapper *m_mapper;
     QHash<int, QWeakPointer<ControllerWindow> > m_widgetExplorers;
-    bool m_unlockCorona;
 };
 
 #endif // multiple inclusion guard
