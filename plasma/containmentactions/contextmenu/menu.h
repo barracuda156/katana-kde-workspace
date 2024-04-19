@@ -28,7 +28,6 @@ class ContextMenu : public Plasma::ContainmentActions
     Q_OBJECT
 public:
     ContextMenu(QObject* parent, const QVariantList& args);
-    ~ContextMenu();
 
     void init(const KConfigGroup&);
 
@@ -41,6 +40,7 @@ public:
     void save(KConfigGroup &config);
 
 public slots:
+    void startLockScreen();
     void lockScreen();
     void startLogout();
     void logout();

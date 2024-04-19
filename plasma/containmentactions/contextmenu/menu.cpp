@@ -37,6 +37,19 @@
 #include "kworkspace/kworkspace.h"
 #include "screensaver_interface.h"
 
+// this short delay is due to two issues:
+// a) KWorkSpace's DBus alls are all syncronous
+// b) the destrution of the menu that this action is in is delayed
+//
+// (a) leads to the menu hanging out where everyone can see it because the even loop doesn't get
+// returned to allowing it to close.
+//
+// (b) leads to a 0ms timer not working since a 0ms timer just appends to the event queue, and then
+// the menu closing event gets appended to that.
+//
+// ergo a timer with small timeout
+static const int s_actiondelay = 10; // ms
+
 
 ContextMenu::ContextMenu(QObject *parent, const QVariantList &args)
     : Plasma::ContainmentActions(parent, args),
@@ -46,10 +59,6 @@ ContextMenu::ContextMenu(QObject *parent, const QVariantList &args)
       m_separator2(0),
       m_separator3(0),
       m_buttons(0)
-{
-}
-
-ContextMenu::~ContextMenu()
 {
 }
 
@@ -91,7 +100,7 @@ void ContextMenu::init(const KConfigGroup &config)
     } else if (!m_lockScreenAction) {
         m_lockScreenAction = new QAction(i18n("Lock Screen"), this);
         m_lockScreenAction->setIcon(KIcon("system-lock-screen"));
-        connect(m_lockScreenAction, SIGNAL(triggered(bool)), this, SLOT(lockScreen()));
+        connect(m_lockScreenAction, SIGNAL(triggered(bool)), this, SLOT(startLockScreen()));
 
         m_logoutAction = new QAction(i18n("Leave..."), this);
         m_logoutAction->setIcon(KIcon("system-shutdown"));
@@ -168,11 +177,15 @@ QAction *ContextMenu::action(const QString &name)
     return 0;
 }
 
+void ContextMenu::startLockScreen()
+{
+    QTimer::singleShot(s_actiondelay, this, SLOT(lockScreen()));
+}
+
 void ContextMenu::lockScreen()
 {
     QString interface("org.freedesktop.ScreenSaver");
-    org::freedesktop::ScreenSaver screensaver(interface, "/ScreenSaver",
-                                              QDBusConnection::sessionBus());
+    org::freedesktop::ScreenSaver screensaver(interface, "/ScreenSaver", QDBusConnection::sessionBus());
     if (screensaver.isValid()) {
         screensaver.Lock();
     }
@@ -180,18 +193,7 @@ void ContextMenu::lockScreen()
 
 void ContextMenu::startLogout()
 {
-    // this short delay is due to two issues:
-    // a) KWorkSpace's DBus alls are all syncronous
-    // b) the destrution of the menu that this action is in is delayed
-    //
-    // (a) leads to the menu hanging out where everyone can see it because
-    // the even loop doesn't get returned to allowing it to close.
-    //
-    // (b) leads to a 0ms timer not working since a 0ms timer just appends to
-    // the event queue, and then the menu closing event gets appended to that.
-    //
-    // ergo a timer with small timeout
-    QTimer::singleShot(10, this, SLOT(logout()));
+    QTimer::singleShot(s_actiondelay, this, SLOT(logout()));
 }
 
 void ContextMenu::logout()
