@@ -1266,7 +1266,7 @@ class LauncherLeave : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    LauncherLeave(QGraphicsWidget *parent);
+    LauncherLeave(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
 
 private Q_SLOTS:
     void slotUpdateLayout();
@@ -1275,6 +1275,7 @@ private Q_SLOTS:
 
 private:
     QMutex m_mutex;
+    LauncherApplet* m_launcherapplet;
     QGraphicsLinearLayout* m_layout;
     QList<LauncherWidget*> m_launcherwidgets;
     Plasma::Separator* m_systemseparator;
@@ -1286,8 +1287,9 @@ private:
     KDisplayManager m_displaymanager;
 };
 
-LauncherLeave::LauncherLeave(QGraphicsWidget *parent)
+LauncherLeave::LauncherLeave(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
     : QGraphicsWidget(parent),
+    m_launcherapplet(launcherapplet),
     m_systemseparator(nullptr),
     m_timer(nullptr),
     m_canlock(false),
@@ -1460,6 +1462,7 @@ void LauncherLeave::slotActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
     const QString launcherwidgetdata = launcherwidget->data();
+    m_launcherapplet->resetState();
     if (launcherwidgetdata == QLatin1String("lock")) {
         kLockScreen();
     } else if (launcherwidgetdata == QLatin1String("switch")) {
@@ -1602,7 +1605,7 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_tabbar->addTab(KIcon(s_recenticon), i18n("Recently Used"), m_recentscrollwidget);
     m_leavecrollwidget = kMakeScrollWidget(m_tabbar);
     m_leavecrollwidget->setMinimumSize(s_minimumsize);
-    m_leavewidget = new LauncherLeave(m_leavecrollwidget);
+    m_leavewidget = new LauncherLeave(m_leavecrollwidget, m_launcherapplet);
     m_leavecrollwidget->setWidget(m_leavewidget);
     m_tabbar->addTab(KIcon("system-shutdown"), i18n("Leave"), m_leavecrollwidget);
     m_layout->addItem(m_tabbar);
