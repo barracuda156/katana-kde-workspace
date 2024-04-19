@@ -770,13 +770,13 @@ void LauncherFavorites::slotUpdateLayout()
             bookmark = bookmarkgroup.next(bookmark);
             continue;
         }
-        const QString serviceentrypath = bookmark.url().url();
-        KService::Ptr service = KService::serviceByDesktopPath(serviceentrypath);
+        const QString bookmarkentrypath = bookmark.url().url();
+        KService::Ptr service = KService::serviceByDesktopPath(bookmarkentrypath);
         if (service.isNull()) {
             service = KService::serviceByDesktopName(bookmark.text());
         }
         if (service.isNull()) {
-            kWarning() << "could not find service for" << serviceentrypath;
+            kWarning() << "could not find service for" << bookmarkentrypath;
             bookmark = bookmarkgroup.next(bookmark);
             continue;
         }
@@ -784,17 +784,19 @@ void LauncherFavorites::slotUpdateLayout()
         launcherwidget->setup(
             iconsize, kFavoriteIcon(service->icon()), service->name(), service->genericName()
         );
-        launcherwidget->setData(service->entryPath());
+        const QString entrypath = service->entryPath();
+        launcherwidget->setData(entrypath);
         QAction* favoriteaction = new QAction(launcherwidget);
         favoriteaction->setIcon(KIcon("edit-delete"));
         favoriteaction->setToolTip(i18n("Remove"));
-        favoriteaction->setProperty("_k_id", serviceentrypath);
+        favoriteaction->setProperty("_k_id", bookmarkentrypath);
         connect(
             favoriteaction, SIGNAL(triggered()),
             this, SLOT(slotTriggered()),
             Qt::QueuedConnection
         );
         launcherwidget->addAction(favoriteaction);
+        launcherwidget->setMimeData(kMakeMimeData(entrypath));
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
