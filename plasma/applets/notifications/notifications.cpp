@@ -62,7 +62,6 @@ private:
     JobsWidget* m_jobswidget;
     Plasma::ScrollWidget* m_applicationsscrollwidget;
     ApplicationsWidget* m_applicationswidget;
-    Plasma::Label* m_notificationslabel;
 };
 
 NotificationsWidget::NotificationsWidget(NotificationsApplet* notifications)
