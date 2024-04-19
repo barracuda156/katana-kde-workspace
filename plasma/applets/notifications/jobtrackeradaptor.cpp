@@ -23,12 +23,17 @@
 #include <QDBusConnection>
 #include <KGlobal>
 
-K_GLOBAL_STATIC_WITH_ARGS(JobTrackerAdaptor, kJobTrackerAdaptor, (qApp))
+static JobTrackerAdaptor* kJobTrackerAdaptor = nullptr;
 
 JobTrackerAdaptor::JobTrackerAdaptor(QObject *parent)
     : QDBusAbstractAdaptor(parent),
     m_ref(0)
 {
+}
+
+JobTrackerAdaptor::~JobTrackerAdaptor()
+{
+    Q_ASSERT(m_ref == 0);
 }
 
 void JobTrackerAdaptor::addJob(const QString &name)
@@ -48,6 +53,9 @@ void JobTrackerAdaptor::stopJob(const QString &name)
 
 JobTrackerAdaptor* JobTrackerAdaptor::self()
 {
+    if (!kJobTrackerAdaptor) {
+        kJobTrackerAdaptor = new JobTrackerAdaptor(qApp);
+    }
     return kJobTrackerAdaptor;
 }
 

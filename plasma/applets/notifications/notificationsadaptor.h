@@ -31,6 +31,7 @@ class NotificationsAdaptor: public QDBusAbstractAdaptor
     Q_CLASSINFO("D-Bus Interface", "org.kde.Notifications")
 public:
     NotificationsAdaptor(QObject *parent);
+    ~NotificationsAdaptor();
 
     static NotificationsAdaptor* self();
     void registerObject();

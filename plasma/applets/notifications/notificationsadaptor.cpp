@@ -23,12 +23,17 @@
 #include <QDBusConnection>
 #include <KGlobal>
 
-K_GLOBAL_STATIC_WITH_ARGS(NotificationsAdaptor, kNotificationsAdaptor, (qApp))
+static NotificationsAdaptor* kNotificationsAdaptor = nullptr;
 
 NotificationsAdaptor::NotificationsAdaptor(QObject *parent)
     : QDBusAbstractAdaptor(parent),
     m_ref(0)
 {
+}
+
+NotificationsAdaptor::~NotificationsAdaptor()
+{
+    Q_ASSERT(m_ref == 0);
 }
 
 void NotificationsAdaptor::addNotification(const QString &name)
@@ -53,6 +58,9 @@ void NotificationsAdaptor::invokeAction(const QString &name, const QString &acti
 
 NotificationsAdaptor* NotificationsAdaptor::self()
 {
+    if (!kNotificationsAdaptor) {
+        kNotificationsAdaptor = new NotificationsAdaptor(qApp);
+    }
     return kNotificationsAdaptor;
 }
 
