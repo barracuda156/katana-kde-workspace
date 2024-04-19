@@ -63,7 +63,6 @@ public:
 
 Q_SIGNALS:
     int countChanged();
-    void ping();
 
 private Q_SLOTS:
     void slotNotificationAdded(const QString &name);
