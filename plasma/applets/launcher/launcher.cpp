@@ -70,6 +70,8 @@ static const QString s_favoriteicon = QString::fromLatin1("bookmarks");
 static const QString s_recenticon = QString::fromLatin1("document-open-recent");
 static const int s_searchdelay = 500; // ms
 static const int s_polltimeout = 5000; // ms
+// enough time for the animation to finish
+static const int s_leavedelay = 500; // ms
 
 static QSizeF kIconSize()
 {
@@ -1291,6 +1293,8 @@ private Q_SLOTS:
     void slotUpdateLayout();
     void slotActivated();
     void slotTimeout();
+    void slotDelayedLock();
+    void slotDelayedSwitch();
 
 private:
     QMutex m_mutex;
@@ -1483,10 +1487,9 @@ void LauncherLeave::slotActivated()
     const QString launcherwidgetdata = launcherwidget->data();
     m_launcherapplet->resetState();
     if (launcherwidgetdata == QLatin1String("lock")) {
-        kLockScreen();
+        QTimer::singleShot(s_leavedelay, this, SLOT(slotDelayedLock()));
     } else if (launcherwidgetdata == QLatin1String("switch")) {
-        kLockScreen();
-        m_displaymanager.newSession();
+        QTimer::singleShot(s_leavedelay, this, SLOT(slotDelayedSwitch()));
     } else if (launcherwidgetdata == QLatin1String("suspendram")) {
         Solid::PowerManagement::requestSleep(Solid::PowerManagement::SuspendState);
     } else if (launcherwidgetdata == QLatin1String("suspenddisk")) {
@@ -1519,6 +1522,17 @@ void LauncherLeave::slotTimeout()
         oldcanreboot != m_canreboot || oldcanshutdown != m_canshutdown) {
         slotUpdateLayout();
     }
+}
+
+void LauncherLeave::slotDelayedLock()
+{
+    kLockScreen();
+}
+
+void LauncherLeave::slotDelayedSwitch()
+{
+    kLockScreen();
+    m_displaymanager.newSession();
 }
 
 
