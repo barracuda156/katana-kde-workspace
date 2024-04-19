@@ -561,6 +561,7 @@ LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcher
 
 void LauncherSearch::setAllowedRunners(const QStringList &runners)
 {
+    m_runnermanager->reloadConfiguration();
     m_runnermanager->setAllowedRunners(runners);
 }
 
