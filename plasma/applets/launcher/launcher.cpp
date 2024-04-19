@@ -330,8 +330,6 @@ void LauncherWidget::setMimeData(QMimeData *mimedata)
         setAcceptedMouseButtons(Qt::LeftButton);
         m_iconwidget->setAcceptedMouseButtons(Qt::LeftButton);
         m_iconwidget->installSceneEventFilter(this);
-        m_textwidget->setAcceptedMouseButtons(Qt::LeftButton);
-        m_textwidget->installSceneEventFilter(this);
     }
 }
 
@@ -521,6 +519,7 @@ void LauncherWidget::slotUpdateFonts()
     subtextfont.setItalic(true);
     m_subtextwidget->setFont(subtextfont);
 }
+
 
 class LauncherSearch : public QGraphicsWidget
 {
@@ -1736,9 +1735,6 @@ LauncherApplet::LauncherApplet(QObject *parent, const QVariantList &args)
     const QString bookmarfile = KStandardDirs::locateLocal("data", "plasma/bookmarks.xml");
     m_bookmarkmanager = KBookmarkManager::managerForFile(bookmarfile, "launcher");
     // m_bookmarkmanager->slotEditBookmarks();
-
-    m_launcherwidget = new LauncherAppletWidget(this);
-    setFocusProxy(m_launcherwidget);
 }
 
 void LauncherApplet::init()
@@ -1748,6 +1744,9 @@ void LauncherApplet::init()
     setGlobalShortcut(KShortcut(Qt::ALT+Qt::Key_F2));
     m_shareconfig = KSharedConfig::openConfig(globalConfig().config()->name());
     m_configgroup = m_shareconfig->group("Plugins");
+
+    m_launcherwidget = new LauncherAppletWidget(this);
+    setFocusProxy(m_launcherwidget);
     m_launcherwidget->setAllowedRunners(kAllowedRunners(m_configgroup));
 }
 
