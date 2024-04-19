@@ -159,6 +159,23 @@ static QStringList kAllowedRunners(KConfigGroup configgroup)
     return result;
 }
 
+static int kServiceCount(KServiceGroup::Ptr servicegroup)
+{
+    int result = 0;
+    foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
+        if (kServiceCount(subgroup) > 0) {
+            result++;
+        }
+    }
+    foreach (const KService::Ptr appservice, servicegroup->serviceEntries(KServiceGroup::NoOptions)) {
+        if (appservice->noDisplay()) {
+            continue;
+        }
+        result++;
+    }
+    return result;
+}
+
 class LauncherWidget : public QGraphicsWidget
 {
     Q_OBJECT
@@ -942,7 +959,6 @@ private Q_SLOTS:
     void slotTriggered();
 
 private:
-    static int serviceCount(KServiceGroup::Ptr servicegroup);
     void addGroup(KServiceGroup::Ptr servicegroup);
 
     QMutex m_mutex;
@@ -1030,28 +1046,11 @@ void LauncherApplications::slotUpdateLayout()
     slotCheckBookmarks();
 }
 
-int LauncherApplications::serviceCount(KServiceGroup::Ptr servicegroup)
-{
-    int result = 0;
-    foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
-        if (serviceCount(subgroup) > 0) {
-            result++;
-        }
-    }
-    foreach (const KService::Ptr appservice, servicegroup->serviceEntries(KServiceGroup::NoOptions)) {
-        if (appservice->noDisplay()) {
-            continue;
-        }
-        result++;
-    }
-    return result;
-}
-
 void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
 {
     const QSizeF iconsize = kIconSize();
-    foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
-        if (serviceCount(subgroup) > 0) {
+    foreach (KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
+        if (kServiceCount(subgroup) > 0) {
             LauncherWidget* launcherwidget = new LauncherWidget(m_launchersswidget);
             launcherwidget->setup(
                 iconsize, kGenericIcon(subgroup->icon()), subgroup->caption(), subgroup->comment()
