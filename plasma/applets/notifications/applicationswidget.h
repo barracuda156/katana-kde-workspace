@@ -56,7 +56,7 @@ class ApplicationsWidget : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    ApplicationsWidget(QGraphicsItem *parent, NotificationsWidget *notificationswidget);
+    ApplicationsWidget(QGraphicsItem *parent);
     ~ApplicationsWidget();
 
     int count() const;
@@ -71,7 +71,6 @@ private Q_SLOTS:
 
 private:
     QMutex m_mutex;
-    NotificationsWidget* m_notificationswidget;
     QGraphicsLinearLayout* m_layout;
     Plasma::Label* m_label;
     QList<QObject*> m_frames;

@@ -56,7 +56,7 @@ class JobsWidget : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    JobsWidget(QGraphicsItem *parent, NotificationsWidget *notificationswidget);
+    JobsWidget(QGraphicsItem *parent);
     ~JobsWidget();
 
     int count() const;
@@ -70,7 +70,6 @@ private Q_SLOTS:
 
 private:
     QMutex m_mutex;
-    NotificationsWidget* m_notificationswidget;
     QGraphicsLinearLayout* m_layout;
     Plasma::Label* m_label;
     QList<QObject*> m_frames;

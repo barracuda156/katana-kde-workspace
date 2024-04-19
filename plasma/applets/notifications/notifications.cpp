@@ -77,7 +77,7 @@ NotificationsWidget::NotificationsWidget(NotificationsApplet* notifications)
 
     m_jobsscrollwidget = new Plasma::ScrollWidget(this);
     m_jobsscrollwidget->setMinimumSize(s_minimumsize);
-    m_jobswidget = new JobsWidget(m_jobsscrollwidget, this);
+    m_jobswidget = new JobsWidget(m_jobsscrollwidget);
     connect(
         m_jobswidget, SIGNAL(countChanged()),
         this, SLOT(slotCountChanged())
@@ -87,7 +87,7 @@ NotificationsWidget::NotificationsWidget(NotificationsApplet* notifications)
 
     m_applicationsscrollwidget = new Plasma::ScrollWidget(this);
     m_applicationsscrollwidget->setMinimumSize(s_minimumsize);
-    m_applicationswidget = new ApplicationsWidget(m_applicationsscrollwidget, this);
+    m_applicationswidget = new ApplicationsWidget(m_applicationsscrollwidget);
     connect(
         m_applicationswidget, SIGNAL(countChanged()),
         this, SLOT(slotCountChanged())

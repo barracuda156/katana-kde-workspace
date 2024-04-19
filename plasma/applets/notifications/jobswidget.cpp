@@ -230,9 +230,8 @@ void JobFrame::slotIcon1Activated()
 }
 
 
-JobsWidget::JobsWidget(QGraphicsItem *parent, NotificationsWidget *notificationswidget)
+JobsWidget::JobsWidget(QGraphicsItem *parent)
     : QGraphicsWidget(parent),
-    m_notificationswidget(notificationswidget),
     m_layout(nullptr),
     m_label(nullptr),
     m_adaptor(nullptr)

@@ -199,9 +199,8 @@ void ApplicationFrame::slotActionReleased()
 }
 
 
-ApplicationsWidget::ApplicationsWidget(QGraphicsItem *parent, NotificationsWidget *notificationswidget)
+ApplicationsWidget::ApplicationsWidget(QGraphicsItem *parent)
     : QGraphicsWidget(parent),
-    m_notificationswidget(notificationswidget),
     m_layout(nullptr),
     m_label(nullptr),
     m_adaptor(nullptr)
