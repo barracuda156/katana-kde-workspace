@@ -768,6 +768,8 @@ KatePrintHeaderFooter::KatePrintHeaderFooter( QWidget *parent )
   hbFontPreview = new KHBox( this );
   hbFontPreview->setFrameStyle( QFrame::Panel|QFrame::Sunken );
   lFontPreview = new QLabel( hbFontPreview );
+  const int margin = KDialog::marginHint();
+  lFontPreview->setContentsMargins(margin, 0, margin, 0);
   lo2->addWidget( hbFontPreview );
   lo2->setStretchFactor( hbFontPreview, 1 );
   QPushButton *btnChooseFont = new QPushButton( i18n("Choo&se Font..."), this );

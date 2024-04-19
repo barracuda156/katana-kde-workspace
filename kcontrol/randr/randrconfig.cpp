@@ -32,6 +32,7 @@
 #include <kmessagebox.h>
 #include <kshell.h>
 #include <kconfiggroup.h>
+#include <kdialog.h>
 #include <qmenu.h>
 
 QT_BEGIN_NAMESPACE
@@ -395,6 +396,8 @@ void RandRConfig::identifyOutputs()
         fnt.setPixelSize(100);
         si->setFont(fnt);
         si->setAlignment(Qt::AlignCenter);
+        const int margin = (KDialog::marginHint() * 2);
+        si->setContentsMargins(margin, 0, margin, 0);
         QRect targetGeometry(QPoint(0,0), si->sizeHint());
         targetGeometry.moveCenter(it.key());
         hb->setGeometry(targetGeometry);

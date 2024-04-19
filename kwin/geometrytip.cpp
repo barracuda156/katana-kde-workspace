@@ -20,6 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "geometrytip.h"
 
+#include <kdialog.h>
+
 namespace KWin
 {
 
@@ -39,6 +41,8 @@ GeometryTip::GeometryTip(const XSizeHints* xSizeHints)
     label = new QLabel(this);
     label->setAlignment(Qt::AlignCenter | Qt::AlignTop);
     label->setIndent(0);
+    const int margin = KDialog::marginHint();
+    label->setContentsMargins(margin, 0, margin, 0);
 }
 
 void GeometryTip::setGeometry(const QRect& geom)
