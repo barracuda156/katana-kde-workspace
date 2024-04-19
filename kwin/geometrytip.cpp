@@ -19,26 +19,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *********************************************************************/
 
 #include "geometrytip.h"
-#include <QtGui/qx11info_x11.h>
 
 namespace KWin
 {
 
-GeometryTip::GeometryTip(const XSizeHints* xSizeHints):
-    QLabel(0)
+GeometryTip::GeometryTip(const XSizeHints* xSizeHints)
+    : KHBox(nullptr),
+    label(nullptr),
+    sizeHints(xSizeHints)
 {
     setObjectName(QLatin1String("kwingeometry"));
+
     setMargin(1);
-    setIndent(0);
     setLineWidth(1);
     setFrameStyle(QFrame::Raised | QFrame::StyledPanel);
-    setAlignment(Qt::AlignCenter | Qt::AlignTop);
     setWindowFlags(Qt::X11BypassWindowManagerHint);
-    sizeHints = xSizeHints;
-}
 
-GeometryTip::~GeometryTip()
-{
+    // TODO: the text has to be aligned properly (front-padded numbers)
+    label = new QLabel(this);
+    label->setAlignment(Qt::AlignCenter | Qt::AlignTop);
+    label->setIndent(0);
 }
 
 void GeometryTip::setGeometry(const QRect& geom)
@@ -57,7 +57,7 @@ void GeometryTip::setGeometry(const QRect& geom)
     QString pos;
     pos.sprintf("%+d,%+d<br>(<b>%d&nbsp;x&nbsp;%d</b>)",
                 geom.x(), geom.y(), w, h);
-    setText(pos);
+    label->setText(pos);
     adjustSize();
     move(geom.x() + ((geom.width()  - width())  / 2),
          geom.y() + ((geom.height() - height()) / 2));

@@ -386,18 +386,20 @@ void RandRConfig::identifyOutputs()
         ids[ output->rect().center() ].append( output->name());
     }
     for( QHash< QPoint, QStringList >::ConstIterator it = ids.constBegin(); it != ids.constEnd(); ++it ) {
-        QLabel *si = new QLabel(it->join("\n"), NULL, Qt::X11BypassWindowManagerHint);
+        KHBox *hb = new KHBox(nullptr);
+        hb->setWindowFlags(Qt::X11BypassWindowManagerHint);
+        hb->setFrameStyle(QFrame::Panel);
+        hb->setFrameShadow(QFrame::Plain);
+        QLabel *si = new QLabel(it->join("\n"), hb);
         QFont fnt = KGlobalSettings::generalFont();
         fnt.setPixelSize(100);
         si->setFont(fnt);
-        si->setFrameStyle(QFrame::Panel);
-        si->setFrameShadow(QFrame::Plain);
         si->setAlignment(Qt::AlignCenter);
         QRect targetGeometry(QPoint(0,0), si->sizeHint());
         targetGeometry.moveCenter(it.key());
-        si->setGeometry(targetGeometry);
-        si->show();
-        m_indicators.append( si );
+        hb->setGeometry(targetGeometry);
+        hb->show();
+        m_indicators.append( hb );
     }
     identifyTimer.start( 1500 );
 }

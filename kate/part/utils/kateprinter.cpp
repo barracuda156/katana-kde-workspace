@@ -40,12 +40,13 @@
 #include <klocale.h>
 #include <kdeprintdialog.h>
 #include <kurl.h>
-#include <kuser.h> // for loginName
+#include <kuser.h>
 #include <klineedit.h>
 #include <knuminput.h>
 #include <kcombobox.h>
 #include <kconfiggroup.h>
 #include <kdialog.h>
+#include <khbox.h>
 
 #include <QtGui/QPainter>
 #include <QtGui/QCheckBox>
@@ -764,10 +765,11 @@ KatePrintHeaderFooter::KatePrintHeaderFooter( QWidget *parent )
   QHBoxLayout *lo2 = new QHBoxLayout();
   lo->addLayout( lo2 );
   lo2->addWidget( new QLabel( i18n("Header/footer font:"), this ) );
-  lFontPreview = new QLabel( this );
-  lFontPreview->setFrameStyle( QFrame::Panel|QFrame::Sunken );
-  lo2->addWidget( lFontPreview );
-  lo2->setStretchFactor( lFontPreview, 1 );
+  hbFontPreview = new KHBox( this );
+  hbFontPreview->setFrameStyle( QFrame::Panel|QFrame::Sunken );
+  lFontPreview = new QLabel( hbFontPreview );
+  lo2->addWidget( hbFontPreview );
+  lo2->setStretchFactor( hbFontPreview, 1 );
   QPushButton *btnChooseFont = new QPushButton( i18n("Choo&se Font..."), this );
   lo2->addWidget( btnChooseFont );
   connect( btnChooseFont, SIGNAL(clicked()), this, SLOT(setHFFont()) );

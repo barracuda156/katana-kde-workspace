@@ -122,7 +122,7 @@ class FancyPlotterLabel : public QLabel {
         shortHeadingText = QString("<qt><font color=\"") + color.name() + "\">" + indicatorSymbol + "</font>";
         noHeadingText = QString("<qt><font color=\"") + color.name() + "\">";
 
-        textMargin = fontMetrics().width('x') + margin()*2 + frameWidth()*2;
+        textMargin = fontMetrics().width('x') + (margin() * 2);
         longHeadingWidth = fontMetrics().boundingRect(labelName + " :" + indicatorSymbol + " x").width() + textMargin;
         shortHeadingWidth = fontMetrics().boundingRect(indicatorSymbol).width() + textMargin;
         setMinimumWidth(shortHeadingWidth);

@@ -26,6 +26,7 @@
 #include <QWidget>
 #include <QTimer>
 #include <QGraphicsScene>
+#include <KHBox>
 
 class SettingsContainer;
 class CollapsibleWidget;
@@ -77,7 +78,7 @@ private:
     QList<CollapsibleWidget*> m_outputList;
     QGraphicsScene *m_scene;
     LayoutManager *m_layoutManager;
-    QList<QWidget*> m_indicators;
+    QList<KHBox*> m_indicators;
     QTimer identifyTimer;
     OutputConfigList m_configs;
     QTimer compressUpdateViewTimer;

@@ -23,7 +23,7 @@
 #ifndef __KATE_PRINTER_H__
 #define __KATE_PRINTER_H__
 
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QGroupBox>
@@ -35,6 +35,7 @@ class KColorButton;
 class KLineEdit;
 class KIntSpinBox;
 class KComboBox;
+class KHBox;
 
 class KatePrinter
 {
@@ -108,6 +109,7 @@ class KatePrintHeaderFooter : public QWidget
     void writeSettings();
     
     QCheckBox *cbEnableHeader, *cbEnableFooter;
+    KHBox *hbFontPreview;
     QLabel *lFontPreview;
     QGroupBox *gbHeader, *gbFooter;
     KLineEdit *leHeaderLeft, *leHeaderCenter, *leHeaderRight;

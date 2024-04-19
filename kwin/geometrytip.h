@@ -22,21 +22,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KWIN_GEOMETRY_TIP_H
 
 #include <QLabel>
+#include <KHBox>
+
 #include <X11/Xutil.h>
 #include <fixx11h.h>
 
 namespace KWin
 {
 
-class GeometryTip: public QLabel
+class GeometryTip: public KHBox
 {
     Q_OBJECT
 public:
     GeometryTip(const XSizeHints* xSizeHints);
-    ~GeometryTip();
+
     void setGeometry(const QRect& geom);
 
 private:
+    QLabel* label;
     const XSizeHints* sizeHints;
 };
 
