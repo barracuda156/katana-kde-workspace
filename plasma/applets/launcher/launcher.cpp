@@ -159,11 +159,20 @@ static QStringList kAllowedRunners(KConfigGroup configgroup)
     return result;
 }
 
+static QMimeData* kMakeMimeData(const QString &url)
+{
+    Q_ASSERT(!url.isEmpty());
+    QMimeData* mimedata = new QMimeData();
+    mimedata->setUrls(QList<QUrl>() << url);
+    return mimedata;
+}
+
 class LauncherWidget : public QGraphicsWidget
 {
     Q_OBJECT
 public:
     LauncherWidget(QGraphicsWidget *parent);
+    ~LauncherWidget();
 
     void setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext);
     void disableHover();
@@ -275,6 +284,13 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
         KGlobalSettings::self(), SIGNAL(kdisplayFontChanged()),
         this, SLOT(slotUpdateFonts())
     );
+}
+
+LauncherWidget::~LauncherWidget()
+{
+    if (m_mimedata) {
+        m_mimedata->deleteLater();
+    }
 }
 
 void LauncherWidget::setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext)
@@ -1059,6 +1075,7 @@ void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
             iconsize, kGenericIcon(appservice->icon()), appservice->name(), appservice->comment()
         );
         launcherwidget->setData(entrypath);
+        launcherwidget->setMimeData(kMakeMimeData(entrypath));
         m_launcherwidgets.append(launcherwidget);
         m_launcherslayout->addItem(launcherwidget);
         connect(
