@@ -159,23 +159,6 @@ static QStringList kAllowedRunners(KConfigGroup configgroup)
     return result;
 }
 
-static int kServiceCount(KServiceGroup::Ptr servicegroup)
-{
-    int result = 0;
-    foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
-        if (kServiceCount(subgroup) > 0) {
-            result++;
-        }
-    }
-    foreach (const KService::Ptr appservice, servicegroup->serviceEntries(KServiceGroup::NoOptions)) {
-        if (appservice->noDisplay()) {
-            continue;
-        }
-        result++;
-    }
-    return result;
-}
-
 class LauncherWidget : public QGraphicsWidget
 {
     Q_OBJECT
@@ -1049,8 +1032,8 @@ void LauncherApplications::slotUpdateLayout()
 void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
 {
     const QSizeF iconsize = kIconSize();
-    foreach (KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
-        if (kServiceCount(subgroup) > 0) {
+    foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
+        if (subgroup->childCount() > 0) {
             LauncherWidget* launcherwidget = new LauncherWidget(m_launchersswidget);
             launcherwidget->setup(
                 iconsize, kGenericIcon(subgroup->icon()), subgroup->caption(), subgroup->comment()
