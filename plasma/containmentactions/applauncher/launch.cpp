@@ -39,10 +39,6 @@ AppLauncher::~AppLauncher()
     delete m_menu;
 }
 
-void AppLauncher::init(const KConfigGroup &)
-{
-}
-
 void AppLauncher::contextEvent(QEvent *event)
 {
     makeMenu();
@@ -75,17 +71,15 @@ void AppLauncher::makeMenu()
 void AppLauncher::addApp(QMenu *menu, KServiceGroup::Ptr group)
 {
     const QString name = group->name();
-    if (name.isEmpty()) {
-        kDebug() << "failed source" << name;
-        return;
-    }
-
     if (group->noDisplay()) {
         kDebug() << "hidden group" << name;
         return;
     }
 
     foreach (const KServiceGroup::Ptr subGroup, group->groupEntries(KServiceGroup::NoOptions)) {
+        if (subGroup->noDisplay() || subGroup->childCount() < 1) {
+            continue;
+        }
         QMenu *subMenu = menu->addMenu(KIcon(subGroup->icon()), subGroup->caption());
         addApp(subMenu, subGroup);
         if (subMenu->isEmpty()) {

@@ -1033,19 +1033,20 @@ void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
 {
     const QSizeF iconsize = kIconSize();
     foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
-        if (subgroup->childCount() > 0) {
-            LauncherWidget* launcherwidget = new LauncherWidget(m_launchersswidget);
-            launcherwidget->setup(
-                iconsize, kGenericIcon(subgroup->icon()), subgroup->caption(), subgroup->comment()
-            );
-            launcherwidget->setData(subgroup->relPath());
-            m_launcherwidgets.append(launcherwidget);
-            m_launcherslayout->addItem(launcherwidget);
-            connect(
-                launcherwidget, SIGNAL(activated()),
-                this, SLOT(slotGroupActivated())
-            );
+        if (subgroup->noDisplay() || subgroup->childCount() < 1) {
+            continue;
         }
+        LauncherWidget* launcherwidget = new LauncherWidget(m_launchersswidget);
+        launcherwidget->setup(
+            iconsize, kGenericIcon(subgroup->icon()), subgroup->caption(), subgroup->comment()
+        );
+        launcherwidget->setData(subgroup->relPath());
+        m_launcherwidgets.append(launcherwidget);
+        m_launcherslayout->addItem(launcherwidget);
+        connect(
+            launcherwidget, SIGNAL(activated()),
+            this, SLOT(slotGroupActivated())
+        );
     }
     foreach (const KService::Ptr appservice, servicegroup->serviceEntries(KServiceGroup::NoOptions)) {
         if (appservice->noDisplay()) {

@@ -33,8 +33,6 @@ class AppLauncher : public Plasma::ContainmentActions
         AppLauncher(QObject* parent, const QVariantList& args);
         ~AppLauncher();
 
-        void init(const KConfigGroup &config);
-
         void contextEvent(QEvent *event);
         QList<QAction*> contextualActions();
         void addApp(QMenu *menu, KServiceGroup::Ptr group);
