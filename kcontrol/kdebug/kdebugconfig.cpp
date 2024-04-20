@@ -81,7 +81,6 @@ KCMDebug::KCMDebug( QWidget* parent, const QVariantList& )
 
     QStringList destList;
     destList.append( i18n("File") );
-    destList.append( i18n("Message Box") );
     destList.append( i18n("Shell") );
     destList.append( i18n("Syslog") );
     destList.append( i18n("None") );
@@ -235,16 +234,16 @@ void KCMDebug::showArea(const QString& areaName)
     /* Fill dialog fields with values from config data */
     mCurrentDebugArea = areaName;
     KConfigGroup group = pConfig->group(areaName);
-    pInfoCombo->setCurrentIndex( group.readEntry( "InfoOutput", 4 ) );
+    pInfoCombo->setCurrentIndex( group.readEntry( "InfoOutput", 3 ) );
     pInfoFile->setText( group.readPathEntry( "InfoFilename","kdebug.log" ) );
     //pInfoShow->setText( group.readEntry( "InfoShow" ) );
-    pWarnCombo->setCurrentIndex( group.readEntry( "WarnOutput", 2 ) );
+    pWarnCombo->setCurrentIndex( group.readEntry( "WarnOutput", 1 ) );
     pWarnFile->setText( group.readPathEntry( "WarnFilename","kdebug.log" ) );
     //pWarnShow->setText( group.readEntry( "WarnShow" ) );
-    pErrorCombo->setCurrentIndex( group.readEntry( "ErrorOutput", 2 ) );
+    pErrorCombo->setCurrentIndex( group.readEntry( "ErrorOutput", 1 ) );
     pErrorFile->setText( group.readPathEntry( "ErrorFilename","kdebug.log") );
     //pErrorShow->setText( group.readEntry( "ErrorShow" ) );
-    pFatalCombo->setCurrentIndex( group.readEntry( "FatalOutput", 2 ) );
+    pFatalCombo->setCurrentIndex( group.readEntry( "FatalOutput", 1 ) );
     pFatalFile->setText( group.readPathEntry("FatalFilename","kdebug.log") );
     //pFatalShow->setText( group.readEntry( "FatalShow" ) );
     pAbortFatal->setChecked( group.readEntry( "AbortFatal", 1 ) );
