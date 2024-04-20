@@ -48,16 +48,13 @@ public:
 
 protected Q_SLOTS:
     void loadDesktopTheme();
-
     void setDesktopThemeDirty();
 
-    void detailChanged();
 private:
     static QString toolbarButtonText(int index);
     static int toolbarButtonIndex(const QString &text);
 
     bool m_bDesktopThemeDirty;
-    bool m_bDetailsDirty;
 
     ThemeModel* m_themeModel;
 };

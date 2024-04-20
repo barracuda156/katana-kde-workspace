@@ -10,56 +10,26 @@
     <height>460</height>
    </rect>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="0">
-    <widget class="QTabWidget" name="tabWidget">
-     <property name="currentIndex">
-      <number>0</number>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0" colspan="2">
+     <widget class="QListView" name="m_theme"/>
+    </item>
+    <item row="1" column="0">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+      <size>
+       <width>462</width>
+       <height>20</height>
+      </size>
      </property>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>Theme</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0" colspan="2">
-        <widget class="QListView" name="m_theme"/>
-       </item>
-       <item row="1" column="0">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>462</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_2">
-      <attribute name="title">
-       <string>Details</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_3">
-       <item row="0" column="0">
-        <widget class="DesktopThemeDetails" name="m_detailsWidget" native="true"/>
-       </item>
-      </layout>
-     </widget>
-    </widget>
+    </spacer>
    </item>
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>DesktopThemeDetails</class>
-   <extends>QWidget</extends>
-   <header>desktopthemedetails.h</header>
-   <container>1</container>
-  </customwidget>
  </customwidgets>
  <connections/>
 </ui>

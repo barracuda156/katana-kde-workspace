@@ -2,7 +2,6 @@ project(desktoptheme)
 
 set(kcmdesktoptheme_SRCS
     kcmdesktoptheme.cpp
-    desktopthemedetails.cpp
     thememodel.cpp
 )
 

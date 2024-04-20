@@ -56,7 +56,6 @@ KCMDesktopTheme::KCMDesktopTheme(QWidget *parent, const QVariantList &args)
     setupUi(this);
 
     m_bDesktopThemeDirty = false;
-    m_bDetailsDirty = false;
 
     KGlobal::dirs()->addResourceType("themes", "data", "kstyle/themes");
 
@@ -77,8 +76,6 @@ KCMDesktopTheme::KCMDesktopTheme(QWidget *parent, const QVariantList &args)
     m_theme->setItemDelegate(new ThemeDelegate(m_theme));
     m_theme->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
-    connect(m_detailsWidget, SIGNAL(changed()), this, SLOT(detailChanged()));
-
     connect(
         m_theme->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
         this, SLOT(setDesktopThemeDirty())
@@ -97,7 +94,6 @@ void KCMDesktopTheme::load()
     loadDesktopTheme();
 
     m_bDesktopThemeDirty = false;
-    m_bDetailsDirty = false;
 
     emit changed( false );
 }
@@ -105,8 +101,8 @@ void KCMDesktopTheme::load()
 
 void KCMDesktopTheme::save()
 {
-    // Don't do anything if we don't need to.
-    if (!(m_bDesktopThemeDirty) && !(m_bDetailsDirty)) {
+    // Don't do anything if don't need to.
+    if (!m_bDesktopThemeDirty) {
         return;
     }
 
@@ -116,13 +112,8 @@ void KCMDesktopTheme::save()
         Plasma::Theme::defaultTheme()->setThemeName(theme);
     }
 
-    if (m_bDetailsDirty) {
-        m_detailsWidget->save();
-    }
-
     // Clean up
     m_bDesktopThemeDirty = false;
-    m_bDetailsDirty = false;
     emit changed(false);
 }
 
@@ -144,12 +135,6 @@ void KCMDesktopTheme::loadDesktopTheme()
     QString themeName = Plasma::Theme::defaultTheme()->themeName();
     m_theme->setCurrentIndex(m_themeModel->indexOf(themeName));
     QApplication::restoreOverrideCursor();
-}
-
-void KCMDesktopTheme::detailChanged()
-{
-    m_bDetailsDirty = true;
-    emit changed(true);
 }
 
 #include "moc_kcmdesktoptheme.cpp"
