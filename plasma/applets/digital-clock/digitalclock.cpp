@@ -32,12 +32,16 @@
 // the default of KLocale
 static const QLocale::FormatType s_timeformat = QLocale::ShortFormat;
 
-static QFont kClockFont(const QRectF &contentsRect)
+static QFont kClockFont(const QRectF &contentsRect, const bool vertical)
 {
     QFont font = KGlobalSettings::smallestReadableFont();
     font.setBold(true);
     if (!contentsRect.isNull()) {
-        font.setPointSize(qMax(qreal(font.pointSize()), contentsRect.height() / 2));
+        if (vertical) {
+            font.setPointSize(qMax(qreal(font.pointSize()), contentsRect.width() / 4));
+        } else {
+            font.setPointSize(qMax(qreal(font.pointSize()), contentsRect.height() / 2));
+        }
     }
     return font;
 }
@@ -47,9 +51,9 @@ static QString kClockString()
     return KGlobal::locale()->formatTime(QTime::currentTime());
 }
 
-static QSizeF kClockSize(const QRectF &contentsRect, const QString &clockstring)
+static QSizeF kClockSize(const QRectF &contentsRect, const QString &clockstring, const bool vertical)
 {
-    QFontMetricsF fontmetricsf(kClockFont(contentsRect));
+    QFontMetricsF fontmetricsf(kClockFont(contentsRect, vertical));
     QSizeF clocksize = fontmetricsf.size(Qt::TextSingleLine, clockstring);
     if (contentsRect.isNull()) {
         clocksize.setHeight(clocksize.height() * 4);
@@ -115,7 +119,11 @@ void DigitalClockApplet::paintInterface(QPainter *painter,
 
     painter->drawPixmap(
         contentsRect,
-        Plasma::PaintUtils::texturedText(m_clockstring, kClockFont(contentsRect), m_svg)
+        Plasma::PaintUtils::texturedText(
+            m_clockstring,
+            kClockFont(contentsRect, formFactor() == Plasma::FormFactor::Vertical),
+            m_svg
+        )
     );
 }
 
@@ -142,19 +150,22 @@ void DigitalClockApplet::createConfigurationInterface(KConfigDialog *parent)
 void DigitalClockApplet::constraintsEvent(Plasma::Constraints constraints)
 {
     if (constraints && Plasma::SizeConstraint || constraints & Plasma::FormFactorConstraint) {
-        const QSizeF clocksize = kClockSize(contentsRect(), m_clockstring);
         switch (formFactor()) {
-            case Plasma::FormFactor::Horizontal:
+            // panel
             case Plasma::FormFactor::Vertical: {
-                // panel
                 setMinimumSize(0, 0);
-                setPreferredSize(clocksize);
+                setPreferredSize(kClockSize(contentsRect(), m_clockstring, true));
                 break;
             }
+            case Plasma::FormFactor::Horizontal: {
+                setMinimumSize(0, 0);
+                setPreferredSize(kClockSize(contentsRect(), m_clockstring, false));
+                break;
+            }
+            // desktop-like
             default: {
-                // desktop-like
-                setMinimumSize(kClockSize(QRect(), m_clockstring));
-                setPreferredSize(clocksize);
+                setMinimumSize(kClockSize(QRect(), m_clockstring, false));
+                setPreferredSize(kClockSize(contentsRect(), m_clockstring, false));
                 break;
             }
         }
@@ -218,6 +229,7 @@ void DigitalClockApplet::slotLocaleChanged()
     constraintsEvent(Plasma::SizeConstraint);
     m_timer->setInterval(kClockInterval(KGlobal::locale()->timeFormat(s_timeformat)));
     updateToolTip();
+    update();
 }
 
 #include "moc_digitalclock.cpp"
