@@ -144,7 +144,7 @@ static KIcon kRecentIcon(const QString &name)
 static QStringList kAllowedRunners(KConfigGroup configgroup)
 {
     QStringList result;
-    foreach (KPluginInfo &plugin, Plasma::RunnerManager::listRunnerInfo()) {
+    foreach (KPluginInfo plugin, Plasma::RunnerManager::listRunnerInfo()) {
         plugin.load(configgroup);
         if (plugin.isPluginEnabled()) {
             result.append(plugin.pluginName());
