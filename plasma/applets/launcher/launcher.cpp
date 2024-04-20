@@ -170,7 +170,6 @@ public:
 
     void setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext);
     void disableHover();
-    void disableAnimations();
 
     QString data() const;
     void setData(const QString &data);
@@ -235,8 +234,6 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_actioncounter(0),
     m_mimedata(nullptr)
 {
-    setAcceptHoverEvents(true);
-
     m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
     setLayout(m_layout);
 
@@ -302,11 +299,6 @@ void LauncherWidget::disableHover()
     m_iconwidget->setAcceptedMouseButtons(Qt::NoButton);
 }
 
-void LauncherWidget::disableAnimations()
-{
-    setAcceptHoverEvents(false);
-}
-
 QString LauncherWidget::data() const
 {
     return m_data;
@@ -365,10 +357,13 @@ void LauncherWidget::addAction(QAction *action)
             break;
         }
         default: {
+            Q_ASSERT(false);
+            kWarning() << "invalid action counter" << m_actioncounter;
             return;
         }
     }
     m_actioncounter++;
+    setAcceptHoverEvents(m_actioncounter > 0);
 }
 
 void LauncherWidget::removeAction(const int actionnumber)
@@ -396,6 +391,7 @@ void LauncherWidget::removeAction(const int actionnumber)
             break;
         }
         default: {
+            Q_ASSERT(false);
             kWarning() << "invalid action number" << action;
             return;
         }
@@ -406,6 +402,7 @@ void LauncherWidget::removeAction(const int actionnumber)
             m_actioncounter--;
         }
     }
+    setAcceptHoverEvents(m_actioncounter > 0);
 }
 
 void LauncherWidget::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -1373,7 +1370,6 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-switch-user"), i18n("Switch user"), i18n("Start a parallel session as a different user")
         );
         launcherwidget->setData("switch");
-        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1395,7 +1391,6 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-suspend"), i18n("Sleep"), i18n("Suspend to RAM")
         );
         launcherwidget->setData("suspendram");
-        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1409,7 +1404,6 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-suspend-hibernate"), i18n("Hibernate"), i18n("Suspend to disk")
         );
         launcherwidget->setData("suspenddisk");
-        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1423,7 +1417,6 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-suspend"), i18n("Hybrid Suspend"), i18n("Hybrid Suspend")
         );
         launcherwidget->setData("suspendhybrid");
-        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1438,7 +1431,6 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-reboot"), i18nc("Restart computer", "Restart"), i18n("Restart computer")
         );
         launcherwidget->setData("restart");
-        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1452,7 +1444,6 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-shutdown"), i18n("Shut down"), i18n("Turn off computer")
         );
         launcherwidget->setData("shutdown");
-        launcherwidget->disableAnimations();
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1465,7 +1456,6 @@ void LauncherLeave::slotUpdateLayout()
         iconsize, KIcon("system-log-out"), i18n("Log out"), i18n("End session")
     );
     launcherwidget->setData("logout");
-    launcherwidget->disableAnimations();
     m_launcherwidgets.append(launcherwidget);
     m_layout->addItem(launcherwidget);
     connect(
