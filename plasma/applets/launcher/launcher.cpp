@@ -1567,10 +1567,8 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_usertimer(nullptr),
     m_searchtimer(nullptr)
 {
-    m_layout = new QGraphicsLinearLayout(this);
-    m_layout->setOrientation(Qt::Vertical);
-    m_toplayout = new QGraphicsLinearLayout(m_layout);
-    m_toplayout->setOrientation(Qt::Horizontal);
+    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
+    m_toplayout = new QGraphicsLinearLayout(Qt::Horizontal, m_layout);
     m_toplayout->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     m_layout->addItem(m_toplayout);
 
