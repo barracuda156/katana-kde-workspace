@@ -208,7 +208,6 @@ void KWinScreenEdgesConfig::monitorLoadAction(ElectricBorder edge, const QString
     KConfigGroup config(m_config, "ElectricBorders");
     QString lowerName = config.readEntry(configName, "None").toLower();
     if (lowerName == "showdesktop") monitorChangeEdge(edge, ElectricActionShowDesktop);
-    else if (lowerName == "lockscreen") monitorChangeEdge(edge, ElectricActionLockScreen);
 }
 
 void KWinScreenEdgesConfig::monitorLoad()

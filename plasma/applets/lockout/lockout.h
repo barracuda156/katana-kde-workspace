@@ -22,7 +22,6 @@
 #include <QGraphicsLinearLayout>
 #include <QCheckBox>
 #include <QSpacerItem>
-#include <QDBusServiceWatcher>
 #include <Plasma/Applet>
 #include <Plasma/IconWidget>
 #include <KConfigDialog>
@@ -36,12 +35,11 @@ class LockoutApplet : public Plasma::Applet
 public:
     enum DoWhat {
         DoNothing = 0,
-        DoLock = 1,
-        DoSwitch = 2,
+        DoSwitch = 1,
         // shutdown is asked for by ksmserver
-        DoToRam = 3,
-        DoToDisk = 4,
-        DoHybrid = 5
+        DoToRam = 2,
+        DoToDisk = 3,
+        DoHybrid = 4
     };
 
     LockoutApplet(QObject *parent, const QVariantList &args);
@@ -57,9 +55,6 @@ protected:
 
 private Q_SLOTS:
     void slotUpdateButtons();
-    void slotScreensaverRegistered(const QString &service);
-    void slotScreensaverUnregistered(const QString &service);
-    void slotLock();
     void slotSwitch();
     void slotShutdown();
     void slotToRam();
@@ -73,40 +68,34 @@ private:
     void updateSizes();
 
     QGraphicsLinearLayout* m_layout;
-    Plasma::IconWidget* m_lockwidget;
     Plasma::IconWidget* m_switchwidget;
     Plasma::IconWidget* m_shutdownwidget;
     Plasma::IconWidget* m_toramwidget;
     Plasma::IconWidget* m_todiskwidget;
     Plasma::IconWidget* m_hybridwidget;
-    bool m_showlock;
     bool m_showswitch;
     bool m_showshutdown;
     bool m_showtoram;
     bool m_showtodisk;
     bool m_showhybrid;
-    bool m_confirmlock;
     bool m_confirmswitch;
     bool m_confirmshutdown;
     bool m_confirmtoram;
     bool m_confirmtodisk;
     bool m_confirmhybrid;
     KMessageWidget* m_buttonsmessage;
-    QCheckBox* m_lockbox;
     QCheckBox* m_switchbox;
     QCheckBox* m_shutdownbox;
     QCheckBox* m_torambox;
     QCheckBox* m_todiskbox;
     QCheckBox* m_hybridbox;
     QSpacerItem* m_spacer;
-    QCheckBox* m_lockconfirmbox;
     QCheckBox* m_switchconfirmbox;
     QCheckBox* m_shutdownconfirmbox;
     QCheckBox* m_toramconfirmbox;
     QCheckBox* m_todiskconfirmbox;
     QCheckBox* m_hybridconfirmbox;
     QSpacerItem* m_spacer2;
-    QDBusServiceWatcher* m_screensaverwatcher;
     LockoutDialog* m_dialog;
     LockoutApplet::DoWhat m_dowhat;
 };

@@ -39,8 +39,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "workspace.h"
 #include "composite.h"
 #include "xcbutils.h"
-// dbus generated
-#include "screenlocker_interface.h"
 
 #include "effects/diminactive/diminactive.h"
 #include "effects/dimscreen/dimscreen.h"
@@ -81,67 +79,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace KWin
 {
-
-static const QString SCREEN_LOCKER_SERVICE_NAME = QString("org.freedesktop.ScreenSaver");
-
-ScreenLockerWatcher::ScreenLockerWatcher(QObject *parent)
-    : QObject(parent)
-    , m_interface(NULL)
-    , m_serviceWatcher(new QDBusServiceWatcher(this))
-    , m_locked(false)
-{
-    connect(m_serviceWatcher, SIGNAL(serviceOwnerChanged(QString,QString,QString)), SLOT(serviceOwnerChanged(QString,QString,QString)));
-    m_serviceWatcher->setWatchMode(QDBusServiceWatcher::WatchForOwnerChange);
-    m_serviceWatcher->addWatchedService(SCREEN_LOCKER_SERVICE_NAME);
-    // check whether service is registered
-    QDBusConnectionInterface* dbusConnection = QDBusConnection::sessionBus().interface();
-    QDBusReply<bool> reply = dbusConnection->isServiceRegistered(SCREEN_LOCKER_SERVICE_NAME);
-    if (reply.isValid() && reply.value()) {
-        QDBusReply<QString> reply2 = dbusConnection->serviceOwner(SCREEN_LOCKER_SERVICE_NAME);
-        if (reply2.isValid()) {
-            serviceOwnerChanged(SCREEN_LOCKER_SERVICE_NAME, QString(), reply2.value());
-        }
-    }
-}
-
-ScreenLockerWatcher::~ScreenLockerWatcher()
-{
-}
-
-void ScreenLockerWatcher::serviceOwnerChanged(const QString &serviceName, const QString &oldOwner, const QString &newOwner)
-{
-    Q_UNUSED(oldOwner)
-    if (serviceName != SCREEN_LOCKER_SERVICE_NAME) {
-        return;
-    }
-    delete m_interface;
-    m_interface = NULL;
-    m_locked = false;
-    if (!newOwner.isEmpty()) {
-        m_interface = new OrgFreedesktopScreenSaverInterface(newOwner, QString(), QDBusConnection::sessionBus(), this);
-        connect(m_interface, SIGNAL(ActiveChanged(bool)), SLOT(setLocked(bool)));
-        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(m_interface->GetActive(), this);
-        connect(watcher, SIGNAL(finished(QDBusPendingCallWatcher*)), SLOT(activeQueried(QDBusPendingCallWatcher*)));
-    }
-}
-
-void ScreenLockerWatcher::activeQueried(QDBusPendingCallWatcher *watcher)
-{
-    QDBusPendingReply<bool> reply = *watcher;
-    if (!reply.isError()) {
-        setLocked(reply.value());
-    }
-    watcher->deleteLater();
-}
-
-void ScreenLockerWatcher::setLocked(bool activated)
-{
-    if (m_locked == activated) {
-        return;
-    }
-    m_locked = activated;
-    emit locked(m_locked);
-}
 
 //---------------------
 // Static
@@ -190,7 +127,6 @@ EffectsHandlerImpl::EffectsHandlerImpl(Compositor *compositor, Scene *scene)
     , next_window_quad_type(EFFECT_QUAD_TYPE_START)
     , m_compositor(compositor)
     , m_scene(scene)
-    , m_screenLockerWatcher(new ScreenLockerWatcher(this))
     , m_desktopRendering(false)
     , m_currentRenderedDesktop(0)
 {
@@ -217,7 +153,6 @@ EffectsHandlerImpl::EffectsHandlerImpl(Compositor *compositor, Scene *scene)
 #ifdef KWIN_BUILD_SCREENEDGES
     connect(ScreenEdges::self(), SIGNAL(approaching(ElectricBorder,qreal,QRect)), SIGNAL(screenEdgeApproaching(ElectricBorder,qreal,QRect)));
 #endif
-    connect(m_screenLockerWatcher, SIGNAL(locked(bool)), SIGNAL(screenLockingChanged(bool)));
     // connect all clients
     foreach (const Client *c, ws->clientList()) {
         setupClientConnections(c);
@@ -1382,12 +1317,6 @@ QString EffectsHandlerImpl::supportInformation(const QString &name) const
         }
     }
     return QString();
-}
-
-
-bool EffectsHandlerImpl::isScreenLocked() const
-{
-    return m_screenLockerWatcher->isLocked();
 }
 
 QString EffectsHandlerImpl::debug(const QString& name, const QString& parameter) const

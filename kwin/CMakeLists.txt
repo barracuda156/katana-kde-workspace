@@ -134,10 +134,6 @@ qt4_add_dbus_interface(kwin_SRCS
     ${CMAKE_SOURCE_DIR}/ksmserver/org.kde.KSMServerInterface.xml
     ksmserver_interface
 )
-qt4_add_dbus_interface(kwin_SRCS
-    ${CMAKE_SOURCE_DIR}/kscreensaver/org.freedesktop.ScreenSaver.xml
-    screenlocker_interface
-)
 
 ########### target link libraries ###############
 

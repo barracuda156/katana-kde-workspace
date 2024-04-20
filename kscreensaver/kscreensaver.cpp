@@ -34,15 +34,16 @@
 #  include <X11/extensions/dpms.h>
 #endif
 
+// for reference:
+// https://specifications.freedesktop.org/idle-inhibit-spec/latest/re01.html
+
 KScreenSaver::KScreenSaver(QObject *parent)
     : QObject(parent),
     m_objectsregistered(false),
     m_serviceregistered(false),
     m_havedpms(false),
     m_dpmsactive(false),
-    m_statetimer(this),
-    m_login1("org.freedesktop.login1", "/org/freedesktop/login1", "org.freedesktop.login1.Manager", QDBusConnection::systemBus()),
-    m_consolekit("org.freedesktop.ConsoleKit", "/org/freedesktop/ConsoleKit/Manager", "org.freedesktop.ConsoleKit.Manager", QDBusConnection::systemBus())
+    m_statetimer(this)
 {
     (void)new ScreenSaverAdaptor(this);
 
@@ -71,35 +72,6 @@ KScreenSaver::KScreenSaver(QObject *parent)
         return;
     }
     m_serviceregistered = true;
-
-    if (m_login1.isValid()) {
-        connection = QDBusConnection::systemBus();
-        connection.connect(
-            "org.freedesktop.login1", "/org/freedesktop/login1/seat/auto", "org.freedesktop.login1.Session", "Lock",
-            this, SLOT(slotLock())
-        );
-        connection.connect(
-            "org.freedesktop.login1", "/org/freedesktop/login1/seat/auto", "org.freedesktop.login1.Session", "Unlock",
-            this, SLOT(slotUnlock())
-        );
-    } else if (m_consolekit.isValid()) {
-        QDBusReply<QDBusObjectPath> reply = m_consolekit.call("GetSessionByPID", uint(::getpid()));
-        if (reply.isValid()) {
-            connection = QDBusConnection::systemBus();
-            const QString consolekitsessionpath = reply.value().path();
-            // qDebug() << Q_FUNC_INFO << consolekitsessionpath;
-            connection.connect(
-                "org.freedesktop.ConsoleKit", consolekitsessionpath, "org.freedesktop.ConsoleKit.Session", "Lock",
-                this, SLOT(slotLock())
-            );
-            connection.connect(
-                "org.freedesktop.ConsoleKit", consolekitsessionpath, "org.freedesktop.ConsoleKit.Session", "Unlock",
-                this, SLOT(slotUnlock())
-            );
-        } else {
-            kWarning() << "Invalid GetSessionByPID reply";
-        }
-    }
 
 #ifdef HAVE_DPMS
     int dpmsevent = 0;
@@ -156,45 +128,6 @@ uint KScreenSaver::GetSessionIdleTime()
 {
     // qDebug() << Q_FUNC_INFO;
     return KIdleTime::instance()->idleTime();
-}
-
-void KScreenSaver::Lock()
-{
-    // qDebug() << Q_FUNC_INFO;
-    // NOTE: this is known to work only with LightDM
-    QDBusInterface dmiface(
-        QString::fromLatin1("org.freedesktop.DisplayManager"),
-        QString::fromLatin1("/org/freedesktop/DisplayManager"),
-        QString::fromLatin1("org.freedesktop.DisplayManager"),
-        QDBusConnection::systemBus()
-    );
-    if (!dmiface.isValid()) {
-        kWarning() << "Display manager interface is not valid";
-        return;
-    }
-
-    const QString username = KUser().loginName();
-    const QList<QDBusObjectPath> dmsessions = qvariant_cast<QList<QDBusObjectPath>>(dmiface.property("Sessions"));
-    // qDebug() << Q_FUNC_INFO << dmiface.property("Sessions");
-    foreach (const QDBusObjectPath &dmsessionobj, dmsessions) {
-        QDBusInterface dmsessioniface(
-            QString::fromLatin1("org.freedesktop.DisplayManager"),
-            dmsessionobj.path(),
-            QString::fromLatin1("org.freedesktop.DisplayManager.Session"),
-            QDBusConnection::systemBus()
-        );
-        if (!dmsessioniface.isValid()) {
-            kWarning() << "Display manager session interface is not valid";
-            continue;
-        }
-        const QString dmusername = dmsessioniface.property("UserName").toString();
-        // qDebug() << Q_FUNC_INFO << dmusername << username;
-        if (dmusername == username) {
-            dmsessioniface.asyncCall("Lock");
-            return;
-        }
-    }
-    kWarning() << "Could not find session for" << username;
 }
 
 bool KScreenSaver::SetActive(bool active)
@@ -306,18 +239,6 @@ void KScreenSaver::slotCheckState()
         }
     }
 #endif // HAVE_DPMS
-}
-
-void KScreenSaver::slotLock()
-{
-    // qDebug() << Q_FUNC_INFO;
-    Lock();
-}
-
-void KScreenSaver::slotUnlock()
-{
-    // qDebug() << Q_FUNC_INFO;
-    SetActive(false);
 }
 
 #include "moc_kscreensaver.cpp"

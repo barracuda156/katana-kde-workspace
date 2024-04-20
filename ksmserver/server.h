@@ -62,7 +62,7 @@ class KSMServer : public QObject
 {
 Q_OBJECT
 public:
-    KSMServer( const QString& windowManager, bool only_local, bool lockscreen = false );
+    KSMServer( const QString& windowManager, bool only_local );
     ~KSMServer();
 
     static KSMServer* self();

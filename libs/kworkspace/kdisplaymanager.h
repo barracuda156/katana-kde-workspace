@@ -52,7 +52,6 @@ public:
     void newSession();
     bool localSessions(SessList &list);
     bool switchVT(int vt);
-    void lockSwitchVT(int vt);
 
     static QString sess2Str(const SessEnt &se);
 

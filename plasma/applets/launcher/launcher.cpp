@@ -140,15 +140,6 @@ static KIcon kRecentIcon(const QString &name)
     return KIcon(s_recenticon);
 }
 
-static void kLockScreen()
-{
-    QDBusInterface screensaver(
-        "org.freedesktop.ScreenSaver", "/ScreenSaver", "org.freedesktop.ScreenSaver",
-        QDBusConnection::sessionBus()
-    );
-    screensaver.call("Lock");
-}
-
 static QStringList kAllowedRunners(KConfigGroup configgroup)
 {
     QStringList result;
@@ -1293,7 +1284,6 @@ private Q_SLOTS:
     void slotUpdateLayout();
     void slotActivated();
     void slotTimeout();
-    void slotDelayedLock();
     void slotDelayedSwitch();
 
 private:
@@ -1303,7 +1293,6 @@ private:
     QList<LauncherWidget*> m_launcherwidgets;
     Plasma::Separator* m_systemseparator;
     QTimer* m_timer;
-    bool m_canlock;
     bool m_canswitch;
     bool m_canreboot;
     bool m_canshutdown;
@@ -1315,7 +1304,6 @@ LauncherLeave::LauncherLeave(QGraphicsWidget *parent, LauncherApplet *launcherap
     m_launcherapplet(launcherapplet),
     m_systemseparator(nullptr),
     m_timer(nullptr),
-    m_canlock(false),
     m_canswitch(false),
     m_canreboot(false),
     m_canshutdown(false)
@@ -1359,21 +1347,6 @@ void LauncherLeave::slotUpdateLayout()
 
     const QSizeF iconsize = kIconSize();
     bool hassessionicon = false;
-    if (m_canlock) {
-        LauncherWidget* launcherwidget = new LauncherWidget(this);
-        launcherwidget->setup(
-            iconsize, KIcon("system-lock-screen"), i18n("Lock"), i18n("Lock screen")
-        );
-        launcherwidget->setData("lock");
-        launcherwidget->disableAnimations();
-        m_launcherwidgets.append(launcherwidget);
-        m_layout->addItem(launcherwidget);
-        connect(
-            launcherwidget, SIGNAL(activated()),
-            this, SLOT(slotActivated())
-        );
-        hassessionicon = true;
-    }
     if (m_canswitch) {
         LauncherWidget* launcherwidget = new LauncherWidget(this);
         launcherwidget->setup(
@@ -1486,9 +1459,7 @@ void LauncherLeave::slotActivated()
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
     const QString launcherwidgetdata = launcherwidget->data();
     m_launcherapplet->resetState();
-    if (launcherwidgetdata == QLatin1String("lock")) {
-        QTimer::singleShot(s_leavedelay, this, SLOT(slotDelayedLock()));
-    } else if (launcherwidgetdata == QLatin1String("switch")) {
+    if (launcherwidgetdata == QLatin1String("switch")) {
         QTimer::singleShot(s_leavedelay, this, SLOT(slotDelayedSwitch()));
     } else if (launcherwidgetdata == QLatin1String("suspendram")) {
         Solid::PowerManagement::requestSleep(Solid::PowerManagement::SuspendState);
@@ -1510,28 +1481,19 @@ void LauncherLeave::slotActivated()
 
 void LauncherLeave::slotTimeout()
 {
-    const bool oldcanlock = m_canlock;
     const bool oldcanswitch = m_canswitch;
     const bool oldcanreboot = m_canreboot;
     const bool oldcanshutdown = m_canshutdown;
-    m_canlock = KDBusConnectionPool::isServiceRegistered("org.freedesktop.ScreenSaver", QDBusConnection::sessionBus());
     m_canswitch = m_displaymanager.isSwitchable();
     m_canreboot = KWorkSpace::canShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeReboot);
     m_canshutdown = KWorkSpace::canShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeHalt);
-    if (oldcanlock != m_canlock || oldcanswitch != m_canswitch ||
-        oldcanreboot != m_canreboot || oldcanshutdown != m_canshutdown) {
+    if (oldcanswitch != m_canswitch || oldcanreboot != m_canreboot || oldcanshutdown != m_canshutdown) {
         slotUpdateLayout();
     }
 }
 
-void LauncherLeave::slotDelayedLock()
-{
-    kLockScreen();
-}
-
 void LauncherLeave::slotDelayedSwitch()
 {
-    kLockScreen();
     m_displaymanager.newSession();
 }
 

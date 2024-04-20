@@ -35,30 +35,14 @@
 #include <Plasma/Wallpaper>
 
 #include "kworkspace/kworkspace.h"
-#include "screensaver_interface.h"
-
-// this short delay is due to two issues:
-// a) KWorkSpace's DBus alls are all syncronous
-// b) the destrution of the menu that this action is in is delayed
-//
-// (a) leads to the menu hanging out where everyone can see it because the even loop doesn't get
-// returned to allowing it to close.
-//
-// (b) leads to a 0ms timer not working since a 0ms timer just appends to the event queue, and then
-// the menu closing event gets appended to that.
-//
-// ergo a timer with small timeout
-static const int s_actiondelay = 10; // ms
-
 
 ContextMenu::ContextMenu(QObject *parent, const QVariantList &args)
     : Plasma::ContainmentActions(parent, args),
-      m_lockScreenAction(0),
-      m_logoutAction(0),
-      m_separator1(0),
-      m_separator2(0),
-      m_separator3(0),
-      m_buttons(0)
+    m_logoutAction(0),
+    m_separator1(0),
+    m_separator2(0),
+    m_separator3(0),
+    m_buttons(0)
 {
 }
 
@@ -77,8 +61,8 @@ void ContextMenu::init(const KConfigGroup &config)
     } else {
         actions.insert("configure shortcuts", false);
         m_actionOrder << "_context" << "add widgets" << "_add panel"
-                      << "manage activities" << "remove" << "lock widgets" << "_sep1"
-                      <<"_lock_screen" << "_logout" << "_sep2" << "configure"
+                      << "remove" << "lock widgets" << "_sep1"
+                      << "_logout" << "_sep2" << "configure"
                       << "configure shortcuts" << "_sep3" << "_wallpaper";
         disabled.insert("configure shortcuts");
     }
@@ -97,11 +81,7 @@ void ContextMenu::init(const KConfigGroup &config)
     if (c->containmentType() == Plasma::Containment::PanelContainment ||
         c->containmentType() == Plasma::Containment::CustomPanelContainment) {
         //FIXME: panel does its own config action atm...
-    } else if (!m_lockScreenAction) {
-        m_lockScreenAction = new QAction(i18n("Lock Screen"), this);
-        m_lockScreenAction->setIcon(KIcon("system-lock-screen"));
-        connect(m_lockScreenAction, SIGNAL(triggered(bool)), this, SLOT(startLockScreen()));
-
+    } else if (!m_logoutAction) {
         m_logoutAction = new QAction(i18n("Leave..."), this);
         m_logoutAction->setIcon(KIcon("system-shutdown"));
         connect(m_logoutAction, SIGNAL(triggered(bool)), this, SLOT(startLogout()));
@@ -166,8 +146,6 @@ QAction *ContextMenu::action(const QString &name)
         if (c->corona() && c->corona()->immutability() == Plasma::Mutable) {
             return c->corona()->action("add panel");
         }
-    } else if (name == "_lock_screen") {
-        return m_lockScreenAction;
     } else if (name == "_logout") {
         return m_logoutAction;
     } else {
@@ -177,23 +155,20 @@ QAction *ContextMenu::action(const QString &name)
     return 0;
 }
 
-void ContextMenu::startLockScreen()
-{
-    QTimer::singleShot(s_actiondelay, this, SLOT(lockScreen()));
-}
-
-void ContextMenu::lockScreen()
-{
-    QString interface("org.freedesktop.ScreenSaver");
-    org::freedesktop::ScreenSaver screensaver(interface, "/ScreenSaver", QDBusConnection::sessionBus());
-    if (screensaver.isValid()) {
-        screensaver.Lock();
-    }
-}
-
+// this short delay is due to two issues:
+// a) KWorkSpace's DBus alls are all syncronous
+// b) the destrution of the menu that this action is in is delayed
+//
+// (a) leads to the menu hanging out where everyone can see it because the even loop doesn't get
+// returned to allowing it to close.
+//
+// (b) leads to a 0ms timer not working since a 0ms timer just appends to the event queue, and then
+// the menu closing event gets appended to that.
+//
+// ergo a timer with small timeout
 void ContextMenu::startLogout()
 {
-    QTimer::singleShot(s_actiondelay, this, SLOT(logout()));
+    QTimer::singleShot(10, this, SLOT(logout()));
 }
 
 void ContextMenu::logout()

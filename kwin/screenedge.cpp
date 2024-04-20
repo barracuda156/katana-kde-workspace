@@ -195,11 +195,6 @@ bool Edge::handleAction()
         Workspace::self()->setShowingDesktop(!Workspace::self()->showingDesktop());
         return true;
     }
-    case ElectricActionLockScreen: { // Lock the screen
-        QDBusInterface screenSaver("org.freedesktop.ScreenSaver", "/ScreenSaver", "org.freedesktop.ScreenSaver");
-        screenSaver.asyncCall("Lock");
-        return true;
-    }
     default:
         return false;
     }
@@ -574,8 +569,6 @@ static ElectricBorderAction electricBorderAction(const QString& name)
     QString lowerName = name.toLower();
     if (lowerName == "showdesktop") {
         return ElectricActionShowDesktop;
-    } else if (lowerName == "lockscreen") {
-        return ElectricActionLockScreen;
     }
     return ElectricActionNone;
 }

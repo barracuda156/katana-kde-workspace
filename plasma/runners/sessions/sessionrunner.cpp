@@ -49,13 +49,6 @@ SessionRunner::SessionRunner(QObject *parent, const QVariantList &args)
         )
     );
 
-    addSyntax(
-        Plasma::RunnerSyntax(
-            i18nc("lock screen command", "lock"),
-            i18n("Locks the current sessions and starts the screen saver")
-        )
-    );
-
     Plasma::RunnerSyntax rebootSyntax(
         i18nc("restart computer command", "restart"),
         i18n("Reboots the computer")
@@ -132,14 +125,6 @@ void SessionRunner::match(Plasma::RunnerContext &context)
             match.setData(ShutdownAction);
             match.setRelevance(0.9);
             matches << match;
-        } else if (term.compare(i18nc("lock screen command", "lock"), Qt::CaseInsensitive) == 0 ||
-            term.compare(QLatin1String("lock"), Qt::CaseInsensitive) == 0) {
-            Plasma::QueryMatch match(this);
-            match.setText(i18n("Lock the screen"));
-            match.setIcon(KIcon("system-lock-screen"));
-            match.setData(LockAction);
-            match.setRelevance(0.9);
-            matches << match;
         }
     }
 
@@ -200,18 +185,18 @@ void SessionRunner::run(const Plasma::QueryMatch &match)
         KWorkSpace::ShutdownType type = KWorkSpace::ShutdownTypeDefault;
 
         switch (match.data().toInt()) {
-            case LogoutAction:
+            case LogoutAction: {
                 type = KWorkSpace::ShutdownTypeNone;
                 break;
-            case RestartAction:
+            }
+            case RestartAction: {
                 type = KWorkSpace::ShutdownTypeReboot;
                 break;
-            case ShutdownAction:
+            }
+            case ShutdownAction: {
                 type = KWorkSpace::ShutdownTypeHalt;
                 break;
-            case LockAction:
-                lock();
-                return;
+            }
         }
 
         if (type != KWorkSpace::ShutdownTypeDefault) {
@@ -222,7 +207,7 @@ void SessionRunner::run(const Plasma::QueryMatch &match)
     }
 
     if (!match.data().toString().isEmpty()) {
-        dm.lockSwitchVT(match.data().toString().toInt());
+        dm.switchVT(match.data().toString().toInt());
         return;
     }
 
@@ -246,18 +231,7 @@ void SessionRunner::run(const Plasma::QueryMatch &match)
         return;
     }
 
-    lock();
     dm.newSession();
-}
-
-void SessionRunner::lock()
-{
-    QString interface("org.freedesktop.ScreenSaver");
-    org::freedesktop::ScreenSaver screensaver(interface, "/ScreenSaver",
-                                              QDBusConnection::sessionBus());
-    if (screensaver.isValid()) {
-        screensaver.Lock();
-    }
 }
 
 #include "moc_sessionrunner.cpp"

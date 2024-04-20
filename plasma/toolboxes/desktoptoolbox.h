@@ -80,7 +80,6 @@ protected Q_SLOTS:
     // basic desktop controls
     void startLogout();
     void logout();
-    void lockScreen();
 
 private:
     void adjustToolBackerGeometry();

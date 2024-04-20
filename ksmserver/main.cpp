@@ -195,7 +195,6 @@ int main( int argc, char* argv[] )
     options.add("w");
     options.add("windowmanager <wm>", ki18n("Starts 'wm' in case no other window manager is \nparticipating in the session. Default is 'kwin'"));
     options.add("nolocal", ki18n("Also allow remote connections"));
-    options.add("lockscreen", ki18n("Starts the session in locked mode"));
     KCmdLineArgs::addCmdLineOptions( options );
 
     ::unsetenv("SESSION_MANAGER");
@@ -226,7 +225,7 @@ int main( int argc, char* argv[] )
     only_local = false;
 #endif
 
-    KSMServer *server = new KSMServer( wm, only_local, args->isSet("lockscreen") );
+    KSMServer *server = new KSMServer( wm, only_local );
 
     KCrash::setFlags(KCrash::Log);
 

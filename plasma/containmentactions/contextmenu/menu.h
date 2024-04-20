@@ -40,13 +40,10 @@ public:
     void save(KConfigGroup &config);
 
 public slots:
-    void startLockScreen();
-    void lockScreen();
     void startLogout();
     void logout();
 
 private:
-    QAction *m_lockScreenAction;
     QAction *m_logoutAction;
     QAction *m_separator1;
     QAction *m_separator2;

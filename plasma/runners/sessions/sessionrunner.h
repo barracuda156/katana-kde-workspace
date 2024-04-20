@@ -35,8 +35,7 @@ public:
     enum {
         LogoutAction = 1,
         ShutdownAction,
-        RestartAction,
-        LockAction
+        RestartAction
     };
 
     SessionRunner(QObject *parent, const QVariantList &args);
@@ -45,8 +44,6 @@ public:
     void run(const Plasma::QueryMatch &action);
 
 private:
-    void lock();
-
     QString m_triggerWord;
     KDisplayManager dm;
 };

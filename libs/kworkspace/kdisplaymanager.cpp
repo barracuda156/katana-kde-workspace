@@ -432,14 +432,3 @@ bool KDisplayManager::switchVT(int vt)
 
     return false;
 }
-
-void KDisplayManager::lockSwitchVT(int vt)
-{
-    // Lock first, otherwise the lock won't be able to kick in until the session is re-activated.
-    QDBusInterface saveriface(
-        "org.freedesktop.ScreenSaver", "/ScreenSaver", "org.freedesktop.ScreenSaver"
-    );
-    saveriface.call("Lock");
-
-    switchVT(vt);
-}

@@ -175,11 +175,6 @@ void DesktopToolBox::init()
     action->setIcon(KIcon("system-shutdown"));
     connect(action, SIGNAL(triggered()), this, SLOT(startLogout()));
     addTool(action);
-
-    action = new QAction(i18n("Lock Screen"), this);
-    action->setIcon(KIcon("system-lock-screen"));
-    connect(action, SIGNAL(triggered(bool)), this, SLOT(lockScreen()));
-    addTool(action);
 }
 
 QSize DesktopToolBox::cornerSize() const
@@ -591,19 +586,6 @@ void DesktopToolBox::adjustBackgroundBorders() const
             m_background->setEnabledBorders(Plasma::FrameSvg::TopBorder | Plasma::FrameSvg::LeftBorder);
             break;
     }
-}
-
-void DesktopToolBox::lockScreen()
-{
-    if (m_containment) {
-        m_containment->closeToolBox();
-    } else {
-        setShowing(false);
-    }
-
-    const QString interface("org.freedesktop.ScreenSaver");
-    QDBusInterface screensaver(interface, "/ScreenSaver");
-    screensaver.asyncCall("Lock");
 }
 
 void DesktopToolBox::startLogout()

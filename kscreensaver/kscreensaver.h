@@ -22,7 +22,6 @@
 #include <QObject>
 #include <QElapsedTimer>
 #include <QTimer>
-#include <QDBusInterface>
 
 class KScreenSaver : public QObject
 {
@@ -35,8 +34,6 @@ public Q_SLOTS:
     bool GetActive();
     uint GetActiveTime();
     uint GetSessionIdleTime();
-
-    void Lock();
     bool SetActive(bool active);
 
     void SimulateUserActivity();
@@ -50,9 +47,6 @@ Q_SIGNALS:
 private Q_SLOTS:
     void slotCheckState();
 
-    void slotLock();
-    void slotUnlock();
-
 private:
     bool m_objectsregistered;
     bool m_serviceregistered;
@@ -61,8 +55,6 @@ private:
     QElapsedTimer m_activetimer;
     QTimer m_statetimer;
     QList<uint> m_cookies;
-    QDBusInterface m_login1;
-    QDBusInterface m_consolekit;
 };
 
 #endif // KSCREENSAVER_H

@@ -551,17 +551,12 @@ static Status KSMNewClientProc ( SmsConn conn, SmPointer manager_data,
 extern "C" int _IceTransNoListen(const char * protocol);
 #endif
 
-KSMServer::KSMServer( const QString& windowManager, bool _only_local, bool lockscreen )
+KSMServer::KSMServer( const QString& windowManager, bool _only_local )
   : wmProcess( new QProcess( this ) )
   , sessionGroup( "" )
   , logoutEffectWidget( NULL )
   , inhibitCookie(0)
 {
-    if (lockscreen) {
-        QDBusInterface screensaver("org.freedesktop.ScreenSaver", "/ScreenSaver", "org.freedesktop.ScreenSaver");
-        screensaver.asyncCall("Lock");
-    }
-
     new KSMServerInterfaceAdaptor( this );
     QDBusConnection::sessionBus().registerObject("/KSMServer", this);
 

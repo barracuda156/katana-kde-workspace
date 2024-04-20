@@ -32,7 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDBusServiceWatcher>
 
 class KService;
-class OrgFreedesktopScreenSaverInterface;
 
 namespace KWin
 {
@@ -41,7 +40,6 @@ class Client;
 class Compositor;
 class Deleted;
 class Unmanaged;
-class ScreenLockerWatcher;
 
 class EffectsHandlerImpl : public EffectsHandler
 {
@@ -148,7 +146,6 @@ public:
     virtual EffectFrame* effectFrame(bool staticSize, const QPoint& position, Qt::Alignment alignment) const;
 
     virtual QVariant kwinOption(KWinOption kwopt);
-    virtual bool isScreenLocked() const;
 
     // internal (used by kwin core or compositing code)
     void startPaint();
@@ -235,7 +232,6 @@ private:
     QHash<QByteArray, qulonglong> m_managedProperties;
     Compositor *m_compositor;
     Scene *m_scene;
-    ScreenLockerWatcher *m_screenLockerWatcher;
     bool m_desktopRendering;
     int m_currentRenderedDesktop;
     Xcb::Window m_mouseInterceptionWindow;
@@ -346,27 +342,6 @@ private:
     QSize m_iconSize;
 
     Scene::EffectFrame* m_sceneFrame;
-};
-
-class ScreenLockerWatcher : public QObject
-{
-    Q_OBJECT
-public:
-    explicit ScreenLockerWatcher(QObject *parent = 0);
-    virtual ~ScreenLockerWatcher();
-    bool isLocked() const {
-        return m_locked;
-    }
-Q_SIGNALS:
-    void locked(bool locked);
-private Q_SLOTS:
-    void setLocked(bool activated);
-    void activeQueried(QDBusPendingCallWatcher *watcher);
-    void serviceOwnerChanged(const QString &serviceName, const QString &oldOwner, const QString &newOwner);
-private:
-    OrgFreedesktopScreenSaverInterface *m_interface;
-    QDBusServiceWatcher *m_serviceWatcher;
-    bool m_locked;
 };
 
 inline

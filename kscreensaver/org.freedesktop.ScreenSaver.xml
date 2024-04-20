@@ -4,8 +4,6 @@
     <signal name="ActiveChanged">
       <arg type="b"/>
     </signal>
-    <method name="Lock">
-    </method>
     <method name="SimulateUserActivity">
     </method>
     <method name="GetActive">
