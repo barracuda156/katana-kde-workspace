@@ -89,6 +89,8 @@ DigitalClockApplet::DigitalClockApplet(QObject *parent, const QVariantList &args
     connect(m_timer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
 
     m_clockstring = kClockString();
+
+    adjustSize();
 }
 
 void DigitalClockApplet::init()
@@ -97,6 +99,11 @@ void DigitalClockApplet::init()
 
     m_timer->start();
     Plasma::ToolTipManager::self()->registerWidget(this);
+
+    connect(
+        KGlobalSettings::self(), SIGNAL(localeChanged()),
+        this, SLOT(slotLocaleChanged())
+    );
 }
 
 void DigitalClockApplet::paintInterface(QPainter *painter,
@@ -151,7 +158,17 @@ void DigitalClockApplet::constraintsEvent(Plasma::Constraints constraints)
                 break;
             }
         }
+        emit sizeHintChanged(Qt::MinimumSize);
+        emit sizeHintChanged(Qt::PreferredSize);
     }
+}
+
+void DigitalClockApplet::slotLocaleChanged()
+{
+    // the time format depends on the locale, update the sizes and poll timer
+    m_clockstring = kClockString();
+    constraintsEvent(Plasma::SizeConstraint);
+    m_timer->setInterval(kClockInterval(KGlobal::locale()->timeFormat(s_timeformat)));
 }
 
 void DigitalClockApplet::changeEvent(QEvent *event)
@@ -161,8 +178,7 @@ void DigitalClockApplet::changeEvent(QEvent *event)
         // the time format depends on the locale, update the sizes and poll timer
         case QEvent::LocaleChange:
         case QEvent::LanguageChange: {
-            constraintsEvent(Plasma::SizeConstraint);
-            m_timer->setInterval(kClockInterval(KGlobal::locale()->timeFormat(s_timeformat)));
+            slotLocaleChanged();
             break;
         }
         default: {

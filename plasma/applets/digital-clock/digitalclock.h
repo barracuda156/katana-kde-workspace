@@ -48,6 +48,7 @@ protected:
 private Q_SLOTS:
     void slotTimeout();
     void slotConfigAccepted();
+    void slotLocaleChanged();
 
 private:
     Plasma::Svg* m_svg;
