@@ -25,6 +25,7 @@
 #include <QGraphicsLinearLayout>
 #include <QGraphicsGridLayout>
 #include <QHostInfo>
+#include <QFile>
 #include <QDBusInterface>
 #include <QGraphicsSceneMouseEvent>
 #include <KUser>
@@ -1210,6 +1211,7 @@ public:
 private Q_SLOTS:
     void slotUpdateLayout();
     void slotActivated();
+    void slotTriggered();
 
 private:
     QMutex m_mutex;
@@ -1257,7 +1259,16 @@ void LauncherRecent::slotUpdateLayout()
             iconsize, kRecentIcon(recentfile.readIcon()), recentfile.readName(), recentfile.readComment()
         );
         launcherwidget->setData(recentfile.readUrl());
-        launcherwidget->disableAnimations();
+        QAction* recenteaction = new QAction(launcherwidget);
+        recenteaction->setIcon(KIcon("edit-delete"));
+        recenteaction->setToolTip(i18n("Remove"));
+        recenteaction->setProperty("_k_id", recent);
+        connect(
+            recenteaction, SIGNAL(triggered()),
+            this, SLOT(slotTriggered()),
+            Qt::QueuedConnection
+        );
+        launcherwidget->addAction(recenteaction);
         m_launcherwidgets.append(launcherwidget);
         m_layout->addItem(launcherwidget);
         connect(
@@ -1271,6 +1282,15 @@ void LauncherRecent::slotActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
     kRunUrl(launcherwidget->data(), m_launcherapplet);
+}
+
+void LauncherRecent::slotTriggered()
+{
+    QAction* recenteaction = qobject_cast<QAction*>(sender());
+    const QString recenteid = recenteaction->property("_k_id").toString();
+    if (!QFile::remove(recenteid)) {
+        kWarning() << "invalid recent" << recenteid;
+    }
 }
 
 
