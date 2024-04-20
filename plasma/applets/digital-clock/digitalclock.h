@@ -51,6 +51,8 @@ private Q_SLOTS:
     void slotLocaleChanged();
 
 private:
+    void updateToolTip();
+
     Plasma::Svg* m_svg;
     QTimer* m_timer;
     KCModuleProxy* m_kcmclockproxy;

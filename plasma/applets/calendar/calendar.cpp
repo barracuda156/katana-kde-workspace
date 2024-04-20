@@ -38,6 +38,11 @@ static int kGetDay()
     return QDate::currentDate().day();
 }
 
+static int kGetUtcDay()
+{
+    return QDateTime::currentDateTimeUtc().date().day();
+}
+
 class CalendarWidget : public QGraphicsWidget
 {
     Q_OBJECT
@@ -81,6 +86,7 @@ CalendarApplet::CalendarApplet(QObject *parent, const QVariantList &args)
     m_svg(nullptr),
     m_timer(nullptr),
     m_day(-1),
+    m_utcday(-1),
     m_kcmclockproxy(nullptr)
 {
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
@@ -105,6 +111,11 @@ void CalendarApplet::init()
     Plasma::ToolTipManager::self()->registerWidget(this);
     slotTimeout();
     m_timer->start();
+
+    connect(
+        KGlobalSettings::self(), SIGNAL(localeChanged()),
+        this, SLOT(slotLocaleChanged())
+    );
 }
 
 QGraphicsWidget *CalendarApplet::graphicsWidget()
@@ -128,7 +139,7 @@ void CalendarApplet::createConfigurationInterface(KConfigDialog *parent)
 void CalendarApplet::constraintsEvent(Plasma::Constraints constraints)
 {
     if (constraints & Plasma::FormFactorConstraint || constraints & Plasma::SizeConstraint) {
-        paintIcon();
+        updateIcon();
     }
 }
 
@@ -139,36 +150,7 @@ void CalendarApplet::popupEvent(bool show)
     }
 }
 
-void CalendarApplet::slotTimeout()
-{
-    const int today = kGetDay();
-    if (today != m_day) {
-        m_day = today;
-        kDebug() << "updating calendar icon" << m_day << today;
-        paintIcon();
-    }
-    // affected by locale changes so always updated
-    Plasma::ToolTipContent plasmatooltip;
-    plasmatooltip.setMainText(i18n("Current Date"));
-    const QString calendarstring = KGlobal::locale()->formatDate(QDate::currentDate());
-    QString calendartooltip;
-    if (KSystemTimeZones::local() != KTimeZone::utc()) {
-        calendartooltip.append(i18n("UTC: %1<br/>", KGlobal::locale()->formatDate(QDateTime::currentDateTimeUtc().date())));
-        calendartooltip.append(i18n("Local: %1", calendarstring));
-    } else {
-        calendartooltip.append(QString::fromLatin1("<center>%1</center>").arg(calendarstring));
-    }
-    plasmatooltip.setSubText(calendartooltip);
-    plasmatooltip.setImage(KIcon("office-calendar"));
-    Plasma::ToolTipManager::self()->setContent(this, plasmatooltip);
-}
-
-void CalendarApplet::slotConfigAccepted()
-{
-    m_kcmclockproxy->save();
-}
-
-void CalendarApplet::paintIcon()
+void CalendarApplet::updateIcon()
 {
     if (m_svg->isValid()) {
         QFont font = KGlobalSettings::smallestReadableFont();
@@ -186,6 +168,52 @@ void CalendarApplet::paintIcon()
     } else {
         setPopupIcon(KIcon(s_defaultpopupicon));
     }
+}
+
+void CalendarApplet::updateToolTip()
+{
+    Plasma::ToolTipContent plasmatooltip;
+    plasmatooltip.setMainText(i18n("Current Date"));
+    const QString calendarstring = KGlobal::locale()->formatDate(QDate::currentDate());
+    QString calendartooltip;
+    if (KSystemTimeZones::local() != KTimeZone::utc()) {
+        calendartooltip.append(i18n("UTC: %1<br/>", KGlobal::locale()->formatDate(QDateTime::currentDateTimeUtc().date())));
+        calendartooltip.append(i18n("Local: %1", calendarstring));
+    } else {
+        calendartooltip.append(QString::fromLatin1("<center>%1</center>").arg(calendarstring));
+    }
+    plasmatooltip.setSubText(calendartooltip);
+    plasmatooltip.setImage(KIcon("office-calendar"));
+    Plasma::ToolTipManager::self()->setContent(this, plasmatooltip);
+}
+
+void CalendarApplet::slotTimeout()
+{
+    bool updatetooltip = false;
+    const int today = kGetDay();
+    if (today != m_day) {
+        m_day = today;
+        updateIcon();
+        updatetooltip = true;
+    }
+    const int utctoday = kGetUtcDay();
+    if (utctoday != m_utcday) {
+        m_utcday = utctoday;
+        updatetooltip = true;
+    }
+    if (updatetooltip) {
+        updateToolTip();
+    }
+}
+
+void CalendarApplet::slotConfigAccepted()
+{
+    m_kcmclockproxy->save();
+}
+
+void CalendarApplet::slotLocaleChanged()
+{
+    updateToolTip();
 }
 
 #include "moc_calendar.cpp"

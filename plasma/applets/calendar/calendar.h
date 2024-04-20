@@ -45,14 +45,17 @@ protected:
 private slots:
     void slotTimeout();
     void slotConfigAccepted();
+    void slotLocaleChanged();
 
 private:
-    void paintIcon();
+    void updateIcon();
+    void updateToolTip();
 
     CalendarWidget* m_calendarwidget;
     Plasma::Svg* m_svg;
     QTimer* m_timer;
     int m_day;
+    int m_utcday;
     KCModuleProxy* m_kcmclockproxy;
 };
 

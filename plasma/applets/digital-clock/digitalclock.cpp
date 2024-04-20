@@ -163,14 +163,6 @@ void DigitalClockApplet::constraintsEvent(Plasma::Constraints constraints)
     }
 }
 
-void DigitalClockApplet::slotLocaleChanged()
-{
-    // the time format depends on the locale, update the sizes and poll timer
-    m_clockstring = kClockString();
-    constraintsEvent(Plasma::SizeConstraint);
-    m_timer->setInterval(kClockInterval(KGlobal::locale()->timeFormat(s_timeformat)));
-}
-
 void DigitalClockApplet::changeEvent(QEvent *event)
 {
     Plasma::Applet::changeEvent(event);
@@ -187,14 +179,8 @@ void DigitalClockApplet::changeEvent(QEvent *event)
     }
 }
 
-void DigitalClockApplet::slotTimeout()
+void DigitalClockApplet::updateToolTip()
 {
-    const QString clockstring = kClockString();
-    if (clockstring != m_clockstring) {
-        m_clockstring = clockstring;
-        update();
-    }
-    // affected by locale changes so always updated
     Plasma::ToolTipContent plasmatooltip;
     plasmatooltip.setMainText(i18n("Current Time"));
     QString clocktooltip;
@@ -209,10 +195,29 @@ void DigitalClockApplet::slotTimeout()
     Plasma::ToolTipManager::self()->setContent(this, plasmatooltip);
 }
 
+void DigitalClockApplet::slotTimeout()
+{
+    const QString clockstring = kClockString();
+    if (clockstring != m_clockstring) {
+        m_clockstring = clockstring;
+        update();
+        updateToolTip();
+    }
+}
+
 void DigitalClockApplet::slotConfigAccepted()
 {
     m_kcmclockproxy->save();
     m_kcmlanguageproxy->save();
+}
+
+void DigitalClockApplet::slotLocaleChanged()
+{
+    // the time format depends on the locale, update the sizes and poll timer
+    m_clockstring = kClockString();
+    constraintsEvent(Plasma::SizeConstraint);
+    m_timer->setInterval(kClockInterval(KGlobal::locale()->timeFormat(s_timeformat)));
+    updateToolTip();
 }
 
 #include "moc_digitalclock.cpp"
