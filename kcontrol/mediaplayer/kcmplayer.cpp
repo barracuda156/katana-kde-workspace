@@ -183,7 +183,7 @@ KCMPlayer::KCMPlayer(QWidget *parent, const QVariantList &arguments)
         I18N_NOOP("kcmplayer"), 0,
         ki18n("KDE Media Player Module"),
         "2.0", KLocalizedString(), KAboutData::License_GPL,
-        ki18n("Copyright 2016, Ivailo Monev <email>xakepa10@gmail.com</email>")
+        ki18n("Copyright 2016, Ivailo Monev xakepa10@gmail.com")
     );
     about->addAuthor(ki18n("Ivailo Monev"), KLocalizedString(), "xakepa10@gmail.com");
     setAboutData(about);

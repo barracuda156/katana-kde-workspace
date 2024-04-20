@@ -55,8 +55,8 @@ KCMDebug::KCMDebug( QWidget* parent, const QVariantList& )
         new KAboutData( I18N_NOOP("KCMDebug"), 0,
                         ki18n("KDE Debug Module"),
                         0, KLocalizedString(), KAboutData::License_GPL,
-                        ki18n("Copyright 1999-2009, David Faure <email>faure@kde.org</email>\n"
-                            "Copyright 2014, Ivailo Monev <email>xakepa10@gmail.com</email>"
+                        ki18n("Copyright 1999-2009, David Faure faure@kde.org\n"
+                            "Copyright 2014, Ivailo Monev xakepa10@gmail.com"
                         ));
 
     about->addAuthor(ki18n("David Faure"), KLocalizedString(), "faure@kde.org");

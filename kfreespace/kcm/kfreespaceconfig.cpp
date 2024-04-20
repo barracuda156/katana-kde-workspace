@@ -176,7 +176,7 @@ KCMFreeSpace::KCMFreeSpace(QWidget *parent, const QVariantList &args)
         I18N_NOOP("kcmfreespaceconfig"), 0,
         ki18n("KDE Free Space Notifier Module"),
         0, KLocalizedString(), KAboutData::License_GPL,
-        ki18n("Copyright 2023, Ivailo Monev <email>xakepa10@gmail.com</email>")
+        ki18n("Copyright 2023, Ivailo Monev xakepa10@gmail.com")
     );
     about->addAuthor(ki18n("Ivailo Monev"), KLocalizedString(), "xakepa10@gmail.com");
     setAboutData(about);

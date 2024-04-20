@@ -179,7 +179,7 @@ KCMKeyboard::KCMKeyboard(QWidget *parent, const QVariantList &args)
         I18N_NOOP("kcmkeyboard"), 0,
         ki18n("KDE Keyboard Control Module"),
         0, KLocalizedString(), KAboutData::License_GPL,
-        ki18n("Copyright 2023, Ivailo Monev <email>xakepa10@gmail.com</email>")
+        ki18n("Copyright 2023, Ivailo Monev xakepa10@gmail.com")
     );
     about->addAuthor(ki18n("Ivailo Monev"), KLocalizedString(), "xakepa10@gmail.com");
     setAboutData(about);

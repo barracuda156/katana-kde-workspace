@@ -45,7 +45,7 @@ KCMMetaInfo::KCMMetaInfo(QWidget* parent, const QVariantList& args)
         I18N_NOOP("KCMMetaInfo"), 0,
         ki18n("KDE Meta Information Module"),
         0, KLocalizedString(), KAboutData::License_GPL,
-        ki18n("Copyright 2022, Ivailo Monev <email>xakepa10@gmail.com</email>")
+        ki18n("Copyright 2022, Ivailo Monev xakepa10@gmail.com")
     );
     about->addAuthor(ki18n("Ivailo Monev"), KLocalizedString(), "xakepa10@gmail.com");
     setAboutData(about);

@@ -104,7 +104,7 @@ KCMClock::KCMClock(QWidget *parent, const QVariantList &args)
         I18N_NOOP("kcmclock"), 0,
         ki18n("KDE Date and Time Module"),
         0, KLocalizedString(), KAboutData::License_GPL,
-        ki18n("Copyright 2024, Ivailo Monev <email>xakepa10@gmail.com</email>")
+        ki18n("Copyright 2024, Ivailo Monev xakepa10@gmail.com")
     );
     about->addAuthor(ki18n("Ivailo Monev"), KLocalizedString(), "xakepa10@gmail.com");
     setAboutData(about);
