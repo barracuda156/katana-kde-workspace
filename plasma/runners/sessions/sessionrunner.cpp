@@ -24,8 +24,6 @@
 
 #include "kworkspace/kworkspace.h"
 
-#include "screensaver_interface.h"
-
 SessionRunner::SessionRunner(QObject *parent, const QVariantList &args)
     : Plasma::AbstractRunner(parent, args)
 {
