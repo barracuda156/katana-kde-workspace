@@ -181,8 +181,13 @@ void ThemeDelegate::paint(QPainter *painter,
     // draw image
     Plasma::FrameSvg *svg = static_cast<Plasma::FrameSvg *>(
             index.model()->data(index, ThemeModel::SvgRole).value<void *>());
-    svg->resizeFrame(QSize(option.rect.width() - (2 * MARGIN), 100 - (2 * MARGIN)));
-    svg->paintFrame(painter, QPoint(option.rect.left() + MARGIN, option.rect.top() + MARGIN));
+    qreal left = 0.0;
+    qreal top = 0.0;
+    qreal right = 0.0;
+    qreal bottom = 0.0;
+    svg->getMargins(left, top, right, bottom);
+    svg->resizeFrame(QSize(option.rect.width() - (2 * MARGIN) + (2 * left), 100 - (2 * MARGIN) + (2 * top)));
+    svg->paintFrame(painter, QPoint(option.rect.left() - left + MARGIN, option.rect.top() - top + MARGIN));
 
     // draw text
     painter->save();
