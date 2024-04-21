@@ -1681,11 +1681,12 @@ void LauncherAppletWidget::slotUserTimeout()
     const QString hostname = QHostInfo::localHostName();
     QString usericon = m_user->faceIconPath();
     if (usericon.isEmpty()) {
-        usericon = s_usericon;
+        // from theme
+        m_iconwidget->setIcon(KIcon(s_usericon));
+    } else {
+        // full path with modification time detection
+        m_iconwidget->setIcon(QIcon(usericon));
     }
-    // NOTE: the only way to force reload of the icon is to create an icon from pixmap created from
-    // image because QPixmap caches internally (the path may be the same but the data not)
-    m_iconwidget->setIcon(QIcon(QPixmap::fromImage(QImage(usericon))));
 
     QString usertext;
     QString fullusername = m_user->property(KUser::FullName);
