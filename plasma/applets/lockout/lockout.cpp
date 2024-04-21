@@ -426,6 +426,14 @@ void LockoutApplet::updateSizes()
             break;
         }
     }
+    const QSizeF contentsrect = contentsRect().size();
+    const qreal iconsizereal = qMin(contentsrect.width(), contentsrect.height());
+    const QSizeF iconsizef = QSizeF(iconsizereal, iconsizereal);
+    m_switchwidget->setPreferredSize(iconsizef);
+    m_shutdownwidget->setPreferredSize(iconsizef);
+    m_toramwidget->setPreferredSize(iconsizef);
+    m_todiskwidget->setPreferredSize(iconsizef);
+    m_hybridwidget->setPreferredSize(iconsizef);
     emit sizeHintChanged(Qt::PreferredSize);
 }
 

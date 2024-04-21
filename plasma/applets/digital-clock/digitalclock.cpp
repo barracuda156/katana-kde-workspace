@@ -152,14 +152,14 @@ void DigitalClockApplet::constraintsEvent(Plasma::Constraints constraints)
     if (constraints && Plasma::SizeConstraint || constraints & Plasma::FormFactorConstraint) {
         switch (formFactor()) {
             // panel
-            case Plasma::FormFactor::Vertical: {
-                setMinimumSize(0, 0);
-                setPreferredSize(kClockSize(contentsRect(), m_clockstring, true));
-                break;
-            }
             case Plasma::FormFactor::Horizontal: {
                 setMinimumSize(0, 0);
                 setPreferredSize(kClockSize(contentsRect(), m_clockstring, false));
+                break;
+            }
+            case Plasma::FormFactor::Vertical: {
+                setMinimumSize(0, 0);
+                setPreferredSize(kClockSize(contentsRect(), m_clockstring, true));
                 break;
             }
             // desktop-like
