@@ -312,7 +312,6 @@ add_subdirectory(kmail)
 add_subdirectory(kfreespace)
 # Background processes
 add_subdirectory(kdontchangethehostname)
-add_subdirectory(kglobalaccel)
 # Command-line tools (e.g. for shell scripts)
 add_subdirectory(kdeeject)
 add_subdirectory(kfile)

@@ -751,13 +751,13 @@ void ShortcutDialog::keySequenceChanged(const QKeySequence &seq)
     // Check if the key sequence is used currently
     QString sc = seq.toString();
     // NOTICE - seq.toString() & the entries in "conflicting" randomly get invalidated after the next call (if no sc has been set & conflicting isn't empty?!)
-    QList<KGlobalShortcutInfo> conflicting = KGlobalAccel::getGlobalShortcutsByKey(seq);
+    QList<KGlobalShortcutInfo> conflicting = KGlobalAccel::self()->getGlobalShortcutsByKey(seq);
     if (!conflicting.isEmpty()) {
         const KGlobalShortcutInfo &conflict = conflicting.at(0);
         warning->setText(i18nc("'%1' is a keyboard shortcut like 'ctrl+w'",
         "<b>%1</b> is already in use", sc));
         warning->setToolTip(i18nc("keyboard shortcut '%1' is used by action '%2' in application '%3'",
-        "<b>%1</b> is used by %2 in %3", sc, conflict.friendlyName(), conflict.componentFriendlyName()));
+        "<b>%1</b> is used by %2 in %3", sc, conflict.friendlyName, conflict.componentFriendlyName));
         warning->show();
         widget->setKeySequence(shortcut());
     } else if (seq != _shortcut) {
@@ -816,8 +816,6 @@ void Workspace::initShortcuts()
     // a separate KActionCollection is needed for the shortcut for disabling global shortcuts,
     // otherwise it would also disable itself
     disable_shortcuts_keys = new KActionCollection(this);
-    // TODO: PORT ME (KGlobalAccel related)
-    // FIXME KAccel port... needed?
     //disable_shortcuts_keys->disableBlocking( true );
 #define IN_KWIN
 #include "kwinbindings.cpp"
@@ -828,10 +826,6 @@ void Workspace::initShortcuts()
 void Workspace::setupWindowShortcut(Client* c)
 {
     assert(client_keys_dialog == NULL);
-    // TODO: PORT ME (KGlobalAccel related)
-    //keys->setEnabled( false );
-    //disable_shortcuts_keys->setEnabled( false );
-    //client_keys->setEnabled( false );
     client_keys_dialog = new ShortcutDialog(c->shortcut().primary());
     client_keys_client = c;
     connect(client_keys_dialog, SIGNAL(dialogDone(bool)), SLOT(setupWindowShortcutDone(bool)));
@@ -1833,7 +1827,7 @@ bool Workspace::shortcutAvailable(const KShortcut& cut, Client* ignore) const
     if (ignore && cut == ignore->shortcut())
         return true;
     foreach (const QKeySequence &seq, cut.toList()) {
-        if (!KGlobalAccel::getGlobalShortcutsByKey(seq).isEmpty()) {
+        if (!KGlobalAccel::self()->getGlobalShortcutsByKey(seq).isEmpty()) {
             return false;
         }
     }
