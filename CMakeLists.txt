@@ -44,8 +44,8 @@ set_package_properties(X11 PROPERTIES
     TYPE REQUIRED
 )
 
+add_feature_info("XKBfile" X11_Xkbfile_FOUND "The keyboard file manipulation library may be used by keyboard KCM")
 add_feature_info("libXSync" X11_XSync_FOUND "The X11 synchronization may be used by KWin")
-add_feature_info("libXinput" X11_Xinput_FOUND "The X11 XINPUT extension library may be used by touchpad handler")
 add_feature_info("libXRes" X11_XRes_FOUND "The X Resource library may be used by ksysguard")
 add_feature_info("libXext" X11_dpms_FOUND "The X extensions library may be used by kscreensaver")
 
