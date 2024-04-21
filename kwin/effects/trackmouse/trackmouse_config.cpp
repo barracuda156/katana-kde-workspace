@@ -108,7 +108,7 @@ void TrackMouseEffectConfig::defaults()
 void TrackMouseEffectConfig::shortcutChanged(const QKeySequence &seq)
 {
     if (KAction *a = qobject_cast<KAction*>(m_actionCollection->action("TrackMouse")))
-        a->setGlobalShortcut(KShortcut(seq), KAction::ActiveShortcut, KAction::NoAutoloading);
+        a->setGlobalShortcut(KShortcut(seq), KAction::ActiveShortcut);
 //     m_actionCollection->writeSettings();
     emit changed(true);
 }

@@ -869,10 +869,11 @@ void Workspace::clientShortcutUpdated(Client* c)
         }
 
         KAction *kaction = qobject_cast<KAction*>(action);
-        // no autoloading, since it's configured explicitly here and is not meant to be reused
+        // it's configured explicitly here and is not meant to be reused
         // (the key is the window id anyway, which is kind of random)
         kaction->setGlobalShortcut(
-            c->shortcut(), KAction::ActiveShortcut, KAction::NoAutoloading);
+            c->shortcut(), KAction::ActiveShortcut
+        );
         kaction->setEnabled(true);
     } else {
         KAction *kaction = qobject_cast<KAction*>(action);

@@ -270,7 +270,7 @@ void KWinCompositingConfig::alignGuiToCompositingType(int compositingType)
 void KWinCompositingConfig::toggleEffectShortcutChanged(const QKeySequence &seq)
 {
     if (KAction *a = qobject_cast<KAction*>(m_actionCollection->action("Suspend Compositing")))
-        a->setGlobalShortcut(KShortcut(seq), KAction::ActiveShortcut, KAction::NoAutoloading);
+        a->setGlobalShortcut(KShortcut(seq), KAction::ActiveShortcut);
     m_actionCollection->writeSettings();
 }
 

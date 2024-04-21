@@ -403,8 +403,8 @@ void KWinDesktopConfig::slotChangeShortcuts(int number)
             // Remove any associated global shortcut. Set it to ""
             a->setGlobalShortcut(
                 KShortcut(),
-                KAction::ActiveShortcut,
-                KAction::NoAutoloading);
+                KAction::ActiveShortcut
+            );
             m_ui->messageLabel->hide();
             delete a;
         } else {
@@ -421,7 +421,7 @@ void KWinDesktopConfig::slotChangeShortcuts(int number)
             } else {
                 KShortcut shortcut(shortcutString);
                 if (!shortcut.primary().isEmpty() || KGlobalAccel::self()->isGlobalShortcutAvailable(shortcut.primary())) {
-                    action->setGlobalShortcut(shortcut, KAction::ActiveShortcut, KAction::NoAutoloading);
+                    action->setGlobalShortcut(shortcut, KAction::ActiveShortcut);
                     m_ui->messageLabel->setText(i18n("Assigned global Shortcut \"%1\" to Desktop %2", shortcutString, desktop));
                     m_ui->messageLabel->show();
                 } else {
