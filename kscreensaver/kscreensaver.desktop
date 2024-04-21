@@ -1,7 +1,7 @@
 [Desktop Entry]
-Icon=system-lock-screen
+Icon=preferences-desktop-screensaver
 Name=Screen Saver
-Comment=Locks the screen on user switch
+Comment=Manages the screen state
 Type=Service
 X-KDE-ServiceTypes=KDEDModule
 X-KDE-Library=kscreensaver
