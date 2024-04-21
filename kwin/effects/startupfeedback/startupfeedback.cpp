@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <KDebug>
 #include <KGlobal>
 #include <KStartupInfo>
-#include <KSystemEventFilter>
+#include <KApplication>
 
 namespace KWin
 {
@@ -35,12 +35,12 @@ StartupEventNotifier::StartupEventNotifier(xcb_window_t window)
     : QWidget(nullptr),
     m_window(window)
 {
-    KSystemEventFilter::installEventFilter(this);
+    kapp->installX11EventFilter(this);
 }
 
 StartupEventNotifier::~StartupEventNotifier()
 {
-    KSystemEventFilter::removeEventFilter(this);
+    kapp->removeX11EventFilter(this);
 }
 
 bool StartupEventNotifier::x11Event(XEvent *xevent)
