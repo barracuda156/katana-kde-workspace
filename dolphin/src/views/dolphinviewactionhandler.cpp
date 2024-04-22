@@ -135,7 +135,7 @@ void DolphinViewActionHandler::createActions()
     // Well, it's the File menu in dolphinmainwindow and the Edit menu in dolphinpart... :)
     propertiesAction->setText( i18nc("@action:inmenu File", "Properties") );
     propertiesAction->setIcon(KIcon("document-properties"));
-    propertiesAction->setShortcuts(QList<QKeySequence>() << Qt::ALT + Qt::Key_Return << Qt::ALT + Qt::Key_Enter);
+    propertiesAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Return, Qt::ALT + Qt::Key_Enter));
     connect(propertiesAction, SIGNAL(triggered()), SLOT(slotProperties()));
 
     // View menu
@@ -205,7 +205,7 @@ void DolphinViewActionHandler::createActions()
 
     KToggleAction* showHiddenFiles = m_actionCollection->add<KToggleAction>("show_hidden_files");
     showHiddenFiles->setText(i18nc("@action:inmenu View", "Show Hidden Files"));
-    showHiddenFiles->setShortcuts(QList<QKeySequence>() << Qt::ALT + Qt::Key_Period << Qt::Key_F8);
+    showHiddenFiles->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Period, Qt::Key_F8));
     connect(showHiddenFiles, SIGNAL(triggered(bool)), this, SLOT(toggleShowHiddenFiles(bool)));
 
     KAction* adjustViewProps = m_actionCollection->addAction("view_properties");

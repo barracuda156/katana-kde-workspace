@@ -317,10 +317,7 @@ void KateMainWindow::setupActions()
   a = actionCollection()->addAction( "view_quick_open" );
   a->setIcon( KIcon("fork") );
   a->setText( i18n("&Quick Open") );
-  QList<QKeySequence> scuts;
-  scuts << QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_O)
-        << QKeySequence(Qt::CTRL + Qt::Key_Tab);
-  a->setShortcuts(scuts);
+  a->setShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_O, Qt::CTRL + Qt::Key_Tab));
   connect( a, SIGNAL(triggered()), this, SLOT(slotQuickOpen()) );
   a->setWhatsThis(i18n("Open a form to quick open documents."));
 

@@ -450,7 +450,7 @@ void KateView::setupActions()
   a = ac->addAction( "file_reload" );
   a->setIcon(KIcon("view-refresh"));
   a->setText(i18n("Reloa&d"));
-  a->setShortcuts(KStandardShortcut::reload());
+  a->setShortcut(KStandardShortcut::reload());
   a->setWhatsThis(i18n("Reload the current document from disk."));
   connect(a, SIGNAL(triggered(bool)), SLOT(reloadFile()));
 
@@ -695,7 +695,7 @@ void KateView::setupEditActions()
 
   KAction* a = ac->addAction("word_left");
   a->setText(i18n("Move Word Left"));
-  a->setShortcuts(KStandardShortcut::backwardWord());
+  a->setShortcut(KStandardShortcut::backwardWord());
   connect(a, SIGNAL(triggered(bool)),  SLOT(wordLeft()));
   m_editActions << a;
 
@@ -713,7 +713,7 @@ void KateView::setupEditActions()
 
   a = ac->addAction("word_right");
   a->setText(i18n("Move Word Right"));
-  a->setShortcuts(KStandardShortcut::forwardWord());
+  a->setShortcut(KStandardShortcut::forwardWord());
   connect(a, SIGNAL(triggered(bool)), SLOT(wordRight()));
   m_editActions << a;
 
@@ -731,13 +731,13 @@ void KateView::setupEditActions()
 
   a = ac->addAction("beginning_of_line");
   a->setText(i18n("Move to Beginning of Line"));
-  a->setShortcuts(KStandardShortcut::beginningOfLine());
+  a->setShortcut(KStandardShortcut::beginningOfLine());
   connect(a, SIGNAL(triggered(bool)), SLOT(home()));
   m_editActions << a;
 
   a = ac->addAction("beginning_of_document");
   a->setText(i18n("Move to Beginning of Document"));
-  a->setShortcuts(KStandardShortcut::begin());
+  a->setShortcut(KStandardShortcut::begin());
   connect(a, SIGNAL(triggered(bool)), SLOT(top()));
   m_editActions << a;
 
@@ -756,13 +756,13 @@ void KateView::setupEditActions()
 
   a = ac->addAction("end_of_line");
   a->setText(i18n("Move to End of Line"));
-  a->setShortcuts(KStandardShortcut::endOfLine());
+  a->setShortcut(KStandardShortcut::endOfLine());
   connect(a, SIGNAL(triggered(bool)), SLOT(end()));
   m_editActions << a;
 
   a = ac->addAction("end_of_document");
   a->setText(i18n("Move to End of Document"));
-  a->setShortcuts(KStandardShortcut::end());
+  a->setShortcut(KStandardShortcut::end());
   connect(a, SIGNAL(triggered(bool)), SLOT(bottom()));
   m_editActions << a;
 
@@ -835,7 +835,7 @@ void KateView::setupEditActions()
 
   a = ac->addAction("scroll_page_up");
   a->setText(i18n("Scroll Page Up"));
-  a->setShortcuts(KStandardShortcut::prior());
+  a->setShortcut(KStandardShortcut::prior());
   connect(a, SIGNAL(triggered(bool)), SLOT(pageUp()));
   m_editActions << a;
 
@@ -860,7 +860,7 @@ void KateView::setupEditActions()
 
   a = ac->addAction("scroll_page_down");
   a->setText(i18n("Scroll Page Down"));
-  a->setShortcuts(KStandardShortcut::next());
+  a->setShortcut(KStandardShortcut::next());
   connect(a, SIGNAL(triggered(bool)), SLOT(pageDown()));
   m_editActions << a;
 
@@ -912,13 +912,13 @@ void KateView::setupEditActions()
 
     a = ac->addAction("delete_word_left");
     a->setText(i18n("Delete Word Left"));
-    a->setShortcuts(KStandardShortcut::deleteWordBack());
+    a->setShortcut(KStandardShortcut::deleteWordBack());
     connect(a, SIGNAL(triggered(bool)), SLOT(deleteWordLeft()));
     m_editActions << a;
 
     a = ac->addAction("delete_word_right");
     a->setText(i18n("Delete Word Right"));
-    a->setShortcuts(KStandardShortcut::deleteWordForward());
+    a->setShortcut(KStandardShortcut::deleteWordForward());
     connect(a, SIGNAL(triggered(bool)), SLOT(deleteWordRight()));
     m_editActions << a;
 
@@ -930,10 +930,7 @@ void KateView::setupEditActions()
 
     a = ac->addAction("backspace");
     a->setText(i18n("Backspace"));
-    QList<QKeySequence> scuts;
-    scuts << QKeySequence(Qt::Key_Backspace)
-          << QKeySequence(Qt::SHIFT + Qt::Key_Backspace);
-    a->setShortcuts(scuts);
+    a->setShortcut(QKeySequence(Qt::Key_Backspace, Qt::SHIFT + Qt::Key_Backspace));
     connect(a, SIGNAL(triggered(bool)), SLOT(backspace()));
     m_editActions << a;
 
@@ -945,10 +942,7 @@ void KateView::setupEditActions()
     a = ac->addAction("smart_newline");
     a->setText(i18n("Insert Smart Newline"));
     a->setWhatsThis(i18n("Insert newline including leading characters of the current line which are not letters or numbers."));
-    scuts.clear();
-    scuts << QKeySequence(Qt::SHIFT + Qt::Key_Return)
-          << QKeySequence(Qt::SHIFT + Qt::Key_Enter);
-    a->setShortcuts(scuts);
+    a->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Return, Qt::SHIFT + Qt::Key_Enter));
     connect(a, SIGNAL(triggered(bool)), SLOT(smartNewline()));
     m_editActions << a;
 

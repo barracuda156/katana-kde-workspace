@@ -80,7 +80,7 @@ void KMenuEdit::setupActions()
     action = actionCollection()->addAction(NEW_ITEM_ACTION_NAME);
     action->setIcon(KIcon("document-new")) ;
     action->setText(i18n("New &Item..."));
-    action->setShortcuts(KStandardShortcut::openNew());
+    action->setShortcut(KStandardShortcut::openNew());
     action = actionCollection()->addAction(NEW_SEPARATOR_ACTION_NAME);
     action->setIcon(KIcon("menu_new_sep"));
     action->setText(i18n("New S&eparator"));

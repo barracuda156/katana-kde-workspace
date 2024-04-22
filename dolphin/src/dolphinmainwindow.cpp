@@ -1374,27 +1374,29 @@ void DolphinMainWindow::setupActions()
     KStandardAction::preferences(this, SLOT(editSettings()), actionCollection());
 
     // not in menu actions
-    QList<QKeySequence> nextTabKeys;
-    nextTabKeys.append(KStandardShortcut::tabNext().primary());
-    nextTabKeys.append(QKeySequence(Qt::CTRL | Qt::Key_Tab));
+    const QKeySequence nextTabKeys = QKeySequence(
+        KStandardShortcut::tabNext().primary(),
+        Qt::CTRL | Qt::Key_Tab
+    );
 
-    QList<QKeySequence> prevTabKeys;
-    prevTabKeys.append(KStandardShortcut::tabPrev().primary());
-    prevTabKeys.append(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Tab));
+    const QKeySequence prevTabKeys = QKeySequence(
+        KStandardShortcut::tabPrev().primary(),
+        Qt::CTRL | Qt::SHIFT | Qt::Key_Tab
+    );
 
     KAction* activateNextTab = actionCollection()->addAction("activate_next_tab");
     activateNextTab->setIconText(i18nc("@action:inmenu", "Next Tab"));
     activateNextTab->setText(i18nc("@action:inmenu", "Activate Next Tab"));
     activateNextTab->setEnabled(false);
     connect(activateNextTab, SIGNAL(triggered()), SLOT(activateNextTab()));
-    activateNextTab->setShortcuts(QApplication::isRightToLeft() ? prevTabKeys : nextTabKeys);
+    activateNextTab->setShortcut(QApplication::isRightToLeft() ? prevTabKeys : nextTabKeys);
 
     KAction* activatePrevTab = actionCollection()->addAction("activate_prev_tab");
     activatePrevTab->setIconText(i18nc("@action:inmenu", "Previous Tab"));
     activatePrevTab->setText(i18nc("@action:inmenu", "Activate Previous Tab"));
     activatePrevTab->setEnabled(false);
     connect(activatePrevTab, SIGNAL(triggered()), SLOT(activatePrevTab()));
-    activatePrevTab->setShortcuts(QApplication::isRightToLeft() ? nextTabKeys : prevTabKeys);
+    activatePrevTab->setShortcut(QApplication::isRightToLeft() ? nextTabKeys : prevTabKeys);
 
     // for context menu
     KAction* openInNewTab = actionCollection()->addAction("open_in_new_tab");
