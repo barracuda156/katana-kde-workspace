@@ -6,7 +6,8 @@ set(notes_SRCS
 
 kde4_add_plugin(plasma_applet_notes ${notes_SRCS})
 target_link_libraries(plasma_applet_notes
-    KDE4::plasma KDE4::kio
+    KDE4::plasma
+    KDE4::kio
 )
 
 install(

@@ -19,9 +19,12 @@
 
 #include "notes.h"
 
+#include <QFile>
+#include <QTextStream>
 #include <KTextEdit>
 #include <Plasma/Frame>
 #include <Plasma/TextEdit>
+#include <KDebug>
 
 static const QSizeF s_minimumsize = QSizeF(256, 256);
 
@@ -84,6 +87,19 @@ NotesApplet::NotesApplet(QObject *parent, const QVariantList &args)
     setPopupIcon("knotes");
 
     m_noteswidget = new NotesAppletWidget(this);
+
+    if (args.size() > 0) {
+        // drop, the first argument is a path to temporary file;
+        const QString filepath = args.at(0).toString();
+        QFile file(filepath);
+        if (!file.open(QIODevice::ReadOnly)) {
+            kWarning() << "could not open" << filepath << file.errorString();
+            return;
+        }
+        QTextStream textstream(&file);
+        Plasma::TextEdit* plasmatextedit = m_noteswidget->textEdit();
+        plasmatextedit->setText(textstream.readAll());
+    }
 }
 
 void NotesApplet::init()
@@ -103,10 +119,10 @@ void NotesApplet::configChanged()
     Plasma::TextEdit* plasmatextedit = m_noteswidget->textEdit();
     KTextEdit* nativetextedit = plasmatextedit->nativeWidget();
     KConfigGroup configgroup = config();
-    const QString text = configgroup.readEntry("text", QString());
     const bool checkSpellingEnabled = configgroup.readEntry("checkspelling", nativetextedit->checkSpellingEnabled());
     nativetextedit->setCheckSpellingEnabled(checkSpellingEnabled);
-    if (!text.isEmpty()) {
+    if (plasmatextedit->text().isEmpty()) {
+        const QString text = configgroup.readEntry("text", QString());
         plasmatextedit->setText(text);
     }
 }
