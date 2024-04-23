@@ -121,7 +121,7 @@ void NotesApplet::configChanged()
     KConfigGroup configgroup = config();
     const bool checkSpellingEnabled = configgroup.readEntry("checkspelling", nativetextedit->checkSpellingEnabled());
     nativetextedit->setCheckSpellingEnabled(checkSpellingEnabled);
-    if (plasmatextedit->text().isEmpty()) {
+    if (nativetextedit->toPlainText().isEmpty()) {
         const QString text = configgroup.readEntry("text", QString());
         plasmatextedit->setText(text);
     }
