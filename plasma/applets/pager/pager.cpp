@@ -247,6 +247,7 @@ void PagerSvg::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
         painter->rotate(90);
     }
     painter->translate(s_spacing, 0);
+    painter->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
     painter->drawText(
         kAdjustRect(brect, vertical),
         pagertext,
