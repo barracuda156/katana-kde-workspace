@@ -48,11 +48,11 @@ MouseMarkEffect::MouseMarkEffect()
     KActionCollection* actionCollection = new KActionCollection(this);
     KAction* a = static_cast< KAction* >(actionCollection->addAction("ClearMouseMarks"));
     a->setText(i18n("Clear All Mouse Marks"));
-    a->setGlobalShortcut(KShortcut(Qt::SHIFT + Qt::META + Qt::Key_F11));
+    a->setGlobalShortcut(QKeySequence(Qt::SHIFT + Qt::META + Qt::Key_F11));
     connect(a, SIGNAL(triggered(bool)), this, SLOT(clear()));
     a = static_cast< KAction* >(actionCollection->addAction("ClearLastMouseMark"));
     a->setText(i18n("Clear Last Mouse Mark"));
-    a->setGlobalShortcut(KShortcut(Qt::SHIFT + Qt::META + Qt::Key_F12));
+    a->setGlobalShortcut(QKeySequence(Qt::SHIFT + Qt::META + Qt::Key_F12));
     connect(a, SIGNAL(triggered(bool)), this, SLOT(clearLast()));
     connect(effects, SIGNAL(mouseChanged(QPoint,QPoint,Qt::MouseButtons,Qt::MouseButtons,Qt::KeyboardModifiers,Qt::KeyboardModifiers)),
             this, SLOT(slotMouseChanged(QPoint,QPoint,Qt::MouseButtons,Qt::MouseButtons,Qt::KeyboardModifiers,Qt::KeyboardModifiers)));

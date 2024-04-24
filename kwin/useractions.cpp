@@ -169,7 +169,7 @@ void UserActionsMenu::helperDialog(const QString& message, const QWeakPointer<Cl
         KAction* action = qobject_cast<KAction*>(keys->action("Window Operations Menu"));
         assert(action != NULL);
         QString shortcut = QString("%1 (%2)").arg(action->text())
-                           .arg(action->globalShortcut().primary().toString(QKeySequence::NativeText));
+                           .arg(action->globalShortcut().toString(QKeySequence::NativeText));
         args << "--msgbox" << i18n(
                  "You have selected to show a window without its border.\n"
                  "Without the border, you will not be able to enable the border "
@@ -181,7 +181,7 @@ void UserActionsMenu::helperDialog(const QString& message, const QWeakPointer<Cl
         KAction* action = qobject_cast<KAction*>(keys->action("Window Operations Menu"));
         assert(action != NULL);
         QString shortcut = QString("%1 (%2)").arg(action->text())
-                           .arg(action->globalShortcut().primary().toString(QKeySequence::NativeText));
+                           .arg(action->globalShortcut().toString(QKeySequence::NativeText));
         args << "--msgbox" << i18n(
                  "You have selected to show a window in fullscreen mode.\n"
                  "If the application itself does not have an option to turn the fullscreen "
@@ -244,20 +244,20 @@ void UserActionsMenu::init()
     KActionCollection *keys = Workspace::self()->actionCollection();
     KAction *kaction = qobject_cast<KAction*>(keys->action("Window Move"));
     if (kaction != 0)
-        m_moveOperation->setShortcut(kaction->globalShortcut().primary());
+        m_moveOperation->setShortcut(kaction->globalShortcut());
     m_moveOperation->setData(Options::UnrestrictedMoveOp);
 
     m_resizeOperation = advancedMenu->addAction(i18n("Re&size"));
     kaction = qobject_cast<KAction*>(keys->action("Window Resize"));
     if (kaction != 0)
-        m_resizeOperation->setShortcut(kaction->globalShortcut().primary());
+        m_resizeOperation->setShortcut(kaction->globalShortcut());
     m_resizeOperation->setData(Options::ResizeOp);
 
     m_keepAboveOperation = advancedMenu->addAction(i18n("Keep &Above Others"));
     m_keepAboveOperation->setIcon(KIcon("go-up"));
     kaction = qobject_cast<KAction*>(keys->action("Window Above Other Windows"));
     if (kaction != 0)
-        m_keepAboveOperation->setShortcut(kaction->globalShortcut().primary());
+        m_keepAboveOperation->setShortcut(kaction->globalShortcut());
     m_keepAboveOperation->setCheckable(true);
     m_keepAboveOperation->setData(Options::KeepAboveOp);
 
@@ -265,7 +265,7 @@ void UserActionsMenu::init()
     m_keepBelowOperation->setIcon(KIcon("go-down"));
     kaction = qobject_cast<KAction*>(keys->action("Window Below Other Windows"));
     if (kaction != 0)
-        m_keepBelowOperation->setShortcut(kaction->globalShortcut().primary());
+        m_keepBelowOperation->setShortcut(kaction->globalShortcut());
     m_keepBelowOperation->setCheckable(true);
     m_keepBelowOperation->setData(Options::KeepBelowOp);
 
@@ -273,21 +273,21 @@ void UserActionsMenu::init()
     m_fullScreenOperation->setIcon(KIcon("view-fullscreen"));
     kaction = qobject_cast<KAction*>(keys->action("Window Fullscreen"));
     if (kaction != 0)
-        m_fullScreenOperation->setShortcut(kaction->globalShortcut().primary());
+        m_fullScreenOperation->setShortcut(kaction->globalShortcut());
     m_fullScreenOperation->setCheckable(true);
     m_fullScreenOperation->setData(Options::FullScreenOp);
 
     m_shadeOperation = advancedMenu->addAction(i18n("Sh&ade"));
     kaction = qobject_cast<KAction*>(keys->action("Window Shade"));
     if (kaction != 0)
-        m_shadeOperation->setShortcut(kaction->globalShortcut().primary());
+        m_shadeOperation->setShortcut(kaction->globalShortcut());
     m_shadeOperation->setCheckable(true);
     m_shadeOperation->setData(Options::ShadeOp);
 
     m_noBorderOperation = advancedMenu->addAction(i18n("&No Border"));
     kaction = qobject_cast<KAction*>(keys->action("Window No Border"));
     if (kaction != 0)
-        m_noBorderOperation->setShortcut(kaction->globalShortcut().primary());
+        m_noBorderOperation->setShortcut(kaction->globalShortcut());
     m_noBorderOperation->setCheckable(true);
     m_noBorderOperation->setData(Options::NoBorderOp);
 
@@ -297,7 +297,7 @@ void UserActionsMenu::init()
     action->setIcon(KIcon("configure-shortcuts"));
     kaction = qobject_cast<KAction*>(keys->action("Setup Window Shortcut"));
     if (kaction != 0)
-        action->setShortcut(kaction->globalShortcut().primary());
+        action->setShortcut(kaction->globalShortcut());
     action->setData(Options::SetupWindowShortcutOp);
 
     action = advancedMenu->addAction(i18n("&Special Window Settings..."));
@@ -318,13 +318,13 @@ void UserActionsMenu::init()
     m_minimizeOperation = m_menu->addAction(i18n("Mi&nimize"));
     kaction = qobject_cast<KAction*>(keys->action("Window Minimize"));
     if (kaction != 0)
-        m_minimizeOperation->setShortcut(kaction->globalShortcut().primary());
+        m_minimizeOperation->setShortcut(kaction->globalShortcut());
     m_minimizeOperation->setData(Options::MinimizeOp);
 
     m_maximizeOperation = m_menu->addAction(i18n("Ma&ximize"));
     kaction = qobject_cast<KAction*>(keys->action("Window Maximize"));
     if (kaction != 0)
-        m_maximizeOperation->setShortcut(kaction->globalShortcut().primary());
+        m_maximizeOperation->setShortcut(kaction->globalShortcut());
     m_maximizeOperation->setCheckable(true);
     m_maximizeOperation->setData(Options::MaximizeOp);
 
@@ -335,14 +335,14 @@ void UserActionsMenu::init()
         m_removeFromTabGroup = m_menu->addAction(i18n("&Untab"));
         kaction = qobject_cast<KAction*>(keys->action("Untab"));
         if (kaction != 0)
-            m_removeFromTabGroup->setShortcut(kaction->globalShortcut().primary());
+            m_removeFromTabGroup->setShortcut(kaction->globalShortcut());
         m_removeFromTabGroup->setData(Options::RemoveTabFromGroupOp);
 
         m_closeTabGroup = m_menu->addAction(i18n("Close Entire &Group"));
         m_closeTabGroup->setIcon(KIcon("window-close"));
         kaction = qobject_cast<KAction*>(keys->action("Close TabGroup"));
         if (kaction != 0)
-            m_closeTabGroup->setShortcut(kaction->globalShortcut().primary());
+            m_closeTabGroup->setShortcut(kaction->globalShortcut());
         m_closeTabGroup->setData(Options::CloseTabGroupOp);
 
         m_menu->addSeparator();
@@ -359,7 +359,7 @@ void UserActionsMenu::init()
     m_closeOperation->setIcon(KIcon("window-close"));
     kaction = qobject_cast<KAction*>(keys->action("Window Close"));
     if (kaction != 0)
-        m_closeOperation->setShortcut(kaction->globalShortcut().primary());
+        m_closeOperation->setShortcut(kaction->globalShortcut());
     m_closeOperation->setData(Options::CloseOp);
 }
 
@@ -826,7 +826,7 @@ void Workspace::initShortcuts()
 void Workspace::setupWindowShortcut(Client* c)
 {
     assert(client_keys_dialog == NULL);
-    client_keys_dialog = new ShortcutDialog(c->shortcut().primary());
+    client_keys_dialog = new ShortcutDialog(c->shortcut());
     client_keys_client = c;
     connect(client_keys_dialog, SIGNAL(dialogDone(bool)), SLOT(setupWindowShortcutDone(bool)));
     QRect r = clientArea(ScreenArea, c);
@@ -848,7 +848,7 @@ void Workspace::setupWindowShortcutDone(bool ok)
 //    disable_shortcuts_keys->setEnabled( true );
 //    client_keys->setEnabled( true );
     if (ok)
-        client_keys_client->setShortcut(KShortcut(client_keys_dialog->shortcut()).toString());
+        client_keys_client->setShortcut(client_keys_dialog->shortcut().toString());
     closeActivePopup();
     client_keys_dialog->deleteLater();
     client_keys_dialog = NULL;
@@ -1755,7 +1755,7 @@ void Client::setShortcut(const QString& _cut)
 {
     QString cut = rules()->checkShortcut(_cut);
     if (cut.isEmpty())
-        return setShortcutInternal(KShortcut());
+        return setShortcutInternal(QKeySequence());
     if (cut == shortcut().toString()) {
         return; // no change
     }
@@ -1763,13 +1763,13 @@ void Client::setShortcut(const QString& _cut)
 // base+(abcdef)<space>base+(abcdef)
 // E.g. Alt+Ctrl+(ABCDEF);Meta+X,Meta+(ABCDEF)
     if (!cut.contains('(') && !cut.contains(')') && !cut.contains(" - ")) {
-        if (workspace()->shortcutAvailable(KShortcut(cut), this))
-            setShortcutInternal(KShortcut(cut));
+        if (workspace()->shortcutAvailable(QKeySequence(cut), this))
+            setShortcutInternal(QKeySequence(cut));
         else
-            setShortcutInternal(KShortcut());
+            setShortcutInternal(QKeySequence());
         return;
     }
-    QList< KShortcut > keys;
+    QList< QKeySequence > keys;
     QStringList groups = cut.split(" - ");
     foreach (const QString &it, groups) {
         QRegExp reg("(.*\\+)\\((.*)\\)");
@@ -1779,19 +1779,19 @@ void Client::setShortcut(const QString& _cut)
             for (int i = 0;
                     i < list.length();
                     ++i) {
-                KShortcut c(base + list[ i ]);
+                QKeySequence c(base + list[ i ]);
                 if (!c.isEmpty())
                     keys.append(c);
             }
         } else {
             // regexp doesn't match, so it should be a normal shortcut
-            KShortcut c(it);
+            QKeySequence c(it);
             if (!c.isEmpty()) {
                 keys.append(c);
             }
         }
     }
-    foreach (const KShortcut &it, keys) {
+    foreach (const QKeySequence &it, keys) {
         if (_shortcut == it)   // current one is in the list
             return;
         if (workspace()->shortcutAvailable(it, this)) {
@@ -1799,10 +1799,10 @@ void Client::setShortcut(const QString& _cut)
             return;
         }
     }
-    setShortcutInternal(KShortcut());
+    setShortcutInternal(QKeySequence());
 }
 
-void Client::setShortcutInternal(const KShortcut& cut)
+void Client::setShortcutInternal(const QKeySequence& cut)
 {
     if (_shortcut == cut)
         return;
@@ -1823,14 +1823,13 @@ void Client::delayedSetShortcut()
     workspace()->clientShortcutUpdated(this);
 }
 
-bool Workspace::shortcutAvailable(const KShortcut& cut, Client* ignore) const
+bool Workspace::shortcutAvailable(const QKeySequence& cut, Client* ignore) const
 {
-    if (ignore && cut == ignore->shortcut())
+    if (ignore && cut == ignore->shortcut()) {
         return true;
-    foreach (const QKeySequence &seq, cut.toList()) {
-        if (!KGlobalAccel::self()->getGlobalShortcutsByKey(seq).isEmpty()) {
-            return false;
-        }
+    }
+    if (!KGlobalAccel::self()->getGlobalShortcutsByKey(cut).isEmpty()) {
+        return false;
     }
     foreach (const Client* it, clients) {
         if (it != ignore && it->shortcut() == cut)

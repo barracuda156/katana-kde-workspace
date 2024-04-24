@@ -626,10 +626,7 @@ void SessionController::setupCommonActions()
     action->setEnabled(false);
 
     action = KStandardAction::paste(this, SLOT(paste()), collection);
-    KShortcut pasteShortcut = action->shortcut();
-    pasteShortcut.setPrimary(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_V));
-    pasteShortcut.setAlternate(QKeySequence(Qt::SHIFT + Qt::Key_Insert));
-    action->setShortcut(pasteShortcut);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_V, Qt::SHIFT + Qt::Key_Insert));
 
     action = collection->addAction("paste-selection", this, SLOT(pasteFromX11Selection()));
     action->setText(i18n("Paste Selection"));
@@ -762,15 +759,12 @@ void SessionController::setupExtraActions()
     action = collection->addAction("enlarge-font", this, SLOT(increaseFontSize()));
     action->setText(i18n("Enlarge Font"));
     action->setIcon(KIcon("format-font-size-more"));
-    KShortcut enlargeFontShortcut = action->shortcut();
-    enlargeFontShortcut.setPrimary(QKeySequence(Qt::CTRL + Qt::Key_Plus));
-    enlargeFontShortcut.setAlternate(QKeySequence(Qt::CTRL + Qt::Key_Equal));
-    action->setShortcut(enlargeFontShortcut);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Plus, Qt::CTRL + Qt::Key_Equal));
 
     action = collection->addAction("shrink-font", this, SLOT(decreaseFontSize()));
     action->setText(i18n("Shrink Font"));
     action->setIcon(KIcon("format-font-size-less"));
-    action->setShortcut(KShortcut(Qt::CTRL | Qt::Key_Minus));
+    action->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Minus));
 
     // Send signal
     KSelectAction* sendSignalActions = collection->add<KSelectAction>("send-signal");

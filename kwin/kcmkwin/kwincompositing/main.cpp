@@ -150,7 +150,7 @@ KWinCompositingConfig::KWinCompositingConfig(QWidget *parent, const QVariantList
 
     KAction* a = static_cast<KAction*>(m_actionCollection->addAction( "Suspend Compositing" ));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut( KShortcut( Qt::ALT + Qt::SHIFT + Qt::Key_F12 ));
+    a->setGlobalShortcut( QKeySequence( Qt::ALT + Qt::SHIFT + Qt::Key_F12 ));
     connect(ui.toggleEffectsShortcut, SIGNAL(keySequenceChanged(QKeySequence)), this, SLOT(toggleEffectShortcutChanged(QKeySequence)));
 
     // Initialize the user interface with the config loaded from kwinrc.
@@ -233,7 +233,7 @@ void KWinCompositingConfig::loadGeneralTab()
     // this works by global shortcut magics - it will pick the current sc
     // but the constructor line that adds the default alt+shift+f12 gsc is IMPORTANT!
     if (KAction *a = qobject_cast<KAction*>(m_actionCollection->action("Suspend Compositing")))
-        ui.toggleEffectsShortcut->setKeySequence(a->globalShortcut().primary());
+        ui.toggleEffectsShortcut->setKeySequence(a->globalShortcut());
 
     ui.animationSpeedCombo->setCurrentIndex(config.readEntry("AnimationSpeed", 3));
 
@@ -270,7 +270,7 @@ void KWinCompositingConfig::alignGuiToCompositingType(int compositingType)
 void KWinCompositingConfig::toggleEffectShortcutChanged(const QKeySequence &seq)
 {
     if (KAction *a = qobject_cast<KAction*>(m_actionCollection->action("Suspend Compositing")))
-        a->setGlobalShortcut(KShortcut(seq), KAction::ActiveShortcut);
+        a->setGlobalShortcut(seq, KAction::ActiveShortcut);
     m_actionCollection->writeSettings();
 }
 

@@ -66,7 +66,6 @@ namespace KIO
 }
 
 class KComboBox;
-class KShortcutsEditor;
 class KTemporaryFile;
 class KIntNumInput;
 class KIntSpinBox;

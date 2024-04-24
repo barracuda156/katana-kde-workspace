@@ -56,8 +56,7 @@ namespace Oxygen
         setWindowTitle( i18n( "Oxygen Demo" ) );
 
         // install Quit shortcut
-        connect( new QShortcut( KStandardShortcut::quit().primary(), this ), SIGNAL(activated()), SLOT(close()) );
-        connect( new QShortcut( KStandardShortcut::quit().alternate(), this ), SIGNAL(activated()), SLOT(close()) );
+        connect( new QShortcut( KStandardShortcut::quit(), this ), SIGNAL(activated()), SLOT(close()) );
 
         // customize button box
         QList<QDialogButtonBox*> children( findChildren<QDialogButtonBox*>() );

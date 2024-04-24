@@ -43,16 +43,16 @@ static void dressUpAction(KAction *action, KStandardShortcut::StandardShortcut s
     // hardcoded default and the user set shortcut. But action currently
     // only contain the active shortcuts as default shortcut. So we
     // have to fill it correctly
-    KShortcut hardcoded = KStandardShortcut::hardcodedDefaultShortcut(shortcutId);
-    KShortcut active    = KStandardShortcut::shortcut(shortcutId);
+    QKeySequence hardcoded = KStandardShortcut::hardcodedDefaultShortcut(shortcutId);
+    QKeySequence active    = KStandardShortcut::shortcut(shortcutId);
     // Set the hardcoded default shortcut as default shortcut
     action->setShortcut(hardcoded, KAction::DefaultShortcut);
     // Set the user defined values as active shortcuts. If the user only
     // has overwritten the primary shortcut make sure the alternate one
     // still get's shown
-    if (active.alternate()==QKeySequence())
+    if (active[1] == 0)
         {
-        active.setAlternate(hardcoded.alternate());
+        active = QKeySequence(active[0], hardcoded[1]);
         }
     action->setShortcut(active, KAction::ActiveShortcut);
     }

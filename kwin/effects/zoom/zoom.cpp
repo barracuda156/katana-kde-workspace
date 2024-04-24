@@ -63,35 +63,35 @@ ZoomEffect::ZoomEffect()
     KActionCollection* actionCollection = new KActionCollection(this);
     KAction* a = 0;
     a = static_cast< KAction* >(actionCollection->addAction(KStandardAction::ZoomIn, this, SLOT(zoomIn())));
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Equal));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Equal));
     a = static_cast< KAction* >(actionCollection->addAction(KStandardAction::ZoomOut, this, SLOT(zoomOut())));
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Minus));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Minus));
     a = static_cast< KAction* >(actionCollection->addAction(KStandardAction::ActualSize, this, SLOT(actualSize())));
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_0));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_0));
 
     a = static_cast< KAction* >(actionCollection->addAction("MoveZoomLeft"));
     a->setText(i18n("Move Zoomed Area to Left"));
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Left));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Left));
     connect(a, SIGNAL(triggered(bool)), this, SLOT(moveZoomLeft()));
 
     a = static_cast< KAction* >(actionCollection->addAction("MoveZoomRight"));
     a->setText(i18n("Move Zoomed Area to Right"));
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Right));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Right));
     connect(a, SIGNAL(triggered(bool)), this, SLOT(moveZoomRight()));
 
     a = static_cast< KAction* >(actionCollection->addAction("MoveZoomUp"));
     a->setText(i18n("Move Zoomed Area Upwards"));
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Up));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Up));
     connect(a, SIGNAL(triggered(bool)), this, SLOT(moveZoomUp()));
 
     a = static_cast< KAction* >(actionCollection->addAction("MoveZoomDown"));
     a->setText(i18n("Move Zoomed Area Downwards"));
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Down));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Down));
     connect(a, SIGNAL(triggered(bool)), this, SLOT(moveZoomDown()));
 
     a = static_cast< KAction* >(actionCollection->addAction("MoveMouseToCenter"));
     a->setText(i18n("Move Mouse to Center"));
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_F6));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_F6));
     connect(a, SIGNAL(triggered(bool)), this, SLOT(moveMouseToCenter()));
 
     timeline.setDuration(350);

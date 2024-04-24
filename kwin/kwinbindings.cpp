@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DEF2( name, descr, key, fnSlot )                            \
     a = actionCollection->addAction( name );                        \
     a->setText( i18n(descr) );                                      \
-    qobject_cast<KAction*>( a )->setGlobalShortcut(KShortcut(key)); \
+    qobject_cast<KAction*>( a )->setGlobalShortcut(QKeySequence(key)); \
     connect(a, SIGNAL(triggered(bool)), SLOT(fnSlot));
 
 #define DEF( name, key, fnSlot )                                    \
@@ -39,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DEF3( name, key, fnSlot, value )                            \
     a = actionCollection->addAction( QString(name).arg(value) );    \
     a->setText( i18n(name, value) );                                \
-    qobject_cast<KAction*>( a )->setGlobalShortcut(KShortcut(key)); \
+    qobject_cast<KAction*>( a )->setGlobalShortcut(QKeySequence(key)); \
     a->setData(value);                                              \
     connect(a, SIGNAL(triggered(bool)), SLOT(fnSlot));
 

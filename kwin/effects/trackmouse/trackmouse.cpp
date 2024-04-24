@@ -56,7 +56,7 @@ TrackMouseEffect::TrackMouseEffect()
     KActionCollection *actionCollection = new KActionCollection(this);
     m_action = static_cast< KAction* >(actionCollection->addAction("TrackMouse"));
     m_action->setText(i18n("Track mouse"));
-    m_action->setGlobalShortcut(KShortcut());
+    m_action->setGlobalShortcut(QKeySequence());
 
     connect(m_action, SIGNAL(triggered(bool)), this, SLOT(toggle()));
     connect(effects, SIGNAL(mouseChanged(QPoint,QPoint,Qt::MouseButtons,Qt::MouseButtons,Qt::KeyboardModifiers,Qt::KeyboardModifiers)),

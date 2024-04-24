@@ -48,7 +48,7 @@ WindowGeometryConfig::WindowGeometryConfig(QWidget* parent, const QVariantList& 
     KAction* a = (KAction*)myActionCollection->addAction("WindowGeometry");
     a->setText(i18n("Toggle KWin composited geometry display"));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_F11));
+    a->setGlobalShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F11));
 
     myUi->shortcuts->addCollection(myActionCollection);
     connect(myUi->shortcuts,    SIGNAL(keyChange()), this, SLOT(changed()));

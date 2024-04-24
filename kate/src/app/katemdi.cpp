@@ -154,9 +154,8 @@ namespace KateMDI
     QString aname = QString("kate_mdi_toolview_") + tv->id;
 
     // try to read the action shortcut
-    KShortcut sc;
     KSharedConfig::Ptr cfg = KGlobal::config();
-    sc = KShortcut( cfg->group("Shortcuts").readEntry( aname, QString() ) );
+    QKeySequence sc = QKeySequence( cfg->group("Shortcuts").readEntry( aname, QString() ) );
 
     KToggleAction *a = new ToggleToolViewAction(i18n("Show %1", tv->text), tv, this );
     a->setShortcut(sc, KAction::ActiveShortcut); // no DefaultShortcut! see bug #144945

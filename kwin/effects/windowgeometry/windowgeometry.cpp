@@ -59,7 +59,7 @@ WindowGeometryEffect::WindowGeometryEffect()
     KActionCollection* actionCollection = new KActionCollection(this);
     KAction* a = static_cast< KAction* >(actionCollection->addAction("WindowGeometry"));
     a->setText(i18n("Toggle window geometry display (effect only)"));
-    a->setGlobalShortcut(KShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_F11));
+    a->setGlobalShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F11));
     connect(a, SIGNAL(triggered(bool)), this, SLOT(toggle()));
     connect(effects, SIGNAL(windowStartUserMovedResized(KWin::EffectWindow*)), this, SLOT(slotWindowStartUserMovedResized(KWin::EffectWindow*)));
     connect(effects, SIGNAL(windowFinishUserMovedResized(KWin::EffectWindow*)), this, SLOT(slotWindowFinishUserMovedResized(KWin::EffectWindow*)));

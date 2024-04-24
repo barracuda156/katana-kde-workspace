@@ -1506,9 +1506,15 @@ void FolderView::createActions()
 
     // Remove the Shift+Delete shortcut from the cut action, since it's used for deleting files
     KAction *cut = KStandardAction::cut(this, SLOT(cut()), this);
-    KShortcut cutShortCut = cut->shortcut();
-    cutShortCut.remove(Qt::SHIFT + Qt::Key_Delete);
-    cut->setShortcut(cutShortCut);
+    QKeySequence cutShortcut = cut->shortcut();
+    static const int shiftdelete = (Qt::SHIFT | Qt::Key_Delete);
+    if (cutShortcut[0] == shiftdelete) {
+        cutShortcut = QKeySequence(cutShortcut[1]);
+    }
+    if (cutShortcut[0] == shiftdelete) {
+        cutShortcut = QKeySequence();
+    }
+    cut->setShortcut(cutShortcut);
     cut->setShortcutContext(Qt::WidgetShortcut);
 
     KAction *copy = KStandardAction::copy(this, SLOT(copy()), this);

@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "presentwindows_proxy.h"
 
 #include <kwineffects.h>
-#include <kshortcut.h>
+#include <QKeySequence>
 #include <QTimer>
 #include <QGraphicsView>
 
@@ -271,9 +271,9 @@ private:
     QString m_windowFilter;
 
     // Shortcut - needed to toggle the effect
-    KShortcut shortcut;
-    KShortcut shortcutAll;
-    KShortcut shortcutClass;
+    QKeySequence shortcut;
+    QKeySequence shortcutAll;
+    QKeySequence shortcutClass;
 
     // Atoms
     // Present windows for all windows of given desktop

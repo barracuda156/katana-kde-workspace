@@ -333,7 +333,7 @@ void Compositor::toggleCompositing()
         // when disabled show a shortcut how the user can get back compositing
         QString shortcut, message;
         if (KAction* action = qobject_cast<KAction*>(Workspace::self()->actionCollection()->action("Suspend Compositing")))
-            shortcut = action->globalShortcut().primary().toString(QKeySequence::NativeText);
+            shortcut = action->globalShortcut().toString(QKeySequence::NativeText);
         if (!shortcut.isEmpty()) {
             // display notification only if there is the shortcut
             message = i18n("Desktop effects have been suspended by another application.<br/>"

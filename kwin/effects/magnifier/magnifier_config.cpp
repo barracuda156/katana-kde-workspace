@@ -66,15 +66,15 @@ MagnifierEffectConfig::MagnifierEffectConfig(QWidget* parent, const QVariantList
     KAction* a;
     a = static_cast< KAction* >(m_actionCollection->addAction(KStandardAction::ZoomIn));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Plus));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Plus));
 
     a = static_cast< KAction* >(m_actionCollection->addAction(KStandardAction::ZoomOut));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Minus));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Minus));
 
     a = static_cast< KAction* >(m_actionCollection->addAction(KStandardAction::ActualSize));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_0));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_0));
 
     m_ui->editor->addCollection(m_actionCollection);
     load();

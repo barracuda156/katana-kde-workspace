@@ -68,19 +68,19 @@ PresentWindowsEffect::PresentWindowsEffect()
     KActionCollection* actionCollection = new KActionCollection(this);
     KAction* a = (KAction*)actionCollection->addAction("Expose");
     a->setText(i18n("Toggle Present Windows (Current desktop)"));
-    a->setGlobalShortcut(KShortcut(Qt::ALT + Qt::Key_Tab));
+    a->setGlobalShortcut(QKeySequence(Qt::ALT + Qt::Key_Tab));
     shortcut = a->globalShortcut();
     connect(a, SIGNAL(triggered(bool)), this, SLOT(toggleActive()));
     connect(a, SIGNAL(globalShortcutChanged(QKeySequence)), this, SLOT(globalShortcutChanged(QKeySequence)));
     KAction* b = (KAction*)actionCollection->addAction("ExposeAll");
     b->setText(i18n("Toggle Present Windows (All desktops)"));
-    // b->setGlobalShortcut(KShortcut(Qt::ALT + Qt::CTRL + Qt::Key_Tab));
+    // b->setGlobalShortcut(QKeySequence(Qt::ALT + Qt::CTRL + Qt::Key_Tab));
     shortcutAll = b->globalShortcut();
     connect(b, SIGNAL(triggered(bool)), this, SLOT(toggleActiveAllDesktops()));
     connect(b, SIGNAL(globalShortcutChanged(QKeySequence)), this, SLOT(globalShortcutChangedAll(QKeySequence)));
     KAction* c = (KAction*)actionCollection->addAction("ExposeClass");
     c->setText(i18n("Toggle Present Windows (Window class)"));
-    c->setGlobalShortcut(KShortcut(Qt::ALT + Qt::SHIFT + Qt::Key_Tab));
+    c->setGlobalShortcut(QKeySequence(Qt::ALT + Qt::SHIFT + Qt::Key_Tab));
     connect(c, SIGNAL(triggered(bool)), this, SLOT(toggleActiveClass()));
     connect(c, SIGNAL(globalShortcutChanged(QKeySequence)), this, SLOT(globalShortcutChangedClass(QKeySequence)));
     shortcutClass = c->globalShortcut();
@@ -666,15 +666,16 @@ void PresentWindowsEffect::grabbedKeyboardEvent(QKeyEvent *e)
     if (e->type() == QEvent::KeyPress) {
         // check for global shortcuts
         // HACK: keyboard grab disables the global shortcuts so we have to check for global shortcut (bug 156155)
-        if (m_mode == ModeCurrentDesktop && shortcut.contains(e->key() + e->modifiers())) {
+        const int eventkey = (e->key() + e->modifiers());
+        if (m_mode == ModeCurrentDesktop && shortcut.matches(eventkey) != QKeySequence::NoMatch) {
             toggleActive();
             return;
         }
-        if (m_mode == ModeAllDesktops && shortcutAll.contains(e->key() + e->modifiers())) {
+        if (m_mode == ModeAllDesktops && shortcutAll.matches(eventkey) != QKeySequence::NoMatch) {
             toggleActiveAllDesktops();
             return;
         }
-        if (m_mode == ModeWindowClass && shortcutClass.contains(e->key() + e->modifiers())) {
+        if (m_mode == ModeWindowClass && shortcutClass.matches(eventkey) != QKeySequence::NoMatch) {
             toggleActiveClass();
             return;
         }
@@ -1778,17 +1779,17 @@ EffectWindow* PresentWindowsEffect::findFirstWindow() const
 
 void PresentWindowsEffect::globalShortcutChanged(const QKeySequence& seq)
 {
-    shortcut = KShortcut(seq);
+    shortcut = seq;
 }
 
 void PresentWindowsEffect::globalShortcutChangedAll(const QKeySequence& seq)
 {
-    shortcutAll = KShortcut(seq);
+    shortcutAll = seq;
 }
 
 void PresentWindowsEffect::globalShortcutChangedClass(const QKeySequence& seq)
 {
-    shortcutClass = KShortcut(seq);
+    shortcutClass = seq;
 }
 
 bool PresentWindowsEffect::isActive() const

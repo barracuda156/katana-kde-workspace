@@ -68,7 +68,6 @@
 #include <kglobal.h>
 #include <kglobalsettings.h>
 #include <kiconloader.h>
-#include <kshortcutsdialog.h>
 #include <klineedit.h>
 #include <klocale.h>
 #include <kmessagebox.h>

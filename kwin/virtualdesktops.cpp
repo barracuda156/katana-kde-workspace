@@ -436,17 +436,17 @@ void VirtualDesktopManager::initSwitchToShortcuts(KActionCollection *keys)
 {
     const QString toDesktop = "Switch to Desktop %1";
     const KLocalizedString toDesktopLabel = ki18n("Switch to Desktop %1");
-    addAction(keys, toDesktop, toDesktopLabel, 1, KShortcut(Qt::CTRL + Qt::Key_F1), SLOT(slotSwitchTo()));
-    addAction(keys, toDesktop, toDesktopLabel, 2, KShortcut(Qt::CTRL + Qt::Key_F2), SLOT(slotSwitchTo()));
-    addAction(keys, toDesktop, toDesktopLabel, 3, KShortcut(Qt::CTRL + Qt::Key_F3), SLOT(slotSwitchTo()));
-    addAction(keys, toDesktop, toDesktopLabel, 4, KShortcut(Qt::CTRL + Qt::Key_F4), SLOT(slotSwitchTo()));
+    addAction(keys, toDesktop, toDesktopLabel, 1, QKeySequence(Qt::CTRL + Qt::Key_F1), SLOT(slotSwitchTo()));
+    addAction(keys, toDesktop, toDesktopLabel, 2, QKeySequence(Qt::CTRL + Qt::Key_F2), SLOT(slotSwitchTo()));
+    addAction(keys, toDesktop, toDesktopLabel, 3, QKeySequence(Qt::CTRL + Qt::Key_F3), SLOT(slotSwitchTo()));
+    addAction(keys, toDesktop, toDesktopLabel, 4, QKeySequence(Qt::CTRL + Qt::Key_F4), SLOT(slotSwitchTo()));
 
     for (uint i = 5; i <= maximum(); ++i) {
-        addAction(keys, toDesktop, toDesktopLabel, i, KShortcut(), SLOT(slotSwitchTo()));
+        addAction(keys, toDesktop, toDesktopLabel, i, QKeySequence(), SLOT(slotSwitchTo()));
     }
 }
 
-void VirtualDesktopManager::addAction(KActionCollection *keys, const QString &name, const KLocalizedString &label, uint value, const KShortcut &key, const char *slot)
+void VirtualDesktopManager::addAction(KActionCollection *keys, const QString &name, const KLocalizedString &label, uint value, const QKeySequence &key, const char *slot)
 {
     KAction *a = keys->addAction(name.arg(value), this, slot);
     a->setText(label.subs(value).toString());
@@ -457,7 +457,7 @@ void VirtualDesktopManager::addAction(KActionCollection *keys, const QString &na
 void VirtualDesktopManager::addAction(KActionCollection *keys, const QString &name, const QString &label, const char *slot)
 {
     KAction *a = keys->addAction(name, this, slot);
-    a->setGlobalShortcut(KShortcut());
+    a->setGlobalShortcut(QKeySequence());
     a->setText(label);
 }
 

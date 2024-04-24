@@ -21,7 +21,6 @@
 #define BASICTAB_H
 
 #include <KTabWidget>
-#include <KShortcut>
 #include <KService>
 #include <QCheckBox>
 #include <QGroupBox>

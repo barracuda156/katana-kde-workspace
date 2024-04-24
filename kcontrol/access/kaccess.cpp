@@ -20,7 +20,6 @@
 #include <KGlobal>
 #include <KLocale>
 #include <KUrl>
-#include <KShortcut>
 #include <KWindowSystem>
 #include <KPixmapWidget>
 #include <kkeyserver.h>

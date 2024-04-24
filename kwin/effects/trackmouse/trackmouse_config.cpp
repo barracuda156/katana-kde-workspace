@@ -62,7 +62,7 @@ TrackMouseEffectConfig::TrackMouseEffectConfig(QWidget* parent, const QVariantLi
     KAction *a = static_cast< KAction* >(m_actionCollection->addAction("TrackMouse"));
     a->setText(i18n("Track mouse"));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut());
+    a->setGlobalShortcut(QKeySequence());
     connect(m_ui->shortcut, SIGNAL(keySequenceChanged(QKeySequence)),
                             SLOT(shortcutChanged(QKeySequence)));
 
@@ -85,7 +85,7 @@ void TrackMouseEffectConfig::load()
 {
     KCModule::load();
     if (KAction *a = qobject_cast<KAction*>(m_actionCollection->action("TrackMouse")))
-        m_ui->shortcut->setKeySequence(a->globalShortcut().primary());
+        m_ui->shortcut->setKeySequence(a->globalShortcut());
 
     checkModifiers();
     emit changed(false);
@@ -108,7 +108,7 @@ void TrackMouseEffectConfig::defaults()
 void TrackMouseEffectConfig::shortcutChanged(const QKeySequence &seq)
 {
     if (KAction *a = qobject_cast<KAction*>(m_actionCollection->action("TrackMouse")))
-        a->setGlobalShortcut(KShortcut(seq), KAction::ActiveShortcut);
+        a->setGlobalShortcut(seq, KAction::ActiveShortcut);
 //     m_actionCollection->writeSettings();
     emit changed(true);
 }

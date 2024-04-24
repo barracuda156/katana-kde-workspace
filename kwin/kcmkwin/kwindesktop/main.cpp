@@ -109,7 +109,7 @@ void KWinDesktopConfig::init()
         KAction* a = qobject_cast<KAction*>(m_actionCollection->addAction(QString("Switch to Desktop %1").arg(i)));
         a->setProperty("isConfigurationAction", true);
         a->setText(i18n("Switch to Desktop %1", i));
-        a->setGlobalShortcut(KShortcut(), KAction::ActiveShortcut);
+        a->setGlobalShortcut(QKeySequence(), KAction::ActiveShortcut);
     }
 
     // This should be after the "Switch to Desktop %1" loop. It HAS to be
@@ -186,7 +186,7 @@ void KWinDesktopConfig::addAction(const QString &name, const QString &label)
     KAction* a = qobject_cast<KAction*>(m_switchDesktopCollection->addAction(name));
     a->setProperty("isConfigurationAction", true);
     a->setText(label);
-    a->setGlobalShortcut(KShortcut(), KAction::ActiveShortcut);
+    a->setGlobalShortcut(QKeySequence(), KAction::ActiveShortcut);
 }
 
 void KWinDesktopConfig::defaults()
@@ -402,7 +402,7 @@ void KWinDesktopConfig::slotChangeShortcuts(int number)
                              m_actionCollection->takeAction(m_actionCollection->actions().last()));
             // Remove any associated global shortcut. Set it to ""
             a->setGlobalShortcut(
-                KShortcut(),
+                QKeySequence(),
                 KAction::ActiveShortcut
             );
             m_ui->messageLabel->hide();
@@ -413,14 +413,14 @@ void KWinDesktopConfig::slotChangeShortcuts(int number)
             KAction* action = qobject_cast<KAction*>(m_actionCollection->addAction(QString("Switch to Desktop %1").arg(desktop)));
             action->setProperty("isConfigurationAction", true);
             action->setText(i18n("Switch to Desktop %1", desktop));
-            action->setGlobalShortcut(KShortcut(), KAction::ActiveShortcut);
+            action->setGlobalShortcut(QKeySequence(), KAction::ActiveShortcut);
             QString shortcutString = extrapolatedShortcut(desktop);
             if (shortcutString.isEmpty()) {
                 m_ui->messageLabel->setText(i18n("No suitable Shortcut for Desktop %1 found", desktop));
                 m_ui->messageLabel->show();
             } else {
-                KShortcut shortcut(shortcutString);
-                if (!shortcut.primary().isEmpty() || KGlobalAccel::self()->isGlobalShortcutAvailable(shortcut.primary())) {
+                QKeySequence shortcut(shortcutString);
+                if (!shortcut.isEmpty() || KGlobalAccel::self()->isGlobalShortcutAvailable(shortcut)) {
                     action->setGlobalShortcut(shortcut, KAction::ActiveShortcut);
                     m_ui->messageLabel->setText(i18n("Assigned global Shortcut \"%1\" to Desktop %2", shortcutString, desktop));
                     m_ui->messageLabel->show();

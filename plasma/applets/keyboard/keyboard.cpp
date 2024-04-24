@@ -54,7 +54,7 @@ void KeyboardApplet::init()
     m_showflag = configgroup.readEntry("showFlag", false);
     m_showtext = configgroup.readEntry("showText", true);
 
-    setGlobalShortcut(KShortcut(Qt::ALT+Qt::CTRL+Qt::Key_K));
+    setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::Key_K));
     connect(
         this, SIGNAL(activate()),
         this, SLOT(slotNextLayout())

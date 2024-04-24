@@ -999,22 +999,22 @@ void KSMServer::setupShortcuts()
     KAction* a;
     a = actionCollection->addAction("Log Out");
     a->setText(i18n("Log Out"));
-    a->setGlobalShortcut(KShortcut(Qt::ALT+Qt::CTRL+Qt::Key_Delete));
+    a->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::Key_Delete));
     connect(a, SIGNAL(triggered(bool)), SLOT(defaultLogout()));
 
     a = actionCollection->addAction("Log Out Without Confirmation");
     a->setText(i18n("Log Out Without Confirmation"));
-    a->setGlobalShortcut(KShortcut(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_Delete));
+    a->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_Delete));
     connect(a, SIGNAL(triggered(bool)), SLOT(logoutWithoutConfirmation()));
 
     a = actionCollection->addAction("Halt Without Confirmation");
     a->setText(i18n("Halt Without Confirmation"));
-    a->setGlobalShortcut(KShortcut(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_PageDown));
+    a->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_PageDown));
     connect(a, SIGNAL(triggered(bool)), SLOT(haltWithoutConfirmation()));
 
     a = actionCollection->addAction("Reboot Without Confirmation");
     a->setText(i18n("Reboot Without Confirmation"));
-    a->setGlobalShortcut(KShortcut(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_PageUp));
+    a->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_PageUp));
     connect(a, SIGNAL(triggered(bool)), SLOT(rebootWithoutConfirmation()));
 }
 

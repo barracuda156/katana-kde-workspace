@@ -64,45 +64,45 @@ ZoomEffectConfig::ZoomEffectConfig(QWidget* parent, const QVariantList& args) :
     KAction* a;
     a = static_cast< KAction* >(actionCollection->addAction(KStandardAction::ZoomIn));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Equal));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Equal));
 
     a = static_cast< KAction* >(actionCollection->addAction(KStandardAction::ZoomOut));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Minus));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Minus));
 
     a = static_cast< KAction* >(actionCollection->addAction(KStandardAction::ActualSize));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_0));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_0));
 
     a = static_cast< KAction* >(actionCollection->addAction("MoveZoomLeft"));
     a->setIcon(KIcon("go-previous"));
     a->setText(i18n("Move Left"));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Left));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Left));
 
     a = static_cast< KAction* >(actionCollection->addAction("MoveZoomRight"));
     a->setIcon(KIcon("go-next"));
     a->setText(i18n("Move Right"));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Right));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Right));
 
     a = static_cast< KAction* >(actionCollection->addAction("MoveZoomUp"));
     a->setIcon(KIcon("go-up"));
     a->setText(i18n("Move Up"));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Up));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Up));
 
     a = static_cast< KAction* >(actionCollection->addAction("MoveZoomDown"));
     a->setIcon(KIcon("go-down"));
     a->setText(i18n("Move Down"));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Down));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Down));
 
     a = static_cast< KAction* >(actionCollection->addAction("MoveMouseToCenter"));
     a->setIcon(KIcon("view-restore"));
     a->setText(i18n("Move Mouse to Center"));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_F6));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_F6));
 
     m_ui->editor->addCollection(actionCollection);
     load();

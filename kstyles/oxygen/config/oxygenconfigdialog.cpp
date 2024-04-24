@@ -56,8 +56,7 @@ namespace Oxygen
         setWindowTitle( i18n( "Oxygen Settings" ) );
 
         // install Quit shortcut
-        connect( new QShortcut( KStandardShortcut::quit().primary(), this ), SIGNAL(activated()), SLOT(close()) );
-        connect( new QShortcut( KStandardShortcut::quit().alternate(), this ), SIGNAL(activated()), SLOT(close()) );
+        connect( new QShortcut( KStandardShortcut::quit(), this ), SIGNAL(activated()), SLOT(close()) );
 
         // tab widget
         pageWidget_ = new KPageWidget( this );

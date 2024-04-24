@@ -1260,7 +1260,7 @@ void DolphinMainWindow::setupActions()
     KAction* newTab = actionCollection()->addAction("new_tab");
     newTab->setIcon(KIcon("tab-new"));
     newTab->setText(i18nc("@action:inmenu File", "New Tab"));
-    newTab->setShortcut(KShortcut(Qt::CTRL | Qt::Key_T, Qt::CTRL | Qt::SHIFT | Qt::Key_N));
+    newTab->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T, Qt::CTRL | Qt::SHIFT | Qt::Key_N));
     connect(newTab, SIGNAL(triggered()), this, SLOT(openNewTab()));
 
     KAction* closeTab = actionCollection()->addAction("close_tab");
@@ -1280,8 +1280,14 @@ void DolphinMainWindow::setupActions()
     // need to remove shift+del from cut action, else the shortcut for deletejob
     // doesn't work
     KAction* cut = KStandardAction::cut(this, SLOT(cut()), actionCollection());
-    KShortcut cutShortcut = cut->shortcut();
-    cutShortcut.remove(Qt::SHIFT | Qt::Key_Delete, KShortcut::KeepEmpty);
+    QKeySequence cutShortcut = cut->shortcut();
+    static const int shiftdelete = (Qt::SHIFT | Qt::Key_Delete);
+    if (cutShortcut[0] == shiftdelete) {
+        cutShortcut = QKeySequence(cutShortcut[1]);
+    }
+    if (cutShortcut[0] == shiftdelete) {
+        cutShortcut = QKeySequence();
+    }
     cut->setShortcut(cutShortcut);
     KStandardAction::copy(this, SLOT(copy()), actionCollection());
     KAction* paste = KStandardAction::paste(this, SLOT(paste()), actionCollection());
@@ -1334,8 +1340,8 @@ void DolphinMainWindow::setupActions()
     // setup 'Go' menu
     KAction* backAction = KStandardAction::back(this, SLOT(goBack()), actionCollection());
     connect(backAction, SIGNAL(triggered(Qt::MouseButtons,Qt::KeyboardModifiers)), this, SLOT(goBack(Qt::MouseButtons)));
-    KShortcut backShortcut = backAction->shortcut();
-    backShortcut.setAlternate(Qt::Key_Backspace);
+    QKeySequence backShortcut = backAction->shortcut();
+    backShortcut = QKeySequence(backShortcut[0], Qt::Key_Backspace);
     backAction->setShortcut(backShortcut);
 
     DolphinRecentTabsMenu* recentTabsMenu = new DolphinRecentTabsMenu(this);
@@ -1375,12 +1381,12 @@ void DolphinMainWindow::setupActions()
 
     // not in menu actions
     const QKeySequence nextTabKeys = QKeySequence(
-        KStandardShortcut::tabNext().primary(),
+        KStandardShortcut::tabNext()[0],
         Qt::CTRL | Qt::Key_Tab
     );
 
     const QKeySequence prevTabKeys = QKeySequence(
-        KStandardShortcut::tabPrev().primary(),
+        KStandardShortcut::tabPrev()[0],
         Qt::CTRL | Qt::SHIFT | Qt::Key_Tab
     );
 

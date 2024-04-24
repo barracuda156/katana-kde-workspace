@@ -1728,7 +1728,7 @@ void LauncherApplet::init()
 {
     Plasma::PopupApplet::init();
 
-    setGlobalShortcut(KShortcut(Qt::ALT+Qt::Key_F2));
+    setGlobalShortcut(QKeySequence(Qt::ALT+Qt::Key_F2));
     m_shareconfig = KSharedConfig::openConfig(globalConfig().config()->name());
     m_configgroup = m_shareconfig->group("Plugins");
 

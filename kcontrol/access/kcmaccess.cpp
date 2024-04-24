@@ -31,7 +31,6 @@
 #include <kfiledialog.h>
 #include <kapplication.h>
 #include <kaboutdata.h>
-#include <kshortcut.h>
 #include <knotificationconfigwidget.h>
 #include <kkeyserver.h>
 

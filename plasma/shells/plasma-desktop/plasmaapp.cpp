@@ -123,12 +123,12 @@ PlasmaApp::PlasmaApp()
     KActionCollection* actionCollection = new KActionCollection(this);
     KAction* action = actionCollection->addAction("Capture the desktop");
     action->setText(i18n("Capture the desktop"));
-    action->setGlobalShortcut(KShortcut(Qt::Key_Print));
+    action->setGlobalShortcut(QKeySequence(Qt::Key_Print));
     connect(action, SIGNAL(triggered(bool)), SLOT(captureDesktop()));
 
     action = actionCollection->addAction("Capture the current window");
     action->setText(i18n("Capture the current window"));
-    action->setGlobalShortcut(KShortcut(Qt::CTRL+Qt::Key_Print));
+    action->setGlobalShortcut(QKeySequence(Qt::CTRL+Qt::Key_Print));
     connect(action, SIGNAL(triggered(bool)), SLOT(captureCurrentWindow()));
 
     QTimer::singleShot(0, this, SLOT(setupDesktop()));

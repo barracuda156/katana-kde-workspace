@@ -39,7 +39,6 @@ class MenuFile;
 class MenuFolderInfo;
 class MenuEntryInfo;
 class MenuSeparatorInfo;
-class KShortcut;
 
 static const QString SAVE_ACTION_NAME = "file_save";
 static const QString NEW_ITEM_ACTION_NAME = "new_item";

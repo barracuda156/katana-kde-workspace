@@ -52,11 +52,11 @@ MagnifierEffect::MagnifierEffect()
     KActionCollection* actionCollection = new KActionCollection(this);
     KAction* a;
     a = static_cast< KAction* >(actionCollection->addAction(KStandardAction::ZoomIn, this, SLOT(zoomIn())));
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Equal));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Equal));
     a = static_cast< KAction* >(actionCollection->addAction(KStandardAction::ZoomOut, this, SLOT(zoomOut())));
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_Minus));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Minus));
     a = static_cast< KAction* >(actionCollection->addAction(KStandardAction::ActualSize, this, SLOT(toggle())));
-    a->setGlobalShortcut(KShortcut(Qt::META + Qt::Key_0));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_0));
     connect(effects, SIGNAL(mouseChanged(QPoint,QPoint,Qt::MouseButtons,Qt::MouseButtons,Qt::KeyboardModifiers,Qt::KeyboardModifiers)),
             this, SLOT(slotMouseChanged(QPoint,QPoint,Qt::MouseButtons,Qt::MouseButtons,Qt::KeyboardModifiers,Qt::KeyboardModifiers)));
     reconfigure(ReconfigureAll);

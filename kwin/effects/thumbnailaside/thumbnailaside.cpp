@@ -35,7 +35,7 @@ ThumbnailAsideEffect::ThumbnailAsideEffect()
     KActionCollection* actionCollection = new KActionCollection(this);
     KAction* a = (KAction*)actionCollection->addAction("ToggleCurrentThumbnail");
     a->setText(i18n("Toggle Thumbnail for Current Window"));
-    a->setGlobalShortcut(KShortcut(Qt::CTRL + Qt::META + Qt::Key_T));
+    a->setGlobalShortcut(QKeySequence(Qt::CTRL + Qt::META + Qt::Key_T));
     connect(a, SIGNAL(triggered(bool)), this, SLOT(toggleCurrentThumbnail()));
     connect(effects, SIGNAL(windowClosed(KWin::EffectWindow*)), this, SLOT(slotWindowClosed(KWin::EffectWindow*)));
     connect(effects, SIGNAL(windowGeometryShapeChanged(KWin::EffectWindow*,QRect)), this, SLOT(slotWindowGeometryShapeChanged(KWin::EffectWindow*,QRect)));

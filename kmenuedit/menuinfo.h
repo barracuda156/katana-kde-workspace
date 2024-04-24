@@ -23,7 +23,6 @@
 
 #include <QList>
 
-#include <KShortcut>
 #include <KService>
 
 class MenuFile;

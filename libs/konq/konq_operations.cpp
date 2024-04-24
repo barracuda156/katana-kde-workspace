@@ -34,7 +34,6 @@
 #include <knotification.h>
 #include <krun.h>
 #include <kshell.h>
-#include <kshortcut.h>
 #include <kprotocolmanager.h>
 #include <kio/deletejob.h>
 #include <kio/fileundomanager.h>
