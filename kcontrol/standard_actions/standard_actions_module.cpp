@@ -71,7 +71,7 @@ StandardActionsModule::StandardActionsModule(
     KCModule::setButtons(KCModule::Buttons(KCModule::Default | KCModule::Apply | KCModule::Help));
 
     // Create and configure the editor
-    m_editor = new KShortcutsEditor(this, KShortcutsEditor::WidgetAction | KShortcutsEditor::WindowAction | KShortcutsEditor::ApplicationAction); // there will be no global actions, so make sure that column is hidden
+    m_editor = new KShortcutsEditor(this, KShortcutsEditor::LocalAction); // there will be no global actions
     connect(m_editor, SIGNAL(keyChange()), this, SLOT(keyChanged()));
 
     // Make a layout
