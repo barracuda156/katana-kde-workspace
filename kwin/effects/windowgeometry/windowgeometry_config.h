@@ -41,7 +41,6 @@ class WindowGeometryConfig : public KCModule
     Q_OBJECT
 public:
     explicit WindowGeometryConfig(QWidget* parent = 0, const QVariantList& args = QVariantList());
-    ~WindowGeometryConfig();
 
 public slots:
     void save();

@@ -42,7 +42,6 @@ class ZoomEffectConfig : public KCModule
     Q_OBJECT
 public:
     explicit ZoomEffectConfig(QWidget* parent = 0, const QVariantList& args = QVariantList());
-    virtual ~ZoomEffectConfig();
 
 public slots:
     virtual void save();

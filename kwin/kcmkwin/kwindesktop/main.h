@@ -49,11 +49,8 @@ class KWinDesktopConfig : public KCModule
 
 public:
     explicit KWinDesktopConfig(QWidget* parent, const QVariantList& args);
-    ~KWinDesktopConfig();
-    QString cachedDesktopName(int desktop);
 
-    // undo all changes
-    void undo();
+    QString cachedDesktopName(int desktop);
 
 public slots:
     virtual void save();

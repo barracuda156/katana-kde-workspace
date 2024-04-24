@@ -80,17 +80,11 @@ MagnifierEffectConfig::MagnifierEffectConfig(QWidget* parent, const QVariantList
     load();
 }
 
-MagnifierEffectConfig::~MagnifierEffectConfig()
-{
-    // Undo (only) unsaved changes to global key shortcuts
-    m_ui->editor->undoChanges();
-}
-
 void MagnifierEffectConfig::save()
 {
     kDebug(1212) << "Saving config of Magnifier" ;
 
-    m_ui->editor->save();   // undo() will restore to this state from now on
+    m_ui->editor->exportConfiguration();
     KCModule::save();
     EffectsHandler::sendReloadMessage("magnifier");
 }

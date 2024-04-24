@@ -74,19 +74,13 @@ MouseMarkEffectConfig::MouseMarkEffectConfig(QWidget* parent, const QVariantList
     load();
 }
 
-MouseMarkEffectConfig::~MouseMarkEffectConfig()
-{
-    // Undo (only) unsaved changes to global key shortcuts
-    m_ui->editor->undoChanges();
-}
-
 void MouseMarkEffectConfig::save()
 {
     kDebug(1212) << "Saving config of MouseMark" ;
     KCModule::save();
 
     m_actionCollection->writeSettings();
-    m_ui->editor->save();   // undo() will restore to this state from now on
+    m_ui->editor->exportConfiguration();
 
     EffectsHandler::sendReloadMessage("mousemark");
 }

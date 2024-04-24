@@ -80,16 +80,10 @@ PresentWindowsEffectConfig::PresentWindowsEffectConfig(QWidget* parent, const QV
     load();
 }
 
-PresentWindowsEffectConfig::~PresentWindowsEffectConfig()
-{
-    // If save() is called undoChanges() has no effect
-    m_ui->shortcutEditor->undoChanges();
-}
-
 void PresentWindowsEffectConfig::save()
 {
     KCModule::save();
-    m_ui->shortcutEditor->save();
+    m_ui->shortcutEditor->exportConfiguration();
     EffectsHandler::sendReloadMessage("presentwindows");
 }
 

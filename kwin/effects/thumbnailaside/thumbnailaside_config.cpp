@@ -73,15 +73,10 @@ ThumbnailAsideEffectConfig::ThumbnailAsideEffectConfig(QWidget* parent, const QV
     load();
 }
 
-ThumbnailAsideEffectConfig::~ThumbnailAsideEffectConfig()
-{
-    // Undo (only) unsaved changes to global key shortcuts
-    m_ui->editor->undoChanges();
-}
-
 void ThumbnailAsideEffectConfig::save()
 {
     KCModule::save();
+    m_ui->editor->exportConfiguration();
     EffectsHandler::sendReloadMessage("thumbnailaside");
 }
 

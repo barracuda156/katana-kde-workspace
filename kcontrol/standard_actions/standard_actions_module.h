@@ -1,5 +1,3 @@
-#ifndef STANDARD_ACTIONS_MODULE_H
-#define STANDARD_ACTIONS_MODULE_H
 /* Copyright (C) 2008 Michael Jansen <kde@michael-jansen.biz>
 
    This library is free software; you can redistribute it and/or
@@ -18,32 +16,32 @@
    Boston, MA 02110-1301, USA.
 */
 
+#ifndef STANDARD_ACTIONS_MODULE_H
+#define STANDARD_ACTIONS_MODULE_H
+
 #include <KCModule>
 
 class KActionCollection;
 class KShortcutsEditor;
 
 class StandardActionsModule : public KCModule
-    {
+{
     Q_OBJECT
 public:
 
     StandardActionsModule(QWidget *parent, const QVariantList &args);
-    ~StandardActionsModule();
 
-    /*reimp*/ void save();
-    /*reimp*/ void load();
-    /*reimp*/ void defaults();
+    void save() final;
+    void load() final;
+    void defaults() final;
 
 private slots:
     void keyChanged();
 
 private:
-
     KShortcutsEditor *m_editor;
     KActionCollection *m_actionCollection;
+};
 
-}; // class StandardActionsModule
 
-
-#endif /* #ifndef STANDARD_ACTIONS_MODULE_H */
+#endif // STANDARD_ACTIONS_MODULE_H

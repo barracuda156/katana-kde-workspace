@@ -42,7 +42,6 @@ class PresentWindowsEffectConfig : public KCModule
     Q_OBJECT
 public:
     explicit PresentWindowsEffectConfig(QWidget* parent = 0, const QVariantList& args = QVariantList());
-    ~PresentWindowsEffectConfig();
 
 public slots:
     virtual void save();

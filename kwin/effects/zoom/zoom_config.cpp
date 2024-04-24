@@ -108,15 +108,9 @@ ZoomEffectConfig::ZoomEffectConfig(QWidget* parent, const QVariantList& args) :
     load();
 }
 
-ZoomEffectConfig::~ZoomEffectConfig()
-{
-    // Undo (only) unsaved changes to global key shortcuts
-    m_ui->editor->undoChanges();
-}
-
 void ZoomEffectConfig::save()
 {
-    m_ui->editor->save(); // undo() will restore to this state from now on
+    m_ui->editor->exportConfiguration();
     KCModule::save();
     EffectsHandler::sendReloadMessage("zoom");
 }

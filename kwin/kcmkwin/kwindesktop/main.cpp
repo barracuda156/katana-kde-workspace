@@ -176,11 +176,6 @@ void KWinDesktopConfig::init()
     // End check for immutable
 }
 
-KWinDesktopConfig::~KWinDesktopConfig()
-{
-    undo();
-}
-
 void KWinDesktopConfig::addAction(const QString &name, const QString &label)
 {
     KAction* a = qobject_cast<KAction*>(m_switchDesktopCollection->addAction(name));
@@ -220,7 +215,7 @@ void KWinDesktopConfig::defaults()
 void KWinDesktopConfig::load()
 {
     // This method is called on reset(). So undo all changes.
-    undo();
+    m_editor->importConfiguration();
 
     // get number of desktops
     unsigned long properties[] = {NET::NumberOfDesktops | NET::DesktopNames, NET::WM2DesktopLayout };
@@ -318,7 +313,7 @@ void KWinDesktopConfig::save()
         break;
     }
 
-    m_editor->save();
+    m_editor->exportConfiguration();
 
     m_config->sync();
     // Send signal to all kwin instances
@@ -326,14 +321,6 @@ void KWinDesktopConfig::save()
     QDBusConnection::sessionBus().send(message);
 
     emit changed(false);
-}
-
-
-void KWinDesktopConfig::undo()
-{
-    // The global shortcuts editor makes changes active immediately. In case
-    // of undo we have to undo them manually
-    m_editor->undoChanges();
 }
 
 QString KWinDesktopConfig::cachedDesktopName(int desktop)

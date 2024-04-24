@@ -36,7 +36,7 @@ K_PLUGIN_FACTORY(StandardActionsModuleFactory, registerPlugin<StandardActionsMod
 K_EXPORT_PLUGIN(StandardActionsModuleFactory("kcm_standard_actions"))
 
 static void dressUpAction(KAction *action, KStandardShortcut::StandardShortcut shortcutId)
-    {
+{
     // Remember the shortcutId so we know where to save changes.
     action->setData(shortcutId);
     // We have to manually adjust the action. We want to show the
@@ -50,20 +50,17 @@ static void dressUpAction(KAction *action, KStandardShortcut::StandardShortcut s
     // Set the user defined values as active shortcuts. If the user only
     // has overwritten the primary shortcut make sure the alternate one
     // still get's shown
-    if (active[1] == 0)
-        {
+    if (active[1] == 0) {
         active = QKeySequence(active[0], hardcoded[1]);
-        }
-    action->setShortcut(active, KAction::ActiveShortcut);
     }
+    action->setShortcut(active, KAction::ActiveShortcut);
+}
 
-StandardActionsModule::StandardActionsModule(
-        QWidget *parent,
-        const QVariantList &args )
-    : KCModule(StandardActionsModuleFactory::componentData(), parent, args )
-      ,m_editor(NULL)
-      ,m_actionCollection(NULL)
-    {
+StandardActionsModule::StandardActionsModule(QWidget *parent, const QVariantList &args)
+    : KCModule(StandardActionsModuleFactory::componentData(), parent, args),
+    m_editor(nullptr),
+    m_actionCollection(nullptr)
+{
     KAboutData about("kcm_standard_actions", 0, ki18n("Standard Shortcuts"), "0.1");
     StandardActionsModuleFactory::componentData().setAboutData(about);
 
@@ -78,81 +75,67 @@ StandardActionsModule::StandardActionsModule(
     QVBoxLayout *global = new QVBoxLayout;
     global->addWidget(m_editor);
     setLayout(global);
-    }
-
-
-StandardActionsModule::~StandardActionsModule()
-    {}
-
+}
 
 void StandardActionsModule::defaults()
-    {
+{
     m_editor->allDefault();
-    }
+}
 
 
 void StandardActionsModule::keyChanged()
-    {
+{
     emit changed(true);
-    }
-
+}
 
 void StandardActionsModule::load()
-    {
+{
     // Create a collection to handle the shortcuts
-    m_actionCollection = new KActionCollection(
-            this,
-            StandardActionsModuleFactory::componentData());
+    m_actionCollection = new KActionCollection(this, StandardActionsModuleFactory::componentData());
 
     // Keeps track of which shortcut IDs have been added
     QSet<int> shortcutIdsAdded;
 
     // Put all shortcuts for standard actions into the collection
-    Q_FOREACH(KStandardAction::StandardAction id, KStandardAction::actionIds())
-        {
+    foreach (KStandardAction::StandardAction id, KStandardAction::actionIds()) {
         KStandardShortcut::StandardShortcut shortcutId = KStandardAction::shortcutForActionId(id);
         // If the StandardShortcutId is AccelNone skip configuration for this
         // action.
-        if (shortcutId == KStandardShortcut::AccelNone || shortcutIdsAdded.contains(shortcutId))
-            {
+        if (shortcutId == KStandardShortcut::AccelNone || shortcutIdsAdded.contains(shortcutId)) {
             continue;
-            }
+        }
         // Create the action
         KAction *action = KStandardAction::create(id, NULL, NULL, m_actionCollection);
         dressUpAction(action, shortcutId);
         shortcutIdsAdded << shortcutId;
-        }
+    }
 
     // Put in the remaining standard shortcuts too...
-    for(int i = int(KStandardShortcut::AccelNone) + 1; i < KStandardShortcut::StandardShortcutCount; ++i)
-        {
+    for(int i = int(KStandardShortcut::AccelNone) + 1; i < KStandardShortcut::StandardShortcutCount; ++i) {
         KStandardShortcut::StandardShortcut shortcutId = static_cast<KStandardShortcut::StandardShortcut>(i);
-        if(!shortcutIdsAdded.contains(shortcutId))
-            {
+        if (!shortcutIdsAdded.contains(shortcutId)) {
             KAction *action = new KAction(KStandardShortcut::label(shortcutId), this);
             action->setWhatsThis(KStandardShortcut::whatsThis(shortcutId));
             dressUpAction(action, shortcutId);
             m_actionCollection->addAction(KStandardShortcut::name(shortcutId), action);
-            }
         }
+    }
 
     // Hand the collection to the editor
     m_editor->addCollection(m_actionCollection, i18n("Standard Shortcuts"));
-    }
-
+}
 
 void StandardActionsModule::save()
-    {
-    m_editor->commit();
+{
+    m_editor->exportConfiguration();
 
-    Q_FOREACH(QAction* action, m_actionCollection->actions())
-        {
+    foreach (QAction* action, m_actionCollection->actions()) {
         KAction *kaction = qobject_cast<KAction*>(action);
-
         KStandardShortcut::saveShortcut(
-                static_cast<KStandardShortcut::StandardShortcut>(action->data().toInt())
-                , kaction->shortcut());
-        }
+            static_cast<KStandardShortcut::StandardShortcut>(action->data().toInt()),
+            kaction->shortcut()
+        );
+    }
 
     KGlobal::config()->sync();
     KConfigGroup cg(KGlobal::config(), "Shortcuts");
@@ -163,8 +146,9 @@ void StandardActionsModule::save()
         "The changes have been saved. Please note that:"
         "<ul><li>Applications need to be restarted to see the changes.</li>"
         "    <li>This change could introduce shortcut conflicts in some applications.</li>"
-        "</ul>" );
+        "</ul>"
+    );
     KMessageBox::information(this, message, title, "shortcuts_saved_info");
-    }
+}
 
 #include "moc_standard_actions_module.cpp"
