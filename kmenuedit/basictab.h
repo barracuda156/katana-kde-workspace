@@ -26,7 +26,6 @@
 #include <QGroupBox>
 #include <QLabel>
 
-class KKeySequenceWidget;
 class KLineEdit;
 class KIconButton;
 class KUrlRequester;

@@ -29,7 +29,6 @@
 #include <KLocale>
 #include <KGlobal>
 #include <KDialog>
-#include <KKeySequenceWidget>
 #include <KLineEdit>
 #include <KIconButton>
 #include <KDesktopFile>
