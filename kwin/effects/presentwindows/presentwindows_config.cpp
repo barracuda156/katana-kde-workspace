@@ -59,7 +59,7 @@ PresentWindowsEffectConfig::PresentWindowsEffectConfig(QWidget* parent, const QV
     KAction* a = (KAction*) m_actionCollection->addAction("ExposeAll");
     a->setText(i18n("Toggle Present Windows (All desktops)"));
     a->setProperty("isConfigurationAction", true);
-    a->setGlobalShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_Tab));
+    a->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Tab));
 
     KAction* b = (KAction*) m_actionCollection->addAction("Expose");
     b->setText(i18n("Toggle Present Windows (Current desktop)"));

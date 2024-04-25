@@ -74,7 +74,7 @@ PresentWindowsEffect::PresentWindowsEffect()
     connect(a, SIGNAL(globalShortcutChanged(QKeySequence)), this, SLOT(globalShortcutChanged(QKeySequence)));
     KAction* b = (KAction*)actionCollection->addAction("ExposeAll");
     b->setText(i18n("Toggle Present Windows (All desktops)"));
-    b->setGlobalShortcut(QKeySequence(Qt::CTRL + Qt::ALT + Qt::Key_Tab));
+    b->setGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Tab));
     shortcutAll = b->globalShortcut();
     connect(b, SIGNAL(triggered(bool)), this, SLOT(toggleActiveAllDesktops()));
     connect(b, SIGNAL(globalShortcutChanged(QKeySequence)), this, SLOT(globalShortcutChangedAll(QKeySequence)));
