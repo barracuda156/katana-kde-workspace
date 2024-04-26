@@ -253,10 +253,17 @@ void TasksSvg::updatePixmapAndToolTip()
     if (m_pixmap.isNull()) {
         m_pixmap = KIconLoader::global()->loadIcon("xorg", KIconLoader::Small);
     }
-    const KWindowInfo kwindowinfo = KWindowSystem::windowInfo(m_task, NET::WMVisibleName);
+    const KWindowInfo kwindowinfo = KWindowSystem::windowInfo(m_task, NET::WMVisibleName | NET::WMDesktop);
     const QString windowname = kwindowinfo.visibleName();
     if (!windowname.isEmpty()) {
         m_name = windowname;
+    }
+    const bool oncurrentdesktop = kwindowinfo.isOnDesktop(KWindowSystem::currentDesktop());
+    const bool isvisible = isVisible();
+    if (!isvisible && oncurrentdesktop) {
+        animatedShow();
+    } else if (isvisible && !oncurrentdesktop) {
+        hide();
     }
     Plasma::ToolTipContent plasmatooltip;
     if (!m_name.isEmpty()) {
