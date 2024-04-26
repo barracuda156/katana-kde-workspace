@@ -554,7 +554,7 @@ class KWIN_EXPORT EffectsHandler : public QObject
      */
     Q_PROPERTY(qreal animationTimeFactor READ animationTimeFactor)
     Q_PROPERTY(QList< KWin::EffectWindow* > stackingOrder READ stackingOrder)
-    Q_PROPERTY(CompositingType compositingType READ compositingType CONSTANT)
+    Q_PROPERTY(CompositingType compositingType READ compositingType)
     Q_PROPERTY(QPoint cursorPos READ cursorPos)
     friend class Effect;
 public:
@@ -1052,7 +1052,7 @@ protected:
 class KWIN_EXPORT EffectWindow : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool alpha READ hasAlpha CONSTANT)
+    Q_PROPERTY(bool alpha READ hasAlpha)
     Q_PROPERTY(QRect geometry READ geometry)
     Q_PROPERTY(QRect expandedGeometry READ expandedGeometry)
     Q_PROPERTY(int height READ height)

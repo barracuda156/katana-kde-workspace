@@ -47,7 +47,7 @@ class Toplevel
     : public QObject, public KDecorationDefines
 {
     Q_OBJECT
-    Q_PROPERTY(bool alpha READ hasAlpha CONSTANT)
+    Q_PROPERTY(bool alpha READ hasAlpha)
     Q_PROPERTY(qulonglong frameId READ frameId)
     Q_PROPERTY(QRect geometry READ geometry NOTIFY geometryChanged)
     Q_PROPERTY(QRect visibleRect READ visibleRect)
@@ -57,7 +57,7 @@ class Toplevel
     Q_PROPERTY(int screen READ screen NOTIFY screenChanged)
     Q_PROPERTY(QSize size READ size)
     Q_PROPERTY(int width READ width)
-    Q_PROPERTY(qulonglong windowId READ window CONSTANT)
+    Q_PROPERTY(qulonglong windowId READ window)
     Q_PROPERTY(int x READ x)
     Q_PROPERTY(int y READ y)
     Q_PROPERTY(int desktop READ desktop)
@@ -153,11 +153,11 @@ class Toplevel
      * Whether this Toplevel is managed by KWin (it has control over its placement and other
      * aspects, as opposed to override-redirect windows that are entirely handled by the application).
      **/
-    Q_PROPERTY(bool managed READ isClient CONSTANT)
+    Q_PROPERTY(bool managed READ isClient)
     /**
      * Whether this Toplevel represents an already deleted window and only kept for the compositor for animations.
      **/
-    Q_PROPERTY(bool deleted READ isDeleted CONSTANT)
+    Q_PROPERTY(bool deleted READ isDeleted)
     /**
      * Whether the window has an own shape
      **/

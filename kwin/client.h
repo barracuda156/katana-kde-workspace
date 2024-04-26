@@ -140,7 +140,7 @@ class Client
      * Whether the Client provides context help. Mostly needed by decorations to decide whether to
      * show the help button or not.
      **/
-    Q_PROPERTY(bool providesContextHelp READ providesContextHelp CONSTANT)
+    Q_PROPERTY(bool providesContextHelp READ providesContextHelp)
     /**
      * Whether the Client can be resized. The property is evaluated each time it is invoked.
      * Because of that there is no notify signal.
