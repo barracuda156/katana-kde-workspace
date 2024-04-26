@@ -44,7 +44,8 @@ public:
     explicit ZoomEffectConfig(QWidget* parent = 0, const QVariantList& args = QVariantList());
 
 public slots:
-    virtual void save();
+    void load() final;
+    void save() final;
 
 private:
     ZoomEffectConfigForm* m_ui;

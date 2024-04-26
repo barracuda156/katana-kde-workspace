@@ -53,10 +53,9 @@ public:
     QString cachedDesktopName(int desktop);
 
 public slots:
-    virtual void save();
-    virtual void load();
-    virtual void defaults();
-
+    void save() final;
+    void load() final;
+    void defaults() final;
 
 private slots:
     void slotChangeShortcuts(int number);

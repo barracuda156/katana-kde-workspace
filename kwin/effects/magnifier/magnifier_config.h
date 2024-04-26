@@ -43,8 +43,9 @@ class MagnifierEffectConfig : public KCModule
 public:
     explicit MagnifierEffectConfig(QWidget* parent = 0, const QVariantList& args = QVariantList());
 
-    virtual void save();
-    virtual void defaults();
+    void load() final;
+    void save() final;
+    void defaults() final;
 
 private:
     MagnifierEffectConfigForm* m_ui;

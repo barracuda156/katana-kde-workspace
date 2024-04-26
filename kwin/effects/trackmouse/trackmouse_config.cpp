@@ -56,8 +56,6 @@ TrackMouseEffectConfig::TrackMouseEffectConfig(QWidget* parent, const QVariantLi
     addConfig(TrackMouseConfig::self(), m_ui);
 
     m_actionCollection = new KActionCollection(this, KComponentData("kwin"));
-    m_actionCollection->setConfigGroup("TrackMouse");
-    m_actionCollection->setConfigGlobal(true);
 
     KAction *a = static_cast< KAction* >(m_actionCollection->addAction("TrackMouse"));
     a->setText(i18n("Track mouse"));
@@ -67,10 +65,6 @@ TrackMouseEffectConfig::TrackMouseEffectConfig(QWidget* parent, const QVariantLi
                             SLOT(shortcutChanged(QKeySequence)));
 
     load();
-}
-
-TrackMouseEffectConfig::~TrackMouseEffectConfig()
-{
 }
 
 void TrackMouseEffectConfig::checkModifiers()
@@ -84,6 +78,7 @@ void TrackMouseEffectConfig::checkModifiers()
 void TrackMouseEffectConfig::load()
 {
     KCModule::load();
+    m_actionCollection->readSettings();
     if (KAction *a = qobject_cast<KAction*>(m_actionCollection->action("TrackMouse")))
         m_ui->shortcut->setKeySequence(a->globalShortcut());
 
@@ -94,7 +89,7 @@ void TrackMouseEffectConfig::load()
 void TrackMouseEffectConfig::save()
 {
     KCModule::save();
-    m_actionCollection->writeSettings();
+    m_actionCollection->writeSettings(nullptr, true);
     EffectsHandler::sendReloadMessage("trackmouse");
 }
 

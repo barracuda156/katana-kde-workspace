@@ -729,8 +729,10 @@ void Workspace::slotReconfigure()
     bool borderlessMaximizedWindows = options->borderlessMaximizedWindows();
 
     KGlobal::config()->reparseConfiguration();
+    foreach (KActionCollection* collection, KActionCollection::allCollections()) {
+        collection->readSettings();
+    }
     unsigned long changed = options->updateSettings();
-
     emit configChanged();
     m_userActionsMenu->discard();
     updateToolWindows(true);

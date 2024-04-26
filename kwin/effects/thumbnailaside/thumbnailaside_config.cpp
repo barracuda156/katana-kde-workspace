@@ -60,9 +60,6 @@ ThumbnailAsideEffectConfig::ThumbnailAsideEffectConfig(QWidget* parent, const QV
     // Shortcut config. The shortcut belongs to the component "kwin"!
     m_actionCollection = new KActionCollection(this, KComponentData("kwin"));
 
-    m_actionCollection->setConfigGroup("ThumbnailAside");
-    m_actionCollection->setConfigGlobal(true);
-
     KAction* a = (KAction*)m_actionCollection->addAction("ToggleCurrentThumbnail");
     a->setText(i18n("Toggle Thumbnail for Current Window"));
     a->setProperty("isConfigurationAction", true);
@@ -71,6 +68,12 @@ ThumbnailAsideEffectConfig::ThumbnailAsideEffectConfig(QWidget* parent, const QV
     m_ui->editor->addCollection(m_actionCollection);
 
     load();
+}
+
+void ThumbnailAsideEffectConfig::load()
+{
+    KCModule::load();
+    m_ui->editor->importConfiguration();
 }
 
 void ThumbnailAsideEffectConfig::save()

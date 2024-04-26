@@ -53,9 +53,6 @@ PresentWindowsEffectConfig::PresentWindowsEffectConfig(QWidget* parent, const QV
     // Shortcut config. The shortcut belongs to the component "kwin"!
     m_actionCollection = new KActionCollection(this, KComponentData("kwin"));
 
-    m_actionCollection->setConfigGroup("PresentWindows");
-    m_actionCollection->setConfigGlobal(true);
-
     KAction* a = (KAction*) m_actionCollection->addAction("ExposeAll");
     a->setText(i18n("Toggle Present Windows (All desktops)"));
     a->setProperty("isConfigurationAction", true);
@@ -76,8 +73,12 @@ PresentWindowsEffectConfig::PresentWindowsEffectConfig(QWidget* parent, const QV
     connect(m_ui->shortcutEditor, SIGNAL(keyChange()), this, SLOT(changed()));
 
     addConfig(PresentWindowsConfig::self(), m_ui);
+}
 
-    load();
+void PresentWindowsEffectConfig::load()
+{
+    KCModule::load();
+    m_ui->shortcutEditor->importConfiguration();
 }
 
 void PresentWindowsEffectConfig::save()

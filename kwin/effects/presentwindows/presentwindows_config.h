@@ -44,8 +44,9 @@ public:
     explicit PresentWindowsEffectConfig(QWidget* parent = 0, const QVariantList& args = QVariantList());
 
 public slots:
-    virtual void save();
-    virtual void defaults();
+    void load() final;
+    void save();
+    void defaults();
 
 private:
     PresentWindowsEffectConfigForm* m_ui;

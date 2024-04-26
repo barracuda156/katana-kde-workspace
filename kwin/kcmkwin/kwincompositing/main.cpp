@@ -145,8 +145,6 @@ KWinCompositingConfig::KWinCompositingConfig(QWidget *parent, const QVariantList
 
     // toggle effects shortcut button stuff - /HAS/ to happen before load!
     m_actionCollection = new KActionCollection( this, KComponentData("kwin") );
-    m_actionCollection->setConfigGroup("Suspend Compositing");
-    m_actionCollection->setConfigGlobal(true);
 
     KAction* a = static_cast<KAction*>(m_actionCollection->addAction( "Suspend Compositing" ));
     a->setProperty("isConfigurationAction", true);
@@ -173,10 +171,6 @@ KWinCompositingConfig::KWinCompositingConfig(QWidget *parent, const QVariantList
 
     ui.desktopSwitchingCombo->addItem(i18n("No effect"));
     ui.desktopSwitchingCombo->addItem(slide);
-}
-
-KWinCompositingConfig::~KWinCompositingConfig()
-{
 }
 
 void KWinCompositingConfig::reparseConfiguration(const QByteArray& conf)
@@ -229,6 +223,8 @@ void KWinCompositingConfig::loadGeneralTab()
     KConfigGroup config(mKWinConfig, "Compositing");
     bool enabled = config.readEntry("Enabled", true);
     ui.useCompositing->setChecked(enabled);
+    
+    m_actionCollection->readSettings();
 
     // this works by global shortcut magics - it will pick the current sc
     // but the constructor line that adds the default alt+shift+f12 gsc is IMPORTANT!
@@ -271,7 +267,7 @@ void KWinCompositingConfig::toggleEffectShortcutChanged(const QKeySequence &seq)
 {
     if (KAction *a = qobject_cast<KAction*>(m_actionCollection->action("Suspend Compositing")))
         a->setGlobalShortcut(seq, KAction::ActiveShortcut);
-    m_actionCollection->writeSettings();
+    emit changed(true);
 }
 
 bool KWinCompositingConfig::effectEnabled(const QString& effect, const KConfigGroup& cfg) const
@@ -319,8 +315,7 @@ void KWinCompositingConfig::updateStatusUI(bool compositingIsPossible)
     if (compositingIsPossible) {
         ui.compositingOptionsContainer->show();
         ui.statusTitleWidget->hide();
-    }
-    else {
+    } else {
         OrgKdeKWinInterface kwin("org.kde.KWin", "/KWin", QDBusConnection::sessionBus());
         ui.compositingOptionsContainer->hide();
         QString text = i18n("Desktop effects are not available on this system due to the following technical issues:");
@@ -429,6 +424,9 @@ void KWinCompositingConfig::save()
     // Save current config. We'll use this for restoring in case something goes wrong.
     KConfigGroup config(mKWinConfig, "Compositing");
     mPreviousConfig = config.entryMap();
+
+    // Save shortcut changes
+    m_actionCollection->writeSettings(nullptr, true);
 
     // bah; tab content being dependent on the other is really bad; and
     // deprecated in the HIG for a reason.  It is confusing!

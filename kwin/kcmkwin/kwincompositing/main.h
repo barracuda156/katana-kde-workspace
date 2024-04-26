@@ -42,16 +42,15 @@ class KWinCompositingConfig : public KCModule
     Q_OBJECT
 public:
     KWinCompositingConfig(QWidget *parent, const QVariantList &args);
-    virtual ~KWinCompositingConfig();
 
-    virtual QString quickHelp() const;
+    QString quickHelp() const final;
 
 public slots:
     void currentTabChanged(int tab);
 
-    virtual void load();
-    virtual void save();
-    virtual void defaults();
+    void load() final;
+    void save() final;
+    void defaults() final;
     void reparseConfiguration(const QByteArray& conf);
 
     void loadGeneralTab();

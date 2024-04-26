@@ -79,7 +79,6 @@ void MouseMarkEffectConfig::save()
     kDebug(1212) << "Saving config of MouseMark" ;
     KCModule::save();
 
-    m_actionCollection->writeSettings();
     m_ui->editor->exportConfiguration();
 
     EffectsHandler::sendReloadMessage("mousemark");

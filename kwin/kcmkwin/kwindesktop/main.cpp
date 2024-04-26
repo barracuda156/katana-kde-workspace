@@ -80,12 +80,8 @@ void KWinDesktopConfig::init()
 
     // Shortcut config. The shortcut belongs to the component "kwin"!
     m_actionCollection = new KActionCollection(this, KComponentData("kwin"));
-    m_actionCollection->setConfigGroup("Desktop Switching");
-    m_actionCollection->setConfigGlobal(true);
 
     m_switchDesktopCollection = new KActionCollection(this, KComponentData("kwin"));
-    m_switchDesktopCollection->setConfigGroup("Desktop Switching");
-    m_switchDesktopCollection->setConfigGlobal(true);
 
     // actions for switch desktop collection - other action is filled dynamically
     addAction("Switch to Next Desktop", i18n("Switch to Next Desktop"));

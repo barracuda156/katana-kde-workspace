@@ -820,6 +820,9 @@ void Workspace::initShortcuts()
 #define IN_KWIN
 #include "kwinbindings.cpp"
     VirtualDesktopManager::self()->initShortcuts(actionCollection);
+    foreach (KActionCollection* collection, KActionCollection::allCollections()) {
+        collection->readSettings();
+    }
     m_userActionsMenu->discard(); // so that it's recreated next time
 }
 
