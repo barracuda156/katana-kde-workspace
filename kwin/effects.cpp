@@ -1225,6 +1225,12 @@ void EffectsHandlerImpl::unloadEffect(const QString& name)
 
 void EffectsHandlerImpl::reconfigureEffect(const QString& name)
 {
+    // effects use the global config for shortcuts and such, reload it
+    KGlobal::config()->reparseConfiguration();
+    foreach (KActionCollection* collection, KActionCollection::allCollections()) {
+        collection->readSettings();
+    }
+
     foreach (EffectPair &it, loaded_effects) {
         if (it.first == name) {
             it.second->reconfigure(Effect::ReconfigureAll);
