@@ -324,7 +324,8 @@ void SystemMonitorPartition::paint(QPainter *p, const QStyleOptionGraphicsItem *
     const QRectF rect(QPointF(0, 0), size());
     p->setPen(Plasma::Theme::defaultTheme()->color(Plasma::Theme::TextColor));
     QFontMetricsF pfmetrics(p->font());
-    const QString pstring = pfmetrics.elidedText(m_partitiondisplaystring, Qt::ElideRight, rect.width());
+    const qreal dotx3width = pfmetrics.width(QLatin1String("..."));
+    const QString pstring = pfmetrics.elidedText(m_partitiondisplaystring, Qt::ElideRight, rect.width() - dotx3width);
     p->drawText(rect, Qt::AlignCenter, pstring);
 }
 
