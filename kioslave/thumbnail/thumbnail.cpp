@@ -215,12 +215,10 @@ void ThumbnailProtocol::get(const KUrl &url)
         return;
     }
 
-    QByteArray imgData;
-    QDataStream stream( &imgData, QIODevice::WriteOnly );
-    //kDebug(7115) << "IMAGE TO STREAM";
-    stream << img;
-    mimeType("application/octet-stream");
-    data(imgData);
+    const QString imgpath = KTemporaryFile::filePath(QString::fromLatin1("XXXXXXXXXX%1").arg(thumbExt));
+    img.save(imgpath, thumbFormat);
+    mimeType(KMimeType::findByPath(imgpath)->name());
+    data(QFile::encodeName(imgpath));
     finished();
 }
 
