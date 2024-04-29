@@ -699,6 +699,8 @@ void SystemMonitorWidget::slotUpdateLayout()
         m_layout->removeItem(m_label);
         m_cpuframe->setVisible(true);
     }
+    adjustSize();
+    m_systemmonitor->adjustSize();
 
     // immediate update in case the update time is long
     locker.unlock();
@@ -809,12 +811,13 @@ SystemMonitor::SystemMonitor(QObject *parent, const QVariantList &args)
     m_spacer(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_system-monitor");
-    setAspectRatioMode(Plasma::IgnoreAspectRatio);
+    setAspectRatioMode(Plasma::FixedSize);
     setHasConfigurationInterface(true);
     m_systemmonitorwidget = new SystemMonitorWidget(this);
     setPopupIcon("utilities-system-monitor");
     // NOTE: no check has to be done if it is installed
     setAssociatedApplication("ksysguard");
+    adjustSize();
 }
 
 SystemMonitor::~SystemMonitor()
