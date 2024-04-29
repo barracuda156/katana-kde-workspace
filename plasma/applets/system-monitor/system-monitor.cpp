@@ -39,8 +39,8 @@ static const QString s_hostname = QString::fromLatin1("localhost");
 static const int s_port = -1;
 static const int s_monitorsid = -1;
 static const int s_update = 1; // 1 sec
-static const QSizeF s_minimumframesize = QSizeF(120, 70);
-static const QSizeF s_minimummetersize = QSizeF(70, 70);
+static const QSizeF s_minimumframesize = QSizeF(150, 90);
+static const QSizeF s_minimummetersize = QSizeF(90, 90);
 static const int s_textoffset = 10;
 
 enum KSensorType {
