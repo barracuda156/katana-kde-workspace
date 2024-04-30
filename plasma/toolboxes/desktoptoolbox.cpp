@@ -52,20 +52,13 @@ class EmptyGraphicsItem : public QGraphicsWidget
         EmptyGraphicsItem(QGraphicsItem *parent)
             : QGraphicsWidget(parent)
         {
-            setAcceptHoverEvents(true);
             m_layout = new QGraphicsLinearLayout(this);
             m_layout->setContentsMargins(0, 0, 0, 0);
-            m_layout->setSpacing(0);
             m_background = new Plasma::FrameSvg(this);
             m_background->setImagePath("widgets/background");
             m_background->setEnabledBorders(Plasma::FrameSvg::AllBorders);
             m_layout->setOrientation(Qt::Vertical);
-            m_itemBackground = new Plasma::ItemBackground(this);
             updateMargins();
-        }
-
-        ~EmptyGraphicsItem()
-        {
         }
 
         void updateMargins()
@@ -91,16 +84,7 @@ class EmptyGraphicsItem : public QGraphicsWidget
 
         void addToLayout(QGraphicsWidget *widget)
         {
-            qreal left, top, right, bottom;
-            m_itemBackground->getContentsMargins(&left, &top, &right, &bottom);
-            widget->setContentsMargins(left, top, right, bottom);
             m_layout->addItem(widget);
-            widget->installEventFilter(this);
-
-            if (m_layout->count() == 1) {
-                m_itemBackground->hide();
-                m_itemBackground->setTargetItem(widget);
-            }
         }
 
     protected:
@@ -109,30 +93,10 @@ class EmptyGraphicsItem : public QGraphicsWidget
             m_background->resizeFrame(size());
         }
 
-        bool eventFilter(QObject *watched, QEvent *event)
-        {
-            QGraphicsWidget *widget = qobject_cast<QGraphicsWidget *>(watched);
-            if (event->type() == QEvent::GraphicsSceneHoverEnter) {
-                m_itemBackground->setTargetItem(widget);
-            }
-            return false;
-        }
-
-        void hoverEnterEvent(QGraphicsSceneHoverEvent *event)
-        {
-            event->accept();
-        }
-
-        void hoverLeaveEvent(QGraphicsSceneHoverEvent *)
-        {
-            m_itemBackground->hide();
-        }
-
     private:
         QRectF m_rect;
         Plasma::FrameSvg *m_background;
         QGraphicsLinearLayout *m_layout;
-        Plasma::ItemBackground *m_itemBackground;
 };
 
 DesktopToolBox::DesktopToolBox(Plasma::Containment *parent)
