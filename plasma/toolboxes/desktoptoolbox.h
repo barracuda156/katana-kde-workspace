@@ -43,7 +43,7 @@ class DesktopToolBox : public InternalToolBox
 public:
     explicit DesktopToolBox(Plasma::Containment *parent = 0);
     explicit DesktopToolBox(QObject *parent = 0, const QVariantList &args = QVariantList());
-    ~DesktopToolBox();
+
     QRectF boundingRect() const;
     QPainterPath shape() const;
 

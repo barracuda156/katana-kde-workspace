@@ -58,12 +58,11 @@ class EmptyGraphicsItem : public QGraphicsWidget
             m_background->setImagePath("widgets/background");
             m_background->setEnabledBorders(Plasma::FrameSvg::AllBorders);
             m_layout->setOrientation(Qt::Vertical);
-            updateMargins();
-        }
 
-        void updateMargins()
-        {
-            qreal left, top, right, bottom;
+            qreal left = 0.0;
+            qreal top = 0.0;
+            qreal right = 0.0;
+            qreal bottom = 0.0;
             m_background->getMargins(left, top, right, bottom);
             setContentsMargins(left, top, right, bottom);
         }
@@ -76,8 +75,6 @@ class EmptyGraphicsItem : public QGraphicsWidget
         void clearLayout()
         {
             while (m_layout->count()) {
-                //safe? at the moment everything it's thre will always be QGraphicsWidget
-                static_cast<QGraphicsWidget *>(m_layout->itemAt(0))->removeEventFilter(this);
                 m_layout->removeAt(0);
             }
         }
@@ -88,13 +85,13 @@ class EmptyGraphicsItem : public QGraphicsWidget
         }
 
     protected:
-        void resizeEvent(QGraphicsSceneResizeEvent *)
+        void resizeEvent(QGraphicsSceneResizeEvent *event)
         {
+            QGraphicsWidget::resizeEvent(event);
             m_background->resizeFrame(size());
         }
 
     private:
-        QRectF m_rect;
         Plasma::FrameSvg *m_background;
         QGraphicsLinearLayout *m_layout;
 };
@@ -111,10 +108,6 @@ DesktopToolBox::DesktopToolBox(QObject *parent, const QVariantList &args)
 {
     m_containment = qobject_cast<Plasma::Containment *>(parent);
     init();
-}
-
-DesktopToolBox::~DesktopToolBox()
-{
 }
 
 void DesktopToolBox::init()
@@ -144,7 +137,10 @@ void DesktopToolBox::init()
 QSize DesktopToolBox::cornerSize() const
 {
     m_background->setEnabledBorders(Plasma::FrameSvg::AllBorders);
-    qreal left, top, right, bottom;
+    qreal left = 0.0;
+    qreal top = 0.0;
+    qreal right = 0.0;
+    qreal bottom = 0.0;
     m_background->getMargins(left, top, right, bottom);
     adjustBackgroundBorders();
 
@@ -154,23 +150,25 @@ QSize DesktopToolBox::cornerSize() const
 QSize DesktopToolBox::fullWidth() const
 {
     m_background->setEnabledBorders(Plasma::FrameSvg::AllBorders);
-    qreal left, top, right, bottom;
+    qreal left = 0.0;
+    qreal top = 0.0;
+    qreal right = 0.0;
+    qreal bottom = 0.0;
     m_background->getMargins(left, top, right, bottom);
     adjustBackgroundBorders();
-
-    int extraSpace = 0;
-    return QSize(size() + left + right + extraSpace, size() + bottom);
+    return QSize(size() + left + right, size() + bottom);
 }
 
 QSize DesktopToolBox::fullHeight() const
 {
     m_background->setEnabledBorders(Plasma::FrameSvg::AllBorders);
-    qreal left, top, right, bottom;
+    qreal left = 0.0;
+    qreal top = 0.0;
+    qreal right = 0.0;
+    qreal bottom = 0.0;
     m_background->getMargins(left, top, right, bottom);
     adjustBackgroundBorders();
-
-    int extraSpace = 0;
-    return QSize(size() + left, size() + top + bottom + extraSpace);
+    return QSize(size() + left, size() + top + bottom);
 }
 
 void DesktopToolBox::toolTipAboutToShow()
@@ -179,10 +177,11 @@ void DesktopToolBox::toolTipAboutToShow()
         return;
     }
 
-    Plasma::ToolTipContent c(i18n("Tool Box"),
-                     i18n("Click to access configuration options and controls, or to add more widgets to the %1.",
-                          containment()->name()),
-                     KIcon("plasma"));
+    Plasma::ToolTipContent c(
+        i18n("Tool Box"),
+        i18n("Click to access configuration options and controls, or to add more widgets to the %1.", containment()->name()),
+        KIcon("plasma")
+    );
     c.setAutohide(false);
     Plasma::ToolTipManager::self()->setContent(this, c);
 }
