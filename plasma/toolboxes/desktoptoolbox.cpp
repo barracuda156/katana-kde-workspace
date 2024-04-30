@@ -114,13 +114,16 @@ void DesktopToolBox::init()
 {
     m_icon = KIcon("plasma");
     m_toolBacker = 0;
+    m_animHighlightFrame = 0;
+    m_hovering = false;
     m_background = new Plasma::FrameSvg(this);
     m_background->setImagePath("widgets/toolbox");
 
     setZValue(INT_MAX);
 
     setIsMovable(true);
-    setFlags(flags()|QGraphicsItem::ItemIsFocusable);
+    setAcceptHoverEvents(true);
+    setFlags(flags() | QGraphicsItem::ItemIsFocusable);
     updateTheming();
 
     connect(this, SIGNAL(toggled()), this, SLOT(toggle()));
@@ -261,10 +264,55 @@ void DesktopToolBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
         m_background->paintFrame(painter, rect.topLeft());
     }
 
-    QRect iconRect = QStyle::alignedRect(QApplication::layoutDirection(), Qt::AlignCenter, iconSize(), m_background->contentsRect().toRect());
+    QRect iconRect = QStyle::alignedRect(
+        QApplication::layoutDirection(), Qt::AlignCenter,
+        iconSize(), m_background->contentsRect().toRect()
+    );
     iconRect.moveTopLeft(iconRect.topLeft() + rect.topLeft().toPoint());
+    const QPoint iconPos = iconRect.topLeft();
 
-    m_icon.paint(painter, QRect(iconRect.topLeft(), iconSize()), Qt::AlignCenter, QIcon::Disabled, QIcon::Off);
+    if (qFuzzyCompare(qreal(1.0), m_animHighlightFrame)) {
+        m_icon.paint(painter, QRect(iconPos, iconSize()));
+    } else if (qFuzzyCompare(qreal(1.0), 1 + m_animHighlightFrame)) {
+        m_icon.paint(
+            painter, QRect(iconPos, iconSize()),
+            Qt::AlignCenter, QIcon::Disabled, QIcon::Off
+        );
+    } else {
+        painter->drawPixmap(
+            QRect(iconPos, iconSize()),
+                Plasma::PaintUtils::transition(
+                m_icon.pixmap(iconSize(), QIcon::Disabled, QIcon::Off),
+                m_icon.pixmap(iconSize()), m_animHighlightFrame
+            )
+        );
+    }
+}
+
+void DesktopToolBox::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+    if (isShowing() || m_hovering) {
+        QGraphicsItem::hoverEnterEvent(event);
+        return;
+    }
+
+    highlight(true);
+
+    QGraphicsItem::hoverEnterEvent(event);
+}
+
+void DesktopToolBox::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    //kDebug() << event->pos() << event->scenePos()
+    //         << m_toolBacker->rect().contains(event->scenePos().toPoint());
+    if (!m_hovering || isShowing()) {
+        QGraphicsItem::hoverLeaveEvent(event);
+        return;
+    }
+
+    highlight(false);
+
+    QGraphicsItem::hoverLeaveEvent(event);
 }
 
 QPainterPath DesktopToolBox::shape() const
@@ -329,7 +377,7 @@ void DesktopToolBox::showToolBox()
     fadeAnim->setProperty("startOpacity", 0);
     fadeAnim->setProperty("targetOpacity", 1);
     fadeAnim->start(QAbstractAnimation::DeleteWhenStopped);
-    update();
+    highlight(true);
     setFocus();
 }
 
@@ -506,11 +554,58 @@ void DesktopToolBox::hideToolBox()
         fadeAnim->setProperty("targetOpacity", 0);
         fadeAnim->start(QAbstractAnimation::DeleteWhenStopped);
     }
+    highlight(false);
 }
 
 void DesktopToolBox::hideToolBacker()
 {
     m_toolBacker->hide();
+}
+
+void DesktopToolBox::highlight(bool highlighting)
+{
+    if (m_hovering == highlighting) {
+        return;
+    }
+
+    m_hovering = highlighting;
+
+    QPropertyAnimation *anim = m_anim.data();
+    if (m_hovering) {
+        if (anim) {
+            anim->stop();
+            m_anim.clear();
+        }
+        anim = new QPropertyAnimation(this, "highlight", this);
+        m_anim = anim;
+    }
+
+    if (anim->state() != QAbstractAnimation::Stopped) {
+        anim->stop();
+    }
+
+    anim->setDuration(250);
+    anim->setStartValue(0.0);
+    anim->setEndValue(1.0);
+
+    if (m_hovering) {
+        anim->start();
+    } else {
+        anim->setDirection(QAbstractAnimation::Backward);
+        anim->start(QAbstractAnimation::DeleteWhenStopped);
+
+    }
+}
+
+void DesktopToolBox::setHighlight(qreal progress)
+{
+    m_animHighlightFrame = progress;
+    update();
+}
+
+qreal DesktopToolBox::highlight()
+{
+    return m_animHighlightFrame;
 }
 
 void DesktopToolBox::toggle()

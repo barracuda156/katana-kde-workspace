@@ -23,7 +23,7 @@
 
 #include <QGraphicsItem>
 #include <QPropertyAnimation>
-#include <QtCore/qdatetime.h>
+#include <QWeakPointer>
 
 #include <KIcon>
 
@@ -39,7 +39,7 @@ class DesktopToolBoxPrivate;
 class DesktopToolBox : public InternalToolBox
 {
     Q_OBJECT
-
+    Q_PROPERTY(qreal highlight READ highlight WRITE setHighlight)
 public:
     explicit DesktopToolBox(Plasma::Containment *parent = 0);
     explicit DesktopToolBox(QObject *parent = 0, const QVariantList &args = QVariantList());
@@ -65,10 +65,14 @@ public Q_SLOTS:
 
 protected:
     void init();
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
-    void keyPressEvent(QKeyEvent *event);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) final;
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event) final;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) final;
+    void keyPressEvent(QKeyEvent *event) final;
 
 protected Q_SLOTS:
+    void setHighlight(qreal progress);
+    qreal highlight();
     void updateTheming();
     void toolTriggered(bool);
     void hideToolBacker();
@@ -82,6 +86,7 @@ protected Q_SLOTS:
     void logout();
 
 private:
+    void highlight(bool highlighting);
     void adjustToolBackerGeometry();
     void adjustBackgroundBorders() const;
 
@@ -90,6 +95,9 @@ private:
     QMultiMap<Plasma::AbstractToolBox::ToolType, Plasma::ToolButton *> m_tools;
     KIcon m_icon;
     EmptyGraphicsItem *m_toolBacker;
+    QWeakPointer<QPropertyAnimation> m_anim;
+    qreal m_animHighlightFrame;
+    bool m_hovering;
 };
 
 K_EXPORT_PLASMA_TOOLBOX(desktoptoolbox, DesktopToolBox)
