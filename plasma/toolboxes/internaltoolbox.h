@@ -30,9 +30,6 @@
 #include <QAction>
 
 class KConfigGroup;
-
-
-
 class IconWidget;
 class InternalToolBoxPrivate;
 
@@ -85,9 +82,6 @@ public:
     virtual QSize fullHeight() const;
     virtual QSize cornerSize() const;
     virtual void updateToolBox() {}
-
-    void setIconic(bool iconic);
-    bool iconic() const;
 
     virtual void showToolBox() = 0;
     virtual void hideToolBox() = 0;
