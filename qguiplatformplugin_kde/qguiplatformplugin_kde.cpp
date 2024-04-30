@@ -117,7 +117,10 @@ public:
 private slots:
     void init()
     {
-        updateEffects();
+        updateToolbarStyle();
+        updateToolbarIcons();
+        updateStyle();
+        updatePalette();
         updateMouse();
 
         connect(KIconLoader::global(), SIGNAL(iconLoaderSettingsChanged()), this, SLOT(updateToolbarIcons()));
