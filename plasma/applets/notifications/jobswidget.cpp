@@ -127,6 +127,7 @@ void JobFrame::slotJobUpdated(const QString &name, const QVariantMap &data)
     const QByteArray state = data.value("state").toByteArray();
     const bool killable = data.value("killable").toBool();
     const QString desturl = data.value("destUrl").toString();
+    const QString error = data.value("error").toString();
     if (!appiconname.isEmpty()) {
         m_iconwidget->setIcon(appiconname);
     }
@@ -191,7 +192,6 @@ void JobFrame::slotJobUpdated(const QString &name, const QVariantMap &data)
         }
     }
     // error overrides everything iconwidget1 does
-    const QString error = data.value("error").toString();
     if (!error.isEmpty()) {
         m_iconwidget1->setVisible(false);
         m_iconwidget1->setAcceptHoverEvents(false);

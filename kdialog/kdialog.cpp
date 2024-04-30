@@ -119,7 +119,6 @@ bool sendVisualNotification(const QString &text, const QString &title, const QSt
   }
 
   QVariantMap notificationData;
-  notificationData.insert("appName", "kdialog");
   notificationData.insert("appIcon", icon);
   notificationData.insert("summary", title);
   notificationData.insert("body", text);
