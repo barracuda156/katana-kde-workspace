@@ -122,11 +122,13 @@ private slots:
         updateStyle();
         updatePalette();
         updateMouse();
+        updateFonts();
 
         connect(KIconLoader::global(), SIGNAL(iconLoaderSettingsChanged()), this, SLOT(updateToolbarIcons()));
         connect(KGlobalSettings::self(), SIGNAL(toolbarAppearanceChanged(int)), this, SLOT(updateToolbarStyle()));
         connect(KGlobalSettings::self(), SIGNAL(kdisplayStyleChanged()), this, SLOT(updateStyle()));
         connect(KGlobalSettings::self(), SIGNAL(kdisplayPaletteChanged()), this, SLOT(updatePalette()));
+        connect(KGlobalSettings::self(), SIGNAL(kdisplayFontChanged()), this, SLOT(updateFonts()));
         connect(KGlobalSettings::self(), SIGNAL(mouseChanged()), this, SLOT(updateMouse()));
     }
 
@@ -218,6 +220,25 @@ private slots:
         QApplication::setWheelScrollLines(num);
         bool showIcons = kdegroup.readEntry("ShowIconsInMenuItems", !QApplication::testAttribute(Qt::AA_DontShowIconsInMenus));
         QApplication::setAttribute(Qt::AA_DontShowIconsInMenus, !showIcons);
+    }
+
+    void updateFonts()
+    {
+        QFont defaultFont(KDE_DEFAULT_FONT, 9);
+        KConfigGroup g(KGlobal::config(), "General");
+        const QFont generalFont = g.readEntry("font", defaultFont);
+        const QFont menuFont = g.readEntry("menuFont", defaultFont);
+        defaultFont = QFont(KDE_DEFAULT_FIXED_FONT, 8);
+        const QFont toolBarFont = g.readEntry("toolBarFont", defaultFont);
+        defaultFont = QFont(KDE_DEFAULT_FIXED_FONT, 9);
+        const QFont fixedFont = g.readEntry("fixed", defaultFont);
+
+        QApplication::setFont(generalFont);
+        QApplication::setFont(menuFont, "QMenuBar");
+        QApplication::setFont(menuFont, "QMenu");
+        QApplication::setFont(toolBarFont, "QToolBar");
+        QApplication::setFont(fixedFont, "QTextEdit");
+        QApplication::setFont(fixedFont, "QPlainTextEdit");
     }
 };
 
