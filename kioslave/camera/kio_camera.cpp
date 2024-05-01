@@ -45,7 +45,6 @@
 #include <klocale.h>
 #include <kprotocolinfo.h>
 #include <kio/global.h>
-#include <kio/slaveconfig.h>
 #include <kconfiggroup.h>
 
 #include "kio_camera.h"

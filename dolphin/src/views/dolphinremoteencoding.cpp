@@ -38,7 +38,6 @@
 #include <KMenu>
 #include <KProtocolInfo>
 #include <KProtocolManager>
-#include <KIO/Scheduler>
 #include <KConfigGroup>
 
 #define DATA_KEY        QLatin1String("Charset")
@@ -219,7 +218,7 @@ void DolphinRemoteEncoding::slotDefault()
 
 void DolphinRemoteEncoding::updateView()
 {
-    KIO::Scheduler::emitReparseSlaveConfiguration();
+    KProtocolManager::reparseConfiguration();
     // Reload the page with the new charset
     m_actionHandler->currentView()->setUrl(m_currentURL);
     m_actionHandler->currentView()->reload();

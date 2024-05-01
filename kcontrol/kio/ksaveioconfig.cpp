@@ -104,15 +104,8 @@ void KSaveIOConfig::setAutoResume( bool _mode )
 
 void KSaveIOConfig::updateRunningIOSlaves (QWidget *parent)
 {
-  // Inform all running io-slaves about the changes...
-  // if we cannot update, ioslaves inform the end user...
-  QDBusMessage message = QDBusMessage::createSignal("/KIO/Scheduler", "org.kde.KIO.Scheduler", "reparseSlaveConfiguration");
-  message << QString();
-  if (!QDBusConnection::sessionBus().send(message))
-  {
-    KMessageBox::information (parent,
-                              i18n("You have to restart the running applications "
-                                   "for these changes to take effect."),
-                              i18nc("@title:window", "Update Failed"));
-  }
+    KMessageBox::information(
+        parent,
+        i18n("You have to restart the running applications for these changes to take effect.")
+    );
 }

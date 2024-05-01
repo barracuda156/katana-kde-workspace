@@ -24,8 +24,8 @@
 #include <KFileItem>
 #include <KProtocolInfo>
 #include <KUrl>
+#include <KIO/Job>
 #include <KIO/StatJob>
-#include <KIO/Scheduler>
 
 
 AsyncFileTester::AsyncFileTester(const QModelIndex &index, QObject *object, const char *member)
