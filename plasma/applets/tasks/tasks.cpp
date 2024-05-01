@@ -21,6 +21,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QSpacerItem>
+#include <QPropertyAnimation>
 #include <Plasma/Animation>
 #include <Plasma/Svg>
 #include <Plasma/FrameSvg>
@@ -36,6 +37,9 @@
 // standard issue margin/spacing
 static const int s_spacing = 6;
 static const TasksApplet::ToolTipMode s_defaultooltipmode = TasksApplet::ToolTipPreview;
+// NOTE: same as the one in:
+// kdelibs/plasma/animations/animation.cpp
+static const int s_animationduration = 250;
 
 static bool kIsPanel(const Plasma::FormFactor formfactor)
 {
@@ -62,11 +66,9 @@ static QSizeF kTaskSize(const QSizeF appletsize, const Plasma::FormFactor formfa
     return QSizeF(iconsize, iconsize);
 }
 
-static QString kElementPrefixForTask(const bool hovered, const bool isactive, const bool demandsattention)
+static QString kElementPrefixForTask(const bool isactive, const bool demandsattention)
 {
-    if (hovered) {
-        return QString::fromLatin1("hover");
-    } else if (isactive) {
+    if (isactive) {
         return QString::fromLatin1("focus");
     } else if (demandsattention) {
         return QString::fromLatin1("attention");
@@ -77,8 +79,12 @@ static QString kElementPrefixForTask(const bool hovered, const bool isactive, co
 class TasksSvg : public Plasma::SvgWidget
 {
     Q_OBJECT
+    Q_PROPERTY(qreal hover READ hover WRITE setHover)
 public:
     TasksSvg(const WId task, const TasksApplet::ToolTipMode tooltipmode, QGraphicsItem *parent = nullptr);
+
+    qreal hover() const;
+    void setHover(qreal hover);
 
     WId task() const;
     void animatedShow();
@@ -103,8 +109,10 @@ private:
     void updatePixmapAndToolTip();
 
     WId m_task;
-    bool m_hovered;
     Plasma::FrameSvg* m_framesvg;
+    Plasma::FrameSvg* m_hoversvg;
+    QPropertyAnimation* m_animation;
+    qreal m_hover;
     QPixmap m_pixmap;
     QString m_name;
     TasksApplet::ToolTipMode m_tooltipmode;
@@ -116,8 +124,10 @@ private:
 TasksSvg::TasksSvg(const WId task, const TasksApplet::ToolTipMode tooltipmode, QGraphicsItem *parent)
     : Plasma::SvgWidget(parent),
     m_task(task),
-    m_hovered(false),
     m_framesvg(nullptr),
+    m_hoversvg(nullptr),
+    m_animation(nullptr),
+    m_hover(0.0),
     m_tooltipmode(tooltipmode)
 {
     updatePixmapAndToolTip();
@@ -143,6 +153,17 @@ TasksSvg::TasksSvg(const WId task, const TasksApplet::ToolTipMode tooltipmode, Q
         Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()),
         this, SLOT(slotUpdateSvg())
     );
+}
+
+qreal TasksSvg::hover() const
+{
+    return m_hover;
+}
+
+void TasksSvg::setHover(qreal hover)
+{
+    m_hover = hover;
+    update();
 }
 
 WId TasksSvg::task() const
@@ -187,9 +208,14 @@ void TasksSvg::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->setRenderHint(QPainter::Antialiasing);
     const QRectF brect = boundingRect();
     const QSizeF brectsize = brect.size();
-    m_framesvg->setElementPrefix(kElementPrefixForTask(m_hovered, isactive, demandsattention));
+    m_framesvg->setElementPrefix(kElementPrefixForTask(isactive, demandsattention));
     m_framesvg->resizeFrame(brectsize);
     m_framesvg->paintFrame(painter, brect);
+    const qreal oldopacity = painter->opacity();
+    painter->setOpacity(m_hover);
+    m_hoversvg->resizeFrame(brectsize);
+    m_hoversvg->paintFrame(painter, brect);
+    painter->setOpacity(oldopacity);
     const int spacingx2 = (s_spacing * 2);
     const int iconsize = qRound(qMin(brectsize.width(), brectsize.height()));
     QPixmap iconpixmap = m_pixmap;
@@ -227,15 +253,29 @@ QSizeF TasksSvg::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 void TasksSvg::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    m_hovered = true;
-    update();
+    if (m_animation) {
+        m_animation->stop();
+    } else {
+        m_animation = new QPropertyAnimation(this, "hover", this);
+        m_animation->setDuration(s_animationduration);
+    }
+    m_animation->setStartValue(hover());
+    m_animation->setEndValue(1.0);
+    m_animation->start(QAbstractAnimation::KeepWhenStopped);
 }
 
 void TasksSvg::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    m_hovered = false;
-    update();
+    if (m_animation) {
+        m_animation->stop();
+    } else {
+        m_animation = new QPropertyAnimation(this, "hover", this);
+        m_animation->setDuration(s_animationduration);
+    }
+    m_animation->setStartValue(hover());
+    m_animation->setEndValue(0.0);
+    m_animation->start(QAbstractAnimation::KeepWhenStopped);
 }
 
 void TasksSvg::updatePixmapAndToolTip()
@@ -318,12 +358,14 @@ void TasksSvg::slotUpdate()
 
 void TasksSvg::slotUpdateSvg()
 {
-    if (m_framesvg) {
-        delete m_framesvg;
-    }
+    delete m_framesvg;
+    delete m_hoversvg;
     m_framesvg = new Plasma::FrameSvg(this);
     m_framesvg->setImagePath("widgets/tasks");
     setSvg(m_framesvg);
+    m_hoversvg = new Plasma::FrameSvg(this);
+    m_hoversvg->setImagePath("widgets/tasks");
+    m_hoversvg->setElementPrefix(QString::fromLatin1("hover"));
 }
 
 
