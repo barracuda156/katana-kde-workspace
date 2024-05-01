@@ -151,7 +151,7 @@ void ClientApp::delayedQuit()
 {
     // Quit in 2 seconds. This leaves time for KRun to pop up
     // "app not found" in KProcessRunner, if that was the case.
-    QTimer::singleShot( 2000, this, SLOT(deref()) );
+    QTimer::singleShot( 2000, this, SLOT(quit()) );
     // don't access the KRun instance later, it will be deleted after calling slots
     if( static_cast< const KRun* >( sender())->hasError())
         krun_has_error = true;
@@ -277,13 +277,9 @@ bool ClientApp::doIt()
 #endif
 
     kDebug() << "Creating ClientApp";
-    int fake_argc = 0;
-    char** fake_argv = 0;
-    ClientApp app( fake_argc, fake_argv );
+    ClientApp app;
     KComponentData componentData("kioclient"); // needed by KIO's internal use of KConfig
     app.setApplicationName(componentData.componentName());
-    KGlobal::ref();
-    KGlobal::setAllowQuit(true);
 
     // KIO needs dbus (for uiserver communication)
     if (!QDBusConnection::sessionBus().isConnected())
@@ -406,20 +402,10 @@ void ClientApp::slotDialogCanceled()
     quit();
 }
 
-void ClientApp::deref()
-{
-    KGlobal::deref();
-}
-
 void ClientApp::slotPrintData(KIO::Job*, const QByteArray &data)
 {
     if (!data.isEmpty())
         std::cout.write(data.constData(), data.size());
-}
-
-ClientApp::ClientApp(int &argc, char **argv )
-    : QApplication( argc, argv )
-{
 }
 
 #include "moc_kioclient.cpp"

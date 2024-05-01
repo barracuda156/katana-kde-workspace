@@ -19,18 +19,15 @@
 #ifndef KIOCLIENT_H
 #define KIOCLIENT_H
 
-#include <QApplication>
+#include <kapplication.h>
+#include <kurl.h>
 #include <kio/udsentry.h>
-class KUrl;
-class KJob;
-namespace KIO { class Job; }
+#include <kio/job.h>
 
-class ClientApp : public QApplication
+class ClientApp : public KApplication
 {
     Q_OBJECT
 public:
-    ClientApp(int &argc, char **argv );
-
     /** Parse command-line arguments and "do it" */
     static bool doIt();
 
@@ -40,7 +37,6 @@ private Q_SLOTS:
     void slotResult( KJob * );
     void delayedQuit();
     void slotDialogCanceled();
-    void deref();
 
 private:
     bool kde_open( const KUrl& url, const QString& mimeType, bool allowExec );
