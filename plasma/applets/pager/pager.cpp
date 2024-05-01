@@ -21,6 +21,7 @@
 #include <QX11Info>
 #include <QGridLayout>
 #include <QLabel>
+#include <QPropertyAnimation>
 #include <Plasma/Svg>
 #include <Plasma/FrameSvg>
 #include <Plasma/SvgWidget>
@@ -35,12 +36,13 @@
 // standard issue margin/spacing
 static const int s_spacing = 4;
 static PagerApplet::PagerMode s_defaultpagermode = PagerApplet::ShowName;
+// NOTE: same as the one in:
+// kdelibs/plasma/animations/animation.cpp
+static const int s_animationduration = 250;
 
-static QString kElementPrefixForDesktop(const int desktop, const bool hovered)
+static QString kElementPrefixForDesktop(const int desktop)
 {
-    if (hovered) {
-        return QString::fromLatin1("hover");
-    } else if (KWindowSystem::currentDesktop() == desktop) {
+    if (KWindowSystem::currentDesktop() == desktop) {
         return QString::fromLatin1("active");
     }
     return QString::fromLatin1("normal");
@@ -98,8 +100,12 @@ static bool kHandleMouseEvent(QGraphicsSceneMouseEvent *event)
 class PagerSvg : public Plasma::SvgWidget
 {
     Q_OBJECT
+    Q_PROPERTY(qreal hover READ hover WRITE setHover)
 public:
     PagerSvg(const int desktop, const PagerApplet::PagerMode pagermode, QGraphicsItem *parent = nullptr);
+
+    qreal hover() const;
+    void setHover(qreal hover);
 
     void setup(const PagerApplet::PagerMode pagermode);
 
@@ -118,8 +124,10 @@ private Q_SLOTS:
 
 private:
     int m_desktop;
-    bool m_hovered;
     Plasma::FrameSvg* m_framesvg;
+    Plasma::FrameSvg* m_hoversvg;
+    QPropertyAnimation* m_animation;
+    qreal m_hover;
     PagerApplet::PagerMode m_pagermode;
 
     // updateGeometry() is protected but size hint is based on orientation and geometry has to be
@@ -130,8 +138,10 @@ private:
 PagerSvg::PagerSvg(const int desktop, const PagerApplet::PagerMode pagermode, QGraphicsItem *parent)
     : Plasma::SvgWidget(parent),
     m_desktop(desktop),
-    m_hovered(false),
     m_framesvg(nullptr),
+    m_hoversvg(nullptr),
+    m_animation(nullptr),
+    m_hover(0.0),
     m_pagermode(pagermode)
 {
     setAcceptHoverEvents(true);
@@ -153,6 +163,17 @@ PagerSvg::PagerSvg(const int desktop, const PagerApplet::PagerMode pagermode, QG
         Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()),
         this, SLOT(slotUpdateSvgAndToolTip())
     );
+}
+
+qreal PagerSvg::hover() const
+{
+    return m_hover;
+}
+
+void PagerSvg::setHover(qreal hover)
+{
+    m_hover = hover;
+    update();
 }
 
 void PagerSvg::setup(const PagerApplet::PagerMode pagermode)
@@ -228,9 +249,14 @@ void PagerSvg::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->setFont(kGetFont());
     const QRectF brect = boundingRect();
     const QSizeF brectsize = brect.size();
-    m_framesvg->setElementPrefix(kElementPrefixForDesktop(m_desktop, m_hovered));
+    m_framesvg->setElementPrefix(kElementPrefixForDesktop(m_desktop));
     m_framesvg->resizeFrame(brectsize);
     m_framesvg->paintFrame(painter, brect);
+    const qreal oldopacity = painter->opacity();
+    painter->setOpacity(m_hover);
+    m_hoversvg->resizeFrame(brectsize);
+    m_hoversvg->paintFrame(painter, brect);
+    painter->setOpacity(oldopacity);
     QString pagertext;
     switch (m_pagermode) {
         case PagerApplet::ShowNumber: {
@@ -258,15 +284,29 @@ void PagerSvg::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 void PagerSvg::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    m_hovered = true;
-    update();
+    if (m_animation) {
+        m_animation->stop();
+    } else {
+        m_animation = new QPropertyAnimation(this, "hover", this);
+        m_animation->setDuration(s_animationduration);
+    }
+    m_animation->setStartValue(hover());
+    m_animation->setEndValue(1.0);
+    m_animation->start(QAbstractAnimation::KeepWhenStopped);
 }
 
 void PagerSvg::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    m_hovered = false;
-    update();
+    if (m_animation) {
+        m_animation->stop();
+    } else {
+        m_animation = new QPropertyAnimation(this, "hover", this);
+        m_animation->setDuration(s_animationduration);
+    }
+    m_animation->setStartValue(hover());
+    m_animation->setEndValue(0.0);
+    m_animation->start(QAbstractAnimation::KeepWhenStopped);
 }
 
 void PagerSvg::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -292,12 +332,14 @@ void PagerSvg::slotUpdate()
 
 void PagerSvg::slotUpdateSvgAndToolTip()
 {
-    if (m_framesvg) {
-        delete m_framesvg;
-    }
+    delete m_framesvg;
+    delete m_hoversvg;
     m_framesvg = new Plasma::FrameSvg(this);
     m_framesvg->setImagePath("widgets/pager");
     setSvg(m_framesvg);
+    m_hoversvg = new Plasma::FrameSvg(this);
+    m_hoversvg->setImagePath("widgets/pager");
+    m_hoversvg->setElementPrefix(QString::fromLatin1("hover"));
     Plasma::ToolTipContent plasmatooltip;
     plasmatooltip.setMainText(QString::fromLatin1("<center>%1</center>").arg(KWindowSystem::desktopName(m_desktop)));
     Plasma::ToolTipManager::self()->setContent(this, plasmatooltip);
