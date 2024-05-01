@@ -173,6 +173,7 @@ WId TasksSvg::task() const
 
 void TasksSvg::animatedShow()
 {
+    setOpacity(0.0);
     show();
     Plasma::Animation *animation = Plasma::Animator::create(Plasma::Animator::FadeAnimation, this);
     Q_ASSERT(animation != nullptr);
