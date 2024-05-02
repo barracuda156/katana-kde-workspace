@@ -32,7 +32,6 @@ DefaultDesktop::DefaultDesktop(QObject *parent, const QVariantList &args)
       dropping(false),
       m_startupCompleted(false)
 {
-    qRegisterMetaType<QImage>("QImage");
     qRegisterMetaType<QPersistentModelIndex>("QPersistentModelIndex");
 
     m_delayedRefreshTimer = new QTimer(this);
