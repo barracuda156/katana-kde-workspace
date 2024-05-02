@@ -481,59 +481,34 @@ void MTPSlave::put(const KUrl& url, int, JobFlags flags)
         return;
     }
 
-    // We did get a total size from the application
-    if (hasMetaData(QLatin1String("sourceSize"))) {
-        kDebug(KIO_MTP) << "direct put";
+    KTemporaryFile temp;
+    QByteArray buffer;
+    int len = 0;
 
-        LIBMTP_file_t *file = LIBMTP_new_file_t();
-        file->parent_id = parent->item_id;
-        file->filename = strdup(url.fileName().toUtf8().data());
-        file->filetype = getFiletype(url.fileName());
-        file->filesize = metaData(QLatin1String("sourceSize")).toULongLong();
-        file->modificationdate = QDateTime::currentDateTime().toTime_t();
-        file->storage_id = parent->storage_id;
+    do {
+        dataReq();
+        len = readData(buffer);
+        temp.write (buffer);
+    } while (len > 0);
 
-        kDebug(KIO_MTP) << "Sending file" << file->filename;
+    QFileInfo info(temp);
 
-        int ret = LIBMTP_Send_File_From_Handler(device, &dataGet, this, file, &dataProgress, this);
-        if (ret != 0) {
-            resetDeviceStack(device);
-            error(KIO::ERR_COULD_NOT_WRITE, url.fileName());
-            return;
-        }
-    // We need to get the entire file first, then we can upload
-    } else {
-        kDebug(KIO_MTP) << "use temp file";
-
-        KTemporaryFile temp;
-        QByteArray buffer;
-        int len = 0;
-
-        do {
-            dataReq();
-            len = readData(buffer);
-            temp.write (buffer);
-        } while (len > 0);
-
-        QFileInfo info(temp);
-
-        LIBMTP_file_t *file = LIBMTP_new_file_t();
-        file->parent_id = parent->item_id;
-        file->filename = strdup(url.fileName().toUtf8().data());
-        file->filetype = getFiletype(url.fileName());
-        file->filesize = info.size();
-        file->modificationdate = QDateTime::currentDateTime().toTime_t();
-        file->storage_id = parent->storage_id;
+    LIBMTP_file_t *file = LIBMTP_new_file_t();
+    file->parent_id = parent->item_id;
+    file->filename = strdup(url.fileName().toUtf8().data());
+    file->filetype = getFiletype(url.fileName());
+    file->filesize = info.size();
+    file->modificationdate = QDateTime::currentDateTime().toTime_t();
+    file->storage_id = parent->storage_id;
 
 
-        int ret = LIBMTP_Send_File_From_File_Descriptor(device, temp.handle(), file, NULL, NULL);
-        if (ret != 0) {
-            resetDeviceStack(device);
-            error(KIO::ERR_COULD_NOT_WRITE, url.fileName());
-            return;
-        }
-        finished();
+    int ret = LIBMTP_Send_File_From_File_Descriptor(device, temp.handle(), file, NULL, NULL);
+    if (ret != 0) {
+        resetDeviceStack(device);
+        error(KIO::ERR_COULD_NOT_WRITE, url.fileName());
+        return;
     }
+    finished();
 }
 
 void MTPSlave::get(const KUrl& url)
