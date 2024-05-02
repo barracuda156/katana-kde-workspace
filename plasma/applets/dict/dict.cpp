@@ -20,6 +20,7 @@
 #include "dict.h"
 
 #include <QGraphicsGridLayout>
+#include <QTimer>
 #include <QJsonDocument>
 #include <KIcon>
 #include <KLineEdit>
@@ -33,6 +34,7 @@
 static const QString s_dictapi = QString::fromLatin1("https://api.dictionaryapi.dev/api/v2/entries/en/");
 static const QString s_defaultpopupicon = QString::fromLatin1("accessories-dictionary");
 static const QSizeF s_minimumsize = QSizeF(300, 250);
+static const int s_worddelay = 500; // ms
 
 class DictAppletWidget : public QGraphicsWidget
 {
@@ -41,7 +43,8 @@ public:
     DictAppletWidget(DictApplet* dictapplet);
 
 private Q_SLOTS:
-    void slotWordChanged();
+    void slotWordChanged(const QString &text);
+    void slotWordTimeout();
     void slotFinished(KJob *kjob);
 
 private:
@@ -53,6 +56,7 @@ private:
     Plasma::LineEdit* m_wordedit;
     Plasma::TextBrowser* m_textbrowser;
     QTextBrowser* m_nativetextbrowser;
+    QTimer* m_wordtimer;
     KIO::StoredTransferJob* m_kiojob;
 };
 
@@ -63,6 +67,7 @@ DictAppletWidget::DictAppletWidget(DictApplet* dictapplet)
     m_iconwidget(nullptr),
     m_wordedit(nullptr),
     m_textbrowser(nullptr),
+    m_wordtimer(nullptr),
     m_kiojob(nullptr)
 {
     setMinimumSize(s_minimumsize);
@@ -83,8 +88,7 @@ DictAppletWidget::DictAppletWidget(DictApplet* dictapplet)
     m_wordedit->setClickMessage(i18n("Enter word to define here"));
     setFocusProxy(m_wordedit);
     m_wordedit->setFocus();
-    connect(m_wordedit, SIGNAL(returnPressed()), this, SLOT(slotWordChanged()));
-    connect(m_wordedit->nativeWidget(), SIGNAL(clearButtonClicked()), this, SLOT(slotWordChanged()));
+    connect(m_wordedit, SIGNAL(textChanged(QString)), this, SLOT(slotWordChanged(QString)));
     m_layout->addItem(m_wordedit, 0, 1);
 
     m_textbrowser = new Plasma::TextBrowser(this);
@@ -96,6 +100,14 @@ DictAppletWidget::DictAppletWidget(DictApplet* dictapplet)
     m_layout->setColumnStretchFactor(1, 100);
 
     setLayout(m_layout);
+
+    m_wordtimer = new QTimer(this);
+    m_wordtimer->setSingleShot(true);
+    m_wordtimer->setInterval(s_worddelay);
+    connect(
+        m_wordtimer, SIGNAL(timeout()),
+        this, SLOT(slotWordTimeout())
+    );
 }
 
 void DictAppletWidget::setText(const QString &text, const bool error)
@@ -118,19 +130,25 @@ void DictAppletWidget::setText(const QString &text, const bool error)
     m_dictapplet->setBusy(false);
 }
 
-void DictAppletWidget::slotWordChanged()
+void DictAppletWidget::slotWordChanged(const QString &text)
 {
-    const QString queryword = m_wordedit->text().trimmed();
-    // basic validation
+    const QString queryword = text.trimmed();
     if (queryword.isEmpty()) {
+        m_wordtimer->stop();
         setText(QString(), false);
         return;
+    }
+    m_wordtimer->start();
+}
+
+void DictAppletWidget::slotWordTimeout()
+{
+    const QString queryword = m_wordedit->text().trimmed();
     // NOTE: API restriction
-    } else if (queryword.contains(' ')) {
+    if (queryword.contains(' ')) {
         setText(i18n("Only words can be queried"), true);
         return;
     }
-    
     kDebug() << "starting dict job for" << queryword;
     m_wordedit->setEnabled(false);
     m_dictapplet->setBusy(true);
