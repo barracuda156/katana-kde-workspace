@@ -149,7 +149,7 @@ void DigitalClockApplet::createConfigurationInterface(KConfigDialog *parent)
 
 void DigitalClockApplet::constraintsEvent(Plasma::Constraints constraints)
 {
-    if (constraints && Plasma::SizeConstraint || constraints & Plasma::FormFactorConstraint) {
+    if (constraints & Plasma::SizeConstraint || constraints & Plasma::FormFactorConstraint) {
         switch (formFactor()) {
             // panel
             case Plasma::FormFactor::Horizontal: {

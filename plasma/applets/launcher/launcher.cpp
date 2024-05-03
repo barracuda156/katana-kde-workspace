@@ -1156,7 +1156,6 @@ void LauncherApplications::slotCheckBookmarks()
     QStringList bookmarkurls;
     KBookmarkGroup bookmarkgroup = m_bookmarkmanager->root();
     KBookmark bookmark = bookmarkgroup.first();
-    bool isinfavorites = false;
     while (!bookmark.isNull()) {
         bookmarkurls.append(bookmark.url().url());
         bookmark = bookmarkgroup.next(bookmark);

@@ -41,7 +41,6 @@ static const int s_monitorsid = -1;
 static const int s_update = 1; // 1 sec
 static const QSizeF s_minimumframesize = QSizeF(150, 90);
 static const QSizeF s_minimummetersize = QSizeF(90, 90);
-static const int s_textoffset = 10;
 
 enum KSensorType {
     UnknownSensor = 0,

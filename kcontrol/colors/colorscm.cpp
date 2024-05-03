@@ -457,7 +457,10 @@ void KColorCm::variesClicked()
     // find which button was changed
     const int row = sender()->objectName().toInt();
 
-    QColor color = QColorDialog::getColor(color, this, KDialog::makeStandardCaption(i18n("Select Color"), this));
+    QColor color = QColorDialog::getColor(
+        QColor(Qt::white),
+        this, KDialog::makeStandardCaption(i18n("Select Color"), this)
+    );
     if(color.isValid())
     {
         changeColor(row, color);

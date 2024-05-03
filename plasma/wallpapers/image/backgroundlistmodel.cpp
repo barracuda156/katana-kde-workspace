@@ -175,7 +175,6 @@ QSize BackgroundListModel::bestSize(Plasma::Package *package) const
     if (m_structureParent) {
         QModelIndex index = indexOf(image);
         if (index.isValid()) {
-            Plasma::Package *package = m_packages.at(index.row());
             m_structureParent.data()->updateScreenshot(index);
         }
     }
