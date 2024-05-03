@@ -22,24 +22,6 @@
 
 #include "networkslave.h"
 
-// KDE
-#include <KComponentData>
-#include <kdemacros.h>
-// Qt
-#include <QCoreApplication>
 
-int main(int argc, char** argv)
-{
-    if (argc != 2) {
-        fprintf(stderr, "Usage: kio_network app-socket\n");
-        exit(-1);
-    }
 
-    KComponentData componentData("kio_network");
-    QCoreApplication app(argc, argv);
 
-    NetworkSlave slave(argv[1]);
-    slave.dispatchLoop();
-
-    return 0;
-}
