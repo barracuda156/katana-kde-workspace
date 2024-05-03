@@ -217,7 +217,6 @@ void ThumbnailProtocol::get(const KUrl &url)
 
     const QString imgpath = KTemporaryFile::filePath(QString::fromLatin1("XXXXXXXXXX%1").arg(thumbExt));
     img.save(imgpath, thumbFormat);
-    mimeType(KMimeType::findByPath(imgpath)->name());
     data(QFile::encodeName(imgpath));
     finished();
 }

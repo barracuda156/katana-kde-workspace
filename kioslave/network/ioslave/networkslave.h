@@ -31,14 +31,13 @@ class NetworkSlave : public KIO::SlaveBase
 {
 public:
     NetworkSlave(const QByteArray &programSocket);
-    virtual ~NetworkSlave();
+    ~NetworkSlave();
 
-public: // KIO::SlaveBase API
-    virtual void mimetype(const KUrl &url);
-    virtual void stat(const KUrl &url);
-    virtual void listDir(const KUrl &url);
+public:
+    void stat(const KUrl &url) final;
+    void listDir(const KUrl &url) final;
 
-private: // data
+private:
     KDNSSD *m_kdnssd;
 };
 

@@ -398,45 +398,6 @@ void MTPSlave::stat(const KUrl& url)
     finished();
 }
 
-void MTPSlave::mimetype(const KUrl& url)
-{
-    int check = checkUrl(url);
-    switch (check)
-    {
-        case 0: {
-            break;
-        }
-        case 1: {
-            finished();
-            return;
-        }
-        case 2: {
-            error(ERR_DOES_NOT_EXIST, url.path());
-            return;
-        }
-        default: {
-            error(ERR_MALFORMED_URL, url.path());
-            return;
-        }
-    }
-
-    kDebug(KIO_MTP) << url.path();
-
-    QStringList pathItems = url.path().split(QLatin1Char('/'), QString::SkipEmptyParts);
-
-    QPair<void*, LIBMTP_mtpdevice_t*> pair = getPath(url.path());
-
-    if (pair.first) {
-        if (pathItems.size() > 2) {
-            mimetype(getMimetype(((LIBMTP_file_t*)pair.first)->filetype));
-        } else {
-            mimetype(QString::fromLatin1("inode/directory"));
-        }
-    } else {
-        error(ERR_DOES_NOT_EXIST, url.path());
-    }
-}
-
 void MTPSlave::put(const KUrl& url, int, JobFlags flags)
 {
     int check = checkUrl(url);
@@ -535,7 +496,6 @@ void MTPSlave::get(const KUrl& url)
         if (pair.first) {
             LIBMTP_file_t *file = (LIBMTP_file_t*)pair.first;
 
-            mimeType(getMimetype(file->filetype));
             totalSize(file->filesize);
 
             LIBMTP_mtpdevice_t *device = pair.second;

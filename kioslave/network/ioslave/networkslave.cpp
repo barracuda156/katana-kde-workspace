@@ -75,30 +75,6 @@ NetworkSlave::~NetworkSlave()
     delete m_kdnssd;
 }
 
-void NetworkSlave::mimetype(const KUrl &url)
-{
-    if (!KDNSSD::isSupported()) {
-        error(KIO::ERR_UNSUPPORTED_ACTION, url.prettyUrl());
-        return;
-    }
-    if (!m_kdnssd) {
-        m_kdnssd = new KDNSSD();
-    }
-    if (!m_kdnssd->startBrowse()) {
-        error(KIO::ERR_SLAVE_DEFINED, m_kdnssd->errorString());
-        return;
-    }
-    foreach (const KDNSSDService &kdnssdservice, m_kdnssd->services()) {
-        // qDebug() << Q_FUNC_INFO << kdnssdservice.url << url.prettyUrl();
-        if (kdnssdservice.url == url.prettyUrl()) {
-            mimeType(mimeForService(kdnssdservice));
-            finished();
-            return;
-        }
-    }
-    error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
-}
-
 void NetworkSlave::stat(const KUrl &url)
 {
     if (!KDNSSD::isSupported()) {

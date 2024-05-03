@@ -72,15 +72,14 @@ public:
     MTPSlave(const QByteArray& app);
     virtual ~MTPSlave();
 
-    virtual void listDir(const KUrl& url);
-    virtual void stat(const KUrl& url);
-    virtual void mimetype(const KUrl& url);
-    virtual void get(const KUrl& url);
-    virtual void put(const KUrl& url, int, JobFlags flags);
-    virtual void copy(const KUrl& src, const KUrl& dest, int, JobFlags flags);
-    virtual void mkdir(const KUrl& url, int);
-    virtual void del(const KUrl& url, bool);
-    virtual void rename(const KUrl& src, const KUrl& dest, JobFlags flags);
+    void listDir(const KUrl& url) final;
+    void stat(const KUrl& url) final;
+    void get(const KUrl& url) final;
+    void put(const KUrl& url, int, JobFlags flags) final;
+    void copy(const KUrl& src, const KUrl& dest, int, JobFlags flags) final;
+    void mkdir(const KUrl& url, int) final;
+    void del(const KUrl& url, bool) final;
+    void rename(const KUrl& src, const KUrl& dest, JobFlags flags) final;
 };
 
 #endif  //#endif KIO_MTP_H

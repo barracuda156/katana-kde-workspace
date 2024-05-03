@@ -36,21 +36,22 @@ class KUrl;
  * item. If the query item "checkContent" is set to "yes", all files with
  * a text MIME type will be checked for the content.
  */
-class FileNameSearchProtocol : public KIO::SlaveBase {
+class FileNameSearchProtocol : public KIO::SlaveBase
+{
 public:
-    FileNameSearchProtocol(const QByteArray& app);
+    FileNameSearchProtocol(const QByteArray &app);
     virtual ~FileNameSearchProtocol();
 
-    virtual void listDir(const KUrl& url);
+    void listDir(const KUrl &url) final;
 
 private:
-    void searchDirectory(const KUrl& directory);
+    void searchDirectory(const KUrl &directory);
 
     /**
      * @return True, if the pattern m_searchPattern is part of
      *         the file \a fileName.
      */
-    bool contentContainsPattern(const KUrl& fileName) const;
+    bool contentContainsPattern(const KUrl &fileName) const;
 
     void cleanup();
 

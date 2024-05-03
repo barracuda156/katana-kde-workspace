@@ -523,6 +523,7 @@ bool TrashImpl::synchronousDel( const QString& path, bool setLastErrorCode, bool
         enterLoop();
     }
 
+    kDebug() << "deleting " << url;
     KIO::DeleteJob *job = KIO::del( url, KIO::HideProgressInfo );
     connect( job, SIGNAL( result(KJob*) ),
              this, SLOT( jobFinished(KJob*) ) );

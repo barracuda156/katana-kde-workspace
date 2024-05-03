@@ -116,8 +116,9 @@ void FileNameSearchProtocol::searchDirectory(const KUrl& directory)
 
         if (addItem) {
             KIO::UDSEntry entry = item.entry();
-            entry.insert(KIO::UDSEntry::UDS_URL, item.url().url() );
-            listEntry(entry,false);
+            entry.insert(KIO::UDSEntry::UDS_URL, item.url().url());
+            entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, item.mimetype());
+            listEntry(entry, false);
         }
 
         if (item.isDir()) {

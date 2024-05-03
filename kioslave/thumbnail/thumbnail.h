@@ -43,7 +43,7 @@ public:
     ThumbnailProtocol(const QByteArray &app);
     virtual ~ThumbnailProtocol();
 
-    virtual void get(const KUrl &url);
+    void get(const KUrl &url) final;
 
 protected:
     ThumbCreator* getThumbCreator(const QString& plugin);

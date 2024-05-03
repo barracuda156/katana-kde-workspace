@@ -535,8 +535,6 @@ void TrashProtocol::get( const KUrl& url )
     KIO::Job* job = KIO::get( fileURL, KIO::HideProgressInfo );
     connect( job, SIGNAL( data( KIO::Job*, const QByteArray& ) ),
              this, SLOT( slotData( KIO::Job*, const QByteArray& ) ) );
-    connect( job, SIGNAL( mimetype( KIO::Job*, const QString& ) ),
-             this, SLOT( slotMimetype( KIO::Job*, const QString& ) ) );
     connect( job, SIGNAL( result(KJob*) ),
              this, SLOT( jobFinished(KJob*) ) );
     enterLoop();
@@ -545,11 +543,6 @@ void TrashProtocol::get( const KUrl& url )
 void TrashProtocol::slotData( KIO::Job*, const QByteArray&arr )
 {
     data( arr );
-}
-
-void TrashProtocol::slotMimetype( KIO::Job*, const QString& mt )
-{
-    mimeType( mt );
 }
 
 void TrashProtocol::jobFinished( KJob* job )
