@@ -183,7 +183,7 @@ void KMediaWindow::slotOpenPath()
     );
     if (!path.isEmpty()) {
         if (!m_player->player()->isPathSupported(path)) {
-            KMessageBox::error(this, i18n("The path <filename>%1</filename> is not supported.", path), i18n("Invalid path"));
+            KMessageBox::error(this, i18n("The path <tt>%1</tt> is not supported.", path), i18n("Invalid path"));
         } else {
             m_player->open(path);
             m_recentfiles->addUrl(KUrl(path));
@@ -203,7 +203,7 @@ void KMediaWindow::slotOpenURL()
     if (!url.isEmpty()) {
         const QString urlstring = url.prettyUrl();
         if (!m_player->player()->isPathSupported(urlstring)) {
-            KMessageBox::error(this, i18n("The URL <filename>%1</filename> is not supported.", urlstring), i18n("Invalid URL"));
+            KMessageBox::error(this, i18n("The URL <tt>%1</tt> is not supported.", urlstring), i18n("Invalid URL"));
         } else {
             m_player->open(urlstring);
             m_recentfiles->addUrl(url);
