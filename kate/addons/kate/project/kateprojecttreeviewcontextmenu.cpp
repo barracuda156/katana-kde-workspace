@@ -71,7 +71,7 @@ void KateProjectTreeViewContextMenu::exec(const QString& filename, const QPoint&
    * find correct mimetype to query for possible applications
    */
   QMenu *openWithMenu = menu.addMenu(i18n("Open With"));
-  KMimeType::Ptr mimeType = KMimeType::findByPath(filename);
+  KMimeType::Ptr mimeType = KMimeType::findByUrl(KUrl(filename));
   KService::List offers = KMimeTypeTrader::self()->query(mimeType->name(), "Application");
 
   /**

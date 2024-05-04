@@ -55,12 +55,15 @@ int main(int argc, char *argv[])
     if (fileName == QLatin1String("-")) {
         QFile qstdin;
         qstdin.open(stdin, QIODevice::ReadOnly);
-        const QByteArray data = qstdin.readAll();
-        mime = KMimeType::findByContent(data, &accuracy);
+        mime = KMimeType::findByContent(qstdin.readAll(), &accuracy);
+    } else if (args->isSet("f")) {
+        mime = KMimeType::findByName(fileName, &accuracy);
     } else if (args->isSet("c")) {
-        mime = KMimeType::findByFileContent(fileName, &accuracy);
+        QFile qfile(fileName);
+        qfile.open(QIODevice::ReadOnly);
+        mime = KMimeType::findByContent(qfile.read(16384), &accuracy);
     } else {
-        mime = KMimeType::findByPath(fileName, 0, args->isSet("f"), &accuracy);
+        mime = KMimeType::findByUrl(KUrl(fileName), 0, false, &accuracy);
     }
     if ( mime && mime->name() != KMimeType::defaultMimeType() ) {
         printf("%s\n", mime->name().toLatin1().constData());

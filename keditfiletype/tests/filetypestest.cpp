@@ -273,7 +273,7 @@ private Q_SLOTS:
         QCOMPARE(mime->patterns(), patterns); // must sort them if more than one
 
         // Testcase for the shaman.xml bug
-        QCOMPARE(KMimeType::findByPath("/whatever/foo.pkg.tar.gz")->name(), QString("fake/unit-test-fake-mimetype"));
+        QCOMPARE(KMimeType::findByUrl(KUrl("/whatever/foo.pkg.tar.gz"))->name(), QString("fake/unit-test-fake-mimetype"));
 
         m_mimeTypeCreatedSuccessfully = true;
     }

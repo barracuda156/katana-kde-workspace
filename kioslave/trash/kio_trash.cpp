@@ -423,7 +423,7 @@ bool TrashProtocol::createUDSEntry( const QString& physicalPath, const QString& 
     //if ( !url.isEmpty() )
     //    entry.insert( KIO::UDSEntry::UDS_URL, url );
 
-    KMimeType::Ptr mt = KMimeType::findByPath( physicalPath, buff.st_mode );
+    KMimeType::Ptr mt = KMimeType::findByUrl( KUrl(physicalPath), buff.st_mode );
     if ( mt )
         entry.insert( KIO::UDSEntry::UDS_MIME_TYPE, mt->name() );
     entry.insert( KIO::UDSEntry::UDS_ACCESS, access );

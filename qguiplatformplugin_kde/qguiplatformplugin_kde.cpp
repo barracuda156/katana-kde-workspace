@@ -80,7 +80,7 @@ public:
 
     QIcon fileSystemIcon(const QFileInfo &file) final
     {
-        KMimeType::Ptr mime = KMimeType::findByPath(file.filePath(), 0, true);
+        KMimeType::Ptr mime = KMimeType::findByUrl(KUrl(file.filePath()));
         if (!mime)
             return QIcon();
         return KIcon(mime->iconName());

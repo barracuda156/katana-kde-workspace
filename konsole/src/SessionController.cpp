@@ -463,7 +463,7 @@ void SessionController::updateOpenWithMenu(const QString &selectedText)
         return;
 
     // TODO: handle relative URL/path selection properly, it will cost a bit of I/O
-    KMimeType::Ptr mimeType = KMimeType::findByPath(searchText);
+    KMimeType::Ptr mimeType = KMimeType::findByUrl(KUrl(searchText));
     KService::List offers = KMimeTypeTrader::self()->query(mimeType->name(), "Application");
 
     for(KService::List::Iterator it = offers.begin(); it != offers.end(); ++it) {

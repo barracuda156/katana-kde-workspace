@@ -52,10 +52,7 @@ static quint16 getPort(const quint16 portmin, const quint16 portmax)
 
 static QString getFileMIME(const QString &filepath)
 {
-    const KMimeType::Ptr kmimetypeptr = KMimeType::findByUrl(
-        KUrl(filepath),
-        mode_t(0), true
-    );
+    const KMimeType::Ptr kmimetypeptr = KMimeType::findByUrl(KUrl(filepath));
     if (!kmimetypeptr.isNull()) {
         return kmimetypeptr->name();
     }

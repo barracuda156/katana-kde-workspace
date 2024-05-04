@@ -241,8 +241,7 @@ QString KateModeManager::fileType (KateDocument *doc, const QString &fileToReadF
   // Try content-based mimetype
   KMimeType::Ptr mt;
   if (!fileToReadFrom.isEmpty()) {
-    int accuracy = 0;
-    mt = KMimeType::findByFileContent(fileToReadFrom, &accuracy);
+    mt = KMimeType::findByUrl(KUrl(fileToReadFrom));
     if (!mt)
       mt = KMimeType::defaultMimeTypePtr(); 
   } else {
