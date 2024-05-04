@@ -75,7 +75,7 @@ KateSession::KateSession (KateSessionManager *manager, const QString &fileName)
 void KateSession::init ()
 {
   // given file exists, use it to load some stuff ;)
-  if (!m_sessionFileRel.isEmpty() && KGlobal::dirs()->exists(sessionFile ()))
+  if (!m_sessionFileRel.isEmpty() && KStandardDirs::exists(sessionFile ()))
   {
     KConfig config (sessionFile (), KConfig::SimpleConfig);
 
@@ -85,7 +85,7 @@ void KateSession::init ()
     return;
   }
 
-  if (!m_sessionFileRel.isEmpty() && !KGlobal::dirs()->exists(sessionFile ()))
+  if (!m_sessionFileRel.isEmpty() && !KStandardDirs::exists(sessionFile ()))
     kDebug() << "Warning, session file not found: " << m_sessionFileRel;
 }
 
@@ -118,7 +118,7 @@ bool KateSession::create (const QString &name, bool force)
   m_sessionName = name;
   QString oldSessionFileRel = m_sessionFileRel;
   m_sessionFileRel = QUrl::toPercentEncoding(name, "", ".") + QString(".katesession");
-  if (KGlobal::dirs()->exists(sessionFile ()))
+  if (KStandardDirs::exists(sessionFile ()))
   {
     m_sessionFileRel = oldSessionFileRel;
     return false;
@@ -144,7 +144,7 @@ bool KateSession::rename (const QString &name)
   QString oldRel = m_sessionFileRel;
   QString oldSessionFile = sessionFile();
   m_sessionFileRel = QUrl::toPercentEncoding(name, "", ".") + QString(".katesession");
-  if (KGlobal::dirs()->exists(sessionFile ()))
+  if (KStandardDirs::exists(sessionFile ()))
   {
     m_sessionFileRel = oldRel;
     return false;

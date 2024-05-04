@@ -150,7 +150,7 @@ void Autostart::load()
     widget->listCMD->expandItem(m_programItem);
 
     foreach (const QString& path, m_paths) {
-        if (!KGlobal::dirs()->exists(path)) {
+        if (!KStandardDirs::exists(path)) {
             continue;
         }
 
