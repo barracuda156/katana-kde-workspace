@@ -72,11 +72,13 @@ static QString getTitle(const QString &dirpath)
 
 // for reference:
 // https://www.w3schools.com/css/css_link.asp
-static QByteArray styleSheetForPalette(const QPalette &palette)
+static QByteArray sheetForContent()
 {
     QByteArray stylesheet;
+    const QPalette palette = KGlobalSettings::createApplicationPalette();
     const QByteArray foregroundcolor = palette.color(QPalette::Active, QPalette::Foreground).name().toLatin1();
     const QByteArray backgroundcolor = palette.color(QPalette::Active, QPalette::Background).name().toLatin1();
+    stylesheet.append("  <style>\n");
     stylesheet.append("body {\n");
     stylesheet.append("  color: " + foregroundcolor + ";\n");
     stylesheet.append("  background-color: " + backgroundcolor + ";\n");
@@ -89,6 +91,7 @@ static QByteArray styleSheetForPalette(const QPalette &palette)
     stylesheet.append("a:visited {\n");
     stylesheet.append("  color: " + visitedlinkcolor + ";\n");
     stylesheet.append("}\n");
+    stylesheet.append("  </style>\n");
     return stylesheet;
 }
 
@@ -108,9 +111,7 @@ static QByteArray contentForError(const QString &path, const ushort status)
 
     QByteArray data;
     data.append("<html>\n");
-    data.append("  <head>\n");
-    data.append("    <link rel=\"stylesheet\" href=\"/kdirsharestyle.css\">\n");
-    data.append("  </head>\n");
+    data.append(sheetForContent());
     data.append("  <body>\n");
     data.append("    <title>");
     data.append(pathtitle.toUtf8());
@@ -199,9 +200,7 @@ static QByteArray contentForMatch(const QString &path, const QString &match)
 
     QByteArray data;
     data.append("<html>\n");
-    data.append("  <head>\n");
-    data.append("    <link rel=\"stylesheet\" href=\"/kdirsharestyle.css\">\n");
-    data.append("  </head>\n");
+    data.append(sheetForContent());
     data.append("  <body>\n");
     data.append("    <title>");
     data.append(pathtitle.toUtf8());
@@ -238,9 +237,7 @@ static QByteArray contentForDirectory(const QString &path, const QString &basedi
 
     QByteArray data;
     data.append("<html>\n");
-    data.append("  <head>\n");
-    data.append("    <link rel=\"stylesheet\" href=\"/kdirsharestyle.css\">\n");
-    data.append("  </head>\n");
+    data.append(sheetForContent());
     data.append("  <form action=\"/kdirsharesearch.html\">\n");
     data.append("    <label for=\"match\">Search for:</label>\n");
     data.append("    <input type=\"text\" name=\"match\" value=\"\">\n");
@@ -324,10 +321,6 @@ void KDirServer::respond(const QByteArray &url, QByteArray *outdata,
             *outhttpstatus = 200;
             outheaders->insert("Content-Type", iconmime);
         }
-    } else if (normalizedpath == QLatin1String("/kdirsharestyle.css")) {
-        *outhttpstatus = 200;
-        outheaders->insert("Content-Type", "text/css");
-        outdata->append(styleSheetForPalette(KGlobalSettings::createApplicationPalette()));
     } else if (normalizedpath.startsWith(QLatin1String("/kdirsharesearch.html"))) {
         const QString match = QUrl::fromEncoded(url).queryItemValue("match");
         *outhttpstatus = 200;
