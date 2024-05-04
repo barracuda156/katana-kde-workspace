@@ -1851,16 +1851,17 @@ bool KateDocument::print ()
 //BEGIN KTextEditor::DocumentInfoInterface (### unfinished)
 QString KateDocument::mimeType()
 {
-  KMimeType::Ptr result = KMimeType::defaultMimeTypePtr();
-
   // if the document has a URL, try KMimeType::findByURL
   if ( ! this->url().isEmpty() )
-    result = KMimeType::findByUrl( this->url() );
+    return KMimeType::findByUrl( this->url() )->name();
 
-  else if ( this->url().isEmpty() || ! this->url().isLocalFile() )
-    result = mimeTypeForContent();
+  else if ( this->url().isEmpty() || ! this->url().isLocalFile() ) {
+    KMimeType::Ptr mime = mimeTypeForContent();
+    if (mime)
+      return mime->name();
+  }
 
-  return result->name();
+  return KMimeType::defaultMimeType();
 }
 
 KMimeType::Ptr KateDocument::mimeTypeForContent()
@@ -1886,9 +1887,7 @@ KMimeType::Ptr KateDocument::mimeTypeForContent()
   }
   buf.resize( bufpos );
 
-  int accuracy = 0;
-  KMimeType::Ptr mt = KMimeType::findByContent(buf, &accuracy);
-  return mt ? mt : KMimeType::defaultMimeTypePtr();
+  return KMimeType::findByContent(buf);
 }
 //END KTextEditor::DocumentInfoInterface
 

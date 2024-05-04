@@ -239,20 +239,22 @@ QString KateModeManager::fileType (KateDocument *doc, const QString &fileToReadF
   }
 
   // Try content-based mimetype
-  KMimeType::Ptr mt;
+  QString mime;
   if (!fileToReadFrom.isEmpty()) {
-    mt = KMimeType::findByUrl(KUrl(fileToReadFrom));
-    if (!mt)
-      mt = KMimeType::defaultMimeTypePtr(); 
+    mime = KMimeType::findByUrl(KUrl(fileToReadFrom))->name();
   } else {
-    mt = doc->mimeTypeForContent();
+    KMimeType::Ptr mt = doc->mimeTypeForContent();
+    if (mt)
+      mime = mt->name();
+    else
+      mime = KMimeType::defaultMimeType();
   }
 
   QList<KateFileType*> types;
 
   foreach (KateFileType *type, m_types)
   {
-    if (type->mimetypes.indexOf (mt->name()) > -1)
+    if (type->mimetypes.indexOf (mime) > -1)
       types.append (type);
   }
 
