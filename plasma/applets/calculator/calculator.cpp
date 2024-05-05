@@ -28,11 +28,12 @@
 
 static const QString s_decimal = QString::fromLatin1(".");
 static const QLatin1String s_zero = QLatin1String("0");
+// hard-limit
+static const int s_limit = 6;
 
-static QString kAddNumber(const QString &string, const ushort number)
+static QString kAddNumber(const QString &string, const short number)
 {
-    if (string.size() > 6) {
-        // hard-limit
+    if (string.size() > s_limit) {
         return string;
     }
     if (string == s_zero) {
@@ -62,6 +63,8 @@ public:
     };
 
     CalculatorAppletWidget(QGraphicsWidget *parent);
+
+    void addToNumber(const short number);
 
 public Q_SLOTS:
     void slotClear();
@@ -294,6 +297,11 @@ CalculatorAppletWidget::CalculatorAppletWidget(QGraphicsWidget *parent)
     );
 }
 
+void CalculatorAppletWidget::addToNumber(const short number)
+{
+    m_label->setText(QString::number(m_label->text().toFloat() + number));
+}
+
 void CalculatorAppletWidget::slotClear()
 {
     m_label->setText(QString::fromLatin1("0"));
@@ -466,10 +474,6 @@ QGraphicsWidget* CalculatorApplet::graphicsWidget()
     return m_calculatorwidget;
 }
 
-// TODO: two ideas come into mind:
-// 1. increment/decrement the number on mouse wheel event
-// 2. instead of calling slots directly trigger buttons press and then release as indicator why the
-// number changed (even tho it will happen very quickly)
 void CalculatorApplet::keyPressEvent(QKeyEvent *event)
 {
     bool eventhandled = false;
@@ -574,6 +578,16 @@ void CalculatorApplet::keyPressEvent(QKeyEvent *event)
         event->accept();
     } else {
         Plasma::PopupApplet::keyPressEvent(event);
+    }
+}
+
+void CalculatorApplet::wheelEvent(QGraphicsSceneWheelEvent *event)
+{
+    event->ignore();
+    if (event->delta() > 0) {
+        m_calculatorwidget->addToNumber(1);
+    } else {
+        m_calculatorwidget->addToNumber(-1);
     }
 }
 

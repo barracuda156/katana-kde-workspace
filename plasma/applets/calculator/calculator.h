@@ -19,6 +19,7 @@
 #ifndef CALCULATOR_H
 #define CALCULATOR_H
 
+#include <QGraphicsSceneWheelEvent>
 #include <Plasma/PopupApplet>
 
 class CalculatorAppletWidget;
@@ -34,8 +35,9 @@ public:
     QGraphicsWidget* graphicsWidget() final;
 
 protected:
-    // QGraphicsWidget reimplementation
+    // QGraphicsWidget reimplementations
     void keyPressEvent(QKeyEvent *event) final;
+    void wheelEvent(QGraphicsSceneWheelEvent *event) final;
 
 private:
     friend CalculatorAppletWidget;
