@@ -108,6 +108,7 @@ public:
     void setHover(qreal hover);
 
     void setup(const PagerApplet::PagerMode pagermode);
+    void updateSize(const QSizeF &appletsize, const Plasma::FormFactor formfactor);
 
 protected:
     QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint) const final;
@@ -129,10 +130,8 @@ private:
     QPropertyAnimation* m_animation;
     qreal m_hover;
     PagerApplet::PagerMode m_pagermode;
-
-    // updateGeometry() is protected but size hint is based on orientation and geometry has to be
-    // updated on layout orientation change
-    friend PagerApplet;
+    QSizeF m_appletsize;
+    Plasma::FormFactor m_formfactor;
 };
 
 PagerSvg::PagerSvg(const int desktop, const PagerApplet::PagerMode pagermode, QGraphicsItem *parent)
@@ -142,7 +141,8 @@ PagerSvg::PagerSvg(const int desktop, const PagerApplet::PagerMode pagermode, QG
     m_hoversvg(nullptr),
     m_animation(nullptr),
     m_hover(0.0),
-    m_pagermode(pagermode)
+    m_pagermode(pagermode),
+    m_formfactor(Plasma::FormFactor::Application)
 {
     setAcceptHoverEvents(true);
     slotUpdateSvgAndToolTip();
@@ -182,12 +182,17 @@ void PagerSvg::setup(const PagerApplet::PagerMode pagermode)
     update();
 }
 
+void PagerSvg::updateSize(const QSizeF &appletsize, const Plasma::FormFactor formfactor)
+{
+    m_appletsize = appletsize;
+    m_formfactor = formfactor;
+    updateGeometry();
+}
+
 QSizeF PagerSvg::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
-    const PagerApplet* pagerapplet = qobject_cast<PagerApplet*>(parentObject());
-    const Plasma::FormFactor pagerformfactor = pagerapplet->formFactor();
     bool inpanel = false;
-    switch (pagerformfactor) {
+    switch (m_formfactor) {
         case Plasma::FormFactor::Vertical: {
             inpanel = true;
             break;
@@ -222,7 +227,7 @@ QSizeF PagerSvg::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
         bool vertical = false;
         const qreal totaltextwidth = (textwidth + spacingx4);
         const qreal totaltextheight = (fontmetricsf.height() + spacingx4);
-        switch (pagerformfactor) {
+        switch (m_formfactor) {
             case Plasma::FormFactor::Vertical: {
                 vertical = (currentsize.width() < totaltextwidth);
                 break;
@@ -232,20 +237,14 @@ QSizeF PagerSvg::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
                 break;
             }
             default: {
-                const QSizeF appletsize = pagerapplet->size();
-                vertical = (appletsize.width() < appletsize.height() && appletsize.height() >= totaltextwidth);
+                vertical = (m_appletsize.width() < m_appletsize.height() && m_appletsize.height() >= totaltextwidth);
                 break;
             }
         }
-        QSizeF result;
         if (vertical) {
-            result.setWidth(totaltextheight);
-            result.setHeight(totaltextwidth);
-        } else {
-            result.setWidth(totaltextwidth);
-            result.setHeight(totaltextheight);
+            return QSizeF(totaltextheight, totaltextwidth);
         }
-        return result;
+        return QSizeF(totaltextwidth, totaltextheight);
     }
     return Plasma::SvgWidget::sizeHint(which, constraint);
 }
@@ -484,7 +483,7 @@ void PagerApplet::constraintsEvent(Plasma::Constraints constraints)
         }
         QMutexLocker locker(&m_mutex);
         foreach (PagerSvg* pagersvg, m_pagersvgs) {
-            pagersvg->updateGeometry();
+            pagersvg->updateSize(size(), formFactor());
         }
     }
 }
