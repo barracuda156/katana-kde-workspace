@@ -27,19 +27,26 @@
 #include <KDebug>
 
 static const QString s_decimal = QString::fromLatin1(".");
-static const QLatin1String s_zero = QLatin1String("0");
+static const QString s_zero = QString::fromLatin1("0");
 // hard-limit
-static const int s_limit = 6;
+static const int s_limit = 9;
+
+static QString kLimitNumber(const QString &string)
+{
+    return string.mid(0, s_limit);
+}
+
+static QString kDoubleNumber(const float number)
+{
+    return QString::number(number, 'g', s_limit);
+}
 
 static QString kAddNumber(const QString &string, const short number)
 {
-    if (string.size() > s_limit) {
-        return string;
-    }
     if (string == s_zero) {
         return QString::number(number);
     }
-    return string + QString::number(number);
+    return kLimitNumber(string + QString::number(number));
 }
 
 static QFont kLabelFont()
@@ -110,7 +117,7 @@ private:
     Plasma::PushButton* m_equalbutton;
     Plasma::PushButton* m_0button;
     Plasma::PushButton* m_decbutton;
-    qreal m_savednumber;
+    double m_savednumber;
     CalculatorOperator m_operator;
 };
 
@@ -150,7 +157,7 @@ CalculatorAppletWidget::CalculatorAppletWidget(QGraphicsWidget *parent)
     m_framelayout = new QGraphicsLinearLayout(Qt::Horizontal, m_frame);
     m_label = new Plasma::Label(m_frame);
     m_label->setFont(kLabelFont());
-    m_label->setText(QString::fromLatin1("0"));
+    m_label->setText(s_zero);
     m_label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     m_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_framelayout->addItem(m_label);
@@ -273,7 +280,7 @@ CalculatorAppletWidget::CalculatorAppletWidget(QGraphicsWidget *parent)
     m_layout->addItem(m_equalbutton, 4, 3, 2, 1);
 
     m_0button = new Plasma::PushButton(this);
-    m_0button->setText(QString::fromLatin1("0"));
+    m_0button->setText(s_zero);
     connect(
         m_0button, SIGNAL(released()),
         this, SLOT(slot0())
@@ -299,12 +306,12 @@ CalculatorAppletWidget::CalculatorAppletWidget(QGraphicsWidget *parent)
 
 void CalculatorAppletWidget::addToNumber(const short number)
 {
-    m_label->setText(QString::number(m_label->text().toFloat() + number));
+    m_label->setText(kLimitNumber(kDoubleNumber(m_label->text().toDouble() + number)));
 }
 
 void CalculatorAppletWidget::slotClear()
 {
-    m_label->setText(QString::fromLatin1("0"));
+    m_label->setText(s_zero);
 }
 
 void CalculatorAppletWidget::slotDiv()
@@ -312,7 +319,7 @@ void CalculatorAppletWidget::slotDiv()
     if (m_label->text() == s_zero) {
         return;
     }
-    m_savednumber = m_label->text().toFloat();
+    m_savednumber = m_label->text().toDouble();
     m_operator = CalculatorAppletWidget::OperatorDiv;
     slotClear();
 }
@@ -322,7 +329,7 @@ void CalculatorAppletWidget::slotMul()
     if (m_label->text() == s_zero) {
         return;
     }
-    m_savednumber = m_label->text().toFloat();
+    m_savednumber = m_label->text().toDouble();
     m_operator = CalculatorAppletWidget::OperatorMul;
     slotClear();
 }
@@ -331,7 +338,7 @@ void CalculatorAppletWidget::slotClearAll()
 {
     m_savednumber = 0.0;
     m_operator = CalculatorAppletWidget::OperatorNone;
-    m_label->setText(QString::fromLatin1("0"));
+    m_label->setText(s_zero);
 }
 
 void CalculatorAppletWidget::slot7()
@@ -354,7 +361,7 @@ void CalculatorAppletWidget::slotMinus()
     if (m_label->text() == s_zero) {
         return;
     }
-    m_savednumber = m_label->text().toFloat();
+    m_savednumber = m_label->text().toDouble();
     m_operator = CalculatorAppletWidget::OperatorMinus;
     slotClear();
 }
@@ -379,7 +386,7 @@ void CalculatorAppletWidget::slotPlus()
     if (m_label->text() == s_zero) {
         return;
     }
-    m_savednumber = m_label->text().toFloat();
+    m_savednumber = m_label->text().toDouble();
     m_operator = CalculatorAppletWidget::OperatorPlus;
     slotClear();
 }
@@ -406,26 +413,26 @@ void CalculatorAppletWidget::slotEqual()
             break;
         }
         case CalculatorAppletWidget::OperatorDiv: {
-            const qreal currentnumber = m_label->text().toFloat();
-            m_label->setText(QString::number(m_savednumber / currentnumber));
+            const double currentnumber = m_label->text().toDouble();
+            m_label->setText(kLimitNumber(kDoubleNumber(m_savednumber / currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
         }
         case CalculatorAppletWidget::OperatorMul: {
-            const qreal currentnumber = m_label->text().toFloat();
-            m_label->setText(QString::number(m_savednumber * currentnumber));
+            const double currentnumber = m_label->text().toDouble();
+            m_label->setText(kLimitNumber(kDoubleNumber(m_savednumber * currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
         }
         case CalculatorAppletWidget::OperatorMinus: {
-            const qreal currentnumber = m_label->text().toFloat();
-            m_label->setText(QString::number(m_savednumber - currentnumber));
+            const double currentnumber = m_label->text().toDouble();
+            m_label->setText(kLimitNumber(kDoubleNumber(m_savednumber - currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
         }
         case CalculatorAppletWidget::OperatorPlus: {
-            const qreal currentnumber = m_label->text().toFloat();
-            m_label->setText(QString::number(m_savednumber + currentnumber));
+            const double currentnumber = m_label->text().toDouble();
+            m_label->setText(kLimitNumber(kDoubleNumber(m_savednumber + currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
         }
@@ -578,16 +585,6 @@ void CalculatorApplet::keyPressEvent(QKeyEvent *event)
         event->accept();
     } else {
         Plasma::PopupApplet::keyPressEvent(event);
-    }
-}
-
-void CalculatorApplet::wheelEvent(QGraphicsSceneWheelEvent *event)
-{
-    event->ignore();
-    if (event->delta() > 0) {
-        m_calculatorwidget->addToNumber(1);
-    } else {
-        m_calculatorwidget->addToNumber(-1);
     }
 }
 
