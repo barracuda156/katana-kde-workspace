@@ -56,8 +56,6 @@ protected:
     void constraintsEvent(Plasma::Constraints constraints) final;
 
 private:
-    void updateTasks();
-
     QMutex m_mutex;
     QGraphicsLinearLayout* m_layout;
     QGraphicsWidget* m_spacer;

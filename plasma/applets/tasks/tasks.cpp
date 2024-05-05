@@ -260,7 +260,7 @@ void TasksSvg::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
         m_animation = new QPropertyAnimation(this, "hover", this);
         m_animation->setDuration(s_animationduration);
     }
-    m_animation->setStartValue(hover());
+    m_animation->setStartValue(m_hover);
     m_animation->setEndValue(1.0);
     m_animation->start(QAbstractAnimation::KeepWhenStopped);
 }
@@ -274,7 +274,7 @@ void TasksSvg::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
         m_animation = new QPropertyAnimation(this, "hover", this);
         m_animation->setDuration(s_animationduration);
     }
-    m_animation->setStartValue(hover());
+    m_animation->setStartValue(m_hover);
     m_animation->setEndValue(0.0);
     m_animation->start(QAbstractAnimation::KeepWhenStopped);
 }
@@ -467,17 +467,12 @@ void TasksApplet::constraintsEvent(Plasma::Constraints constraints)
         update = true;
     }
     if (update) {
-        updateTasks();
-    }
-}
-
-void TasksApplet::updateTasks()
-{
-    QMutexLocker locker(&m_mutex);
-    const QSizeF taskssize = kTaskSize(size(), formFactor());
-    foreach (TasksSvg* taskssvg, m_taskssvgs) {
-        taskssvg->setPreferredSize(taskssize);
-        taskssvg->updateGeometry();
+        QMutexLocker locker(&m_mutex);
+        const QSizeF taskssize = kTaskSize(size(), formFactor());
+        foreach (TasksSvg* taskssvg, m_taskssvgs) {
+            taskssvg->setPreferredSize(taskssize);
+            taskssvg->updateGeometry();
+        }
     }
 }
 

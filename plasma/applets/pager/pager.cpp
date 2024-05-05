@@ -185,22 +185,18 @@ void PagerSvg::setup(const PagerApplet::PagerMode pagermode)
 QSizeF PagerSvg::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
     const PagerApplet* pagerapplet = qobject_cast<PagerApplet*>(parentObject());
+    const Plasma::FormFactor pagerformfactor = pagerapplet->formFactor();
     bool inpanel = false;
-    bool vertical = false;
-    const QSizeF currentsize = size();
-    switch (pagerapplet->formFactor()) {
+    switch (pagerformfactor) {
         case Plasma::FormFactor::Vertical: {
             inpanel = true;
-            vertical = true;
             break;
         }
         case Plasma::FormFactor::Horizontal: {
             inpanel = true;
-            vertical = (currentsize.width() < currentsize.height());
             break;
         }
         default: {
-            vertical = (currentsize.width() < currentsize.height());
             break;
         }
     }
@@ -209,32 +205,45 @@ QSizeF PagerSvg::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
         return Plasma::SvgWidget::sizeHint(which, constraint);
     }
     if (which != Qt::MaximumSize) {
+        const QSizeF currentsize = size();
         // hints are based on the mode and longest text of all virtual desktops
         qreal textwidth = 0;
         const int numberofdesktops = KWindowSystem::numberOfDesktops();
-        QFontMetricsF fontmetricsf(kGetFont());
+        const QFontMetricsF fontmetricsf(kGetFont());
         for (int i = 0; i < numberofdesktops; i++) {
-            QString desktoptext;
             if (m_pagermode == PagerApplet::ShowNumber) {
-                desktoptext = QString::number(i);
+                textwidth = qMax(textwidth, fontmetricsf.width(QString::number(i)));
             } else {
-                desktoptext = KWindowSystem::desktopName(i);
+                textwidth = qMax(textwidth, fontmetricsf.width(KWindowSystem::desktopName(i)));
             }
-            textwidth = qMax(textwidth, fontmetricsf.width(desktoptext));
         }
         // the applet layout spacing + the text spacing
         static const int spacingx4 = (s_spacing * 4);
-        QSizeF result;
-        if (inpanel && vertical) {
-            // vertical in panels only when the text will not be squeezed
-            vertical = (currentsize.height() >= (textwidth + spacingx4));
+        bool vertical = false;
+        const qreal totaltextwidth = (textwidth + spacingx4);
+        const qreal totaltextheight = (fontmetricsf.height() + spacingx4);
+        switch (pagerformfactor) {
+            case Plasma::FormFactor::Vertical: {
+                vertical = (currentsize.width() < totaltextwidth);
+                break;
+            }
+            case Plasma::FormFactor::Horizontal: {
+                vertical = (currentsize.height() >= totaltextwidth);
+                break;
+            }
+            default: {
+                const QSizeF appletsize = pagerapplet->size();
+                vertical = (appletsize.width() < appletsize.height() && appletsize.height() >= totaltextwidth);
+                break;
+            }
         }
+        QSizeF result;
         if (vertical) {
-            result.setWidth(fontmetricsf.height() + spacingx4);
-            result.setHeight(textwidth + spacingx4);
+            result.setWidth(totaltextheight);
+            result.setHeight(totaltextwidth);
         } else {
-            result.setWidth(textwidth + spacingx4);
-            result.setHeight(fontmetricsf.height() + spacingx4);
+            result.setWidth(totaltextwidth);
+            result.setHeight(totaltextheight);
         }
         return result;
     }
@@ -290,7 +299,7 @@ void PagerSvg::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
         m_animation = new QPropertyAnimation(this, "hover", this);
         m_animation->setDuration(s_animationduration);
     }
-    m_animation->setStartValue(hover());
+    m_animation->setStartValue(m_hover);
     m_animation->setEndValue(1.0);
     m_animation->start(QAbstractAnimation::KeepWhenStopped);
 }
@@ -304,7 +313,7 @@ void PagerSvg::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
         m_animation = new QPropertyAnimation(this, "hover", this);
         m_animation->setDuration(s_animationduration);
     }
-    m_animation->setStartValue(hover());
+    m_animation->setStartValue(m_hover);
     m_animation->setEndValue(0.0);
     m_animation->start(QAbstractAnimation::KeepWhenStopped);
 }
@@ -468,20 +477,15 @@ void PagerApplet::constraintsEvent(Plasma::Constraints constraints)
         update = true;
     }
     if (update) {
-        updatePolicyAndPagers();
-    }
-}
-
-void PagerApplet::updatePolicyAndPagers()
-{
-    if (m_layout->orientation() == Qt::Horizontal) {
-        setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-    } else {
-        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    }
-    QMutexLocker locker(&m_mutex);
-    foreach (PagerSvg* pagersvg, m_pagersvgs) {
-        pagersvg->updateGeometry();
+        if (m_layout->orientation() == Qt::Horizontal) {
+            setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+        } else {
+            setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        }
+        QMutexLocker locker(&m_mutex);
+        foreach (PagerSvg* pagersvg, m_pagersvgs) {
+            pagersvg->updateGeometry();
+        }
     }
 }
 
