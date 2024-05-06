@@ -90,6 +90,11 @@ protected:
         QFont textfont = KGlobalSettings::generalFont();
         textfont.setPointSize(qMax(qreal(textfont.pointSize()), rect.height()) * m_fontscale);
         p->setPen(Plasma::Theme::defaultTheme()->color(m_textcolor));
+        QFontMetricsF fontmetrics(textfont);
+        while (fontmetrics.width(m_painttext) > rect.width()) {
+            textfont.setPointSize(textfont.pointSize() - 1);
+            fontmetrics = QFontMetricsF(textfont);
+        }
         p->setFont(textfont);
         p->drawText(rect, m_alignment, m_painttext);
     }
