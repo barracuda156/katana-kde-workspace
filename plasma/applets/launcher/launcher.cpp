@@ -681,8 +681,10 @@ class LauncherFavorites : public QGraphicsWidget
 public:
     LauncherFavorites(QGraphicsWidget *parent, LauncherApplet* launcherapplet);
 
-private Q_SLOTS:
+public Q_SLOTS:
     void slotUpdateLayout();
+
+private Q_SLOTS:
     void slotActivated();
     void slotTriggered();
 
@@ -704,7 +706,6 @@ LauncherFavorites::LauncherFavorites(QGraphicsWidget *parent, LauncherApplet* la
     m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
     setLayout(m_layout);
 
-    slotUpdateLayout();
     connect(
         m_bookmarkmanager, SIGNAL(changed(QString,QString)),
         this, SLOT(slotUpdateLayout())
@@ -943,8 +944,10 @@ class LauncherApplications : public QGraphicsWidget
 public:
     LauncherApplications(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
 
-private Q_SLOTS:
+public Q_SLOTS:
     void slotUpdateLayout();
+
+private Q_SLOTS:
     void slotNavigate(const QString &id);
     void slotDelayedNavigate();
     void slotGroupActivated();
@@ -992,8 +995,6 @@ LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherAppl
     m_launchersswidget->setLayout(m_launcherslayout);
     m_scrollwidget->setWidget(m_launchersswidget);
     m_layout->addItem(m_scrollwidget);
-
-    slotUpdateLayout();
 
     connect(
         m_launchernavigator, SIGNAL(navigate(QString)),
@@ -1206,8 +1207,10 @@ class LauncherRecent : public QGraphicsWidget
 public:
     LauncherRecent(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
 
-private Q_SLOTS:
+public Q_SLOTS:
     void slotUpdateLayout();
+
+private Q_SLOTS:
     void slotActivated();
     void slotTriggered();
 
@@ -1231,7 +1234,6 @@ LauncherRecent::LauncherRecent(QGraphicsWidget *parent, LauncherApplet *launcher
 
     m_dirwatch = new KDirWatch(this);
     m_dirwatch->addDir(KRecentDocument::recentDocumentDirectory());
-    slotUpdateLayout();
     connect(
         m_dirwatch, SIGNAL(dirty(QString)),
         this, SLOT(slotUpdateLayout())
@@ -1298,10 +1300,12 @@ class LauncherLeave : public QGraphicsWidget
 public:
     LauncherLeave(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
 
-private Q_SLOTS:
+public Q_SLOTS:
     void slotUpdateLayout();
-    void slotActivated();
     void slotTimeout();
+
+private Q_SLOTS:
+    void slotActivated();
     void slotDelayedSwitch();
 
 private:
@@ -1332,18 +1336,16 @@ LauncherLeave::LauncherLeave(QGraphicsWidget *parent, LauncherApplet *launcherap
 
     m_timer = new QTimer(this);
     m_timer->setInterval(s_polltimeout);
-
-    slotTimeout();
-    slotUpdateLayout();
-    connect(
-        Solid::PowerManagement::notifier(), SIGNAL(supportedSleepStatesChanged()),
-        this, SLOT(slotUpdateLayout())
-    );
     connect(
         m_timer, SIGNAL(timeout()),
         this, SLOT(slotTimeout())
     );
     m_timer->start();
+
+    connect(
+        Solid::PowerManagement::notifier(), SIGNAL(supportedSleepStatesChanged()),
+        this, SLOT(slotUpdateLayout())
+    );
 }
 
 void LauncherLeave::slotUpdateLayout()
@@ -1519,6 +1521,9 @@ public:
     void resetSearch();
     void setAllowedRunners(const QStringList &runners);
 
+public Q_SLOTS:
+    void slotUpdateLayout();
+
 private Q_SLOTS:
     void slotSearch(const QString &text);
     void slotUserTimeout();
@@ -1633,7 +1638,6 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
         m_usertimer, SIGNAL(timeout()),
         this, SLOT(slotUserTimeout())
     );
-    slotUserTimeout();
     m_usertimer->start();
 
     m_searchtimer = new QTimer(this);
@@ -1660,6 +1664,16 @@ void LauncherAppletWidget::resetSearch()
 void LauncherAppletWidget::setAllowedRunners(const QStringList &runners)
 {
     m_searchwidget->setAllowedRunners(runners);
+}
+
+void LauncherAppletWidget::slotUpdateLayout()
+{
+    slotUserTimeout();
+    m_favoriteswidget->slotUpdateLayout();
+    m_applicationswidget->slotUpdateLayout();
+    m_recentwidget->slotUpdateLayout();
+    m_leavewidget->slotTimeout();
+    m_leavewidget->slotUpdateLayout();
 }
 
 void LauncherAppletWidget::slotSearch(const QString &text)
@@ -1736,6 +1750,7 @@ void LauncherApplet::init()
     m_launcherwidget = new LauncherAppletWidget(this);
     setFocusProxy(m_launcherwidget);
     m_launcherwidget->setAllowedRunners(kAllowedRunners(m_configgroup));
+    QTimer::singleShot(1000, m_launcherwidget, SLOT(slotUpdateLayout()));
 }
 
 QGraphicsWidget* LauncherApplet::graphicsWidget()
