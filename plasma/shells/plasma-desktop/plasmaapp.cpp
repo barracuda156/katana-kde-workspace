@@ -958,11 +958,13 @@ void PlasmaApp::suspendStartup(const QString &app)
 {
     // TODO: timeout for suspending
     m_startupsuspend++;
+    kDebug() << "startup suspended by" << app;
 }
 
 void PlasmaApp::resumeStartup(const QString &app)
 {
     m_startupsuspend--;
+    kDebug() << "startup resumed by" << app;
 }
 
 void PlasmaApp::logout(int confirm, int sdtype)
@@ -1010,7 +1012,7 @@ void PlasmaApp::cleanup()
         m_klauncher = nullptr;
     }
 
-    if (m_wmproc && m_wmproc->state() != QProcess::NotRunning) {
+    if (m_wmproc) {
         m_wmproc->kill();
         m_wmproc->waitForFinished();
         m_wmproc->deleteLater();
@@ -1021,6 +1023,7 @@ void PlasmaApp::cleanup()
 void PlasmaApp::nextPhase()
 {
     if (m_startupsuspend <= 0){ 
+        kDebug() << "next startup phase" << m_phase;
         switch (m_phase) {
             case 0: {
                 static const QString kdedInterface = QString::fromLatin1("org.kde.kded");
