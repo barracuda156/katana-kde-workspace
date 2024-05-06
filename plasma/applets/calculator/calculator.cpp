@@ -24,6 +24,7 @@
 #include <Plasma/Frame>
 #include <Plasma/PushButton>
 #include <Plasma/ToolTipManager>
+#include <Plasma/Theme>
 #include <KDebug>
 
 static const QString s_decimal = QString::fromLatin1(".");
@@ -49,13 +50,73 @@ static QString kAddNumber(const QString &string, const short number)
     return kLimitNumber(string + QString::number(number));
 }
 
-static QFont kLabelFont()
+#if !defined(Q_MOC_RUN)
+template<class T>
+class CalculatorWidgetBase : public T
 {
-    QFont labelfont = KGlobalSettings::generalFont();
-    labelfont.setBold(true);
-    labelfont.setPointSize(labelfont.pointSize() * 2);
-    return labelfont;
-}
+public:
+    CalculatorWidgetBase(QGraphicsWidget *parent)
+        : T(parent),
+        m_textcolor(Plasma::Theme::TextColor),
+        m_alignment(Qt::AlignCenter),
+        m_fontscale(0.5)
+    {
+    }
+
+    void setup(const Plasma::Theme::ColorRole textcolor, const Qt::Alignment alignment, const qreal fontscale)
+    {
+        m_textcolor = textcolor;
+        m_alignment = alignment;
+        m_fontscale = fontscale;
+        T::update();
+    }
+
+    void setPaintText(const QString &text)
+    {
+        m_painttext = text;
+        T::update();
+    }
+
+protected:
+    void paint(QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) final
+    {
+        T::paint(p, option, widget);
+        const QRectF rect(QPointF(0, 0), T::size());
+        QFont textfont = KGlobalSettings::generalFont();
+        textfont.setPointSize(qMax(qreal(textfont.pointSize()), rect.height()) * m_fontscale);
+        p->setPen(Plasma::Theme::defaultTheme()->color(m_textcolor));
+        p->setFont(textfont);
+        p->drawText(rect, m_alignment, m_painttext);
+    }
+
+private:
+    QString m_painttext;
+    Plasma::Theme::ColorRole m_textcolor;
+    Qt::Alignment m_alignment;
+    qreal m_fontscale;
+};
+
+class CalculatorButton : public CalculatorWidgetBase<Plasma::PushButton>
+{
+public:
+    CalculatorButton(QGraphicsWidget *parent)
+        : CalculatorWidgetBase<Plasma::PushButton>(parent)
+    {
+        setup(Plasma::Theme::ButtonTextColor, Qt::AlignCenter, 0.5);
+    }
+};
+
+class CalculatorLabel : public CalculatorWidgetBase<Plasma::Label>
+{
+public:
+    CalculatorLabel(QGraphicsWidget *parent)
+        : CalculatorWidgetBase<Plasma::Label>(parent)
+    {
+        setup(Plasma::Theme::TextColor, Qt::AlignRight | Qt::AlignVCenter, 0.8);
+    }
+};
+
+#endif // Q_MOC_RUN
 
 class CalculatorAppletWidget : public QGraphicsWidget
 {
@@ -98,25 +159,25 @@ private:
     QGraphicsGridLayout* m_layout;
     Plasma::Frame* m_frame;
     QGraphicsLinearLayout* m_framelayout;
-    Plasma::Label* m_label;
-    Plasma::PushButton* m_cbutton;
-    Plasma::PushButton* m_divbutton;
-    Plasma::PushButton* m_mulbutton;
-    Plasma::PushButton* m_acbutton;
-    Plasma::PushButton* m_7button;
-    Plasma::PushButton* m_8button;
-    Plasma::PushButton* m_9button;
-    Plasma::PushButton* m_minusbutton;
-    Plasma::PushButton* m_4button;
-    Plasma::PushButton* m_5button;
-    Plasma::PushButton* m_6button;
-    Plasma::PushButton* m_plusbutton;
-    Plasma::PushButton* m_1button;
-    Plasma::PushButton* m_2button;
-    Plasma::PushButton* m_3button;
-    Plasma::PushButton* m_equalbutton;
-    Plasma::PushButton* m_0button;
-    Plasma::PushButton* m_decbutton;
+    CalculatorLabel* m_label;
+    CalculatorButton* m_cbutton;
+    CalculatorButton* m_divbutton;
+    CalculatorButton* m_mulbutton;
+    CalculatorButton* m_acbutton;
+    CalculatorButton* m_7button;
+    CalculatorButton* m_8button;
+    CalculatorButton* m_9button;
+    CalculatorButton* m_minusbutton;
+    CalculatorButton* m_4button;
+    CalculatorButton* m_5button;
+    CalculatorButton* m_6button;
+    CalculatorButton* m_plusbutton;
+    CalculatorButton* m_1button;
+    CalculatorButton* m_2button;
+    CalculatorButton* m_3button;
+    CalculatorButton* m_equalbutton;
+    CalculatorButton* m_0button;
+    CalculatorButton* m_decbutton;
     double m_savednumber;
     CalculatorOperator m_operator;
 };
@@ -155,144 +216,148 @@ CalculatorAppletWidget::CalculatorAppletWidget(QGraphicsWidget *parent)
     m_frame->setFrameShadow(Plasma::Frame::Sunken);
     m_frame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_framelayout = new QGraphicsLinearLayout(Qt::Horizontal, m_frame);
-    m_label = new Plasma::Label(m_frame);
-    m_label->setFont(kLabelFont());
-    m_label->setText(s_zero);
-    m_label->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    m_label = new CalculatorLabel(m_frame);
+    m_label->setPaintText(s_zero);
     m_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_framelayout->addItem(m_label);
     m_layout->addItem(m_frame, 0, 0, 1, 4);
+    m_layout->setRowStretchFactor(0, 2);
 
-    m_cbutton = new Plasma::PushButton(this);
-    m_cbutton->setText(i18nc("Text of the clear button", "C"));
+    m_cbutton = new CalculatorButton(this);
+    m_cbutton->setPaintText(i18nc("Text of the clear button", "C"));
     connect(
         m_cbutton, SIGNAL(released()),
         this, SLOT(slotClear())
     );
     m_layout->addItem(m_cbutton, 1, 0, 1, 1);
-    m_divbutton = new Plasma::PushButton(this);
-    m_divbutton->setText(i18nc("Text of the division button", "÷"));
+    m_divbutton = new CalculatorButton(this);
+    m_divbutton->setPaintText(i18nc("Text of the division button", "÷"));
     connect(
         m_divbutton, SIGNAL(released()),
         this, SLOT(slotDiv())
     );
     m_layout->addItem(m_divbutton, 1, 1, 1, 1);
-    m_mulbutton = new Plasma::PushButton(this);
-    m_mulbutton->setText(i18nc("Text of the multiplication button", "×"));
+    m_mulbutton = new CalculatorButton(this);
+    m_mulbutton->setPaintText(i18nc("Text of the multiplication button", "×"));
     connect(
         m_mulbutton, SIGNAL(released()),
         this, SLOT(slotMul())
     );
     m_layout->addItem(m_mulbutton, 1, 2, 1, 1);
-    m_acbutton = new Plasma::PushButton(this);
-    m_acbutton->setText(i18nc("Text of the all clear button", "AC"));
+    m_acbutton = new CalculatorButton(this);
+    m_acbutton->setPaintText(i18nc("Text of the all clear button", "AC"));
     connect(
         m_acbutton, SIGNAL(released()),
         this, SLOT(slotClearAll())
     );
     m_layout->addItem(m_acbutton, 1, 3, 1, 1);
+    m_layout->setRowStretchFactor(1, 1);
 
-    m_7button = new Plasma::PushButton(this);
-    m_7button->setText(QString::fromLatin1("7"));
+    m_7button = new CalculatorButton(this);
+    m_7button->setPaintText(QString::fromLatin1("7"));
     connect(
         m_7button, SIGNAL(released()),
         this, SLOT(slot7())
     );
     m_layout->addItem(m_7button, 2, 0, 1, 1);
-    m_8button = new Plasma::PushButton(this);
-    m_8button->setText(QString::fromLatin1("8"));
+    m_8button = new CalculatorButton(this);
+    m_8button->setPaintText(QString::fromLatin1("8"));
     connect(
         m_8button, SIGNAL(released()),
         this, SLOT(slot8())
     );
     m_layout->addItem(m_8button, 2, 1, 1, 1);
-    m_9button = new Plasma::PushButton(this);
-    m_9button->setText(QString::fromLatin1("9"));
+    m_9button = new CalculatorButton(this);
+    m_9button->setPaintText(QString::fromLatin1("9"));
     connect(
         m_9button, SIGNAL(released()),
         this, SLOT(slot9())
     );
     m_layout->addItem(m_9button, 2, 2, 1, 1);
-    m_minusbutton = new Plasma::PushButton(this);
-    m_minusbutton->setText(i18nc("Text of the minus button", "-"));
+    m_minusbutton = new CalculatorButton(this);
+    m_minusbutton->setPaintText(i18nc("Text of the minus button", "-"));
     connect(
         m_minusbutton, SIGNAL(released()),
         this, SLOT(slotMinus())
     );
     m_layout->addItem(m_minusbutton, 2, 3, 1, 1);
+    m_layout->setRowStretchFactor(2, 1);
 
-    m_4button = new Plasma::PushButton(this);
-    m_4button->setText(QString::fromLatin1("4"));
+    m_4button = new CalculatorButton(this);
+    m_4button->setPaintText(QString::fromLatin1("4"));
     connect(
         m_4button, SIGNAL(released()),
         this, SLOT(slot4())
     );
     m_layout->addItem(m_4button, 3, 0, 1, 1);
-    m_5button = new Plasma::PushButton(this);
-    m_5button->setText(QString::fromLatin1("5"));
+    m_5button = new CalculatorButton(this);
+    m_5button->setPaintText(QString::fromLatin1("5"));
     connect(
         m_5button, SIGNAL(released()),
         this, SLOT(slot5())
     );
     m_layout->addItem(m_5button, 3, 1, 1, 1);
-    m_6button = new Plasma::PushButton(this);
-    m_6button->setText(QString::fromLatin1("6"));
+    m_6button = new CalculatorButton(this);
+    m_6button->setPaintText(QString::fromLatin1("6"));
     connect(
         m_6button, SIGNAL(released()),
         this, SLOT(slot6())
     );
     m_layout->addItem(m_6button, 3, 2, 1, 1);
-    m_plusbutton = new Plasma::PushButton(this);
-    m_plusbutton->setText(i18nc("Text of the plus button", "+"));
+    m_plusbutton = new CalculatorButton(this);
+    m_plusbutton->setPaintText(i18nc("Text of the plus button", "+"));
     connect(
         m_plusbutton, SIGNAL(released()),
         this, SLOT(slotPlus())
     );
     m_layout->addItem(m_plusbutton, 3, 3, 1, 1);
+    m_layout->setRowStretchFactor(3, 1);
 
-    m_1button = new Plasma::PushButton(this);
-    m_1button->setText(QString::fromLatin1("1"));
+    m_1button = new CalculatorButton(this);
+    m_1button->setPaintText(QString::fromLatin1("1"));
     connect(
         m_1button, SIGNAL(released()),
         this, SLOT(slot1())
     );
     m_layout->addItem(m_1button, 4, 0, 1, 1);
-    m_2button = new Plasma::PushButton(this);
-    m_2button->setText(QString::fromLatin1("2"));
+    m_2button = new CalculatorButton(this);
+    m_2button->setPaintText(QString::fromLatin1("2"));
     connect(
         m_2button, SIGNAL(released()),
         this, SLOT(slot2())
     );
     m_layout->addItem(m_2button, 4, 1, 1, 1);
-    m_3button = new Plasma::PushButton(this);
-    m_3button->setText(QString::fromLatin1("3"));
+    m_3button = new CalculatorButton(this);
+    m_3button->setPaintText(QString::fromLatin1("3"));
     connect(
         m_3button, SIGNAL(released()),
         this, SLOT(slot3())
     );
     m_layout->addItem(m_3button, 4, 2, 1, 1);
-    m_equalbutton = new Plasma::PushButton(this);
-    m_equalbutton->setText(i18nc("Text of the equals button", "="));
+    m_equalbutton = new CalculatorButton(this);
+    m_equalbutton->setPaintText(i18nc("Text of the equals button", "="));
     connect(
         m_equalbutton, SIGNAL(released()),
         this, SLOT(slotEqual())
     );
     m_layout->addItem(m_equalbutton, 4, 3, 2, 1);
+    m_layout->setRowStretchFactor(4, 1);
 
-    m_0button = new Plasma::PushButton(this);
-    m_0button->setText(s_zero);
+    m_0button = new CalculatorButton(this);
+    m_0button->setPaintText(s_zero);
     connect(
         m_0button, SIGNAL(released()),
         this, SLOT(slot0())
     );
     m_layout->addItem(m_0button, 5, 0, 1, 2);
-    m_decbutton = new Plasma::PushButton(this);
-    m_decbutton->setText(KGlobal::locale()->toLocale().decimalPoint());
+    m_decbutton = new CalculatorButton(this);
+    m_decbutton->setPaintText(KGlobal::locale()->toLocale().decimalPoint());
     connect(
         m_decbutton, SIGNAL(released()),
         this, SLOT(slotDec())
     );
     m_layout->addItem(m_decbutton, 5, 2, 1, 1);
+    m_layout->setRowStretchFactor(5, 1);
 
     setLayout(m_layout);
 
@@ -306,12 +371,12 @@ CalculatorAppletWidget::CalculatorAppletWidget(QGraphicsWidget *parent)
 
 void CalculatorAppletWidget::addToNumber(const short number)
 {
-    m_label->setText(kLimitNumber(kDoubleNumber(m_label->text().toDouble() + number)));
+    m_label->setPaintText(kLimitNumber(kDoubleNumber(m_label->text().toDouble() + number)));
 }
 
 void CalculatorAppletWidget::slotClear()
 {
-    m_label->setText(s_zero);
+    m_label->setPaintText(s_zero);
 }
 
 void CalculatorAppletWidget::slotDiv()
@@ -338,22 +403,22 @@ void CalculatorAppletWidget::slotClearAll()
 {
     m_savednumber = 0.0;
     m_operator = CalculatorAppletWidget::OperatorNone;
-    m_label->setText(s_zero);
+    m_label->setPaintText(s_zero);
 }
 
 void CalculatorAppletWidget::slot7()
 {
-    m_label->setText(kAddNumber(m_label->text(), 7));
+    m_label->setPaintText(kAddNumber(m_label->text(), 7));
 }
 
 void CalculatorAppletWidget::slot8()
 {
-    m_label->setText(kAddNumber(m_label->text(), 8));
+    m_label->setPaintText(kAddNumber(m_label->text(), 8));
 }
 
 void CalculatorAppletWidget::slot9()
 {
-    m_label->setText(kAddNumber(m_label->text(), 9));
+    m_label->setPaintText(kAddNumber(m_label->text(), 9));
 }
 
 void CalculatorAppletWidget::slotMinus()
@@ -368,17 +433,17 @@ void CalculatorAppletWidget::slotMinus()
 
 void CalculatorAppletWidget::slot4()
 {
-    m_label->setText(kAddNumber(m_label->text(), 4));
+    m_label->setPaintText(kAddNumber(m_label->text(), 4));
 }
 
 void CalculatorAppletWidget::slot5()
 {
-    m_label->setText(kAddNumber(m_label->text(), 5));
+    m_label->setPaintText(kAddNumber(m_label->text(), 5));
 }
 
 void CalculatorAppletWidget::slot6()
 {
-    m_label->setText(kAddNumber(m_label->text(), 6));
+    m_label->setPaintText(kAddNumber(m_label->text(), 6));
 }
 
 void CalculatorAppletWidget::slotPlus()
@@ -393,17 +458,17 @@ void CalculatorAppletWidget::slotPlus()
 
 void CalculatorAppletWidget::slot1()
 {
-    m_label->setText(kAddNumber(m_label->text(), 1));
+    m_label->setPaintText(kAddNumber(m_label->text(), 1));
 }
 
 void CalculatorAppletWidget::slot2()
 {
-    m_label->setText(kAddNumber(m_label->text(), 2));
+    m_label->setPaintText(kAddNumber(m_label->text(), 2));
 }
 
 void CalculatorAppletWidget::slot3()
 {
-    m_label->setText(kAddNumber(m_label->text(), 3));
+    m_label->setPaintText(kAddNumber(m_label->text(), 3));
 }
 
 void CalculatorAppletWidget::slotEqual()
@@ -414,25 +479,25 @@ void CalculatorAppletWidget::slotEqual()
         }
         case CalculatorAppletWidget::OperatorDiv: {
             const double currentnumber = m_label->text().toDouble();
-            m_label->setText(kLimitNumber(kDoubleNumber(m_savednumber / currentnumber)));
+            m_label->setPaintText(kLimitNumber(kDoubleNumber(m_savednumber / currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
         }
         case CalculatorAppletWidget::OperatorMul: {
             const double currentnumber = m_label->text().toDouble();
-            m_label->setText(kLimitNumber(kDoubleNumber(m_savednumber * currentnumber)));
+            m_label->setPaintText(kLimitNumber(kDoubleNumber(m_savednumber * currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
         }
         case CalculatorAppletWidget::OperatorMinus: {
             const double currentnumber = m_label->text().toDouble();
-            m_label->setText(kLimitNumber(kDoubleNumber(m_savednumber - currentnumber)));
+            m_label->setPaintText(kLimitNumber(kDoubleNumber(m_savednumber - currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
         }
         case CalculatorAppletWidget::OperatorPlus: {
             const double currentnumber = m_label->text().toDouble();
-            m_label->setText(kLimitNumber(kDoubleNumber(m_savednumber + currentnumber)));
+            m_label->setPaintText(kLimitNumber(kDoubleNumber(m_savednumber + currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
         }
@@ -441,7 +506,7 @@ void CalculatorAppletWidget::slotEqual()
 
 void CalculatorAppletWidget::slot0()
 {
-    m_label->setText(kAddNumber(m_label->text(), 0));
+    m_label->setPaintText(kAddNumber(m_label->text(), 0));
 }
 
 void CalculatorAppletWidget::slotDec()
@@ -450,12 +515,30 @@ void CalculatorAppletWidget::slotDec()
     if (currenttext.contains(s_decimal)) {
         return;
     }
-    m_label->setText(currenttext + s_decimal);
+    m_label->setPaintText(currenttext + s_decimal);
 }
 
 void CalculatorAppletWidget::slotUpdateFonts()
 {
-    m_label->setFont(kLabelFont());
+    m_label->update();
+    m_cbutton->update();
+    m_divbutton->update();
+    m_mulbutton->update();
+    m_acbutton->update();
+    m_7button->update();
+    m_8button->update();
+    m_9button->update();
+    m_minusbutton->update();
+    m_4button->update();
+    m_5button->update();
+    m_6button->update();
+    m_plusbutton->update();
+    m_1button->update();
+    m_2button->update();
+    m_3button->update();
+    m_equalbutton->update();
+    m_0button->update();
+    m_decbutton->update();
 }
 
 
