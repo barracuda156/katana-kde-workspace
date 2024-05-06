@@ -32,6 +32,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif // HAVE_MALLOC_H
 
 #include <QDBusConnection>
+#include <QDBusConnectionInterface>
+#include <QDBusInterface>
 #include <QMessageBox>
 #include <QEvent>
 #include <QVBoxLayout>
@@ -52,8 +54,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <KComboBox>
 #include <QtGui/qx11info_x11.h>
 #include <fixx11h.h>
-
-#include <ksmserver_interface.h>
 
 #include "atoms.h"
 #include "options.h"
@@ -335,10 +335,14 @@ int main(int argc, char * argv[])
     KCmdLineArgs::addCmdLineOptions(args);
 
     KWin::Application a;
-    org::kde::KSMServerInterface ksmserver("org.kde.ksmserver", "/KSMServer", QDBusConnection::sessionBus());
-    ksmserver.suspendStartup("kwin");
+    QDBusInterface plasma("org.kde.plasma-desktop", "/App", "local.PlasmaApp", QDBusConnection::sessionBus());
+    if (plasma.isValid()) {
+        plasma.call("suspendStartup", "kwin");
+    }
     if (!a.setup()) {
-        ksmserver.resumeStartup("kwin");
+        if (plasma.isValid()) {
+            plasma.call("resumeStartup", "kwin");
+        }
         a.exit(1);
         return 1;
     }
@@ -354,7 +358,9 @@ int main(int argc, char * argv[])
     // and one more iteration just in case
     a.processEvents();
 
-    ksmserver.resumeStartup("kwin");
+    if (plasma.isValid()) {
+        plasma.call("resumeStartup", "kwin");
+    }
     KWin::SessionManager weAreIndeed;
     KWin::SessionSaveDoneHelper helper;
     KGlobal::locale()->insertCatalog("kwin_effects");

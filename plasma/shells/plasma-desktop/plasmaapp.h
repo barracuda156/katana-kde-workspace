@@ -21,8 +21,10 @@
 #ifndef PLASMA_APP_H
 #define PLASMA_APP_H
 
-#include <QtCore/qtimer.h>
-#include <QtCore/qsharedpointer.h>
+#include <QTimer>
+#include <QWeakPointer>
+#include <QDBusInterface>
+#include <QProcess>
 
 #include <KUniqueApplication>
 #include <Plasma/Plasma>
@@ -35,6 +37,7 @@
 #endif
 
 #include "desktoptracker.h"
+#include "kworkspace/kworkspace.h"
 
 namespace Plasma
 {
@@ -95,6 +98,11 @@ public Q_SLOTS:
 
     QString supportInformation() const;
 
+    void suspendStartup(const QString &app);
+    void resumeStartup(const QString &app);
+    void logout(int confirm, int sdtype);
+    void wmChanged();
+
 protected:
 #ifdef Q_WS_X11
     PanelView *findPanelForTrigger(WId trigger) const;
@@ -123,6 +131,14 @@ private Q_SLOTS:
     void captureDesktop();
     void captureCurrentWindow();
 
+    void cleanup();
+    void nextPhase();
+    void defaultLogout();
+    void logoutWithoutConfirmation();
+    void haltWithoutConfirmation();
+    void rebootWithoutConfirmation();
+    void doLogout();
+
 private:
     DesktopCorona *m_corona;
     PanelShadows *m_panelShadows;
@@ -138,6 +154,13 @@ private:
     QTimer m_desktopViewCreationTimer;
     int m_panelHidden;
     QHash<int, QWeakPointer<ControllerWindow> > m_widgetExplorers;
+    int m_phase;
+    QDBusInterface* m_klauncher;
+    QDBusInterface* m_kcminit;
+    QProcess* m_wmproc;
+    int m_startupsuspend;
+    bool m_dialogActive;
+    KWorkSpace::ShutdownType m_sdtype;
 };
 
 #endif // multiple inclusion guard

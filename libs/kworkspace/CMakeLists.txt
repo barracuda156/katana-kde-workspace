@@ -6,8 +6,8 @@ set(kworkspace_LIB_SRCS
 )
 
 
-set(ksmserver_xml ${CMAKE_SOURCE_DIR}/ksmserver/org.kde.KSMServerInterface.xml)
-qt4_add_dbus_interface(kworkspace_LIB_SRCS ${ksmserver_xml} ksmserver_interface)
+set(plasma_xml ${CMAKE_SOURCE_DIR}/plasma/shells/plasma-desktop/dbus/org.kde.plasma.App.xml)
+qt4_add_dbus_interface(kworkspace_LIB_SRCS ${plasma_xml} plasma_interface)
 
 set(kwin_xml ${CMAKE_SOURCE_DIR}/kwin/org.kde.KWin.xml)
 

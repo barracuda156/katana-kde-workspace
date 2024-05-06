@@ -36,7 +36,7 @@ public:
     enum DoWhat {
         DoNothing = 0,
         DoSwitch = 1,
-        // shutdown is asked for by ksmserver
+        // shutdown is asked for by plasma-desktop
         DoToRam = 2,
         DoToDisk = 3,
         DoHybrid = 4

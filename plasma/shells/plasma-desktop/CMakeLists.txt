@@ -15,6 +15,7 @@ set(plasma_SRCS
     panelappletoverlay.cpp
     plasmaapp.cpp
     positioningruler.cpp
+    shutdowndlg.cpp
 )
 
 set(plasmaapp_dbusXML dbus/org.kde.plasma.App.xml)
@@ -35,11 +36,6 @@ target_link_libraries(plasma-desktop
 install(
     TARGETS plasma-desktop
     DESTINATION ${KDE4_BIN_INSTALL_DIR}
-)
-
-install(
-    FILES data/plasma-desktop.desktop
-    DESTINATION ${KDE4_AUTOSTART_INSTALL_DIR}
 )
 
 install(

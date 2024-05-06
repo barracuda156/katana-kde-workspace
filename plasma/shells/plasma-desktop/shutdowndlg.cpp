@@ -1,27 +1,21 @@
-/*****************************************************************
-ksmserver - the KDE session management server
+/*
+    This file is part of the KDE project
+    Copyright (C) 2023 Ivailo Monev <xakepa10@gmail.com>
 
-Copyright 2000 Matthias Ettrich <ettrich@kde.org>
-Copyright 2007 Urs Wolfer <uwolfer @ kde.org>
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License version 2, as published by the Free Software Foundation.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
-AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-******************************************************************/
+    You should have received a copy of the GNU Library General Public License
+    along with this library; see the file COPYING.LIB.  If not, write to
+    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+    Boston, MA 02110-1301, USA.
+*/
 
 #include "shutdowndlg.h"
 #include "kworkspace/kdisplaymanager.h"
@@ -53,27 +47,6 @@ static bool kSwitchTitleEvent(QEvent *event)
     Q_UNREACHABLE();
 }
 
-void KSMShutdownFeedback::start()
-{
-    if (KWindowSystem::compositingActive()) {
-        // Announce that the user MAY be logging out (Intended for the compositor)
-        Display* dpy = QX11Info::display();
-        Atom announce = XInternAtom(dpy, "_KDE_LOGGING_OUT", False);
-        unsigned char dummy = 0;
-        XChangeProperty(dpy, QX11Info::appRootWindow(), announce, announce, 8, PropModeReplace, &dummy, 1);
-    }
-}
-
-void KSMShutdownFeedback::stop()
-{
-    if (KWindowSystem::compositingActive()) {
-        // No longer logging out, announce (Intended for the compositor)
-        Display* dpy = QX11Info::display();
-        Atom announce = XInternAtom(dpy, "_KDE_LOGGING_OUT", False);
-        XDeleteProperty(QX11Info::display(), QX11Info::appRootWindow(), announce);
-    }
-}
-
 KSMShutdownDlg::KSMShutdownDlg(QWidget* parent,
                                bool maysd, bool choose, KWorkSpace::ShutdownType sdtype)
     : Plasma::Dialog(parent, Qt::Dialog | Qt::WindowStaysOnTopHint),
@@ -92,8 +65,13 @@ KSMShutdownDlg::KSMShutdownDlg(QWidget* parent,
     m_second(s_timeout),
     m_shutdownType(sdtype)
 {
-    // make the screen gray
-    KSMShutdownFeedback::start();
+    if (KWindowSystem::compositingActive()) {
+        // Announce that the user MAY be logging out (Intended for the compositor)
+        Display* dpy = QX11Info::display();
+        Atom announce = XInternAtom(dpy, "_KDE_LOGGING_OUT", False);
+        unsigned char dummy = 0;
+        XChangeProperty(dpy, QX11Info::appRootWindow(), announce, announce, 8, PropModeReplace, &dummy, 1);
+    }
 
     m_scene = new QGraphicsScene(this);
     m_widget = new QGraphicsWidget();
@@ -247,8 +225,12 @@ KSMShutdownDlg::KSMShutdownDlg(QWidget* parent,
 
 KSMShutdownDlg::~KSMShutdownDlg()
 {
-    // make the screen become normal again
-    KSMShutdownFeedback::stop();
+    if (KWindowSystem::compositingActive()) {
+        // No longer logging out, announce (Intended for the compositor)
+        Display* dpy = QX11Info::display();
+        Atom announce = XInternAtom(dpy, "_KDE_LOGGING_OUT", False);
+        XDeleteProperty(QX11Info::display(), QX11Info::appRootWindow(), announce);
+    }
     // delete m_widget;
 }
 
@@ -363,10 +345,10 @@ bool KSMShutdownDlg::confirmShutdown(bool maysd, bool choose, KWorkSpace::Shutdo
 {
     KSMShutdownDlg* dialog = new KSMShutdownDlg(nullptr, maysd, choose, sdtype);
 
-    // NOTE: KWin logout effect expects class hint values to be ksmserver
+    // NOTE: KWin logout effect expects class hint values to be plasma-desktop
     XClassHint classHint;
-    classHint.res_name = const_cast<char*>("ksmserver");
-    classHint.res_class = const_cast<char*>("ksmserver");
+    classHint.res_name = const_cast<char*>("plasma-desktop");
+    classHint.res_class = const_cast<char*>("plasma-desktop");
     XSetClassHint(QX11Info::display(), dialog->winId(), &classHint);
 
     dialog->setWindowRole("logoutdialog");

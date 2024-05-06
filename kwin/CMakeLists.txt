@@ -130,11 +130,6 @@ qt4_add_dbus_adaptor(kwin_SRCS org.kde.KWin.xml dbusinterface.h KWin::DBusInterf
 qt4_add_dbus_adaptor(kwin_SRCS org.kde.kwin.Compositing.xml composite.h KWin::Compositor)
 qt4_add_dbus_adaptor(kwin_SRCS org.kde.kwin.Effects.xml effects.h KWin::EffectsHandlerImpl)
 
-qt4_add_dbus_interface(kwin_SRCS
-    ${CMAKE_SOURCE_DIR}/ksmserver/org.kde.KSMServerInterface.xml
-    ksmserver_interface
-)
-
 ########### target link libraries ###############
 
 if (NOT X11_xf86vmode_FOUND)

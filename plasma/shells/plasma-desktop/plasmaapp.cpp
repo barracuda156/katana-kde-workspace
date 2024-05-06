@@ -42,6 +42,8 @@
 #include <KActionCollection>
 #include <KToolInvocation>
 #include <KConfigSkeleton>
+#include <KDesktopFile>
+#include <KShell>
 
 #include <Plasma/AbstractToolBox>
 #include <Plasma/Containment>
@@ -59,11 +61,16 @@
 #include "panelshadows.h"
 #include "panelview.h"
 #include "toolbutton.h"
+#include "shutdowndlg.h"
+#include "kworkspace/kdisplaymanager.h"
 
 #ifdef Q_WS_X11
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif
+
+static const QString s_defaultwm = QString::fromLatin1("kwin");
+static const QStringList s_defaultwmcommands = QStringList() << s_defaultwm;
 
 static void addInformationForApplet(QTextStream &stream, Plasma::Applet *applet)
 {
@@ -100,7 +107,14 @@ PlasmaApp* PlasmaApp::self()
 PlasmaApp::PlasmaApp()
     : KUniqueApplication(),
     m_corona(nullptr),
-    m_panelHidden(0)
+    m_panelHidden(0),
+    m_phase(0),
+    m_klauncher(nullptr),
+    m_kcminit(nullptr),
+    m_wmproc(nullptr),
+    m_startupsuspend(0),
+    m_dialogActive(false),
+    m_sdtype(KWorkSpace::ShutdownTypeNone)
 {
     kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "plasma app ctor start" << "(line:" << __LINE__ << ")";
 
@@ -131,12 +145,76 @@ PlasmaApp::PlasmaApp()
     action->setGlobalShortcut(QKeySequence(Qt::CTRL+Qt::Key_Print));
     connect(action, SIGNAL(triggered(bool)), SLOT(captureCurrentWindow()));
 
+    action = actionCollection->addAction("Log Out");
+    action->setText(i18n("Log Out"));
+    action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::Key_Delete));
+    connect(action, SIGNAL(triggered(bool)), SLOT(defaultLogout()));
+
+    action = actionCollection->addAction("Log Out Without Confirmation");
+    action->setText(i18n("Log Out Without Confirmation"));
+    action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_Delete));
+    connect(action, SIGNAL(triggered(bool)), SLOT(logoutWithoutConfirmation()));
+
+    action = actionCollection->addAction("Halt Without Confirmation");
+    action->setText(i18n("Halt Without Confirmation"));
+    action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_PageDown));
+    connect(action, SIGNAL(triggered(bool)), SLOT(haltWithoutConfirmation()));
+
+    action = actionCollection->addAction("Reboot Without Confirmation");
+    action->setText(i18n("Reboot Without Confirmation"));
+    action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_PageUp));
+    connect(action, SIGNAL(triggered(bool)), SLOT(rebootWithoutConfirmation()));
+
     QTimer::singleShot(0, this, SLOT(setupDesktop()));
     kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "plasma app ctor end" << "(line:" << __LINE__ << ")";
+
+    m_klauncher = new QDBusInterface(
+        QLatin1String("org.kde.klauncher"),
+        QLatin1String("/KLauncher"),
+        QLatin1String("org.kde.KLauncher"),
+        QDBusConnection::sessionBus(),
+        this
+    );
+    // TODO: m_klauncher->call("setLaunchEnv", "SESSION_MANAGER", "TODO");
+
+    
+    m_kcminit = new QDBusInterface(
+        QLatin1String("org.kde.kcminit"),
+        QLatin1String("/kcminit"),
+        QLatin1String("org.kde.KCMInit"),
+        QDBusConnection::sessionBus(),
+        this
+    );
+
+    KGlobal::dirs()->addResourceType("windowmanagers", "data", "plasma/windowmanagers");
+
+    QStringList wmcommands;
+    if (qgetenv("KDE_FAILSAFE").toInt() != 1) {
+        KConfig cfg("plasmarc", KConfig::NoGlobals);
+        KConfigGroup config(&cfg, "General");
+        const QString wmname = config.readEntry("windowManager", s_defaultwm);
+        if (wmname != s_defaultwm) {
+            KDesktopFile wmfile("windowmanagers", wmname + ".desktop");
+            if (!wmfile.noDisplay() && wmfile.tryExec()) {
+                wmcommands = KShell::splitArgs(wmfile.desktopGroup().readEntry("Exec"));
+            }
+        }
+    }
+    if (wmcommands.isEmpty()) {
+        wmcommands = s_defaultwmcommands;
+    }
+    const QString wmprog = wmcommands.takeFirst();
+    m_wmproc = new QProcess(this);
+    m_wmproc->start(wmprog, wmcommands);
+    m_wmproc->waitForStarted(4000);
+
+    QTimer::singleShot(100, this, SLOT(nextPhase()));
 }
 
 PlasmaApp::~PlasmaApp()
 {
+    cleanup();
+
     if (m_corona) {
         m_corona->saveLayout(KStandardDirs::locateLocal("config", "plasma-desktoprc"));
 
@@ -876,6 +954,44 @@ QString PlasmaApp::supportInformation() const
     return streambuffer;
 }
 
+void PlasmaApp::suspendStartup(const QString &app)
+{
+    // TODO: timeout for suspending
+    m_startupsuspend++;
+}
+
+void PlasmaApp::resumeStartup(const QString &app)
+{
+    m_startupsuspend--;
+}
+
+void PlasmaApp::logout(int confirm, int sdtype)
+{
+    // TODO: prevent logout while initializing
+    m_sdtype = static_cast<KWorkSpace::ShutdownType>(sdtype);
+    if (confirm == KWorkSpace::ShutdownConfirmNo) {
+        QTimer::singleShot(500, this, SLOT(doLogout()));
+        return;
+    }
+    if (m_dialogActive) {
+        return;
+    }
+    m_dialogActive = true;
+    KApplication::kApplication()->updateUserTimestamp();
+    const bool maysd = KDisplayManager().canShutdown();
+    const bool choose = (m_sdtype == KWorkSpace::ShutdownTypeDefault);
+    const bool logoutConfirmed = KSMShutdownDlg::confirmShutdown(maysd, choose, m_sdtype);
+    if (logoutConfirmed) {
+        QTimer::singleShot(500, this, SLOT(doLogout()));
+    }
+    m_dialogActive = false;
+}
+
+void PlasmaApp::wmChanged()
+{
+    // changing the window manager happens from the KCM, currently nothing to do when that happens
+}
+
 void PlasmaApp::captureDesktop()
 {
     KToolInvocation::kdeinitExec("ksnapshot", QStringList() << "--fullscreen");
@@ -884,6 +1000,81 @@ void PlasmaApp::captureDesktop()
 void PlasmaApp::captureCurrentWindow()
 {
     KToolInvocation::kdeinitExec("ksnapshot", QStringList() << "--current");
+}
+
+void PlasmaApp::cleanup()
+{
+    if (m_klauncher) {
+        m_klauncher->call("cleanup");
+        m_klauncher->deleteLater();
+        m_klauncher = nullptr;
+    }
+
+    if (m_wmproc && m_wmproc->state() != QProcess::NotRunning) {
+        m_wmproc->kill();
+        m_wmproc->waitForFinished();
+        m_wmproc->deleteLater();
+        m_wmproc = nullptr;
+    }
+}
+
+void PlasmaApp::nextPhase()
+{
+    if (m_startupsuspend <= 0){ 
+        switch (m_phase) {
+            case 0: {
+                static const QString kdedInterface = QString::fromLatin1("org.kde.kded");
+                QDBusConnectionInterface* sessionInterface = QDBusConnection::sessionBus().interface();
+                if (!sessionInterface->isServiceRegistered(kdedInterface)) {
+                    sessionInterface->startService(kdedInterface);
+                }
+                m_klauncher->call("autoStart", int(0));
+                m_kcminit->call("runPhase1");
+                break;
+            }
+            case 1: {
+                m_klauncher->call("autoStart", int(1));
+                m_kcminit->call("runPhase2");
+                break;
+            }
+            case 2: {
+                m_klauncher->call("autoStart", int(2));
+                break;
+            }
+        }
+        m_phase++;
+    }
+    QTimer::singleShot(100, this, SLOT(nextPhase()));
+}
+
+void PlasmaApp::defaultLogout()
+{
+    logout(KWorkSpace::ShutdownConfirmYes, KWorkSpace::ShutdownTypeDefault);
+}
+
+void PlasmaApp::logoutWithoutConfirmation()
+{
+    logout(KWorkSpace::ShutdownConfirmNo, KWorkSpace::ShutdownTypeNone);
+}
+
+void PlasmaApp::haltWithoutConfirmation()
+{
+    logout(KWorkSpace::ShutdownConfirmNo, KWorkSpace::ShutdownTypeHalt);
+}
+
+void PlasmaApp::rebootWithoutConfirmation()
+{
+    logout(KWorkSpace::ShutdownConfirmNo, KWorkSpace::ShutdownTypeReboot);
+}
+
+void PlasmaApp::doLogout()
+{
+    cleanup();
+    if (m_sdtype == KWorkSpace::ShutdownTypeDefault || m_sdtype == KWorkSpace::ShutdownTypeNone) {
+        quit();
+    } else {
+        KDisplayManager().shutdown(m_sdtype);
+    }
 }
 
 #include "moc_plasmaapp.cpp"

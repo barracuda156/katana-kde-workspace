@@ -91,7 +91,7 @@ CfgWm::CfgWm(QWidget *parent)
     connect(wmCombo,SIGNAL(activated(int)),this,SLOT(checkConfigureWm()));
     connect(configureButton,SIGNAL(clicked()),this,SLOT(configureWm()));
 
-    KGlobal::dirs()->addResourceType( "windowmanagers", "data", "ksmserver/windowmanagers" );
+    KGlobal::dirs()->addResourceType("windowmanagers", "data", "plasma/windowmanagers");
 }
 
 CfgWm::~CfgWm()
@@ -111,7 +111,7 @@ void CfgWm::defaults()
 
 void CfgWm::load(KConfig *)
 {
-    KConfig cfg("ksmserverrc", KConfig::NoGlobals);
+    KConfig cfg("plasmarc", KConfig::NoGlobals);
     KConfigGroup c( &cfg, "General");
     loadWMs(c.readEntry("windowManager", "kwin"));
     emit changed(false);
@@ -124,7 +124,7 @@ void CfgWm::save(KConfig *)
 
 bool CfgWm::saveAndConfirm()
 {
-    KConfig cfg("ksmserverrc", KConfig::NoGlobals);
+    KConfig cfg("plasmarc", KConfig::NoGlobals);
     KConfigGroup c( &cfg, "General");
     c.writeEntry("windowManager", currentWm());
     emit changed(false);
@@ -134,8 +134,8 @@ bool CfgWm::saveAndConfirm()
     if (tryWmLaunch()) {
         oldwm = currentWm();
         cfg.sync();
-        QDBusInterface ksmserver("org.kde.ksmserver", "/KSMServer");
-        ksmserver.call(QDBus::NoBlock, "wmChanged");
+        QDBusInterface plasma("org.kde.plasma-desktop", "/App", "local.PlasmaApp");
+        plasma.call(QDBus::NoBlock, "wmChanged");
         KMessageBox::information(
             window(),
             i18n("A new window manager is running.\n"
@@ -269,12 +269,6 @@ void CfgWm::loadWMs(const QString &current)
             continue;
         if (!file.tryExec())
             continue;
-        QString testexec = file.desktopGroup().readEntry("X-KDE-WindowManagerTestExec");
-        if (!testexec.isEmpty()) {
-            if (QProcess::execute(testexec) != 0) {
-                continue;
-            }
-        }
         QString name = file.readName();
         if (name.isEmpty())
             continue;

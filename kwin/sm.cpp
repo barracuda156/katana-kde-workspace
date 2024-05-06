@@ -39,24 +39,24 @@ namespace KWin
 
 bool SessionManager::saveState(QSessionManager& sm)
 {
-    // If the session manager is ksmserver, save stacking
+    // If the session manager is plasma-desktop, save stacking
     // order, active window, active desktop etc. in phase 1,
-    // as ksmserver assures no interaction will be done
+    // as plasma-desktop assures no interaction will be done
     // before the WM finishes phase 1. Saving in phase 2 is
     // too late, as possible user interaction may change some things.
     // Phase2 is still needed though (ICCCM 5.2)
     char* sm_vendor = SmcVendor(static_cast< SmcConn >(sm.handle()));
-    bool ksmserver = qstrcmp(sm_vendor, "KDE") == 0;
+    bool kde = qstrcmp(sm_vendor, "KDE") == 0;
     free(sm_vendor);
     if (!sm.isPhase2()) {
         Workspace::self()->sessionSaveStarted();
-        if (ksmserver)   // save stacking order etc. before "save file?" etc. dialogs change it
+        if (kde)   // save stacking order etc. before "save file?" etc. dialogs change it
             Workspace::self()->storeSession(kapp->sessionConfig(), SMSavePhase0);
         sm.release(); // Qt doesn't automatically release in this case (bug?)
         sm.requestPhase2();
         return true;
     }
-    Workspace::self()->storeSession(kapp->sessionConfig(), ksmserver ? SMSavePhase2 : SMSavePhase2Full);
+    Workspace::self()->storeSession(kapp->sessionConfig(), kde ? SMSavePhase2 : SMSavePhase2Full);
     kapp->sessionConfig()->sync();
     return true;
 }

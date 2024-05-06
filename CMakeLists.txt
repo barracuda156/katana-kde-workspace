@@ -263,7 +263,6 @@ add_subdirectory(systemsettings)
 
 # core apps
 add_subdirectory(kwin)
-add_subdirectory(ksmserver)
 add_subdirectory(kscreensaver)
 
 add_subdirectory(qguiplatformplugin_kde)

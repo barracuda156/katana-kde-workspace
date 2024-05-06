@@ -147,7 +147,7 @@ void LogoutEffect::slotWindowDeleted(EffectWindow* w)
 bool LogoutEffect::isLogoutDialog(EffectWindow* w)
 {
     // TODO there should be probably a better way (window type?)
-    if (w->windowClass() == "ksmserver ksmserver"
+    if (w->windowClass() == "plasma-desktop plasma-desktop"
             && (w->windowRole() == "logoutdialog" || w->windowRole() == "logouteffect")) {
         return true;
     }
@@ -166,7 +166,7 @@ void LogoutEffect::slotPropertyNotify(EffectWindow* w, long a)
         return;
     }
 
-    // We are using a compatible KSMServer therefore only terminate the effect when the
+    // using a compatible session manager therefore only terminate the effect when the
     // atom is deleted, not when the dialog is closed.
     canDoPersistent = true;
     effects->addRepaintFull();

@@ -13,19 +13,6 @@ fi
 # because we still need to do some cleanup.
 trap 'echo GOT SIGHUP' HUP
 
-# Check if a KDE session already is running and whether it's possible to connect to X
-kcheckrunning
-kcheckrunning_result=$?
-if test $kcheckrunning_result -eq 0 ; then
-    echo "KDE seems to be already running on this display."
-    xmessage -geometry 500x100 "KDE seems to be already running on this display." > /dev/null 2>/dev/null
-    exit 1
-elif test $kcheckrunning_result -eq 2 ; then
-    echo "\$DISPLAY is not set or cannot connect to the X server."
-    exit 1
-fi
-unset kcheckrunning_result
-
 # Make sure that the KDE prefix is first in XDG_DATA_DIRS and that it's set at all.
 # The spec allows XDG_DATA_DIRS to be not set, but X session startup scripts tend
 # to set it to a list of paths *not* including the KDE prefix if it's not /usr or
@@ -44,7 +31,7 @@ test -n "$KDEHOME" && kdehome=`echo "$KDEHOME"|sed "s,^~/,$HOME/,"`
 
 kcminputrc_mouse_cursortheme=`kreadconfig --file kcminputrc --group Mouse --key cursorTheme --default Oxygen_White`
 kcminputrc_mouse_cursorsize=`kreadconfig --file kcminputrc --group Mouse --key cursorSize`
-# XCursor mouse theme needs to be applied here to work even for kded or ksmserver
+# XCursor mouse theme needs to be applied here to work even for kded
 if test -n "$kcminputrc_mouse_cursortheme" -o -n "$kcminputrc_mouse_cursorsize" ; then
     @EXPORT_XCURSOR_PATH@
 
@@ -131,24 +118,21 @@ kbuildsycoca4
 
 # Start kcminit_startup
 kcminit_startup
+kcminit_result=$?
 if test $? -ne 0; then
     # Startup error
-    echo 'startkde: Could not start kcminit_startup. Check your installation.'  1>&2
-    xmessage -geometry 500x100 "Could not start kcminit_startup. Check your installation."
+    echo "startkde: Could not start kcminit_startup ($kcminit_result). Check your installation."  1>&2
+    xmessage -geometry 500x100 "Could not start kcminit_startup ($kcminit_result). Check your installation."
     exit 1
 fi
 
-# finally, give the session control to the session manager
-# see kdebase/ksmserver for the description of the rest of the startup sequence
-# if the KDEWM environment variable has been set, then it will be used as KDE's
-# window manager instead of kwin.
-# if KDEWM is not set, ksmserver will ensure kwin is started.
-test -n "$KDEWM" && KDEWM="--windowmanager $KDEWM"
-ksmserver $KDEWM
-if test $? -ne 0; then
+# finally, give the session control to plasma-desktop
+plasma-desktop
+plasma_result=$?
+if test $plasma_result -ne 0; then
     # Startup error
-    echo 'startkde: Could not start ksmserver. Check your installation.'  1>&2
-    xmessage -geometry 500x100 "Could not start ksmserver. Check your installation."
+    echo "startkde: Could not start plasma-desktop ($plasma_result). Check your installation."  1>&2
+    xmessage -geometry 500x100 "Could not start plasma-desktop ($plasma_result). Check your installation."
 fi
 
 echo 'startkde: Shutting down...'  1>&2

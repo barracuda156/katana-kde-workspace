@@ -10,5 +10,16 @@
     <method name="supportInformation">
       <arg type="s" direction="out"/>
     </method>
+    <method name="suspendStartup">
+      <arg type="s" direction="in"/>
+    </method>
+    <method name="resumeStartup">
+      <arg type="s" direction="in"/>
+    </method>
+    <method name="logout">
+      <arg type="i" direction="in"/>
+      <arg type="i" direction="in"/>
+    </method>
+    <method name="wmChanged"/>
   </interface>
 </node>

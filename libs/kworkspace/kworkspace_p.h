@@ -28,7 +28,7 @@
 namespace KWorkSpace
 {
 
-// A class that creates another connection to ksmserver and handles it properly.
+// A class that creates another connection to plasma and handles it properly.
 class KRequestShutdownHelper
     : public QObject
     {

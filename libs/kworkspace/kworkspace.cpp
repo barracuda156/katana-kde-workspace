@@ -18,6 +18,7 @@
 */
 
 #include "kworkspace.h"
+#include "kdisplaymanager.h"
 
 #include <QApplication>
 #include <QDataStream>
@@ -31,7 +32,7 @@
 #include <klocale.h>
 #include <kstandarddirs.h>
 #include <kuser.h>
-#include <ksmserver_interface.h>
+#include <plasma_interface.h>
 
 #include <stdlib.h> // getenv()
 #include <sys/types.h>
@@ -167,12 +168,12 @@ static void cleanup_sm()
 void requestShutDown(ShutdownConfirm confirm, ShutdownType sdtype)
 {
 #ifdef Q_WS_X11
-    /*  use ksmserver's dcop interface if necessary  */
+    /*  use plasma's dcop interface if necessary  */
     if ( confirm == ShutdownConfirmYes ||
          sdtype != ShutdownTypeDefault )
     {
-        org::kde::KSMServerInterface ksmserver("org.kde.ksmserver", "/KSMServer", QDBusConnection::sessionBus());
-        ksmserver.logout((int)confirm,  (int)sdtype);
+        local::PlasmaApp plasma("org.kde.plasma-desktop", "/App", QDBusConnection::sessionBus());
+        plasma.logout((int)confirm,  (int)sdtype);
         return;
     }
 
@@ -191,12 +192,7 @@ bool canShutDown( ShutdownConfirm confirm, ShutdownType sdtype )
     if ( confirm == ShutdownConfirmYes ||
          sdtype != ShutdownTypeDefault )
     {
-        org::kde::KSMServerInterface ksmserver("org.kde.ksmserver", "/KSMServer", QDBusConnection::sessionBus());
-        QDBusReply<bool> reply = ksmserver.canShutdown();
-        if (!reply.isValid()) {
-            return false;
-        }
-        return reply;
+        return KDisplayManager().canShutdown();
     }
 
     return true;

@@ -10,15 +10,6 @@ Exec - required, the command to execute to launch the window manager.
     
 TryExec - optional.
 
-X-KDE-WindowManagerTestExec - optional, a command that will be run and if
-    the exit code is not 0, the window manager won't be used (can be used
-    e.g. to detect that a window manager which requires compositing support
-    cannot be run on systems without such support).
-
-X-KDE-WindowManagerId - optional, the name under which the window manager
-    registers with the session manager (if different from the name
-    of the .desktop file)
-
 X-KDE-WindowManagerConfigure - optional, the command to run to configure
     the window manager
 

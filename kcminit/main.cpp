@@ -107,7 +107,6 @@ void KCMInit::runModules( int phase )
           continue; // Skip
       }
 
-      // see ksmserver's README for the description of the phases
       QVariant vphase = service->property("X-KDE-Init-Phase", QVariant::Int );
       int libphase = 1;
       if( vphase.isValid() )
