@@ -77,6 +77,11 @@ public:
         T::update();
     }
 
+    QString paintText() const
+    {
+        return m_painttext;
+    }
+
 protected:
     void paint(QPainter *p, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) final
     {
@@ -371,7 +376,7 @@ CalculatorAppletWidget::CalculatorAppletWidget(QGraphicsWidget *parent)
 
 void CalculatorAppletWidget::addToNumber(const short number)
 {
-    m_label->setPaintText(kLimitNumber(kDoubleNumber(m_label->text().toDouble() + number)));
+    m_label->setPaintText(kLimitNumber(kDoubleNumber(m_label->paintText().toDouble() + number)));
 }
 
 void CalculatorAppletWidget::slotClear()
@@ -381,20 +386,20 @@ void CalculatorAppletWidget::slotClear()
 
 void CalculatorAppletWidget::slotDiv()
 {
-    if (m_label->text() == s_zero) {
+    if (m_label->paintText() == s_zero) {
         return;
     }
-    m_savednumber = m_label->text().toDouble();
+    m_savednumber = m_label->paintText().toDouble();
     m_operator = CalculatorAppletWidget::OperatorDiv;
     slotClear();
 }
 
 void CalculatorAppletWidget::slotMul()
 {
-    if (m_label->text() == s_zero) {
+    if (m_label->paintText() == s_zero) {
         return;
     }
-    m_savednumber = m_label->text().toDouble();
+    m_savednumber = m_label->paintText().toDouble();
     m_operator = CalculatorAppletWidget::OperatorMul;
     slotClear();
 }
@@ -408,67 +413,67 @@ void CalculatorAppletWidget::slotClearAll()
 
 void CalculatorAppletWidget::slot7()
 {
-    m_label->setPaintText(kAddNumber(m_label->text(), 7));
+    m_label->setPaintText(kAddNumber(m_label->paintText(), 7));
 }
 
 void CalculatorAppletWidget::slot8()
 {
-    m_label->setPaintText(kAddNumber(m_label->text(), 8));
+    m_label->setPaintText(kAddNumber(m_label->paintText(), 8));
 }
 
 void CalculatorAppletWidget::slot9()
 {
-    m_label->setPaintText(kAddNumber(m_label->text(), 9));
+    m_label->setPaintText(kAddNumber(m_label->paintText(), 9));
 }
 
 void CalculatorAppletWidget::slotMinus()
 {
-    if (m_label->text() == s_zero) {
+    if (m_label->paintText() == s_zero) {
         return;
     }
-    m_savednumber = m_label->text().toDouble();
+    m_savednumber = m_label->paintText().toDouble();
     m_operator = CalculatorAppletWidget::OperatorMinus;
     slotClear();
 }
 
 void CalculatorAppletWidget::slot4()
 {
-    m_label->setPaintText(kAddNumber(m_label->text(), 4));
+    m_label->setPaintText(kAddNumber(m_label->paintText(), 4));
 }
 
 void CalculatorAppletWidget::slot5()
 {
-    m_label->setPaintText(kAddNumber(m_label->text(), 5));
+    m_label->setPaintText(kAddNumber(m_label->paintText(), 5));
 }
 
 void CalculatorAppletWidget::slot6()
 {
-    m_label->setPaintText(kAddNumber(m_label->text(), 6));
+    m_label->setPaintText(kAddNumber(m_label->paintText(), 6));
 }
 
 void CalculatorAppletWidget::slotPlus()
 {
-    if (m_label->text() == s_zero) {
+    if (m_label->paintText() == s_zero) {
         return;
     }
-    m_savednumber = m_label->text().toDouble();
+    m_savednumber = m_label->paintText().toDouble();
     m_operator = CalculatorAppletWidget::OperatorPlus;
     slotClear();
 }
 
 void CalculatorAppletWidget::slot1()
 {
-    m_label->setPaintText(kAddNumber(m_label->text(), 1));
+    m_label->setPaintText(kAddNumber(m_label->paintText(), 1));
 }
 
 void CalculatorAppletWidget::slot2()
 {
-    m_label->setPaintText(kAddNumber(m_label->text(), 2));
+    m_label->setPaintText(kAddNumber(m_label->paintText(), 2));
 }
 
 void CalculatorAppletWidget::slot3()
 {
-    m_label->setPaintText(kAddNumber(m_label->text(), 3));
+    m_label->setPaintText(kAddNumber(m_label->paintText(), 3));
 }
 
 void CalculatorAppletWidget::slotEqual()
@@ -478,25 +483,25 @@ void CalculatorAppletWidget::slotEqual()
             break;
         }
         case CalculatorAppletWidget::OperatorDiv: {
-            const double currentnumber = m_label->text().toDouble();
+            const double currentnumber = m_label->paintText().toDouble();
             m_label->setPaintText(kLimitNumber(kDoubleNumber(m_savednumber / currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
         }
         case CalculatorAppletWidget::OperatorMul: {
-            const double currentnumber = m_label->text().toDouble();
+            const double currentnumber = m_label->paintText().toDouble();
             m_label->setPaintText(kLimitNumber(kDoubleNumber(m_savednumber * currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
         }
         case CalculatorAppletWidget::OperatorMinus: {
-            const double currentnumber = m_label->text().toDouble();
+            const double currentnumber = m_label->paintText().toDouble();
             m_label->setPaintText(kLimitNumber(kDoubleNumber(m_savednumber - currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
         }
         case CalculatorAppletWidget::OperatorPlus: {
-            const double currentnumber = m_label->text().toDouble();
+            const double currentnumber = m_label->paintText().toDouble();
             m_label->setPaintText(kLimitNumber(kDoubleNumber(m_savednumber + currentnumber)));
             m_operator = CalculatorAppletWidget::OperatorNone;
             break;
@@ -506,13 +511,13 @@ void CalculatorAppletWidget::slotEqual()
 
 void CalculatorAppletWidget::slot0()
 {
-    m_label->setPaintText(kAddNumber(m_label->text(), 0));
+    m_label->setPaintText(kAddNumber(m_label->paintText(), 0));
 }
 
 void CalculatorAppletWidget::slotDec()
 {
-    const QString currenttext = m_label->text();
-    if (currenttext.contains(s_decimal)) {
+    const QString currenttext = m_label->paintText();
+    if (currenttext.contains(s_decimal) || (currenttext.size() + 1) >= s_limit) {
         return;
     }
     m_label->setPaintText(currenttext + s_decimal);
