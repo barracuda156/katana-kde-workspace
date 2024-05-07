@@ -1042,7 +1042,7 @@ void PlasmaApp::nextPhase()
             }
             case 2: {
                 m_klauncher->call("autoStart", int(2));
-                break;
+                return;
             }
         }
         m_phase++;
