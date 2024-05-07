@@ -233,7 +233,7 @@ void KInfoCenter::resetCondition()
 
 void KInfoCenter::helpClickedSlot()
 {
-    KToolInvocation::invokeHelp(QString(), m_contain->serviceName());
+    KToolInvocation::self()->invokeHelp(QString(), m_contain->serviceName());
 }
 
 void KInfoCenter::exportClickedSlot()

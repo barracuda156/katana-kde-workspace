@@ -86,6 +86,7 @@ int main(int argc, char **argv)
 
     {
         DolphinApplication app;
+        app.enableSessionManagement();
         if (app.isSessionRestored()) {
             app.restoreSession();
         }

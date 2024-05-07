@@ -42,7 +42,10 @@ protected:
     bool x11EventFilter(XEvent*);
     bool notify(QObject* o, QEvent* e);
 
-private slots:
+private Q_SLOTS:
+    bool saveSession() final;
+
+private Q_SLOTS:
     void lostSelection();
 
 private:

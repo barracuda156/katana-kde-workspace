@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QDataStream>
 #include <kapplication.h>
-#include <ksessionmanager.h>
 #include <netwm_def.h>
 #include <QRect>
 
@@ -69,41 +68,6 @@ struct SessionInfo {
     int tabGroup; // Unique identifier for the client group that this window is in
 
     Client* tabGroupClient; // The first client created that has an identical identifier
-};
-
-
-enum SMSavePhase {
-    SMSavePhase0,     // saving global state in "phase 0"
-    SMSavePhase2,     // saving window state in phase 2
-    SMSavePhase2Full  // complete saving in phase2, there was no phase 0
-};
-
-class SessionSaveDoneHelper
-    : public QObject
-{
-    Q_OBJECT
-public:
-    SessionSaveDoneHelper();
-    virtual ~SessionSaveDoneHelper();
-    SmcConn connection() const {
-        return conn;
-    }
-    void saveDone();
-    void close();
-private slots:
-    void processData();
-private:
-    QSocketNotifier* notifier;
-    SmcConn conn;
-};
-
-
-class SessionManager
-    : public KSessionManager
-{
-public:
-    virtual bool saveState(QSessionManager& sm);
-    virtual bool commitData(QSessionManager& sm);
 };
 
 } // namespace

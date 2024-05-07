@@ -31,43 +31,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "workspace.h"
 #include "client.h"
 #include <QSocketNotifier>
-#include <QSessionManager>
 #include <kdebug.h>
 
 namespace KWin
 {
-
-bool SessionManager::saveState(QSessionManager& sm)
-{
-    // If the session manager is plasma-desktop, save stacking
-    // order, active window, active desktop etc. in phase 1,
-    // as plasma-desktop assures no interaction will be done
-    // before the WM finishes phase 1. Saving in phase 2 is
-    // too late, as possible user interaction may change some things.
-    // Phase2 is still needed though (ICCCM 5.2)
-    char* sm_vendor = SmcVendor(static_cast< SmcConn >(sm.handle()));
-    bool kde = qstrcmp(sm_vendor, "KDE") == 0;
-    free(sm_vendor);
-    if (!sm.isPhase2()) {
-        Workspace::self()->sessionSaveStarted();
-        if (kde)   // save stacking order etc. before "save file?" etc. dialogs change it
-            Workspace::self()->storeSession(kapp->sessionConfig(), SMSavePhase0);
-        sm.release(); // Qt doesn't automatically release in this case (bug?)
-        sm.requestPhase2();
-        return true;
-    }
-    Workspace::self()->storeSession(kapp->sessionConfig(), kde ? SMSavePhase2 : SMSavePhase2Full);
-    kapp->sessionConfig()->sync();
-    return true;
-}
-
-// I bet this is broken, just like everywhere else in KDE
-bool SessionManager::commitData(QSessionManager& sm)
-{
-    if (!sm.isPhase2())
-        Workspace::self()->sessionSaveStarted();
-    return true;
-}
 
 // Workspace
 
@@ -76,7 +43,7 @@ bool SessionManager::commitData(QSessionManager& sm)
 
   \sa loadSessionInfo()
  */
-void Workspace::storeSession(KConfig* config, SMSavePhase phase)
+void Workspace::storeSession(KConfig* config)
 {
     KConfigGroup cg(config, "Session");
     int count =  0;
@@ -92,24 +59,11 @@ void Workspace::storeSession(KConfig* config, SMSavePhase phase)
         count++;
         if (c->isActive())
             active_client = count;
-        if (phase == SMSavePhase2 || phase == SMSavePhase2Full)
-            storeClient(cg, count, c);
+        storeClient(cg, count, c);
     }
-    if (phase == SMSavePhase0) {
-        // it would be much simpler to save these values to the config file,
-        // but both Qt and KDE treat phase1 and phase2 separately,
-        // which results in different sessionkey and different config file :(
-        session_active_client = active_client;
-        session_desktop = VirtualDesktopManager::self()->current();
-    } else if (phase == SMSavePhase2) {
-        cg.writeEntry("count", count);
-        cg.writeEntry("active", session_active_client);
-        cg.writeEntry("desktop", session_desktop);
-    } else { // SMSavePhase2Full
-        cg.writeEntry("count", count);
-        cg.writeEntry("active", session_active_client);
-        cg.writeEntry("desktop", VirtualDesktopManager::self()->current());
-    }
+    cg.writeEntry("count", count);
+    cg.writeEntry("active", session_active_client);
+    cg.writeEntry("desktop", VirtualDesktopManager::self()->current());
 }
 
 void Workspace::storeClient(KConfigGroup &cg, int num, Client *c)
@@ -149,32 +103,6 @@ void Workspace::storeClient(KConfigGroup &cg, int num, Client *c)
     cg.writeEntry(QString("tabGroup") + n, static_cast<int>(reinterpret_cast<long>(c->tabGroup())));
 }
 
-void Workspace::storeSubSession(const QString &name, QSet<QByteArray> sessionIds)
-{
-    //TODO clear it first
-    KConfigGroup cg(KGlobal::config(), QString("SubSession: ") + name);
-    int count =  0;
-    int active_client = -1;
-    foreach (Client *c, clients) {
-        QByteArray sessionId = c->sessionId();
-        QByteArray wmCommand = c->wmCommand();
-        if (sessionId.isEmpty())
-            if (wmCommand.isEmpty())
-                continue;
-        if (!sessionIds.contains(sessionId))
-            continue;
-
-        kDebug() << "storing" << sessionId;
-        count++;
-        if (c->isActive())
-            active_client = count;
-        storeClient(cg, count, c);
-    }
-    cg.writeEntry("count", count);
-    cg.writeEntry("active", active_client);
-    //cg.writeEntry( "desktop", currentDesktop());
-}
-
 /*!
   Loads the session information from the config file.
 
@@ -185,16 +113,11 @@ void Workspace::loadSessionInfo()
     session.clear();
     KConfigGroup cg(kapp->sessionConfig(), "Session");
 
-    addSessionInfo(cg);
-}
-
-void Workspace::addSessionInfo(KConfigGroup &cg)
-{
     int count =  cg.readEntry("count", 0);
     int active_client = cg.readEntry("active", 0);
     for (int i = 1; i <= count; i++) {
         QString n = QString::number(i);
-        SessionInfo* info = new SessionInfo;
+        SessionInfo* info = new SessionInfo();
         session.append(info);
         info->sessionId = cg.readEntry(QString("sessionId") + n, QString()).toLatin1();
         info->windowRole = cg.readEntry(QString("windowRole") + n, QString()).toLatin1();
@@ -224,12 +147,6 @@ void Workspace::addSessionInfo(KConfigGroup &cg)
         info->tabGroup = cg.readEntry(QString("tabGroup") + n, 0);
         info->tabGroupClient = NULL;
     }
-}
-
-void Workspace::loadSubSessionInfo(const QString &name)
-{
-    KConfigGroup cg(KGlobal::config(), QString("SubSession: ") + name);
-    addSessionInfo(cg);
 }
 
 /*!
@@ -332,157 +249,6 @@ NET::WindowType Workspace::txtToWindowType(const char* txt)
         if (qstrcmp(txt, window_type_names[ i + 1 ]) == 0)     // +1
             return static_cast< NET::WindowType >(i);
     return static_cast< NET::WindowType >(-2);   // undefined
-}
-
-
-
-
-// KWin's focus stealing prevention causes problems with user interaction
-// during session save, as it prevents possible dialogs from getting focus.
-// Therefore it's temporarily disabled during session saving. Start of
-// session saving can be detected in SessionManager::saveState() above,
-// but Qt doesn't have API for saying when session saved finished (either
-// successfully, or was canceled). Therefore, create another connection
-// to session manager, that will provide this information.
-// Similarly the remember feature of window-specific settings should be disabled
-// during KDE shutdown when windows may move e.g. because of Kicker going away
-// (struts changing). When session saving starts, it can be cancelled, in which
-// case the shutdown_cancelled callback is invoked, or it's a checkpoint that
-// is immediatelly followed by save_complete, or finally it's a shutdown that
-// is immediatelly followed by die callback. So getting save_yourself with shutdown
-// set disables window-specific settings remembering, getting shutdown_cancelled
-// re-enables, otherwise KWin will go away after die.
-static void save_yourself(SmcConn conn_P, SmPointer ptr, int, Bool shutdown, int, Bool)
-{
-    SessionSaveDoneHelper* session = reinterpret_cast< SessionSaveDoneHelper* >(ptr);
-    if (conn_P != session->connection())
-        return;
-    if (shutdown)
-        RuleBook::self()->setUpdatesDisabled(true);
-    SmcSaveYourselfDone(conn_P, True);
-}
-
-static void die(SmcConn conn_P, SmPointer ptr)
-{
-    SessionSaveDoneHelper* session = reinterpret_cast< SessionSaveDoneHelper* >(ptr);
-    if (conn_P != session->connection())
-        return;
-    // session->saveDone(); we will quit anyway
-    session->close();
-}
-
-static void save_complete(SmcConn conn_P, SmPointer ptr)
-{
-    SessionSaveDoneHelper* session = reinterpret_cast< SessionSaveDoneHelper* >(ptr);
-    if (conn_P != session->connection())
-        return;
-    session->saveDone();
-}
-
-static void shutdown_cancelled(SmcConn conn_P, SmPointer ptr)
-{
-    SessionSaveDoneHelper* session = reinterpret_cast< SessionSaveDoneHelper* >(ptr);
-    if (conn_P != session->connection())
-        return;
-    RuleBook::self()->setUpdatesDisabled(false);   // re-enable
-    // no need to differentiate between successful finish and cancel
-    session->saveDone();
-}
-
-void SessionSaveDoneHelper::saveDone()
-{
-    Workspace::self()->sessionSaveDone();
-}
-
-SessionSaveDoneHelper::SessionSaveDoneHelper()
-{
-    SmcCallbacks calls;
-    calls.save_yourself.callback = save_yourself;
-    calls.save_yourself.client_data = reinterpret_cast< SmPointer >(this);
-    calls.die.callback = die;
-    calls.die.client_data = reinterpret_cast< SmPointer >(this);
-    calls.save_complete.callback = save_complete;
-    calls.save_complete.client_data = reinterpret_cast< SmPointer >(this);
-    calls.shutdown_cancelled.callback = shutdown_cancelled;
-    calls.shutdown_cancelled.client_data = reinterpret_cast< SmPointer >(this);
-    char* id = NULL;
-    char err[ 11 ];
-    conn = SmcOpenConnection(NULL, 0, 1, 0,
-                             SmcSaveYourselfProcMask | SmcDieProcMask | SmcSaveCompleteProcMask
-                             | SmcShutdownCancelledProcMask, &calls, NULL, &id, 10, err);
-    if (id != NULL)
-        free(id);
-    if (conn == NULL)
-        return; // no SM
-    // set the required properties, mostly dummy values
-    SmPropValue propvalue[ 5 ];
-    SmProp props[ 5 ];
-    propvalue[ 0 ].length = sizeof(unsigned char);
-    unsigned char value0 = SmRestartNever; // so that this extra SM connection doesn't interfere
-    propvalue[ 0 ].value = &value0;
-    props[ 0 ].name = const_cast< char* >(SmRestartStyleHint);
-    props[ 0 ].type = const_cast< char* >(SmCARD8);
-    props[ 0 ].num_vals = 1;
-    props[ 0 ].vals = &propvalue[ 0 ];
-    QByteArray username = KUser(KUser::UseEffectiveUID).loginName().toLocal8Bit();
-    propvalue[ 1 ].length = username.size();
-    propvalue[ 1 ].value = (SmPointer)(username.isEmpty() ? "" : username.data());
-    props[ 1 ].name = const_cast< char* >(SmUserID);
-    props[ 1 ].type = const_cast< char* >(SmARRAY8);
-    props[ 1 ].num_vals = 1;
-    props[ 1 ].vals = &propvalue[ 1 ];
-    propvalue[ 2 ].length = 0;
-    propvalue[ 2 ].value = (SmPointer)("");
-    props[ 2 ].name = const_cast< char* >(SmRestartCommand);
-    props[ 2 ].type = const_cast< char* >(SmLISTofARRAY8);
-    props[ 2 ].num_vals = 1;
-    props[ 2 ].vals = &propvalue[ 2 ];
-    propvalue[ 3 ].length = strlen("kwinsmhelper");
-    propvalue[ 3 ].value = (SmPointer)"kwinsmhelper";
-    props[ 3 ].name = const_cast< char* >(SmProgram);
-    props[ 3 ].type = const_cast< char* >(SmARRAY8);
-    props[ 3 ].num_vals = 1;
-    props[ 3 ].vals = &propvalue[ 3 ];
-    propvalue[ 4 ].length = 0;
-    propvalue[ 4 ].value = (SmPointer)("");
-    props[ 4 ].name = const_cast< char* >(SmCloneCommand);
-    props[ 4 ].type = const_cast< char* >(SmLISTofARRAY8);
-    props[ 4 ].num_vals = 1;
-    props[ 4 ].vals = &propvalue[ 4 ];
-    SmProp* p[ 5 ] = { &props[ 0 ], &props[ 1 ], &props[ 2 ], &props[ 3 ], &props[ 4 ] };
-    SmcSetProperties(conn, 5, p);
-    notifier = new QSocketNotifier(IceConnectionNumber(SmcGetIceConnection(conn)),
-                                   QSocketNotifier::Read, this);
-    connect(notifier, SIGNAL(activated(int)), SLOT(processData()));
-}
-
-SessionSaveDoneHelper::~SessionSaveDoneHelper()
-{
-    close();
-}
-
-void SessionSaveDoneHelper::close()
-{
-    if (conn != NULL) {
-        delete notifier;
-        SmcCloseConnection(conn, 0, NULL);
-    }
-    conn = NULL;
-}
-
-void SessionSaveDoneHelper::processData()
-{
-    if (conn != NULL)
-        IceProcessMessages(SmcGetIceConnection(conn), 0, 0);
-}
-
-void Workspace::sessionSaveDone()
-{
-    session_saving = false;
-    //remove sessionInteract flag from all clients
-    foreach (Client * c, clients) {
-        c->setSessionInteract(false);
-    }
 }
 
 } // namespace

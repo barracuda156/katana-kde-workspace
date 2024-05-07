@@ -135,12 +135,13 @@ void KateMailFilesPluginView::slotMail()
   } // check selected docs done
   if ( ! urls.count() )
     return;
-  KToolInvocation::invokeMailer( QString(), // to
-                                 QString(), // cc
-                                 QString(), // subject
-                                 QString(), // body
-                                 urls           // urls to atthatch
-                               );
+  KToolInvocation::self()->invokeMailer(
+    QString(), // to
+    QString(), // cc
+    QString(), // subject
+    QString(), // body
+    urls           // urls to atthatch
+  );
 }
 // kate: space-indent on; indent-width 2; replace-tabs on;
 

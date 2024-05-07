@@ -64,7 +64,7 @@ void ShellRunner::run(const Plasma::QueryMatch &match)
     }
     const QString command = match.data().toString();
     if (interminal) {
-        KToolInvocation::invokeTerminal(command);
+        KToolInvocation::self()->invokeTerminal(command);
     } else {
         KRun::runCommand(command, nullptr);
     }

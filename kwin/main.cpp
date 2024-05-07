@@ -57,7 +57,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "atoms.h"
 #include "options.h"
-#include "sm.h"
 #include "utils.h"
 #include "effects.h"
 #include "workspace.h"
@@ -275,6 +274,17 @@ bool Application::setup()
     return true;
 }
 
+bool Application::saveSession()
+{
+    Workspace::self()->sessionSaveStarted();
+    RuleBook::self()->setUpdatesDisabled(true);
+    Workspace::self()->storeSession(kapp->sessionConfig());
+    kapp->sessionConfig()->sync();
+    RuleBook::self()->setUpdatesDisabled(false);   // re-enable
+    Workspace::self()->sessionSaveDone();
+    return KApplication::saveSession();
+}
+
 void Application::lostSelection()
 {
     KCrash::setFlags(0); // too late to restart now
@@ -335,6 +345,7 @@ int main(int argc, char * argv[])
     KCmdLineArgs::addCmdLineOptions(args);
 
     KWin::Application a;
+    a.enableSessionManagement();
     QDBusInterface plasma("org.kde.plasma-desktop", "/App", "local.PlasmaApp", QDBusConnection::sessionBus());
     if (plasma.isValid()) {
         plasma.call("suspendStartup", "kwin");
@@ -361,8 +372,6 @@ int main(int argc, char * argv[])
     if (plasma.isValid()) {
         plasma.call("resumeStartup", "kwin");
     }
-    KWin::SessionManager weAreIndeed;
-    KWin::SessionSaveDoneHelper helper;
     KGlobal::locale()->insertCatalog("kwin_effects");
 
     fcntl(XConnectionNumber(KWin::display()), F_SETFD, 1);

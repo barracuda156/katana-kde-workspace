@@ -176,7 +176,7 @@ void KCrashModule::slotDirty(const QString &path)
                 kcrashargs.append(kcrashdisplay);
             }
             kDebug() << "Restarting" << kcrashfilepath << kcrashapppath << kcrashargs;
-            KToolInvocation::kdeinitExec(kcrashapppath, kcrashargs);
+            KToolInvocation::self()->kdeinitExec(kcrashapppath, kcrashargs);
         }
     }
 }
@@ -195,9 +195,9 @@ void KCrashModule::slotReport()
     const QString kcrashreporturl = knotification->property("_k_url").toString();
     knotification->close();
     if (kcrashreporturl.startsWith(QLatin1String("mailto:"))) {
-        KToolInvocation::invokeMailer(kcrashreporturl, QString::fromLatin1("Crash report"));
+        KToolInvocation::self()->invokeMailer(kcrashreporturl, QString::fromLatin1("Crash report"));
     } else {
-        KToolInvocation::invokeBrowser(kcrashreporturl);
+        KToolInvocation::self()->invokeBrowser(kcrashreporturl);
     }
 }
 

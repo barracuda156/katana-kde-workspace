@@ -825,7 +825,7 @@ void KateMainWindow::slotOpenWithMenuAction(QAction* a)
 
 void KateMainWindow::pluginHelp()
 {
-  KToolInvocation::invokeHelp (QString(), "kate-plugins");
+  KToolInvocation::self()->invokeHelp (QString(), "kate-plugins");
 }
 
 void KateMainWindow::aboutEditor()

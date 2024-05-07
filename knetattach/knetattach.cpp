@@ -84,7 +84,7 @@ void KNetAttach::slotPageChanged(int)
 
 void KNetAttach::slotHelpClicked()
 {
-    KToolInvocation::invokeHelp(QString(), "knetattach");
+    KToolInvocation::self()->invokeHelp(QString(), "knetattach");
 }
 
 void KNetAttach::setInformationText(const QString &type)

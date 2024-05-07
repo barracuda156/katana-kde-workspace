@@ -672,7 +672,7 @@ void KAccessConfig::save()
   // make kaccess reread the configuration
   // turning a11y features off needs to be done by kaccess
   // so run it to clear any enabled features and it will exit if it should
-  KToolInvocation::startServiceByDesktopName("kaccess");
+  KToolInvocation::self()->startServiceByDesktopName("kaccess");
 
   emit changed(false);
 }
@@ -774,7 +774,7 @@ extern "C"
   Q_DECL_EXPORT void kcminit_access()
   {
     KConfig config("kaccessrc", KConfig::NoGlobals);
-    KToolInvocation::startServiceByDesktopName("kaccess");
+    KToolInvocation::self()->startServiceByDesktopName("kaccess");
   }
 }
 

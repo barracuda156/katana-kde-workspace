@@ -365,7 +365,7 @@ int main( int argc, char **argv )
     }
     
 #ifdef Q_WS_X11
-    // make the world happy, we are started, kind of...
+    // make the world happy, it are started, kind of...
     KStartupInfo::appStarted ();
 #endif
 
@@ -377,6 +377,7 @@ int main( int argc, char **argv )
   KateApp app (args);
   if (app.shouldExit()) return 0;
 
+  app.enableSessionManagement();
   // execute ourself ;)
   return app.exec();
 }

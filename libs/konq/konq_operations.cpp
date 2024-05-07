@@ -383,7 +383,7 @@ void KonqOperations::asyncDrop( const KFileItem & destItem )
         {
             QString error;
             const QStringList urlStrList = m_info->urls.toStringList();
-            if ( KToolInvocation::startServiceByDesktopPath( m_destUrl.path(), urlStrList, &error ) > 0 )
+            if ( KToolInvocation::self()->startServiceByDesktopPath( m_destUrl.path(), urlStrList, &error ) > 0 )
                 KMessageBox::error( parentWidget(), error );
         }
         else

@@ -108,7 +108,7 @@ void BookmarksRunner::run(const Plasma::QueryMatch &action)
     const QString term = action.data().toString();
     // transforms URLs like "kde.org" to "http://kde.org"
     const KUrl url = KUrl::fromUserInput(term);
-    KToolInvocation::invokeBrowser(url.url());
+    KToolInvocation::self()->invokeBrowser(url.url());
 }
 
 QMimeData* BookmarksRunner::mimeDataForMatch(const Plasma::QueryMatch &match)

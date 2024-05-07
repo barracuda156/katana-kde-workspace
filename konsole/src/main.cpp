@@ -71,6 +71,7 @@ int main(int argc, char** argv)
 
     // create a new application instance
     Application app;
+    app.enableSessionManagement();
 
     // make sure the d&d popup menu provided by libkonq get translated.
     KGlobal::locale()->insertCatalog("libkonq");

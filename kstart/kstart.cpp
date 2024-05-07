@@ -98,7 +98,7 @@ KStart::KStart()
         }
     } else {
         QString error;
-        if (KToolInvocation::startServiceByDesktopPath(exe, url, &error) != 0) {
+        if (KToolInvocation::self()->startServiceByDesktopPath(exe, url, &error) != 0) {
             kError() << error;
         }
     }

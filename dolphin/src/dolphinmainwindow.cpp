@@ -836,7 +836,7 @@ void DolphinMainWindow::openTerminal()
         dir = url.toLocalFile();
     }
 
-    KToolInvocation::invokeTerminal(QString(), dir);
+    KToolInvocation::self()->invokeTerminal(QString(), dir);
 }
 
 void DolphinMainWindow::editSettings()

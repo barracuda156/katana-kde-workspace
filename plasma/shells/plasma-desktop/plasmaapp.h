@@ -38,6 +38,7 @@
 
 #include "desktoptracker.h"
 #include "kworkspace/kworkspace.h"
+#include "kapplication_interface.h"
 
 namespace Plasma
 {
@@ -98,6 +99,10 @@ public Q_SLOTS:
 
     QString supportInformation() const;
 
+    void saveClients();
+    void restoreClients();
+    void registerClient(const QString &client);
+    void unregisterClient(const QString &client);
     void suspendStartup(const QString &app);
     void resumeStartup(const QString &app);
     void logout(int confirm, int sdtype);
@@ -138,6 +143,9 @@ private Q_SLOTS:
     void haltWithoutConfirmation();
     void rebootWithoutConfirmation();
     void doLogout();
+private Q_SLOTS:
+    void clientSaved();
+    void clientSaveCanceled();
 
 private:
     DesktopCorona *m_corona;
@@ -161,6 +169,9 @@ private:
     int m_startupsuspend;
     bool m_dialogActive;
     KWorkSpace::ShutdownType m_sdtype;
+    bool m_sessionManager;
+    int m_waitingcount;
+    QMap<QString,org::kde::KApplication*> m_clients;
 };
 
 #endif // multiple inclusion guard

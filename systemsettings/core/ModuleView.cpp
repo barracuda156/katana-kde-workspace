@@ -314,7 +314,7 @@ void ModuleView::moduleHelp()
     }
 
     QString moduleService = activeModule->fileName().replace(QLatin1String(".desktop"), QString());
-    KToolInvocation::invokeHelp(QString(), moduleService);
+    KToolInvocation::self()->invokeHelp(QString(), moduleService);
 }
 
 void ModuleView::activeModuleChanged(KPageWidgetItem * current, KPageWidgetItem * previous)

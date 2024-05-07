@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // kwin
 #include <kdecoration.h>
 #include "sm.h"
+#include "client.h"
 #include "utils.h"
 // Katie
 #include <QKeySequence>
@@ -225,10 +226,8 @@ public:
 
     void performWindowOperation(Client* c, WindowOperation op);
 
-    void storeSession(KConfig* config, SMSavePhase phase);
+    void storeSession(KConfig* config);
     void storeClient(KConfigGroup &cg, int num, Client *c);
-    void storeSubSession(const QString &name, QSet<QByteArray> sessionIds);
-    void loadSubSessionInfo(const QString &name);
 
     SessionInfo* takeSessionInfo(Client*);
 
@@ -453,7 +452,6 @@ private:
     Client* active_popup_client;
 
     void loadSessionInfo();
-    void addSessionInfo(KConfigGroup &cg);
 
     QList<SessionInfo*> session;
     static const char* windowTypeToTxt(NET::WindowType type);
@@ -610,6 +608,20 @@ inline const ToplevelList& Workspace::stackingOrder() const
     return stacking_order;
 }
 
+inline void Workspace::sessionSaveStarted()
+{
+    session_saving = true;
+}
+
+inline void Workspace::sessionSaveDone()
+{
+    session_saving = false;
+    //remove sessionInteract flag from all clients
+    foreach (Client * c, clients) {
+        c->setSessionInteract(false);
+    }
+}
+
 inline void Workspace::setWasUserInteraction()
 {
     was_user_interaction = true;
@@ -618,11 +630,6 @@ inline void Workspace::setWasUserInteraction()
 inline bool Workspace::wasUserInteraction() const
 {
     return was_user_interaction;
-}
-
-inline void Workspace::sessionSaveStarted()
-{
-    session_saving = true;
 }
 
 inline bool Workspace::sessionSaving() const

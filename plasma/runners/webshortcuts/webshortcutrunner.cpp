@@ -106,7 +106,7 @@ void WebshortcutRunner::run(const Plasma::QueryMatch &match)
 
     // kDebug() << location;
     if (!location.isEmpty()) {
-        KToolInvocation::invokeBrowser(location);
+        KToolInvocation::self()->invokeBrowser(location);
     }
 }
 

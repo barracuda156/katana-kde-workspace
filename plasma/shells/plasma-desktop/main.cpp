@@ -44,11 +44,13 @@ int main(int argc, char **argv)
                         ki18n("In memory of his contributions, 1937-1998."),
                         0, "http://en.wikipedia.org/wiki/John_Lions");
 
+    // plasma-desktop is the session manager
+    ::unsetenv("SESSION_MANAGER");
+
     KCmdLineArgs::init(argc, argv, &aboutData);
 
     PlasmaApp *app = PlasmaApp::self();
     QApplication::setWindowIcon(KIcon("plasma"));
-    app->disableSessionManagement(); // autostarted
 
     int rc = app->exec();
     delete app;

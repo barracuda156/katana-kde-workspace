@@ -1806,7 +1806,7 @@ KBookmarkManager* LauncherApplet::bookmarkManager() const
 
 void LauncherApplet::slotEditMenu()
 {
-    if (KToolInvocation::kdeinitExec("kmenuedit") == 0) {
+    if (KToolInvocation::self()->kdeinitExec("kmenuedit") == 0) {
         hidePopup();
     } else {
         showMessage(KIcon("dialog-error"), i18n("Failed to launch menu editor"), Plasma::MessageButton::ButtonOk);

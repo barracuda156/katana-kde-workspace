@@ -805,8 +805,9 @@ KateCommandLineBar::KateCommandLineBar (KateView *view, QWidget *parent)
     setFocusProxy (m_lineEdit);
 }
 
-void KateCommandLineBar::showHelpPage() {
-  KToolInvocation::invokeHelp("advanced-editing-tools-commandline","kate");
+void KateCommandLineBar::showHelpPage()
+{
+  KToolInvocation::self()->invokeHelp("advanced-editing-tools-commandline","kate");
 }
 
 KateCommandLineBar::~KateCommandLineBar()

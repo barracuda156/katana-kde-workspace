@@ -53,7 +53,7 @@ void KateHelpButton::setIconState(IconState state)
 
 void KateHelpButton::invokeHelp()
 {
-  KToolInvocation::invokeHelp(m_section, "kate");
+  KToolInvocation::self()->invokeHelp(m_section, "kate");
 }
 
 void KateHelpButton::setSection(const QString& section)

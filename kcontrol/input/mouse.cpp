@@ -557,7 +557,7 @@ void MouseConfig::save()
   group.writeEntry("MKCurve", mk_curve->value());
 
   // restart kaccess
-  KToolInvocation::startServiceByDesktopName("kaccess");
+  KToolInvocation::self()->startServiceByDesktopName("kaccess");
 
   emit changed(false);
 }

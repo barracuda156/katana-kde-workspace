@@ -223,7 +223,7 @@ void UserActionsMenu::configureWM()
 {
     QStringList args;
     args << "--icon" << "preferences-system-windows" << configModules();
-    KToolInvocation::kdeinitExec("kcmshell4", args);
+    KToolInvocation::self()->kdeinitExec("kcmshell4", args);
 }
 
 void UserActionsMenu::init()
