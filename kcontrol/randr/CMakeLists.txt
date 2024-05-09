@@ -5,7 +5,6 @@ include_directories(${X11_Xrandr_INCLUDE_PATH})
 
 ########### next target ###############
 
-
 set(randrinternal_PART_SRCS 
     randr.cpp 
     randrdisplay.cpp
@@ -40,10 +39,25 @@ install(
     DESTINATION ${KDE4_PLUGIN_INSTALL_DIR}
 )
 
-########### next target ###############
-
 install(
     FILES randr.desktop
     DESTINATION ${KDE4_SERVICES_INSTALL_DIR}
 )
 
+########### next target ###############
+
+add_executable(krandr krandr.cpp)
+target_link_libraries(krandr
+    KDE4::kdecore
+    ${X11_X11_LIB}
+)
+
+install(
+    TARGETS krandr
+    DESTINATION ${KDE4_BIN_INSTALL_DIR}
+)
+
+install(
+    FILES krandr.desktop
+    DESTINATION ${KDE4_AUTOSTART_INSTALL_DIR}
+)

@@ -2,13 +2,9 @@
 Exec=kcmshell4 randr
 Icon=preferences-desktop-display-randr
 Type=Service
-X-KDE-ServiceTypes=KCModule,KCModuleInit
+X-KDE-ServiceTypes=KCModule
 X-KDE-Library=kcm_randr
-X-KDE-Init-Symbol=kcminit_randr
-X-KDE-Init-Phase=0
 X-KDE-ParentApp=kcontrol
-#This is always false when kbuildsycoca runs, probably because it is now a QCoreApplication
-#Hidden[$e]=$(if xdpyinfo|grep RANDR > /dev/null; then echo "false"; else echo "true"; fi)
 
 X-KDE-System-Settings-Parent-Category=display
 X-KDE-Weight=50

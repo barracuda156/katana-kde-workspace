@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Service
+Name=KDE Resource Database Utility
+Exec=krdb
+Icon=preferences-desktop-theme-style
+StartupNotify=false
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=1
+X-DocPath=kcontrol/kcmstyle/index.html
