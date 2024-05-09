@@ -22,6 +22,7 @@
 #define PLASMA_APP_H
 
 #include <QTimer>
+#include <QElapsedTimer>
 #include <QWeakPointer>
 #include <QDBusInterface>
 #include <QDBusPendingReply>
@@ -165,6 +166,7 @@ private:
     QHash<int, QWeakPointer<ControllerWindow> > m_widgetExplorers;
     QTimer* m_phaseTimer;
     int m_phase;
+    QElapsedTimer m_phaseElapsed;
     QDBusPendingReply<void> m_klauncherReply;
     QDBusPendingReply<void> m_kdedReply;
     QDBusInterface* m_klauncher;

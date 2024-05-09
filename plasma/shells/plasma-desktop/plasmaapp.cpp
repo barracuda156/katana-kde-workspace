@@ -72,6 +72,7 @@
 #endif
 
 static const int s_sessiondelay = 500; // ms
+static const int s_phasetimeout = 10000; // ms
 static const QString s_defaultwm = QString::fromLatin1("kwin");
 static const QStringList s_defaultwmcommands = QStringList() << s_defaultwm;
 
@@ -1088,7 +1089,6 @@ void PlasmaApp::clientSaveCanceled()
 
 void PlasmaApp::suspendStartup(const QString &app)
 {
-    // TODO: timeout for suspending
     m_startupSuspend++;
     kDebug() << "startup suspended by" << app;
 }
@@ -1169,14 +1169,19 @@ void PlasmaApp::cleanup()
 
 void PlasmaApp::nextPhase()
 {
-    if (m_startupSuspend > 0) {
-        return;
-    } else if (m_phase > 0 && !m_klauncherReply.isFinished()) {
-        kDebug() << "waiting for klauncher reply to finish";
-        return;
-    } else if (m_phase > 2 && !m_kdedReply.isFinished()) {
-        kDebug() << "waiting for kded reply to finish";
-        return;
+    if (m_phaseElapsed.elapsed() >= s_phasetimeout) {
+        kWarning() << "phase took too long, forcing next phase" << m_phaseElapsed.elapsed();
+        m_startupSuspend = 0;
+    } else {
+        if (m_startupSuspend > 0) {
+            return;
+        } else if (m_phase > 0 && !m_klauncherReply.isFinished()) {
+            kDebug() << "waiting for klauncher reply to finish";
+            return;
+        } else if (m_phase > 2 && !m_kdedReply.isFinished()) {
+            kDebug() << "waiting for kded reply to finish";
+            return;
+        }
     }
     kDebug() << "startup phase" << m_phase;
     switch (m_phase) {
@@ -1194,16 +1199,17 @@ void PlasmaApp::nextPhase()
             break;
         }
         case 3: {
+            m_phaseTimer->stop();
             if (m_sessionManager) {
                 restoreClients();
             }
             kDebug() << "startup done";
             KNotification::event("kde/startkde");
-            m_phaseTimer->stop();
             break;
         }
     }
     m_phase++;
+    m_phaseElapsed.start();
 }
 
 void PlasmaApp::defaultLogout()
