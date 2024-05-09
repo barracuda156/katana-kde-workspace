@@ -47,22 +47,20 @@ void Workspace::storeSession(KConfig* config)
 {
     KConfigGroup cg(config, "Session");
     int count =  0;
-    int active_client = -1;
 
     for (ClientList::Iterator it = clients.begin(); it != clients.end(); ++it) {
         Client* c = (*it);
         QByteArray sessionId = c->sessionId();
         QByteArray wmCommand = c->wmCommand();
-        if (sessionId.isEmpty())
-            if (wmCommand.isEmpty())
+        if (sessionId.isEmpty()) {
+            if (wmCommand.isEmpty()) {
                 continue;
+            }
+        }
         count++;
-        if (c->isActive())
-            active_client = count;
         storeClient(cg, count, c);
     }
     cg.writeEntry("count", count);
-    cg.writeEntry("active", session_active_client);
     cg.writeEntry("desktop", VirtualDesktopManager::self()->current());
 }
 
@@ -70,17 +68,17 @@ void Workspace::storeClient(KConfigGroup &cg, int num, Client *c)
 {
     c->setSessionInteract(false); //make sure we get the real values
     QString n = QString::number(num);
-    cg.writeEntry(QString("sessionId") + n, c->sessionId().constData());
-    cg.writeEntry(QString("windowRole") + n, c->windowRole().constData());
-    cg.writeEntry(QString("wmCommand") + n, c->wmCommand().constData());
-    cg.writeEntry(QString("resourceName") + n, c->resourceName().constData());
-    cg.writeEntry(QString("resourceClass") + n, c->resourceClass().constData());
+    cg.writeEntry(QString("sessionId") + n, c->sessionId());
+    cg.writeEntry(QString("windowRole") + n, c->windowRole());
+    cg.writeEntry(QString("wmCommand") + n, c->wmCommand());
+    cg.writeEntry(QString("resourceName") + n, c->resourceName());
+    cg.writeEntry(QString("resourceClass") + n, c->resourceClass());
     cg.writeEntry(QString("geometry") + n, QRect(c->calculateGravitation(true), c->clientSize()));   // FRAME
     cg.writeEntry(QString("restore") + n, c->geometryRestore());
     cg.writeEntry(QString("fsrestore") + n, c->geometryFSRestore());
     cg.writeEntry(QString("maximize") + n, (int) c->maximizeMode());
     cg.writeEntry(QString("fullscreen") + n, (int) c->fullScreenMode());
-    cg.writeEntry(QString("desktop") + n, c->desktop());
+    cg.writeEntry(QString("desktop") + n, c->desktop());;
     // the config entry is called "iconified" for back. comp. reasons
     // (kconf_update script for updating session files would be too complicated)
     cg.writeEntry(QString("iconified") + n, c->isMinimized());
@@ -98,6 +96,7 @@ void Workspace::storeClient(KConfigGroup &cg, int num, Client *c)
     cg.writeEntry(QString("userNoBorder") + n, c->noBorder());
     cg.writeEntry(QString("windowType") + n, windowTypeToTxt(c->windowType()));
     cg.writeEntry(QString("shortcut") + n, c->shortcut().toString());
+    cg.writeEntry(QString("active") + n, c->isActive());
     cg.writeEntry(QString("stackingOrder") + n, unconstrained_stacking_order.indexOf(c));
     // KConfig doesn't support long so we need to live with less precision on 64-bit systems
     cg.writeEntry(QString("tabGroup") + n, static_cast<int>(reinterpret_cast<long>(c->tabGroup())));
@@ -114,7 +113,6 @@ void Workspace::loadSessionInfo()
     KConfigGroup cg(kapp->sessionConfig(), "Session");
 
     int count =  cg.readEntry("count", 0);
-    int active_client = cg.readEntry("active", 0);
     for (int i = 1; i <= count; i++) {
         QString n = QString::number(i);
         SessionInfo* info = new SessionInfo();
@@ -142,7 +140,7 @@ void Workspace::loadSessionInfo()
         info->noBorder = cg.readEntry(QString("userNoBorder") + n, false);
         info->windowType = txtToWindowType(cg.readEntry(QString("windowType") + n, QString()).toLatin1());
         info->shortcut = cg.readEntry(QString("shortcut") + n, QString());
-        info->active = (active_client == i);
+        info->active = cg.readEntry(QString("active") + n, false);
         info->stackingOrder = cg.readEntry(QString("stackingOrder") + n, -1);
         info->tabGroup = cg.readEntry(QString("tabGroup") + n, 0);
         info->tabGroupClient = NULL;
@@ -171,13 +169,12 @@ SessionInfo* Workspace::takeSessionInfo(Client* c)
     if (! sessionId.isEmpty()) {
         // look for a real session managed client (algorithm suggested by ICCCM)
         foreach (SessionInfo *info, session) {
-            if (realInfo)
-                break;
             if (info->sessionId == sessionId && sessionInfoWindowTypeMatch(c, info)) {
                 if (! windowRole.isEmpty()) {
                     if (info->windowRole == windowRole) {
                         realInfo = info;
                         session.removeAll(info);
+                        break;
                     }
                 } else {
                     if (info->windowRole.isEmpty()
@@ -185,6 +182,7 @@ SessionInfo* Workspace::takeSessionInfo(Client* c)
                             && info->resourceClass == resourceClass) {
                         realInfo = info;
                         session.removeAll(info);
+                        break;
                     }
                 }
             }
@@ -192,14 +190,13 @@ SessionInfo* Workspace::takeSessionInfo(Client* c)
     } else {
         // look for a sessioninfo with matching features.
         foreach (SessionInfo * info, session) {
-            if (realInfo)
-                break;
             if (info->resourceName == resourceName
                     && info->resourceClass == resourceClass
                     && sessionInfoWindowTypeMatch(c, info)) {
                 if (wmCommand.isEmpty() || info->wmCommand == wmCommand) {
                     realInfo = info;
                     session.removeAll(info);
+                    break;
                 }
             }
         }

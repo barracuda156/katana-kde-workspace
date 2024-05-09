@@ -490,8 +490,6 @@ private:
 
     bool was_user_interaction;
     bool session_saving;
-    int session_active_client;
-    int session_desktop;
 
     int block_focus;
 
