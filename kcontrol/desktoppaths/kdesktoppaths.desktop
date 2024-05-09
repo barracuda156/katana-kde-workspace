@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Service
+Name=KDE Desktop Paths
+Exec=kdesktoppaths
+Icon=system-file-manager
+StartupNotify=false
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=1
+X-DocPath=kcontrol/paths/index.html

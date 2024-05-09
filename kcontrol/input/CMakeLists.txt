@@ -57,7 +57,13 @@ install(
 
 ########### next target ###############
 
-set(kcm_input_PART_SRCS mouse.cpp main.cpp logitechmouse.cpp kmousedlg.ui logitechmouse_base.ui )
+set(kcm_input_PART_SRCS
+    mouse.cpp
+    mousesettings.cpp
+    logitechmouse.cpp
+    kmousedlg.ui
+    logitechmouse_base.ui
+)
 
 kde4_add_plugin(kcm_input ${kcm_input_PART_SRCS})
 
@@ -101,6 +107,27 @@ install(
     DESTINATION ${KDE4_PLUGIN_INSTALL_DIR}
 )
 
+
+########### next target ###############
+
+add_executable(kmouse
+    kmouse.cpp
+    logitechmouse.cpp
+    mousesettings.cpp
+    logitechmouse_base.ui
+)
+target_link_libraries(kmouse
+    KDE4::kdeui
+    ${X11_LIBRARIES}
+)
+
+if (LIBUSB_FOUND)
+   target_link_libraries(kmouse ${LIBUSB_LIBRARIES})
+endif (LIBUSB_FOUND)
+if (X11_Xcursor_FOUND)
+   target_link_libraries(kmouse ${X11_Xcursor_LIB})
+endif (X11_Xcursor_FOUND)
+
 ########### install files ###############
 
 install(
@@ -116,4 +143,14 @@ install(
 install(
     FILES mouse_new.desktop
     DESTINATION ${KDE4_DATA_INSTALL_DIR}/solid/actions
+)
+
+install(
+    TARGETS kmouse
+    DESTINATION ${KDE4_BIN_INSTALL_DIR}
+)
+
+install(
+    FILES kmouse.desktop
+    DESTINATION ${KDE4_AUTOSTART_INSTALL_DIR}
 )

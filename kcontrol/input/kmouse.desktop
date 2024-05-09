@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Service
+Name=KDE Mouse
+Exec=kmouse
+Icon=preferences-desktop-mouse
+StartupNotify=false
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=0
+X-DocPath=kcontrol/mouse/index.html

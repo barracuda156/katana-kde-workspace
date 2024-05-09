@@ -116,16 +116,6 @@ dbus-update-activation-environment DISPLAY XAUTHORITY XDG_CURRENT_DESKTOP \
 # update it when that happens
 kbuildsycoca4
 
-# Start kcminit_startup
-kcminit_startup
-kcminit_result=$?
-if test $? -ne 0; then
-    # Startup error
-    echo "startkde: Could not start kcminit_startup ($kcminit_result). Check your installation."  1>&2
-    xmessage -geometry 500x100 "Could not start kcminit_startup ($kcminit_result). Check your installation."
-    exit 1
-fi
-
 # finally, give the session control to plasma-desktop
 plasma-desktop
 plasma_result=$?

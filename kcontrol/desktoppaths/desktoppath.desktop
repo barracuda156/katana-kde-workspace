@@ -1,12 +1,11 @@
 [Desktop Entry]
 Type=Service
-X-KDE-ServiceTypes=KCModule,KCModuleInit
+X-KDE-ServiceTypes=KCModule
 X-DocPath=kcontrol/paths/index.html
 Icon=system-file-manager
 Exec=kcmshell4 desktoppath
 
 X-KDE-Library=kcm_desktoppaths
-X-KDE-Init-Symbol=kcminit_desktoppaths
 X-KDE-PluginKeyword=dpath
 X-KDE-ParentApp=kcontrol
 X-KDE-System-Settings-Parent-Category=account-details

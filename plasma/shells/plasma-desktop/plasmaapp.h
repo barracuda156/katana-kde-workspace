@@ -164,7 +164,6 @@ private:
     QHash<int, QWeakPointer<ControllerWindow> > m_widgetExplorers;
     int m_phase;
     QDBusInterface* m_klauncher;
-    QDBusInterface* m_kcminit;
     QProcess* m_wmproc;
     int m_startupsuspend;
     bool m_dialogActive;

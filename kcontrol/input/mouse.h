@@ -32,7 +32,7 @@
 #define __MOUSECONFIG_H__
 
 #include <QLabel>
-#include <QtGui/QLCDNumber>
+#include <QLCDNumber>
 #include <QPushButton>
 #include <QRadioButton>
 
@@ -46,12 +46,10 @@
 #ifdef HAVE_LIBUSB
 #include "logitechmouse.h"
 #endif
+#include "mousesettings.h"
 
 #include <kcmodule.h>
 #include "ui_kmousedlg.h"
-
-#define RIGHT_HANDED 0
-#define LEFT_HANDED  1
 
 #include <QCheckBox>
 #include <QSlider>
@@ -63,36 +61,6 @@ public:
   KMouseDlg( QWidget *parent ) : QWidget( parent ) {
     setupUi( this );
   }
-};
-
-
-class MouseSettings
-{
-public:
-  void save(KConfig *);
-  void load(KConfig *);
-  void apply(bool force=false);
-public:
- int num_buttons;
- int middle_button;
- bool handedEnabled;
- bool m_handedNeedsApply;
- int handed;
- double accelRate;
- int thresholdMove;
- int doubleClickInterval;
- int dragStartTime;
- int dragStartDist;
- bool singleClick;
- int autoSelectDelay;
- bool changeCursor;
- int wheelScrollLines;
- bool reverseScrollPolarity;
-
- #ifdef HAVE_LIBUSB
- // TODO: In Qt4, replace with a better container.
- QList <LogitechMouse*> logitechMouseList;
- #endif
 };
 
 class MouseConfig : public KCModule

@@ -29,3 +29,22 @@ install(
     FILES keyboard_new.desktop
     DESTINATION ${KDE4_DATA_INSTALL_DIR}/solid/actions
 )
+
+########### next target ###############
+
+add_executable(kkeyboard kkeyboard.cpp)
+target_link_libraries(kkeyboard
+    KDE4::kdeui
+    ${X11_LIBRARIES}
+    ${X11_Xkbfile_LIB}
+)
+
+install(
+    TARGETS kkeyboard
+    DESTINATION ${KDE4_BIN_INSTALL_DIR}
+)
+
+install(
+    FILES kkeyboard.desktop
+    DESTINATION ${KDE4_AUTOSTART_INSTALL_DIR}
+)

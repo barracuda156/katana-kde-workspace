@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Service
+Name=KDE Keyboard
+Exec=kkeyboard
+Icon=preferences-desktop-keyboard
+StartupNotify=false
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=0
+X-DocPath=kcontrol/keyboard/index.html

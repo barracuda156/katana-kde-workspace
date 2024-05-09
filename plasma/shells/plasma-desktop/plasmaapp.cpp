@@ -114,7 +114,6 @@ PlasmaApp::PlasmaApp()
     m_panelHidden(0),
     m_phase(0),
     m_klauncher(nullptr),
-    m_kcminit(nullptr),
     m_wmproc(nullptr),
     m_startupsuspend(0),
     m_dialogActive(false),
@@ -181,13 +180,6 @@ PlasmaApp::PlasmaApp()
         QDBusConnection::sessionBus(),
         this
     );    
-    m_kcminit = new QDBusInterface(
-        QLatin1String("org.kde.kcminit"),
-        QLatin1String("/kcminit"),
-        QLatin1String("org.kde.KCMInit"),
-        QDBusConnection::sessionBus(),
-        this
-    );
     const bool failsafe = (qgetenv("KDE_FAILSAFE").toInt() == 1);
     if (!failsafe) {
         m_sessionManager = true;
@@ -1174,13 +1166,11 @@ void PlasmaApp::nextPhase()
                     sessionInterface->startService(kdedInterface);
                 }
                 m_klauncher->asyncCall("autoStart", int(0));
-                m_kcminit->asyncCall("runPhase1");
                 QTimer::singleShot(s_phasedelay, this, SLOT(nextPhase()));
                 break;
             }
             case 1: {
                 m_klauncher->asyncCall("autoStart", int(1));
-                m_kcminit->asyncCall("runPhase2");
                 QTimer::singleShot(s_phasedelay, this, SLOT(nextPhase()));
                 break;
             }

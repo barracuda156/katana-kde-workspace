@@ -1,5 +1,4 @@
 set(kcm_desktoppaths_PART_SRCS
-    globalpaths.cpp
     kcmdesktoppaths.cpp
 )
 
@@ -25,4 +24,21 @@ install(
     data/Trash.desktop
     data/Home.desktop
     DESTINATION ${KDE4_DATA_INSTALL_DIR}/kcm_desktoppaths
+)
+
+########### next target ###############
+
+add_executable(kdesktoppaths kdesktoppaths.cpp)
+target_link_libraries(kdesktoppaths
+    KDE4::kdecore
+)
+
+install(
+    TARGETS kdesktoppaths
+    DESTINATION ${KDE4_BIN_INSTALL_DIR}
+)
+
+install(
+    FILES kdesktoppaths.desktop
+    DESTINATION ${KDE4_AUTOSTART_INSTALL_DIR}
 )

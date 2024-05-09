@@ -19,11 +19,9 @@
 #include "keyboardconfig.h"
 #include "keyboardlayoutdialog.h"
 #include "keyboardoptionsdialog.h"
+#include "keyboardconfig_common.h"
 
 #include <QHeaderView>
-#include <QX11Info>
-#include <kconfiggroup.h>
-#include <kkeyboardlayout.h>
 #include <kstandarddirs.h>
 #include <kicon.h>
 #include <klocale.h>
@@ -32,41 +30,6 @@
 #include <kpluginfactory.h>
 #include <kpluginloader.h>
 #include <kdebug.h>
-
-#include <X11/Xlib.h>
-#include <X11/XKBlib.h>
-
-static const float s_defaultrepeatdelay = 660.0;
-static const float s_defaultrepeatrate = 25.0;
-
-static QList<KKeyboardType> kLayoutsFromConfig()
-{
-    KConfig kconfig("kcminputrc", KConfig::NoGlobals);
-    KConfigGroup kconfiggroup(&kconfig, "Keyboard");
-    const KKeyboardType defaultlayout = KKeyboardLayout::defaultLayout();
-    const QByteArray layoutsmodel = kconfiggroup.readEntry("LayoutsModel", defaultlayout.model);
-    const QByteArray layoutsoptions = kconfiggroup.readEntry("LayoutsOptions", defaultlayout.option);
-    const QStringList layoutslayouts = kconfiggroup.readEntry(
-        "LayoutsLayouts",
-        QStringList() << QString::fromLatin1(defaultlayout.layout.constData(), defaultlayout.layout.size())
-    );
-    const QStringList layoutsvariants = kconfiggroup.readEntry(
-        "LayoutsVariants",
-        QStringList() << QString::fromLatin1(defaultlayout.variant.constData(), defaultlayout.variant.size())
-    );
-    QList<KKeyboardType> result;
-    for (int i = 0; i < layoutslayouts.size(); i++) {
-        KKeyboardType kkeyboardtype;
-        kkeyboardtype.model = layoutsmodel;
-        kkeyboardtype.layout = layoutslayouts.at(i).toLatin1();
-        if (i < layoutsvariants.size()) {
-            kkeyboardtype.variant = layoutsvariants.at(i).toLatin1();
-        }
-        kkeyboardtype.option = layoutsoptions;
-        result.append(kkeyboardtype);
-    }
-    return result;
-}
 
 static void kFillTreeFromLayouts(QTreeWidget *treewidget, const QList<KKeyboardType> &layouts)
 {
@@ -102,46 +65,6 @@ static QList<KKeyboardType> kGetLayoutsFromTree(QTreeWidget *treewidget, const Q
         result.append(kkeyboardtype);
     }
     return result;
-}
-
-static void kApplyKeyboardConfig()
-{
-    const QList<KKeyboardType> layouts = kLayoutsFromConfig();
-    if (layouts.size() > 0) {
-        KKeyboardLayout().setLayouts(layouts);
-    }
-
-    KConfig kconfig("kcminputrc", KConfig::NoGlobals);
-    KConfigGroup kconfiggroup(&kconfig, "Keyboard");
-    const float repeatdelay = kconfiggroup.readEntry("RepeatDelay", s_defaultrepeatdelay);
-    const float repeatrate = kconfiggroup.readEntry("RepeatRate", s_defaultrepeatrate);
-
-    XkbDescPtr xkbkeyboard = XkbAllocKeyboard();
-    if (!xkbkeyboard) {
-        kError() << "Failed to allocate keyboard";
-        return;
-    }
-    Status xkbgetresult = XkbGetControls(QX11Info::display(), XkbRepeatKeysMask, xkbkeyboard);
-    if (xkbgetresult != Success) {
-        kError() << "Failed to get keyboard repeat controls";
-        XkbFreeKeyboard(xkbkeyboard, 0, true);
-        return;
-    }
-    xkbkeyboard->ctrls->repeat_delay = repeatdelay;
-    xkbkeyboard->ctrls->repeat_interval = qFloor(1000 / repeatrate + 0.5);
-    const Bool xkbsetresult = XkbSetControls(QX11Info::display(), XkbRepeatKeysMask, xkbkeyboard);
-    if (xkbsetresult != True) {
-        kError() << "Failed to set keyboard repeat controls";
-    }
-    XkbFreeKeyboard(xkbkeyboard, 0, true);
-}
-
-extern "C"
-{
-    Q_DECL_EXPORT void kcminit_keyboard()
-    {
-        kApplyKeyboardConfig();
-    }
 }
 
 K_PLUGIN_FACTORY(KCMKeyboardFactory, registerPlugin<KCMKeyboard>();)

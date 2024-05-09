@@ -272,8 +272,6 @@ add_subdirectory(kcontrol)
 add_subdirectory(kmenuedit)
 add_subdirectory(kinfocenter)
 
-add_subdirectory(kcminit)
-
 if (LightDM_FOUND)
     add_subdirectory(kgreeter)
 endif(LightDM_FOUND)
