@@ -45,6 +45,7 @@
 #include <KConfigSkeleton>
 #include <KDesktopFile>
 #include <KShell>
+#include <KNotification>
 
 #include <Plasma/AbstractToolBox>
 #include <Plasma/Containment>
@@ -985,9 +986,9 @@ void PlasmaApp::saveClients()
     kDebug() << "initiating session save" << m_clients.size();
     m_waitingcount = 0;
     QMapIterator<QString,org::kde::KApplication*> iter(m_clients);
-    iter.toBack();
     // window manager should be last to save its state first to restore so iteration is done
     // backwards
+    iter.toBack();
     while (iter.hasPrevious()) {
         iter.previous();
         kDebug() << "calling saveSession() for" << iter.key();
@@ -1077,7 +1078,10 @@ void PlasmaApp::clientSaved()
 void PlasmaApp::clientSaveCanceled()
 {
     kDebug() << "client canceled session save";
-    m_waitingcount++;
+    KNotification::event(
+        "kde/cancellogout" , QString(),
+        i18n("Logout canceled by user")
+    );
 }
 
 void PlasmaApp::suspendStartup(const QString &app)
@@ -1089,7 +1093,9 @@ void PlasmaApp::suspendStartup(const QString &app)
 
 void PlasmaApp::resumeStartup(const QString &app)
 {
-    m_startupsuspend--;
+    if (m_startupsuspend > 0) {
+        m_startupsuspend--;
+    }
     kDebug() << "startup resumed by" << app;
 }
 
@@ -1158,6 +1164,7 @@ void PlasmaApp::cleanup()
 void PlasmaApp::nextPhase()
 {
     if (m_startupsuspend <= 0){ 
+        // TODO: phases should not be on timer
         kDebug() << "next startup phase" << m_phase;
         switch (m_phase) {
             case 0: {
@@ -1183,6 +1190,7 @@ void PlasmaApp::nextPhase()
                     restoreClients();
                 }
                 kDebug() << "startup done";
+                KNotification::event("kde/startkde");
                 return;
             }
         }
@@ -1215,6 +1223,7 @@ void PlasmaApp::rebootWithoutConfirmation()
 void PlasmaApp::doLogout()
 {
     cleanup();
+    KNotification::event("kde/exitkde");
     if (m_sdtype == KWorkSpace::ShutdownTypeDefault || m_sdtype == KWorkSpace::ShutdownTypeNone) {
         quit();
     } else {
