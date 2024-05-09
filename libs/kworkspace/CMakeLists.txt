@@ -17,12 +17,6 @@ qt4_add_dbus_interface(kworkspace_LIB_SRCS ${kwin_xml} kwin_interface)
 
 add_library(kworkspace SHARED ${kworkspace_LIB_SRCS})
 
-target_link_libraries(kworkspace PRIVATE
-    ${X11_Xau_LIB}
-    ${X11_SM_LIB}
-    ${X11_ICE_LIB}
-)
-
 target_link_libraries(kworkspace PUBLIC
     KDE4::kdeui
     KDE4::plasma

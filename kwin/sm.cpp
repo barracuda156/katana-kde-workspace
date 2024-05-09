@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "workspace.h"
 #include "client.h"
-#include <QSocketNotifier>
+#include <kapplication.h>
 #include <kdebug.h>
 
 namespace KWin

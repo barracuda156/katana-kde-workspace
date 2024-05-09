@@ -19,7 +19,6 @@
 #include "ktaskmanager.h"
 
 #include <QMutex>
-#include <QX11Info>
 #include <KGlobal>
 #include <KWindowSystem>
 #include <KDebug>

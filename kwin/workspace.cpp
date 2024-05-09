@@ -56,8 +56,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <KStartupInfo>
 #include <KWindowInfo>
 #include <KWindowSystem>
-// Qt
-#include <QtCore/qmetaobject.h>
+#include <KApplication>
+// Katie
+#include <QMetaObject>
 
 namespace KWin
 {

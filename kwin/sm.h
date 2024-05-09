@@ -22,15 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef KWIN_SM_H
 #define KWIN_SM_H
 
-#include <QDataStream>
-#include <kapplication.h>
 #include <netwm_def.h>
+#include <QByteArray>
+#include <QString>
 #include <QRect>
-
-#include <X11/SM/SMlib.h>
-#include <fixx11h.h>
-
-#include <QSocketNotifier>
 
 namespace KWin
 {
