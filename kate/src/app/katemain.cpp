@@ -365,7 +365,7 @@ int main( int argc, char **argv )
     }
     
 #ifdef Q_WS_X11
-    // make the world happy, it are started, kind of...
+    // make the world happy, it started, kind of...
     KStartupInfo::appStarted ();
 #endif
 
