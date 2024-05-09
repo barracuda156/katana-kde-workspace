@@ -45,8 +45,6 @@
 #include <klocale.h>
 #include <kstyle.h>
 
-#include "krdb.h"
-
 #include <X11/Xlib.h>
 #include <fixx11h.h>
 #include <QtGui/qx11info_x11.h>

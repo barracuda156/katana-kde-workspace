@@ -31,8 +31,6 @@
 #include <KArchive>
 #include <KDebug>
 
-#include "../../krdb/krdb.h"
-
 #include <QWidget>
 #include <QPushButton>
 #include <QDir>
@@ -259,7 +257,7 @@ bool ThemePage::applyTheme(const CursorTheme *theme, const int size)
     KToolInvocation::self()->setLaunchEnv("XCURSOR_THEME", theme->name());
 
     // Update the Xcursor X resources
-    runRdb();
+    KToolInvocation::self()->startServiceByDesktopName("krdb");
 
     // Notify all applications that the cursor theme has changed
     KGlobalSettings::self()->emitChange(KGlobalSettings::MouseChanged);

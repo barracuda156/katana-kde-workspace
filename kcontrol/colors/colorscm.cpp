@@ -20,8 +20,6 @@
 
 #include "colorscm.h"
 
-#include "../krdb/krdb.h"
-
 #include <QtCore/QFileInfo>
 #include <QtCore/QTimer>
 #include <QtGui/QHeaderView>
@@ -43,6 +41,7 @@
 #include <KMessageBox>
 #include <KPluginFactory>
 #include <KStandardDirs>
+#include <KToolInvocation>
 #include <kio/netaccess.h>
 
 K_PLUGIN_FACTORY( KolorFactory, registerPlugin<KColorCm>(); )
@@ -1163,7 +1162,7 @@ void KColorCm::save()
     displayGroup.writeEntry("exportKDEColors", applyToAlien->isChecked());
     cfg.sync();
 
-    runRdb();
+    KToolInvocation::self()->startServiceByDesktopName("krdb");
 
     emit changed(false);
 }

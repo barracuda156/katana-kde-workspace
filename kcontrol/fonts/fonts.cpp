@@ -39,8 +39,7 @@
 #include <KDebug>
 #include <KLocale>
 #include <KPluginFactory>
-
-#include "../krdb/krdb.h"
+#include <KToolInvocation>
 
 #ifdef HAVE_FREETYPE
 #include <ft2build.h>
@@ -271,7 +270,7 @@ bool FontAASettings::load()
     xft.apply();  // Save this setting
     KConfigGroup(&kglobals, "General").writeEntry("XftHintStyle", KXftConfig::toStr(hStyle));
     kglobals.sync();
-    runRdb();
+    KToolInvocation::self()->startServiceByDesktopName("krdb");
   }
 
   hintingStyle->setCurrentIndex(getIndex(hStyle));
@@ -732,7 +731,7 @@ void KFonts::save()
   }
 #endif
 #endif
-  runRdb();
+  KToolInvocation::self()->startServiceByDesktopName("krdb");
 
   emit changed(false);
 }

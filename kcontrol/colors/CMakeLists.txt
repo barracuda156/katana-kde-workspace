@@ -1,5 +1,4 @@
 set(kcm_colors_PART_SRCS
-    ../krdb/krdb.cpp
     colorscm.cpp
     previewwidget.cpp
     setpreviewwidget.cpp

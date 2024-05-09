@@ -6,7 +6,6 @@ include_directories(${FREETYPE_INCLUDE_DIRS})
 ########### next target ###############
 
 set(kcm_fonts_PART_SRCS
-    ../krdb/krdb.cpp
     fonts.cpp
     ${libkxftconfig_SRCS}
 )

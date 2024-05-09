@@ -8,7 +8,6 @@ include_directories (
 ########### next target ###############
 
 set(kcm_style_PART_SRCS
-    ../krdb/krdb.cpp
     styleconfdialog.cpp
     kcmstyle.cpp
     stylepreview.ui
@@ -17,12 +16,17 @@ set(kcm_style_PART_SRCS
 
 kde4_add_plugin(kcm_style ${kcm_style_PART_SRCS})
 
-target_link_libraries(kcm_style KDE4::kio ${X11_LIBRARIES}
-    KDE4::plasma)
-target_link_libraries(kcm_style kdecorations)
+target_link_libraries(kcm_style
+    KDE4::kio
+    KDE4::plasma
+    kdecorations
+    ${X11_LIBRARIES}
+)
 
-install(TARGETS kcm_style  DESTINATION ${KDE4_PLUGIN_INSTALL_DIR})
-
+install(
+    TARGETS kcm_style
+    DESTINATION ${KDE4_PLUGIN_INSTALL_DIR}
+)
 
 ########### install files ###############
 

@@ -48,6 +48,7 @@
 #endif
 #include <kpluginfactory.h>
 #include <kpluginloader.h>
+#include <ktoolinvocation.h>
 
 #include <QtCore/QFile>
 #include <QtGui/QAbstractItemView>
@@ -58,23 +59,10 @@
 #include <QtGui/QFormLayout>
 #include <QtGui/QStandardItemModel>
 #include <QtGui/QStyle>
-#include <QtDBus/QtDBus>
-
-#include "../krdb/krdb.h"
-
-/**** DLL Interface for kcontrol ****/
+#include <QtDBus/QDBusMessage>
 
 K_PLUGIN_FACTORY(KCMStyleFactory, registerPlugin<KCMStyle>();)
 K_EXPORT_PLUGIN(KCMStyleFactory("kcmstyle"))
-
-
-extern "C"
-{
-    KDE_EXPORT void kcminit_style()
-    {
-        runRdb();
-    }
-}
 
 class StylePreview : public QWidget, public Ui::StylePreview
 {
@@ -401,7 +389,7 @@ void KCMStyle::save()
     // export fonts/colors settings.
     if (m_bStyleDirty | m_bToolbarDirty)    // Export only if necessary
     {
-        runRdb();
+        KToolInvocation::self()->startServiceByDesktopName("krdb");
     }
 
     // Clean up

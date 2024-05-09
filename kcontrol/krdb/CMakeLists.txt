@@ -10,3 +10,8 @@ install(
     TARGETS krdb
     DESTINATION ${KDE4_BIN_INSTALL_DIR}
 )
+
+install(
+    FILES krdb.desktop
+    DESTINATION ${KDE4_AUTOSTART_INSTALL_DIR}
+)

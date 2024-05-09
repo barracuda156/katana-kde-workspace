@@ -2,11 +2,10 @@
 Exec=kcmshell4 style
 Icon=preferences-desktop-theme-style
 Type=Service
-X-KDE-ServiceTypes=KCModule,KCModuleInit
+X-KDE-ServiceTypes=KCModule
 X-DocPath=kcontrol/kcmstyle/index.html
 
 X-KDE-Library=kcm_style
-X-KDE-Init-Symbol=kcminit_style
 X-KDE-ParentApp=kcontrol
 
 X-KDE-System-Settings-Parent-Category=desktop-appearance
