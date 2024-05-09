@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
     KCmdLineArgs::addCmdLineOptions(option);
 
     KApplication app;
+    app.enableSessionManagement();
     if (app.isSessionRestored()) {
         kRestoreMainWindows<KMediaWindow>();
     } else {

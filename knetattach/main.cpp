@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
 
     KCmdLineArgs::init(argc, argv, &about);
     KApplication a;
+    a.enableSessionManagement();
 
     KNetAttach na;
     a.connect( &a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()) );

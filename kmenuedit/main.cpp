@@ -74,6 +74,7 @@ int main( int argc, char **argv )
         return 1;
 
     KMenuApplication app;
+    app.enableSessionManagement();
 
     menuEdit = new KMenuEdit();
     menuEdit->show();

@@ -119,8 +119,8 @@ int main(int argc, char **argv) {
 
     bool browser = args->isSet("browser");
 
-    //KApplication::disableAutoDcopRegistration();
     KApplication app;
+    app.enableSessionManagement();
 
     bool gotFilenameArg = (args->count() == 1);
 

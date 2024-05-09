@@ -58,6 +58,7 @@ int main( int argc, char ** argv )
   KCmdLineArgs::addCmdLineOptions( options );
 
   KApplication app;
+  app.enableSessionManagement();
 
   KCmdLineArgs *args= KCmdLineArgs::parsedArgs();
 

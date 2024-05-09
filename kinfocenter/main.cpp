@@ -56,5 +56,6 @@ int main(int argc, char *argv[])
     KCmdLineArgs::init( argc, argv, &aboutData );
 
     KicApp Kic;
+    Kic.enableSessionManagement();
     return Kic.exec();
 }

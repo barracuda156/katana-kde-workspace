@@ -537,6 +537,7 @@ int main( int argc, char** argv )
   KCmdLineArgs::addCmdLineOptions( options );
   // initialize KDE application
   KApplication *app = new KApplication();
+  app->enableSessionManagement();
 
   KSGRD::SensorMgr = new KSGRD::SensorManager();
   KSGRD::Style = new KSGRD::StyleEngine();

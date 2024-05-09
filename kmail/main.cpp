@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
     KCmdLineArgs::addCmdLineOptions(option);
 
     KApplication *kapplication = new KApplication();
+    kapplication->enableSessionManagement();
     KMailDialog kmaildialog;
     kmaildialog.setButtons(KDialog::Ok | KDialog::Close | KDialog::Help);
     kmaildialog.show();

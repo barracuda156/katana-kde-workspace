@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
     KCmdLineArgs::init(argc, argv, &aboutData);
 
     SystemSettingsApp application;
+    application.enableSessionManagement();
 
     SettingsBase *mainWindow = new SettingsBase();
     mainWindow->show();
