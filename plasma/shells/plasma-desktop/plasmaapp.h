@@ -24,6 +24,7 @@
 #include <QTimer>
 #include <QWeakPointer>
 #include <QDBusInterface>
+#include <QDBusPendingReply>
 #include <QProcess>
 
 #include <KUniqueApplication>
@@ -162,14 +163,18 @@ private:
     QTimer m_desktopViewCreationTimer;
     int m_panelHidden;
     QHash<int, QWeakPointer<ControllerWindow> > m_widgetExplorers;
+    QTimer* m_phaseTimer;
     int m_phase;
+    QDBusPendingReply<void> m_klauncherReply;
+    QDBusPendingReply<void> m_kdedReply;
     QDBusInterface* m_klauncher;
-    QProcess* m_wmproc;
-    int m_startupsuspend;
+    QDBusInterface* m_kded;
+    QProcess* m_wmProc;
+    int m_startupSuspend;
     bool m_dialogActive;
     KWorkSpace::ShutdownType m_sdtype;
     bool m_sessionManager;
-    int m_waitingcount;
+    int m_waitingCount;
     QMap<QString,org::kde::KApplication*> m_clients;
 };
 

@@ -71,7 +71,6 @@
 #include <X11/Xutil.h>
 #endif
 
-static const int s_phasedelay = 1000; // ms
 static const int s_sessiondelay = 500; // ms
 static const QString s_defaultwm = QString::fromLatin1("kwin");
 static const QStringList s_defaultwmcommands = QStringList() << s_defaultwm;
@@ -112,17 +111,17 @@ PlasmaApp::PlasmaApp()
     : KUniqueApplication(),
     m_corona(nullptr),
     m_panelHidden(0),
+    m_phaseTimer(nullptr),
     m_phase(0),
     m_klauncher(nullptr),
-    m_wmproc(nullptr),
-    m_startupsuspend(0),
+    m_kded(nullptr),
+    m_wmProc(nullptr),
+    m_startupSuspend(0),
     m_dialogActive(false),
     m_sdtype(KWorkSpace::ShutdownTypeNone),
-    m_waitingcount(0),
+    m_waitingCount(0),
     m_sessionManager(false)
 {
-    kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "plasma app ctor start" << "(line:" << __LINE__ << ")";
-
     KGlobal::locale()->insertCatalog("libplasma");
     KGlobal::locale()->insertCatalog("plasmagenericshell");
     KCrash::setFlags(KCrash::AutoRestart | KCrash::Log);
@@ -171,7 +170,10 @@ PlasmaApp::PlasmaApp()
     connect(action, SIGNAL(triggered(bool)), SLOT(rebootWithoutConfirmation()));
 
     QTimer::singleShot(0, this, SLOT(setupDesktop()));
-    kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "plasma app ctor end" << "(line:" << __LINE__ << ")";
+
+    m_phaseTimer = new QTimer(this);
+    m_phaseTimer->setInterval(500);
+    connect(m_phaseTimer, SIGNAL(timeout()), this, SLOT(nextPhase()));
 
     m_klauncher = new QDBusInterface(
         QLatin1String("org.kde.klauncher"),
@@ -179,7 +181,14 @@ PlasmaApp::PlasmaApp()
         QLatin1String("org.kde.KLauncher"),
         QDBusConnection::sessionBus(),
         this
-    );    
+    );
+    m_kded = new QDBusInterface(
+        QLatin1String("org.kde.kded"),
+        QLatin1String("/kded"),
+        QLatin1String("org.kde.kded"),
+        QDBusConnection::sessionBus(),
+        this
+    );
     const bool failsafe = (qgetenv("KDE_FAILSAFE").toInt() == 1);
     if (!failsafe) {
         m_sessionManager = true;
@@ -220,10 +229,10 @@ PlasmaApp::PlasmaApp()
             clientgroup.sync();
         }
      }
-    m_wmproc = new QProcess(this);
-    m_wmproc->start(wmprog, wmcommands);
+    m_wmProc = new QProcess(this);
+    m_wmProc->start(wmprog, wmcommands);
 
-    QTimer::singleShot(s_phasedelay, this, SLOT(nextPhase()));
+    m_phaseTimer->start();
 }
 
 PlasmaApp::~PlasmaApp()
@@ -976,11 +985,12 @@ void PlasmaApp::saveClients()
         return;
     }
     kDebug() << "initiating session save" << m_clients.size();
-    m_waitingcount = 0;
+    m_waitingCount = 0;
     QMapIterator<QString,org::kde::KApplication*> iter(m_clients);
     // window manager should be last to save its state first to restore so iteration is done
     // backwards
     iter.toBack();
+    // TODO: saving should be done one-by-one
     while (iter.hasPrevious()) {
         iter.previous();
         kDebug() << "calling saveSession() for" << iter.key();
@@ -1040,8 +1050,8 @@ void PlasmaApp::unregisterClient(const QString &client)
 void PlasmaApp::clientSaved()
 {
     kDebug() << "client saved its session";
-    m_waitingcount++;
-    if (m_waitingcount >= m_clients.size()) {
+    m_waitingCount++;
+    if (m_waitingCount >= m_clients.size()) {
         kDebug() << "saving session";
         KConfigGroup sessiongroup(KGlobal::config(), "Session");
         int clientcounter = 0;
@@ -1079,14 +1089,14 @@ void PlasmaApp::clientSaveCanceled()
 void PlasmaApp::suspendStartup(const QString &app)
 {
     // TODO: timeout for suspending
-    m_startupsuspend++;
+    m_startupSuspend++;
     kDebug() << "startup suspended by" << app;
 }
 
 void PlasmaApp::resumeStartup(const QString &app)
 {
-    if (m_startupsuspend > 0) {
-        m_startupsuspend--;
+    if (m_startupSuspend > 0) {
+        m_startupSuspend--;
     }
     kDebug() << "startup resumed by" << app;
 }
@@ -1141,11 +1151,15 @@ void PlasmaApp::cleanup()
         m_klauncher = nullptr;
     }
 
-    if (m_wmproc) {
-        m_wmproc->kill();
-        m_wmproc->waitForFinished();
-        delete m_wmproc;
-        m_wmproc = nullptr;
+    if (m_kded) {
+        delete m_kded;
+        m_kded = nullptr;
+    }
+
+    if (m_wmProc) {
+        m_wmProc->terminate();
+        delete m_wmProc;
+        m_wmProc = nullptr;
     }
 
     foreach (const QString &client, m_clients.keys()) {
@@ -1155,39 +1169,41 @@ void PlasmaApp::cleanup()
 
 void PlasmaApp::nextPhase()
 {
-    if (m_startupsuspend <= 0){ 
-        // TODO: phases should not be on timer
-        kDebug() << "next startup phase" << m_phase;
-        switch (m_phase) {
-            case 0: {
-                static const QString kdedInterface = QString::fromLatin1("org.kde.kded");
-                QDBusConnectionInterface* sessionInterface = QDBusConnection::sessionBus().interface();
-                if (!sessionInterface->isServiceRegistered(kdedInterface)) {
-                    sessionInterface->startService(kdedInterface);
-                }
-                m_klauncher->asyncCall("autoStart", int(0));
-                QTimer::singleShot(s_phasedelay, this, SLOT(nextPhase()));
-                break;
-            }
-            case 1: {
-                m_klauncher->asyncCall("autoStart", int(1));
-                QTimer::singleShot(s_phasedelay, this, SLOT(nextPhase()));
-                break;
-            }
-            case 2: {
-                m_klauncher->asyncCall("autoStart", int(2));
-                if (m_sessionManager) {
-                    restoreClients();
-                }
-                kDebug() << "startup done";
-                KNotification::event("kde/startkde");
-                return;
-            }
-        }
-        m_phase++;
-    } else {
-        QTimer::singleShot(100, this, SLOT(nextPhase()));
+    if (m_startupSuspend > 0) {
+        return;
+    } else if (m_phase > 0 && !m_klauncherReply.isFinished()) {
+        kDebug() << "waiting for klauncher reply to finish";
+        return;
+    } else if (m_phase > 2 && !m_kdedReply.isFinished()) {
+        kDebug() << "waiting for kded reply to finish";
+        return;
     }
+    kDebug() << "startup phase" << m_phase;
+    switch (m_phase) {
+        case 0: {
+            m_klauncherReply = m_klauncher->asyncCall("autoStart", int(0));
+            break;
+        }
+        case 1: {
+            m_klauncherReply = m_klauncher->asyncCall("autoStart", int(1));
+            break;
+        }
+        case 2: {
+            m_klauncherReply = m_klauncher->asyncCall("autoStart", int(2));
+            m_kdedReply = m_kded->asyncCall("loadSecondPhase");
+            break;
+        }
+        case 3: {
+            if (m_sessionManager) {
+                restoreClients();
+            }
+            kDebug() << "startup done";
+            KNotification::event("kde/startkde");
+            m_phaseTimer->stop();
+            break;
+        }
+    }
+    m_phase++;
 }
 
 void PlasmaApp::defaultLogout()
