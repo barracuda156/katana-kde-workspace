@@ -36,11 +36,15 @@ install(
 ########### install files ###############
 
 install(
-    FILES
-    kcmaccess.desktop
-    kaccess.desktop
+    FILES kcmaccess.desktop
     DESTINATION ${KDE4_SERVICES_INSTALL_DIR}
 )
+
+install(
+    FILES kaccess.desktop
+    DESTINATION ${KDE4_AUTOSTART_INSTALL_DIR}
+)
+
 install(
     FILES kaccess.notifyrc
     DESTINATION ${KDE4_CONFIG_INSTALL_DIR}/notifications

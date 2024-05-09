@@ -765,16 +765,3 @@ void KAccessConfig::checkAccess()
   bool useTimeout = timeout->isChecked();
   timeoutDelay->setEnabled(useTimeout);
 }
-
-extern "C"
-{
-  /* This one gets called by kcminit
-
-   */
-  Q_DECL_EXPORT void kcminit_access()
-  {
-    KToolInvocation::self()->startServiceByDesktopName("kaccess");
-  }
-}
-
-

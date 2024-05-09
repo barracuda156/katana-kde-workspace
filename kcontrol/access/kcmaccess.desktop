@@ -2,11 +2,10 @@
 Exec=kcmshell4 kcmaccess
 Icon=preferences-desktop-accessibility
 Type=Service
-X-KDE-ServiceTypes=KCModule,KCModuleInit
+X-KDE-ServiceTypes=KCModule
 X-DocPath=kcontrol/kcmaccess/index.html
 
 X-KDE-Library=kcm_access
-X-KDE-Init-Symbol=kcminit_access
 X-KDE-ParentApp=kcontrol
 
 X-KDE-System-Settings-Parent-Category=accessibility
