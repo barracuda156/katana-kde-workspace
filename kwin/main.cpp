@@ -276,13 +276,16 @@ bool Application::setup()
 
 bool Application::saveSession()
 {
+    if (!KApplication::saveSession()) {
+        return false;
+    }
     Workspace::self()->sessionSaveStarted();
     RuleBook::self()->setUpdatesDisabled(true);
     Workspace::self()->storeSession(kapp->sessionConfig());
     kapp->sessionConfig()->sync();
     RuleBook::self()->setUpdatesDisabled(false);   // re-enable
     Workspace::self()->sessionSaveDone();
-    return KApplication::saveSession();
+    return true;
 }
 
 void Application::lostSelection()
