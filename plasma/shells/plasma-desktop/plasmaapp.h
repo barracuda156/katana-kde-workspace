@@ -108,7 +108,6 @@ public Q_SLOTS:
     void suspendStartup(const QString &app);
     void resumeStartup(const QString &app);
     void logout(int confirm, int sdtype);
-    void wmChanged();
 
 protected:
 #ifdef Q_WS_X11

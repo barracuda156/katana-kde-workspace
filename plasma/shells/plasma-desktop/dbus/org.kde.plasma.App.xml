@@ -28,7 +28,5 @@
       <arg name="confirm" type="i" direction="in"/>
       <arg name="sdtype" type="i" direction="in"/>
     </method>
-    <method name="wmChanged">
-    </method>
   </interface>
 </node>

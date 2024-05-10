@@ -134,8 +134,6 @@ bool CfgWm::saveAndConfirm()
     if (tryWmLaunch()) {
         oldwm = currentWm();
         cfg.sync();
-        QDBusInterface plasma("org.kde.plasma-desktop", "/App", "local.PlasmaApp");
-        plasma.call(QDBus::NoBlock, "wmChanged");
         KMessageBox::information(
             window(),
             i18n("A new window manager is running.\n"

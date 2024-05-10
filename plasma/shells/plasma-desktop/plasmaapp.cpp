@@ -1157,11 +1157,6 @@ void PlasmaApp::logout(int confirm, int sdtype)
     m_dialogActive = false;
 }
 
-void PlasmaApp::wmChanged()
-{
-    // changing the window manager happens from the KCM, currently nothing to do when that happens
-}
-
 void PlasmaApp::captureDesktop()
 {
     KToolInvocation::self()->kdeinitExec("ksnapshot", QStringList() << "--fullscreen");
