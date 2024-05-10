@@ -754,6 +754,14 @@ void LauncherFavorites::slotUpdateLayout()
                 kWarning() << "invalid first-time serivce" << name;
             }
         }
+        disconnect(
+            m_bookmarkmanager, SIGNAL(changed(QString,QString)),
+            this, SLOT(slotUpdateLayout())
+        );
+        disconnect(
+            m_bookmarkmanager, SIGNAL(bookmarksChanged(QString)),
+            this, SLOT(slotUpdateLayout())
+        );
         m_bookmarkmanager->emitChanged(bookmarkgroup);
     }
 
@@ -798,6 +806,18 @@ void LauncherFavorites::slotUpdateLayout()
             this, SLOT(slotActivated())
         );
         bookmark = bookmarkgroup.next(bookmark);
+    }
+
+    if (isfirsttime) {
+        locker.unlock();
+        connect(
+            m_bookmarkmanager, SIGNAL(changed(QString,QString)),
+            this, SLOT(slotUpdateLayout())
+        );
+        connect(
+            m_bookmarkmanager, SIGNAL(bookmarksChanged(QString)),
+            this, SLOT(slotUpdateLayout())
+        );
     }
 }
 
