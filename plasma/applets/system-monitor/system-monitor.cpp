@@ -642,6 +642,7 @@ void SystemMonitorWidget::slotUpdateLayout()
 
     m_requestsensors.clear();
     m_cpuframe->setVisible(true);
+    int netrow = 1;
     foreach (const QByteArray &sensor, m_systemmonitorclient->sensors()) {
         const KSensorType ksensortype = kSensorType(sensor);
         Q_ASSERT(ksensortype != KSensorType::UnknownSensor);
@@ -653,8 +654,9 @@ void SystemMonitorWidget::slotUpdateLayout()
                 this, knetid,
                 m_receivercolor, m_transmittercolor
             );
-            m_layout->addItem(netmonitor, 1, 0);
+            m_layout->addItem(netmonitor, netrow, 0);
             m_netmonitors.append(netmonitor);
+            netrow++;
         }
 
         if (ksensortype == KSensorType::PartitionFreeSensor) {
