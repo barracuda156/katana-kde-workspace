@@ -1141,6 +1141,12 @@ void PlasmaApp::captureCurrentWindow()
 
 void PlasmaApp::cleanup()
 {
+    if (m_phaseTimer) {
+        m_phaseTimer->stop();
+        delete m_phaseTimer;
+        m_phaseTimer = nullptr;
+    }
+
     if (m_klauncher) {
         QDBusPendingReply<void> reply = m_klauncher->asyncCall("cleanup");
         kDebug() << "waiting for klauncher cleanup to finish";
@@ -1204,6 +1210,8 @@ void PlasmaApp::nextPhase()
         }
         case 3: {
             m_phaseTimer->stop();
+            delete m_phaseTimer;
+            m_phaseTimer = nullptr;
             if (m_sessionManager) {
                 restoreClients();
             }
