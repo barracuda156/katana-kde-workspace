@@ -984,6 +984,13 @@ void PlasmaApp::saveClients()
         doLogout();
         return;
     }
+    // NOTE: because applications may read from the configs long after the session is restored the
+    // configs lifetime is until the next session save has started
+    const QStringList sessionconfigs = KGlobal::dirs()->findAllResources("config", "session/*");
+    foreach (const QString &sessionconfig, sessionconfigs) {
+        kDebug() << "removing old client session config" << sessionconfig;
+        QFile::remove(sessionconfig);
+    }
     kDebug() << "initiating session save" << m_clients.size();
     m_saveQueue = m_clients;
     // window manager should be last to save its state first to restore so saving is done backwards
@@ -1009,12 +1016,6 @@ void PlasmaApp::restoreClients()
      }
     sessiongroup.deleteGroup();
     sessiongroup.sync();
-
-    const QStringList sessionconfigs = KGlobal::dirs()->findAllResources("config", "session/*");
-    foreach (const QString &sessionconfig, sessionconfigs) {
-        kDebug() << "removing client session config" << sessionconfig;
-        QFile::remove(sessionconfig);
-    }
 }
 
 void PlasmaApp::registerClient(const QString &client)
