@@ -54,10 +54,10 @@ protected:
     void readProperties(const KConfigGroup &configgroup) final;
 
 private:
-    KConfig *m_config;
-    KMediaWidget *m_player;
-    KRecentFilesAction *m_recentfiles;
-    QMenu *m_menu;
+    KConfig* m_config;
+    KMediaWidget* m_player;
+    KRecentFilesAction* m_recentfiles;
+    QMenu* m_menu;
     float m_currenttime;
     bool m_playing;
     uint m_inhibition;

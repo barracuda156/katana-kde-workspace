@@ -193,7 +193,7 @@ void KMediaWindow::slotOpenPath()
 
 void KMediaWindow::slotOpenURL()
 {
-    bool dummy;
+    bool dummy = false;
     QString protocols = m_player->player()->protocols().join(QLatin1String(", "));
     KUrl url = KInputDialog::getText(
         i18n("Input URL"),
