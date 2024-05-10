@@ -1009,6 +1009,12 @@ void PlasmaApp::restoreClients()
      }
     sessiongroup.deleteGroup();
     sessiongroup.sync();
+
+    const QStringList sessionconfigs = KGlobal::dirs()->findAllResources("config", "session/*");
+    foreach (const QString &sessionconfig, sessionconfigs) {
+        kDebug() << "removing client session config" << sessionconfig;
+        QFile::remove(sessionconfig);
+    }
 }
 
 void PlasmaApp::registerClient(const QString &client)
