@@ -126,7 +126,8 @@ PlasmaApp::PlasmaApp()
 {
     KGlobal::locale()->insertCatalog("libplasma");
     KGlobal::locale()->insertCatalog("plasmagenericshell");
-    KCrash::setFlags(KCrash::AutoRestart | KCrash::Log);
+    // cannot notify if the desktop crashes
+    KCrash::setFlags(KCrash::Log);
 
     m_panelViewCreationTimer.setSingleShot(true);
     m_panelViewCreationTimer.setInterval(0);
