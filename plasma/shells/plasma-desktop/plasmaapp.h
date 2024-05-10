@@ -148,6 +148,7 @@ private Q_SLOTS:
 private Q_SLOTS:
     void clientSaved();
     void clientSaveCanceled();
+    void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
 
 private:
     DesktopCorona *m_corona;

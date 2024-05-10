@@ -178,23 +178,28 @@ PlasmaApp::PlasmaApp()
     m_phaseTimer->setInterval(500);
     connect(m_phaseTimer, SIGNAL(timeout()), this, SLOT(nextPhase()));
 
+    QDBusConnection sessionBus = QDBusConnection::sessionBus();
     m_klauncher = new QDBusInterface(
         QLatin1String("org.kde.klauncher"),
         QLatin1String("/KLauncher"),
         QLatin1String("org.kde.KLauncher"),
-        QDBusConnection::sessionBus(),
+        sessionBus,
         this
     );
     m_kded = new QDBusInterface(
         QLatin1String("org.kde.kded"),
         QLatin1String("/kded"),
         QLatin1String("org.kde.kded"),
-        QDBusConnection::sessionBus(),
+        sessionBus,
         this
     );
     const bool failsafe = (qgetenv("KDE_FAILSAFE").toInt() == 1);
     if (!failsafe) {
         m_sessionManager = true;
+        connect(
+            sessionBus.interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+            this, SLOT(serviceOwnerChanged(QString,QString,QString))
+        );
     }
 
     KGlobal::dirs()->addResourceType("windowmanagers", "data", "plasma/windowmanagers");
@@ -1050,6 +1055,8 @@ void PlasmaApp::unregisterClient(const QString &client)
                 // that can mean one of few things, none of them good
                 kWarning() << "client was in save queue";
                 m_saveQueue.removeAll(clientinterface);
+                // and even if the client did not save its state the queue must be emptied
+                clientSaved();
             }
             delete clientinterface;
             break;
@@ -1095,6 +1102,17 @@ void PlasmaApp::clientSaveCanceled()
         "kde/cancellogout" , QString(),
         i18n("Logout canceled by user")
     );
+}
+
+void PlasmaApp::serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner)
+{
+    Q_UNUSED(name);
+    Q_UNUSED(oldOwner);
+    if (newOwner.isEmpty()) {
+        // it may or may not be a client but if it is and it did not unregister bad stuff will
+        // happen
+        unregisterClient(name);
+    }
 }
 
 void PlasmaApp::suspendStartup(const QString &app)
