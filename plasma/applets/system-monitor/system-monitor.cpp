@@ -60,7 +60,7 @@ static KSensorType kSensorType(const QByteArray &sensor)
         return KSensorType::CPUSensor;
     // any network receiver or transmitter except loopback
     } else if (sensor.startsWith("network/interfaces/")) {
-        if (sensor.contains("/interfaces/lo/")) {
+        if (sensor.contains("/interfaces/lo")) {
             return KSensorType::UnknownSensor;
         }
         if (sensor.endsWith("/receiver/data")) {
