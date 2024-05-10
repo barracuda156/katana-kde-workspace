@@ -120,7 +120,6 @@ PlasmaApp::PlasmaApp()
     m_startupSuspend(0),
     m_dialogActive(false),
     m_sdtype(KWorkSpace::ShutdownTypeNone),
-    m_waitingCount(0),
     m_sessionManager(false)
 {
     KGlobal::locale()->insertCatalog("libplasma");
@@ -310,8 +309,6 @@ void PlasmaApp::setupDesktop()
     QPalette palette;
     palette.setColor(desktop()->backgroundRole(), Qt::black);
     desktop()->setPalette(palette);
-
-    kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "Plasma App SetupDesktop()" << "(line:" << __LINE__ << ")";
 
     // now connect up the creation timers and start them to get the views created
     connect(&m_panelViewCreationTimer, SIGNAL(timeout()), this, SLOT(createWaitingPanels()));
@@ -675,7 +672,6 @@ bool PlasmaApp::isPanelContainment(Plasma::Containment *containment)
 
 void PlasmaApp::createView(Plasma::Containment *containment)
 {
-    kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "Plasma App createView() start" << "(line:" << __LINE__ << ")";
     kDebug() << "Containment name:" << containment->name()
              << "| type" << containment->containmentType()
              <<  "| screen:" << containment->screen()
@@ -981,23 +977,17 @@ QString PlasmaApp::supportInformation() const
 
 void PlasmaApp::saveClients()
 {
+    m_saveQueue.clear();
     if (!m_sessionManager || m_clients.size() < 1) {
         doLogout();
         return;
     }
     kDebug() << "initiating session save" << m_clients.size();
-    m_waitingCount = 0;
-    QMapIterator<QString,org::kde::KApplication*> iter(m_clients);
-    // window manager should be last to save its state first to restore so iteration is done
-    // backwards
-    iter.toBack();
-    // TODO: saving should be done one-by-one
-    while (iter.hasPrevious()) {
-        iter.previous();
-        kDebug() << "calling saveSession() for" << iter.key();
-        org::kde::KApplication* clientinterface = iter.value();
-        clientinterface->asyncCall("saveSession");
-    }
+    m_saveQueue = m_clients;
+    // window manager should be last to save its state first to restore so saving is done backwards
+    org::kde::KApplication* clientinterface = m_saveQueue.takeLast();
+    kDebug() << "calling saveSession() for" << clientinterface->service();
+    clientinterface->asyncCall("saveSession");
 }
 
 void PlasmaApp::restoreClients()
@@ -1035,38 +1025,43 @@ void PlasmaApp::registerClient(const QString &client)
         clientinterface, SIGNAL(sessionSaveCanceled()),
         this, SLOT(clientSaveCanceled())
     );
-    m_clients.insert(client, clientinterface);
+    m_clients.append(clientinterface);
 }
 
 void PlasmaApp::unregisterClient(const QString &client)
 {
-    if (!m_clients.contains(client)) {
-        return;
+    QMutableListIterator<org::kde::KApplication*> iter(m_clients);
+    while (iter.hasNext()) {
+        org::kde::KApplication* clientinterface = iter.next();
+        if (clientinterface->service() == client) {
+            kDebug() << "removing session manager client" << client;
+            iter.remove();
+            if (m_saveQueue.contains(clientinterface)) {
+                // that can mean one of few things, none of them good
+                kWarning() << "client was in save queue";
+                m_saveQueue.removeAll(clientinterface);
+            }
+            delete clientinterface;
+            break;
+        }
     }
-    kDebug() << "removing session manager client" << client;
-    org::kde::KApplication* clientinterface = m_clients.take(client);
-    delete clientinterface;
 }
 
 void PlasmaApp::clientSaved()
 {
     kDebug() << "client saved its session";
-    m_waitingCount++;
-    if (m_waitingCount >= m_clients.size()) {
+    if (m_saveQueue.isEmpty()) {
         kDebug() << "saving session";
         KConfigGroup sessiongroup(KGlobal::config(), "Session");
         int clientcounter = 0;
-        QMapIterator<QString,org::kde::KApplication*> iter(m_clients);
-        while (iter.hasNext()) {
-            iter.next();
-            kDebug() << "getting restart command for" << iter.key();
-            org::kde::KApplication* clientinterface = iter.value();
+        foreach (org::kde::KApplication* clientinterface, m_clients) {
+            kDebug() << "getting restart command for" << clientinterface->service();
             const QStringList restartcommand = clientinterface->restartCommand();
             if (restartcommand.isEmpty()) {
                 kDebug() << "not saving client state due to empty command";
                 continue;
             }
-            kDebug() << "saving client state" << iter.key();
+            kDebug() << "saving client state" << clientinterface->service();
             KConfigGroup clientgroup(&sessiongroup, QString::number(clientcounter));
             clientgroup.writeEntry("restartCommand", restartcommand);
             clientgroup.sync();
@@ -1075,12 +1070,17 @@ void PlasmaApp::clientSaved()
         sessiongroup.sync();
         kDebug() << "saving session done";
         doLogout();
+        return;
     }
+    org::kde::KApplication* clientinterface = m_saveQueue.takeLast();
+    kDebug() << "calling saveSession() for" << clientinterface->service();
+    clientinterface->asyncCall("saveSession");
 }
 
 void PlasmaApp::clientSaveCanceled()
 {
     kDebug() << "client canceled session save";
+    m_saveQueue.clear();
     KNotification::event(
         "kde/cancellogout" , QString(),
         i18n("Logout canceled by user")
@@ -1143,7 +1143,7 @@ void PlasmaApp::cleanup()
 {
     if (m_klauncher) {
         QDBusPendingReply<void> reply = m_klauncher->asyncCall("cleanup");
-        kDebug() << "Waiting for klauncher cleanup to finish";
+        kDebug() << "waiting for klauncher cleanup to finish";
         while (!reply.isFinished()) {
             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
         }
@@ -1162,8 +1162,12 @@ void PlasmaApp::cleanup()
         m_wmProc = nullptr;
     }
 
-    foreach (const QString &client, m_clients.keys()) {
-        unregisterClient(client);
+    QMutableListIterator<org::kde::KApplication*> iter(m_clients);
+    while (iter.hasNext()) {
+        org::kde::KApplication* clientinterface = iter.next();
+        kDebug() << "removing session manager client" << clientinterface->service();
+        iter.remove();
+        delete clientinterface;
     }
 }
 

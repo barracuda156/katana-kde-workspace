@@ -176,8 +176,8 @@ private:
     bool m_dialogActive;
     KWorkSpace::ShutdownType m_sdtype;
     bool m_sessionManager;
-    int m_waitingCount;
-    QMap<QString,org::kde::KApplication*> m_clients;
+    QList<org::kde::KApplication*> m_clients;
+    QList<org::kde::KApplication*> m_saveQueue;
 };
 
 #endif // multiple inclusion guard
