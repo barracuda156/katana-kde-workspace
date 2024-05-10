@@ -178,8 +178,8 @@ SessionInfo* Workspace::takeSessionInfo(Client* c)
                     }
                 } else {
                     if (info->windowRole.isEmpty()
-                            && info->resourceName == resourceName
-                            && info->resourceClass == resourceClass) {
+                        && info->resourceName == resourceName
+                        && info->resourceClass == resourceClass) {
                         realInfo = info;
                         session.removeAll(info);
                         break;
@@ -191,8 +191,8 @@ SessionInfo* Workspace::takeSessionInfo(Client* c)
         // look for a sessioninfo with matching features.
         foreach (SessionInfo * info, session) {
             if (info->resourceName == resourceName
-                    && info->resourceClass == resourceClass
-                    && sessionInfoWindowTypeMatch(c, info)) {
+                && info->resourceClass == resourceClass
+                && sessionInfoWindowTypeMatch(c, info)) {
                 if (wmCommand.isEmpty() || info->wmCommand == wmCommand) {
                     realInfo = info;
                     session.removeAll(info);
@@ -205,8 +205,9 @@ SessionInfo* Workspace::takeSessionInfo(Client* c)
     // Set tabGroupClient for other clients in the same group
     if (realInfo && realInfo->tabGroup) {
         foreach (SessionInfo * info, session) {
-            if (!info->tabGroupClient && info->tabGroup == realInfo->tabGroup)
+            if (!info->tabGroupClient && info->tabGroup == realInfo->tabGroup) {
                 info->tabGroupClient = c;
+            }
         }
     }
 
