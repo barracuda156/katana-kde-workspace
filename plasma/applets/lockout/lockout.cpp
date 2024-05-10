@@ -30,6 +30,7 @@
 #include <Plasma/Label>
 #include <Plasma/Separator>
 #include <Plasma/PushButton>
+#include <Plasma/ToolTipManager>
 #include <Solid/PowerManagement>
 #include <KWindowSystem>
 #include <KDebug>
@@ -52,6 +53,11 @@ static const bool s_confirmhybrid = true;
 // is intentionally 500ms, see:
 // kwin/effects/slide/slide.cpp
 static const int s_dodelay = 500;
+
+static QString kCenterString(const QString &string)
+{
+    return QString::fromLatin1("<center>%1</center>").arg(string);
+}
 
 class LockoutDialog : public Plasma::Dialog
 {
@@ -260,7 +266,6 @@ void LockoutApplet::init()
 
     m_switchwidget = new Plasma::IconWidget(this);
     m_switchwidget->setIcon("system-switch-user");
-    m_switchwidget->setToolTip(i18n("Start a parallel session as a different user"));
     connect(
         m_switchwidget, SIGNAL(activated()),
         this, SLOT(slotSwitch())
@@ -269,7 +274,6 @@ void LockoutApplet::init()
 
     m_shutdownwidget = new Plasma::IconWidget(this);
     m_shutdownwidget->setIcon("system-shutdown");
-    m_shutdownwidget->setToolTip(i18n("Logout, turn off or restart the computer"));
     connect(
         m_shutdownwidget, SIGNAL(activated()),
         this, SLOT(slotShutdown())
@@ -278,7 +282,6 @@ void LockoutApplet::init()
 
     m_toramwidget = new Plasma::IconWidget(this);
     m_toramwidget->setIcon("system-suspend");
-    m_toramwidget->setToolTip(i18n("Sleep (suspend to RAM)"));
     connect(
         m_toramwidget, SIGNAL(activated()),
         this, SLOT(slotToRam())
@@ -287,7 +290,6 @@ void LockoutApplet::init()
 
     m_todiskwidget = new Plasma::IconWidget(this);
     m_todiskwidget->setIcon("system-suspend-hibernate");
-    m_todiskwidget->setToolTip(i18n("Hibernate (suspend to disk)"));
     connect(
         m_todiskwidget, SIGNAL(activated()),
         this, SLOT(slotToDisk())
@@ -296,7 +298,6 @@ void LockoutApplet::init()
 
     m_hybridwidget = new Plasma::IconWidget(this);
     m_hybridwidget->setIcon("system-suspend");
-    m_hybridwidget->setToolTip(i18n("Hybrid Suspend (Suspend to RAM and put the system in sleep mode)"));
     connect(
         m_hybridwidget, SIGNAL(activated()),
         this, SLOT(slotHybrid())
@@ -317,10 +318,15 @@ void LockoutApplet::init()
     m_confirmhybrid = configgroup.readEntry("confirmHybridButton", s_confirmhybrid);
 
     slotUpdateButtons();
+    slotUpdateToolTips();
 
     connect(
         Solid::PowerManagement::notifier(), SIGNAL(supportedSleepStatesChanged()),
         this, SLOT(slotUpdateButtons())
+    );
+    connect(
+        KGlobalSettings::self(), SIGNAL(localeChanged()),
+        this, SLOT(slotUpdateToolTips())
     );
 }
 
@@ -487,6 +493,40 @@ void LockoutApplet::slotUpdateButtons()
     m_todiskwidget->setEnabled(sleepstates.contains(Solid::PowerManagement::HibernateState));
     m_hybridwidget->setVisible(m_showhybrid);
     m_hybridwidget->setEnabled(sleepstates.contains(Solid::PowerManagement::HybridSuspendState));
+}
+
+void LockoutApplet::slotUpdateToolTips()
+{
+    Plasma::ToolTipManager::self()->setContent(
+        m_switchwidget,
+        Plasma::ToolTipContent(
+            i18n("Switch user"), kCenterString(i18n("Start a parallel session as a different user"))
+        )
+    );
+    Plasma::ToolTipManager::self()->setContent(
+        m_shutdownwidget,
+        Plasma::ToolTipContent(
+            i18n("End session"), kCenterString(i18n("Logout, turn off or restart the computer"))
+        )
+    );
+    Plasma::ToolTipManager::self()->setContent(
+        m_toramwidget,
+        Plasma::ToolTipContent(
+            i18n("Sleep"), kCenterString(i18n("Suspend to RAM"))
+        )
+    );
+    Plasma::ToolTipManager::self()->setContent(
+        m_todiskwidget,
+        Plasma::ToolTipContent(
+            i18n("Hibernate"), kCenterString(i18n("Suspend to disk"))
+        )
+    );
+    Plasma::ToolTipManager::self()->setContent(
+        m_hybridwidget,
+        Plasma::ToolTipContent(
+            i18n("Hybrid Suspend"), kCenterString(i18n("Suspend to RAM and put the system in sleep mode"))
+        )
+    );
 }
 
 void LockoutApplet::slotSwitch()

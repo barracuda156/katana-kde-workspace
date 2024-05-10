@@ -55,6 +55,7 @@ protected:
 
 private Q_SLOTS:
     void slotUpdateButtons();
+    void slotUpdateToolTips();
     void slotSwitch();
     void slotShutdown();
     void slotToRam();
