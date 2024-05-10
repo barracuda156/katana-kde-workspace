@@ -67,7 +67,7 @@ void DesktopCorona::init()
     setPreferredToolBoxPlugin(Plasma::Containment::PanelContainment, "org.kde.paneltoolbox");
     setPreferredToolBoxPlugin(Plasma::Containment::CustomPanelContainment, "org.kde.paneltoolbox");
 
-    kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "DesktopCorona init start" << "(line:" << __LINE__ << ")";
+    kDebug() << "DesktopCorona init start";
     DesktopTracker *tracker = DesktopTracker::self();
     connect(tracker, SIGNAL(screenAdded(DesktopTracker::Screen)), SLOT(screenAdded(DesktopTracker::Screen)));
     connect(KWindowSystem::self(), SIGNAL(workAreaChanged()), this, SIGNAL(availableScreenRegionChanged()));
@@ -101,7 +101,7 @@ void DesktopCorona::init()
     connect(this, SIGNAL(availableScreenRegionChanged()), m_delayedUpdateTimer, SLOT(start()));
     connect(m_delayedUpdateTimer, SIGNAL(timeout()), this, SLOT(update()));
 
-    kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "DesktopCorona init end" << "(line:" << __LINE__ << ")";
+    kDebug() << "DesktopCorona init end";
 }
 
 void DesktopCorona::checkAddPanelAction(const QStringList &sycocaChanges)

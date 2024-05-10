@@ -32,8 +32,6 @@ static const char description[] = I18N_NOOP( "The KDE desktop, panels and widget
 
 int main(int argc, char **argv)
 {
-    kDebug() << "!!{} STARTUP TIME" << QTime().msecsTo(QTime::currentTime()) << "START" << "(line:" << __LINE__ << ")";
-
     KAboutData aboutData("plasma-desktop", 0, ki18n("Plasma Desktop Shell"),
                          KDE_VERSION_STRING, ki18n(description), KAboutData::License_GPL,
                          ki18n("Copyright 2006-2009, The KDE Team"));
