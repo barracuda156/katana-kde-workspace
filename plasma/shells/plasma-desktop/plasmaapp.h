@@ -174,6 +174,8 @@ private:
     QProcess* m_wmProc;
     int m_startupSuspend;
     bool m_dialogActive;
+    bool m_logoutAfterStartup;
+    int m_confirm;
     KWorkSpace::ShutdownType m_sdtype;
     bool m_sessionManager;
     QList<org::kde::KApplication*> m_clients;

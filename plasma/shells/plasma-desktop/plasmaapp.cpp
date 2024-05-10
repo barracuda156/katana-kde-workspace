@@ -119,6 +119,8 @@ PlasmaApp::PlasmaApp()
     m_wmProc(nullptr),
     m_startupSuspend(0),
     m_dialogActive(false),
+    m_logoutAfterStartup(false),
+    m_confirm(0),
     m_sdtype(KWorkSpace::ShutdownTypeNone),
     m_sessionManager(false)
 {
@@ -1103,10 +1105,15 @@ void PlasmaApp::resumeStartup(const QString &app)
 
 void PlasmaApp::logout(int confirm, int sdtype)
 {
-    // TODO: prevent logout while initializing
-    kDebug() << "logout" << confirm << sdtype;
+    m_confirm = confirm;
     m_sdtype = static_cast<KWorkSpace::ShutdownType>(sdtype);
-    if (confirm == KWorkSpace::ShutdownConfirmNo) {
+    if (m_phaseTimer) {
+        kDebug() << "logout queued" << m_confirm << m_sdtype;
+        m_logoutAfterStartup = true;
+        return;
+    }
+    kDebug() << "logout" << m_confirm << m_sdtype;
+    if (m_confirm == KWorkSpace::ShutdownConfirmNo) {
         QTimer::singleShot(s_sessiondelay, this, SLOT(saveClients()));
         return;
     }
@@ -1217,7 +1224,11 @@ void PlasmaApp::nextPhase()
             }
             kDebug() << "startup done";
             KNotification::event("kde/startkde");
-            break;
+            if (m_logoutAfterStartup) {
+                kDebug() << "starting queued logout" << m_confirm << m_sdtype;
+                logout(m_confirm, m_sdtype);
+            }
+            return;
         }
     }
     m_phase++;
