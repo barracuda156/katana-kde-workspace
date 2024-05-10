@@ -54,6 +54,7 @@ KateApp::KateApp (KCmdLineArgs *args)
     , m_args (args)
 {
   setQuitOnLastWindowClosed (false);
+  enableSessionManagement();
 
   // application interface
   m_application = new Kate::Application (this);

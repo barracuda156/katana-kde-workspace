@@ -377,7 +377,6 @@ int main( int argc, char **argv )
   KateApp app (args);
   if (app.shouldExit()) return 0;
 
-  app.enableSessionManagement();
   // execute ourself ;)
   return app.exec();
 }
