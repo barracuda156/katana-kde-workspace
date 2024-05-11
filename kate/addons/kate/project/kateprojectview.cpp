@@ -26,6 +26,7 @@
 
 #include <QtGui/qevent.h>
 #include <QSortFilterProxyModel>
+#include <QTimer>
 #include <KMimeType>
 #include <KMimeTypeTrader>
 #include <QMenu>

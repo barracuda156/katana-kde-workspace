@@ -26,6 +26,7 @@
 #include <QGraphicsGridLayout>
 #include <QHostInfo>
 #include <QFile>
+#include <QTimer>
 #include <QDBusInterface>
 #include <QGraphicsSceneMouseEvent>
 #include <KUser>
