@@ -66,11 +66,13 @@ WorkspaceOptionsModule::WorkspaceOptionsModule(QWidget *parent, const QVariantLi
     connect(m_ui->cacheTheme, SIGNAL(toggled(bool)), this, SLOT(changed()));
     connect(m_ui->cacheTheme, SIGNAL(toggled(bool)), this, SLOT(cacheThemeChanged(bool)));
     connect(m_ui->themeCacheSize, SIGNAL(valueChanged(int)), this, SLOT(changed()));
+    connect(m_ui->sessionManagement, SIGNAL(toggled(bool)), this, SLOT(changed()));
 
     if (!m_plasmaFound) {
         m_ui->formFactor->setEnabled(false);
         m_ui->cacheTheme->setEnabled(false);
         m_ui->themeCacheSize->setEnabled(false);
+        m_ui->sessionManagement->setEnabled(false);
     }
 }
 
@@ -88,6 +90,8 @@ void WorkspaceOptionsModule::save()
         KConfigGroup cg2(&config, "CachePolicies");
         cg2.writeEntry("CacheTheme", m_ui->cacheTheme->isChecked());
         cg2.writeEntry("ThemeCacheKb", m_ui->themeCacheSize->value() * 1024);
+        KConfigGroup cg3(&config, "General");
+        cg3.writeEntry("SessionManagement", m_ui->sessionManagement->isChecked());
     }
 
     const bool isDesktop = (m_ui->formFactor->currentIndex() == 0);
@@ -160,6 +164,8 @@ void WorkspaceOptionsModule::load()
     m_ui->cacheTheme->setChecked(cg2.readEntry("CacheTheme", true));
     const int themeCacheKb = cg2.readEntry("ThemeCacheKb", 81920);
     m_ui->themeCacheSize->setValue(themeCacheKb / 1024);
+    KConfigGroup cg3(&config, "General");
+    m_ui->sessionManagement->setChecked(cg3.readEntry("SessionManagement", true));
 }
 
 void WorkspaceOptionsModule::defaults()

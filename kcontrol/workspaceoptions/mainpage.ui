@@ -95,7 +95,27 @@
       </property>
     </widget>
    </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="sessionManagementLabel">
+     <property name="text">
+      <string>Session Management:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
    <item row="4" column="1">
+    <widget class="QCheckBox" name="sessionManagement">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

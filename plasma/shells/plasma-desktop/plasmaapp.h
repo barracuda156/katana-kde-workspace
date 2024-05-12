@@ -30,6 +30,7 @@
 
 #include <KUniqueApplication>
 #include <KActionCollection>
+#include <KDirWatch>
 #include <Plasma/Plasma>
 #include <plasma/packagemetadata.h>
 
@@ -150,6 +151,7 @@ private Q_SLOTS:
     void clientSaved();
     void clientSaveCanceled();
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
+    void configDirty();
 
 private:
     KActionCollection* m_actionCollection;
@@ -180,7 +182,9 @@ private:
     bool m_logoutAfterStartup;
     int m_confirm;
     KWorkSpace::ShutdownType m_sdtype;
+    bool m_failSafe;
     bool m_sessionManager;
+    KDirWatch* m_dirWatch;
     QList<org::kde::KApplication*> m_clients;
     QList<org::kde::KApplication*> m_saveQueue;
 };

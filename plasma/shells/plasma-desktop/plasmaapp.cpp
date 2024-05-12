@@ -72,6 +72,7 @@
 
 static const int s_sessiondelay = 500; // ms
 static const int s_phasetimeout = 10000; // ms
+static const bool s_defaultsm = true;
 static const QString s_defaultwm = QString::fromLatin1("kwin");
 static const QStringList s_defaultwmcommands = QStringList() << s_defaultwm;
 
@@ -123,7 +124,9 @@ PlasmaApp::PlasmaApp()
     m_logoutAfterStartup(false),
     m_confirm(0),
     m_sdtype(KWorkSpace::ShutdownTypeNone),
-    m_sessionManager(false)
+    m_failSafe(false),
+    m_sessionManager(false),
+    m_dirWatch(nullptr)
 {
     KGlobal::locale()->insertCatalog("libplasma");
     KGlobal::locale()->insertCatalog("plasmagenericshell");
@@ -268,6 +271,13 @@ void PlasmaApp::setupDesktop()
 
 void PlasmaApp::setupSession()
 {
+    if (!m_failSafe) {
+        m_dirWatch = new KDirWatch(this);
+        m_dirWatch->setInterval(5000);
+        m_dirWatch->addFile(KGlobal::dirs()->saveLocation("config") + QLatin1String("plasmarc"));
+        connect(m_dirWatch, SIGNAL(dirty(QString)), this, SLOT(configDirty()));
+    }
+
     m_phaseTimer = new QTimer(this);
     m_phaseTimer->setInterval(500);
     connect(m_phaseTimer, SIGNAL(timeout()), this, SLOT(nextPhase()));
@@ -287,9 +297,11 @@ void PlasmaApp::setupSession()
         sessionBus,
         this
     );
-    const bool failsafe = (qgetenv("KDE_FAILSAFE").toInt() == 1);
-    if (!failsafe) {
-        m_sessionManager = true;
+    m_failSafe = (qgetenv("KDE_FAILSAFE").toInt() == 1);
+    KConfig cfg("plasmarc", KConfig::NoGlobals);
+    KConfigGroup config(&cfg, "General");
+    if (!m_failSafe) {
+        m_sessionManager = config.readEntry("SessionManagement", s_defaultsm);
         connect(
             sessionBus.interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
             this, SLOT(serviceOwnerChanged(QString,QString,QString))
@@ -299,9 +311,7 @@ void PlasmaApp::setupSession()
     KGlobal::dirs()->addResourceType("windowmanagers", "data", "plasma/windowmanagers");
 
     QStringList wmcommands;
-    if (!failsafe) {
-        KConfig cfg("plasmarc", KConfig::NoGlobals);
-        KConfigGroup config(&cfg, "General");
+    if (!m_failSafe) {
         const QString wmname = config.readEntry("windowManager", s_defaultwm);
         if (wmname != s_defaultwm) {
             KDesktopFile wmfile("windowmanagers", wmname + ".desktop");
@@ -330,9 +340,17 @@ void PlasmaApp::setupSession()
             clientgroup.deleteGroup();
             clientgroup.sync();
         }
-     }
+    }
     m_wmProc = new QProcess(this);
     m_wmProc->start(wmprog, wmcommands);
+
+    if (!m_failSafe && !m_sessionManager) {
+        kDebug() << "deleting previous session";
+        // make sure when session management is enabled again it is a fresh start even if KDirWatch
+        // did not had the time to detect the changes done to the config
+        sessiongroup.deleteGroup();
+        sessiongroup.sync();
+    }
 
     m_phaseTimer->start();
 }
@@ -346,14 +364,14 @@ void PlasmaApp::panelHidden(bool hidden)
 {
     if (hidden) {
         ++m_panelHidden;
-        //kDebug() << "panel hidden" << m_panelHidden;
+        // kDebug() << "panel hidden" << m_panelHidden;
     } else {
         --m_panelHidden;
         if (m_panelHidden < 0) {
             kDebug() << "panelHidden(false) called too many times!";
             m_panelHidden = 0;
         }
-        //kDebug() << "panel unhidden" << m_panelHidden;
+        // kDebug() << "panel unhidden" << m_panelHidden;
     }
 }
 
@@ -488,7 +506,7 @@ bool PlasmaApp::x11EventFilter(XEvent *event)
             } else if (event->type == EnterNotify) {
                 panel->hintOrUnhide(QPoint(-1, -1));
                 //kDebug() << "entry";
-            //FIXME: this if it was possible to avoid the polling
+            // FIXME: this if it was possible to avoid the polling
             /*} else if (event->type == LeaveNotify) {
                 panel->unhintHide();
             */
@@ -1126,6 +1144,14 @@ void PlasmaApp::serviceOwnerChanged(const QString &name, const QString &oldOwner
         // happen
         unregisterClient(name);
     }
+}
+
+void PlasmaApp::configDirty()
+{
+    KConfig cfg("plasmarc", KConfig::NoGlobals);
+    KConfigGroup config(&cfg, "General");
+    m_sessionManager = config.readEntry("SessionManagement", s_defaultsm);
+    kDebug() << "plasmarc dirty" << m_sessionManager;
 }
 
 void PlasmaApp::suspendStartup(const QString &app)
