@@ -195,7 +195,7 @@ void KCrashModule::slotReport()
     const QString kcrashreporturl = knotification->property("_k_url").toString();
     knotification->close();
     if (kcrashreporturl.startsWith(QLatin1String("mailto:"))) {
-        KToolInvocation::self()->invokeMailer(kcrashreporturl, QString::fromLatin1("Crash report"));
+        KToolInvocation::self()->invokeMailer(kcrashreporturl);
     } else {
         KToolInvocation::self()->invokeBrowser(kcrashreporturl);
     }

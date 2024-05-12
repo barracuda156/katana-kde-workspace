@@ -135,13 +135,12 @@ void KateMailFilesPluginView::slotMail()
   } // check selected docs done
   if ( ! urls.count() )
     return;
-  KToolInvocation::self()->invokeMailer(
-    QString(), // to
-    QString(), // cc
-    QString(), // subject
-    QString(), // body
-    urls           // urls to atthatch
-  );
+  KUrl mailtourl;
+  mailtourl.setScheme("mailto");
+  foreach (const QString &url, urls) {
+    mailtourl.addQueryItem("attach", url);
+  }
+  KToolInvocation::self()->invokeMailer(mailtourl.url());
 }
 // kate: space-indent on; indent-width 2; replace-tabs on;
 
