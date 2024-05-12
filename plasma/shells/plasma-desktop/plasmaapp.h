@@ -29,6 +29,7 @@
 #include <QProcess>
 
 #include <KUniqueApplication>
+#include <KActionCollection>
 #include <Plasma/Plasma>
 #include <plasma/packagemetadata.h>
 
@@ -150,6 +151,7 @@ private Q_SLOTS:
     void serviceOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
 
 private:
+    KActionCollection* m_actionCollection;
     DesktopCorona *m_corona;
     PanelShadows *m_panelShadows;
 

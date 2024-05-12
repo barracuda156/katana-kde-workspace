@@ -40,7 +40,6 @@
 #include <KService>
 #include <KIconLoader>
 #include <KStandardDirs>
-#include <KActionCollection>
 #include <KToolInvocation>
 #include <KConfigSkeleton>
 #include <KDesktopFile>
@@ -110,7 +109,9 @@ PlasmaApp* PlasmaApp::self()
 
 PlasmaApp::PlasmaApp()
     : KUniqueApplication(),
+    m_actionCollection(nullptr),
     m_corona(nullptr),
+    m_panelShadows(nullptr),
     m_panelHidden(0),
     m_phaseTimer(nullptr),
     m_phase(0),
@@ -141,33 +142,33 @@ PlasmaApp::PlasmaApp()
     KGlobal::setAllowQuit(true);
     KGlobal::ref();
 
-    KActionCollection* actionCollection = new KActionCollection(this);
-    KAction* action = actionCollection->addAction("Capture the desktop");
+    m_actionCollection = new KActionCollection(this);
+    KAction* action = m_actionCollection->addAction("Capture the desktop");
     action->setText(i18n("Capture the desktop"));
     action->setGlobalShortcut(QKeySequence(Qt::Key_Print));
     connect(action, SIGNAL(triggered(bool)), SLOT(captureDesktop()));
 
-    action = actionCollection->addAction("Capture the current window");
+    action = m_actionCollection->addAction("Capture the current window");
     action->setText(i18n("Capture the current window"));
     action->setGlobalShortcut(QKeySequence(Qt::CTRL+Qt::Key_Print));
     connect(action, SIGNAL(triggered(bool)), SLOT(captureCurrentWindow()));
 
-    action = actionCollection->addAction("Log Out");
+    action = m_actionCollection->addAction("Log Out");
     action->setText(i18n("Log Out"));
     action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::Key_Delete));
     connect(action, SIGNAL(triggered(bool)), SLOT(defaultLogout()));
 
-    action = actionCollection->addAction("Log Out Without Confirmation");
+    action = m_actionCollection->addAction("Log Out Without Confirmation");
     action->setText(i18n("Log Out Without Confirmation"));
     action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_Delete));
     connect(action, SIGNAL(triggered(bool)), SLOT(logoutWithoutConfirmation()));
 
-    action = actionCollection->addAction("Halt Without Confirmation");
+    action = m_actionCollection->addAction("Halt Without Confirmation");
     action->setText(i18n("Halt Without Confirmation"));
     action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_PageDown));
     connect(action, SIGNAL(triggered(bool)), SLOT(haltWithoutConfirmation()));
 
-    action = actionCollection->addAction("Reboot Without Confirmation");
+    action = m_actionCollection->addAction("Reboot Without Confirmation");
     action->setText(i18n("Reboot Without Confirmation"));
     action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_PageUp));
     connect(action, SIGNAL(triggered(bool)), SLOT(rebootWithoutConfirmation()));
@@ -652,7 +653,8 @@ DesktopCorona* PlasmaApp::corona(bool createIfMissing)
                     view, SLOT(screenOwnerChanged(int,int,Plasma::Containment*)));
         }
 
-        //actions!
+        // actions!
+        c->addShortcuts(m_actionCollection);
         c->updateShortcuts();
 
         m_corona = c;
