@@ -145,31 +145,37 @@ PlasmaApp::PlasmaApp()
     m_actionCollection = new KActionCollection(this);
     KAction* action = m_actionCollection->addAction("Capture the desktop");
     action->setText(i18n("Capture the desktop"));
+    action->setIcon(KIcon("ksnapshot"));
     action->setGlobalShortcut(QKeySequence(Qt::Key_Print));
     connect(action, SIGNAL(triggered(bool)), SLOT(captureDesktop()));
 
     action = m_actionCollection->addAction("Capture the current window");
     action->setText(i18n("Capture the current window"));
+    action->setIcon(KIcon("ksnapshot"));
     action->setGlobalShortcut(QKeySequence(Qt::CTRL+Qt::Key_Print));
     connect(action, SIGNAL(triggered(bool)), SLOT(captureCurrentWindow()));
 
     action = m_actionCollection->addAction("Log Out");
     action->setText(i18n("Log Out"));
+    action->setIcon(KIcon("system-log-out"));
     action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::Key_Delete));
     connect(action, SIGNAL(triggered(bool)), SLOT(defaultLogout()));
 
     action = m_actionCollection->addAction("Log Out Without Confirmation");
     action->setText(i18n("Log Out Without Confirmation"));
+    action->setIcon(KIcon("system-log-out"));
     action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_Delete));
     connect(action, SIGNAL(triggered(bool)), SLOT(logoutWithoutConfirmation()));
 
     action = m_actionCollection->addAction("Halt Without Confirmation");
     action->setText(i18n("Halt Without Confirmation"));
+    action->setIcon(KIcon("system-shutdown"));
     action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_PageDown));
     connect(action, SIGNAL(triggered(bool)), SLOT(haltWithoutConfirmation()));
 
     action = m_actionCollection->addAction("Reboot Without Confirmation");
     action->setText(i18n("Reboot Without Confirmation"));
+    action->setIcon(KIcon("system-reboot"));
     action->setGlobalShortcut(QKeySequence(Qt::ALT+Qt::CTRL+Qt::SHIFT+Qt::Key_PageUp));
     connect(action, SIGNAL(triggered(bool)), SLOT(rebootWithoutConfirmation()));
 
