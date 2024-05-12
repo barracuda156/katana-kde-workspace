@@ -180,74 +180,6 @@ PlasmaApp::PlasmaApp()
     connect(action, SIGNAL(triggered(bool)), SLOT(rebootWithoutConfirmation()));
 
     QTimer::singleShot(0, this, SLOT(setupDesktop()));
-
-    m_phaseTimer = new QTimer(this);
-    m_phaseTimer->setInterval(500);
-    connect(m_phaseTimer, SIGNAL(timeout()), this, SLOT(nextPhase()));
-
-    QDBusConnection sessionBus = QDBusConnection::sessionBus();
-    m_klauncher = new QDBusInterface(
-        QLatin1String("org.kde.klauncher"),
-        QLatin1String("/KLauncher"),
-        QLatin1String("org.kde.KLauncher"),
-        sessionBus,
-        this
-    );
-    m_kded = new QDBusInterface(
-        QLatin1String("org.kde.kded"),
-        QLatin1String("/kded"),
-        QLatin1String("org.kde.kded"),
-        sessionBus,
-        this
-    );
-    const bool failsafe = (qgetenv("KDE_FAILSAFE").toInt() == 1);
-    if (!failsafe) {
-        m_sessionManager = true;
-        connect(
-            sessionBus.interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
-            this, SLOT(serviceOwnerChanged(QString,QString,QString))
-        );
-    }
-
-    KGlobal::dirs()->addResourceType("windowmanagers", "data", "plasma/windowmanagers");
-
-    QStringList wmcommands;
-    if (!failsafe) {
-        KConfig cfg("plasmarc", KConfig::NoGlobals);
-        KConfigGroup config(&cfg, "General");
-        const QString wmname = config.readEntry("windowManager", s_defaultwm);
-        if (wmname != s_defaultwm) {
-            KDesktopFile wmfile("windowmanagers", wmname + ".desktop");
-            if (!wmfile.noDisplay() && wmfile.tryExec()) {
-                wmcommands = KShell::splitArgs(wmfile.desktopGroup().readEntry("Exec"));
-            }
-        }
-    }
-    if (wmcommands.isEmpty()) {
-        wmcommands = s_defaultwmcommands;
-    }
-    QString wmprog = wmcommands.takeFirst();
-    KConfigGroup sessiongroup(KGlobal::config(), "Session");
-    foreach (const QString &group, sessiongroup.groupList()) {
-        KConfigGroup clientgroup(&sessiongroup, group);
-        QStringList restartcommand = clientgroup.readEntry("restartCommand", QStringList());
-        if (restartcommand.size() < 1) {
-            kWarning() << "invalid restart command" << group;
-            continue;
-         }
-        QString program = restartcommand.takeFirst();
-        if (program == wmprog || QFileInfo(program).fileName() == QFileInfo(wmprog).fileName()) {
-            wmprog = program;
-            wmcommands = restartcommand;
-            kDebug() << "using session WM entry" << wmprog << wmcommands;
-            clientgroup.deleteGroup();
-            clientgroup.sync();
-        }
-     }
-    m_wmProc = new QProcess(this);
-    m_wmProc->start(wmprog, wmcommands);
-
-    m_phaseTimer->start();
 }
 
 PlasmaApp::~PlasmaApp()
@@ -330,6 +262,79 @@ void PlasmaApp::setupDesktop()
     connect(&m_desktopViewCreationTimer, SIGNAL(timeout()), this, SLOT(createWaitingDesktops()));
     m_panelViewCreationTimer.start();
     m_desktopViewCreationTimer.start();
+
+    QTimer::singleShot(0, this, SLOT(setupSession()));
+}
+
+void PlasmaApp::setupSession()
+{
+    m_phaseTimer = new QTimer(this);
+    m_phaseTimer->setInterval(500);
+    connect(m_phaseTimer, SIGNAL(timeout()), this, SLOT(nextPhase()));
+
+    QDBusConnection sessionBus = QDBusConnection::sessionBus();
+    m_klauncher = new QDBusInterface(
+        QLatin1String("org.kde.klauncher"),
+        QLatin1String("/KLauncher"),
+        QLatin1String("org.kde.KLauncher"),
+        sessionBus,
+        this
+    );
+    m_kded = new QDBusInterface(
+        QLatin1String("org.kde.kded"),
+        QLatin1String("/kded"),
+        QLatin1String("org.kde.kded"),
+        sessionBus,
+        this
+    );
+    const bool failsafe = (qgetenv("KDE_FAILSAFE").toInt() == 1);
+    if (!failsafe) {
+        m_sessionManager = true;
+        connect(
+            sessionBus.interface(), SIGNAL(serviceOwnerChanged(QString,QString,QString)),
+            this, SLOT(serviceOwnerChanged(QString,QString,QString))
+        );
+    }
+
+    KGlobal::dirs()->addResourceType("windowmanagers", "data", "plasma/windowmanagers");
+
+    QStringList wmcommands;
+    if (!failsafe) {
+        KConfig cfg("plasmarc", KConfig::NoGlobals);
+        KConfigGroup config(&cfg, "General");
+        const QString wmname = config.readEntry("windowManager", s_defaultwm);
+        if (wmname != s_defaultwm) {
+            KDesktopFile wmfile("windowmanagers", wmname + ".desktop");
+            if (!wmfile.noDisplay() && wmfile.tryExec()) {
+                wmcommands = KShell::splitArgs(wmfile.desktopGroup().readEntry("Exec"));
+            }
+        }
+    }
+    if (wmcommands.isEmpty()) {
+        wmcommands = s_defaultwmcommands;
+    }
+    QString wmprog = wmcommands.takeFirst();
+    KConfigGroup sessiongroup(KGlobal::config(), "Session");
+    foreach (const QString &group, sessiongroup.groupList()) {
+        KConfigGroup clientgroup(&sessiongroup, group);
+        QStringList restartcommand = clientgroup.readEntry("restartCommand", QStringList());
+        if (restartcommand.size() < 1) {
+            kWarning() << "invalid restart command" << group;
+            continue;
+         }
+        QString program = restartcommand.takeFirst();
+        if (program == wmprog || QFileInfo(program).fileName() == QFileInfo(wmprog).fileName()) {
+            wmprog = program;
+            wmcommands = restartcommand;
+            kDebug() << "using session WM entry" << wmprog << wmcommands;
+            clientgroup.deleteGroup();
+            clientgroup.sync();
+        }
+     }
+    m_wmProc = new QProcess(this);
+    m_wmProc->start(wmprog, wmcommands);
+
+    m_phaseTimer->start();
 }
 
 void PlasmaApp::syncConfig()

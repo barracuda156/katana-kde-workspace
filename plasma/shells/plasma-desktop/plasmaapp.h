@@ -126,6 +126,7 @@ private:
 
 private Q_SLOTS:
     void setupDesktop();
+    void setupSession();
     void containmentAdded(Plasma::Containment *containment);
     void containmentScreenOwnerChanged(int, int, Plasma::Containment*);
     void syncConfig();
