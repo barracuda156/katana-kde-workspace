@@ -22,8 +22,7 @@
 
 #include <settings/settingspagebase.h>
 #include <KUrl>
-
-class KComboBox;
+#include <KComboBox>
 #include <QCheckBox>
 #include <QLabel>
 #include <QRadioButton>

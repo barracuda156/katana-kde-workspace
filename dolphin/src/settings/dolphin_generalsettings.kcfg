@@ -43,7 +43,7 @@
         </entry>
         <entry name="GlobalViewProps" type="Bool">
             <label>Should the view properties be used for all directories</label>
-            <default>false</default>
+            <default>true</default>
         </entry>
         <entry name="ConfirmClosingMultipleTabs" type="Bool">
             <label>Ask for confirmation when closing windows with multiple tabs.</label>
@@ -55,11 +55,11 @@
         </entry>
         <entry name="ShowSelectionToggle" type="Bool">
             <label>Show selection toggle</label>
-            <default>true</default>
+            <default>false</default>
         </entry>
         <entry name="ShowToolTips" type="Bool">
             <label>Show tooltips</label>
-            <default>false</default>
+            <default>true</default>
         </entry>
         <entry name="ShowCopyMoveMenu" type="Bool">
             <label>Show 'Copy To' and 'Move To' commands in context menu</label>
