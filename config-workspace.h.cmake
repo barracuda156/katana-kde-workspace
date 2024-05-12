@@ -9,9 +9,6 @@
 /* KDE's default home directory */
 #cmakedefine KDE_DEFAULT_HOME "${KDE_DEFAULT_HOME}"
 
-/* KDE's configuration directory */
-#define KDE_CONFDIR "${KDE4_CONFIG_INSTALL_DIR}"
-
 /* KDE's static libraries directory */
 #define KDE_LIBDIR "${KDE4_LIB_INSTALL_DIR}"
 
