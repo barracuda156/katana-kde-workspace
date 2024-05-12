@@ -70,15 +70,15 @@ void CalculatorRunner::powSubstitutions(QString& cmd)
         int count = 0;
 
         QChar decimalSymbol = KGlobal::locale()->toLocale().decimalPoint();
-        //avoid out of range on weird commands
+        // avoid out of range on weird commands
         preIndex = qMax(0, preIndex);
         postIndex = qMin(postIndex, cmd.length()-1);
 
-        //go backwards looking for the beginning of the number or expression
+        // go backwards looking for the beginning of the number or expression
         while (preIndex != 0) {
             QChar current = cmd.at(preIndex);
             QChar next = cmd.at(preIndex-1);
-            //kDebug() << "index " << preIndex << " char " << current;
+            // kDebug() << "index " << preIndex << " char " << current;
             if (current == ')') {
                 count++;
             } else if (current == '(') {
@@ -90,7 +90,7 @@ void CalculatorRunner::powSubstitutions(QString& cmd)
                 }
             }
             if (count == 0) {
-                //check for functions
+                // check for functions
                 if (!((next <= 'z' ) && (next >= 'a'))) {
                     break;
                 }
@@ -132,7 +132,7 @@ void CalculatorRunner::powSubstitutions(QString& cmd)
         cmd.insert(preIndex,"pow(");
         // +1 +4 == next position to the last number after we add 4 new characters pow(
         cmd.insert(postIndex + 1 + 4, ')');
-        //kDebug() << "from" << preIndex << " to " << postIndex << " got: " << cmd;
+        // kDebug() << "from" << preIndex << " to " << postIndex << " got: " << cmd;
     }
 }
 
@@ -230,7 +230,6 @@ void CalculatorRunner::match(Plasma::RunnerContext &context)
 
 QMimeData* CalculatorRunner::mimeDataForMatch(const Plasma::QueryMatch &match)
 {
-    // kDebug();
     QMimeData *result = new QMimeData();
     result->setText(match.text());
     return result;

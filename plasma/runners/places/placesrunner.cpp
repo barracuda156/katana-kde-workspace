@@ -32,8 +32,6 @@
 PlacesRunner::PlacesRunner(QObject* parent, const QVariantList &args)
         : Plasma::AbstractRunner(parent, args)
 {
-//    qRegisterMetaType
-    Q_UNUSED(args)
     setObjectName( QLatin1String("Places" ));
     addSyntax(Plasma::RunnerSyntax(i18n("places"), i18n("Lists all file manager locations")));
     addSyntax(Plasma::RunnerSyntax(":q:", i18n("Finds file manager locations that match :q:")));
@@ -51,14 +49,14 @@ void PlacesRunner::match(Plasma::RunnerContext &context)
 {
     if (QThread::currentThread() == QCoreApplication::instance()->thread()) {
         // from the main thread
-        //kDebug() << "calling";
+        // kDebug() << "calling";
         m_helper->match(&context);
     } else {
         // from the non-gui thread
-        //kDebug() << "emitting";
+        // kDebug() << "emitting";
         emit doMatch(&context);
     }
-    //m_helper->match(c);
+    // m_helper->match(c);
 }
 
 PlacesRunnerHelper::PlacesRunnerHelper(PlacesRunner *runner)
@@ -156,7 +154,7 @@ void PlacesRunner::run(const Plasma::QueryMatch &action)
 void PlacesRunner::setupComplete(QModelIndex index, bool success)
 {
     KFilePlacesModel *places = qobject_cast<KFilePlacesModel*>(sender());
-    //kDebug() << "setup complete" << places << sender();
+    // kDebug() << "setup complete" << places << sender();
     if (success && places) {
         KToolInvocation::self()->startServiceForUrl(places->url(index).url());
         places->deleteLater();

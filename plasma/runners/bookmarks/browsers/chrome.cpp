@@ -27,7 +27,6 @@
 
 #include "chrome.h"
 #include "browsers/findprofile.h"
-#include "bookmarksrunner_defs.h"
 #include "favicon.h"
 
 class ProfileBookmarks {
@@ -72,7 +71,7 @@ QList<BookmarkMatch> Chrome::match(const QString &term, bool addEveryThing, Prof
     foreach(const QVariantMap &bookmark, profileBookmarks->bookmarks()) {
         const QString url = bookmark.value("url").toString();
         const QString name = bookmark.value("name").toString();
-        kDebug(kdbg_code) << "Match" << name << url;
+        kDebug() << "Match" << name << url;
         BookmarkMatch bookmarkMatch(profileBookmarks->profile().favicon(), term, name, url);
         bookmarkMatch.addTo(results, addEveryThing);
     }
@@ -90,15 +89,15 @@ void Chrome::prepare()
 
         QJsonDocument jsondoc = QJsonDocument::fromJson(bookmarksFile.readAll());
         if (jsondoc.isNull()) {
-            kDebug(kdbg_code) << "Null profile document" << jsondoc.errorString();
+            kDebug() << "Null profile document" << jsondoc.errorString();
             continue;
         }
         const QVariantMap root = jsondoc.toVariant().toMap();
         if (!root.contains("roots")) {
-            kDebug(kdbg_code) << "No roots in" << profile.path();
+            kDebug() << "No roots in" << profile.path();
             continue;
         }
-        kDebug(kdbg_code) << "Filling entries from" << profile.path();
+        kDebug() << "Filling entries from" << profile.path();
         const QVariantMap roots = root.value("roots").toMap();
         foreach (const QVariant &folder, roots.values()) {
             parseFolder(folder.toMap(), profileBookmarks);
@@ -122,7 +121,7 @@ void Chrome::parseFolder(const QVariantMap &entry, ProfileBookmarks *profile)
         if(entry.value("type").toString() == "folder") {
             parseFolder(entry, profile);
         } else {
-            // kDebug(kdbg_code) << "Adding entry" << entry;
+            // kDebug() << "Adding entry" << entry;
             profile->add(entry);
         }
     }

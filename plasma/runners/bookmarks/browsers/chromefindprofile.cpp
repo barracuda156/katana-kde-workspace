@@ -26,7 +26,6 @@
 #include <KDebug>
 
 #include "chromefindprofile.h"
-#include "bookmarksrunner_defs.h"
 #include "favicon.h"
 
 FindChromeProfile::FindChromeProfile (const QString &applicationName, const QString &homeDirectory, QObject* parent )
@@ -48,7 +47,7 @@ QList<Profile> FindChromeProfile::find()
 
     QJsonDocument jsondoc = QJsonDocument::fromJson(localStateFile.readAll());
     if (jsondoc.isNull()) {
-        kDebug(kdbg_code) << "error opening " << QFileInfo(localStateFile).absoluteFilePath();
+        kWarning() << "error opening " << QFileInfo(localStateFile).absoluteFilePath();
         return profiles;
     }
 

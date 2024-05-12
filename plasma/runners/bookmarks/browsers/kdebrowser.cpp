@@ -53,7 +53,7 @@ QList< BookmarkMatch > KDEBrowser::match(const QString& term, bool addEverything
         }
 
         if (bookmark.isGroup()) { // descend
-            //kDebug (kdbg_code) << "descending into" << bookmark.text();
+            // kDebug() << "descending into" << bookmark.text();
             groups.push(bookmarkGroup);
             bookmarkGroup = bookmark.toGroup();
             bookmark = bookmarkGroup.first();
@@ -82,7 +82,7 @@ QList< BookmarkMatch > KDEBrowser::match(const QString& term, bool addEverything
 
             bookmark = bookmarkGroup;
             bookmarkGroup = groups.pop();
-            //kDebug(kdbg_code) << "ascending from" << bookmark.text() << "to" << bookmarkGroup.text();
+            //kDebug() << "ascending from" << bookmark.text() << "to" << bookmarkGroup.text();
             bookmark = bookmarkGroup.next(bookmark);
         }
     }

@@ -52,12 +52,12 @@ void WebshortcutRunner::readFiltersConfig()
         m_delimiter = filterData.searchTermSeparator();
     }
 
-    //kDebug() << "keyword delimiter:" << m_delimiter;
-    //kDebug() << "search providers:" << filterData.preferredSearchProviders();
+    // kDebug() << "keyword delimiter:" << m_delimiter;
+    // kDebug() << "search providers:" << filterData.preferredSearchProviders();
 
     QList<Plasma::RunnerSyntax> syns;
     Q_FOREACH (const QString &provider, filterData.preferredSearchProviders()) {
-        //kDebug() << "checking out" << provider;
+        // kDebug() << "checking out" << provider;
         Plasma::RunnerSyntax s(filterData.queryForPreferredSearchProvider(provider), /*":q:",*/
                               i18n("Opens \"%1\" in a web browser with the query :q:.", provider));
         syns << s;

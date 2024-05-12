@@ -57,7 +57,7 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
         KService::List services = KServiceTypeTrader::self()->query("Application", query);
 
         if (!services.isEmpty()) {
-            //kDebug() << service->name() << "is an exact match!" << service->storageId() << service->exec();
+            // kDebug() << service->name() << "is an exact match!" << service->storageId() << service->exec();
             foreach (const KService::Ptr &service, services) {
                 if (!service->noDisplay() && service->property("NotShowIn", QVariant::String) != "KDE") {
                     Plasma::QueryMatch match(this);
@@ -91,7 +91,7 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
     KService::List services = KServiceTypeTrader::self()->query("Application", query);
     services += KServiceTypeTrader::self()->query("KCModule", query);
 
-    //kDebug() << "got " << services.count() << " services from " << query;
+    // kDebug() << "got " << services.count() << " services from " << query;
     foreach (const KService::Ptr &service, services) {
         if (!context.isValid()) {
             return;
@@ -106,11 +106,11 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
         const QString exec = service->exec();
 
         if (seen.contains(id) || seen.contains(exec)) {
-            //kDebug() << "already seen" << id << exec;
+            // kDebug() << "already seen" << id << exec;
             continue;
         }
 
-        //kDebug() << "haven't seen" << id << "so processing now";
+        // kDebug() << "haven't seen" << id << "so processing now";
         seen.insert(id);
         seen.insert(exec);
 
@@ -156,7 +156,7 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
     query = QString("exist Exec and (exist Categories and '%1' ~subin Categories)").arg(term);
     services = KServiceTypeTrader::self()->query("Application", query);
 
-    //kDebug() << service->name() << "is an exact match!" << service->storageId() << service->exec();
+    // kDebug() << service->name() << "is an exact match!" << service->storageId() << service->exec();
     foreach (const KService::Ptr &service, services) {
         if (!context.isValid()) {
             return;
@@ -166,7 +166,7 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
             QString id = service->storageId();
             QString exec = service->exec();
             if (seen.contains(id) || seen.contains(exec)) {
-                //kDebug() << "already seen" << id << exec;
+                // kDebug() << "already seen" << id << exec;
                 continue;
             }
             Plasma::QueryMatch match(this);
