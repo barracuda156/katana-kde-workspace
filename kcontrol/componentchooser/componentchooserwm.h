@@ -21,7 +21,7 @@
 
 class CfgWm: public QWidget, public Ui::WmConfig_UI, public CfgPlugin
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     CfgWm(QWidget *parent);
     virtual ~CfgWm();
@@ -36,18 +36,20 @@ protected Q_SLOTS:
 
 Q_SIGNALS:
     void changed(bool);
+
 private:
-    bool tryWmLaunch();
-    void loadWMs( const QString& current );
-    QString currentWm() const;
-    bool saveAndConfirm();
     struct WmData {
         QString internalName;
         QString exec;
         QString configureCommand;
         QString parentArgument;
     };
+
+    void loadWMs(const QString &current);
+    QString currentWm() const;
+    bool saveAndConfirm();
     WmData currentWmData() const;
+
     QHash<QString, WmData> wms; // i18n text -> data
     QString oldwm; // the original value
 };
