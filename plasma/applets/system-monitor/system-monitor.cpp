@@ -373,6 +373,7 @@ class SystemMonitorClient : public QObject, public KSGRD::SensorClient
     Q_OBJECT
 public:
     SystemMonitorClient(QObject *parent);
+    ~SystemMonitorClient();
 
     bool setup(const QString &hostname, const int port);
     QList<QByteArray> sensors() const;
@@ -400,6 +401,13 @@ SystemMonitorClient::SystemMonitorClient(QObject *parent)
 {
     KSGRD::SensorMgr = new KSGRD::SensorManager(this);
     connect(KSGRD::SensorMgr, SIGNAL(update()), this, SLOT(slotUpdate()));
+}
+
+SystemMonitorClient::~SystemMonitorClient()
+{
+    if (KSGRD::SensorMgr->isConnected(m_hostname)) {
+        KSGRD::SensorMgr->disengage(m_hostname);
+    }
 }
 
 bool SystemMonitorClient::setup(const QString &hostname, const int port)
