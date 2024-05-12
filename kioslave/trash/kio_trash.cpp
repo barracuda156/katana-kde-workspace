@@ -256,12 +256,10 @@ void TrashProtocol::stat(const KUrl& url)
         bool ok = TrashImpl::parseURL( url, trashId, fileId, relativePath );
 
         if ( !ok ) {
-            // ######## do we still need this?
             kDebug() << url << " looks fishy, returning does-not-exist";
             // A URL like trash:/file simply means that CopyJob is trying to see if
             // the destination exists already (it made up the URL by itself).
             error( KIO::ERR_DOES_NOT_EXIST, url.prettyUrl() );
-            //error( KIO::ERR_SLAVE_DEFINED, i18n( "Malformed URL %1" ).arg( url.prettyUrl() ) );
             return;
         }
 

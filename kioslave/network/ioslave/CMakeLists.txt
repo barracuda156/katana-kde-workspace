@@ -1,8 +1,7 @@
 project(kio_network)
 
 set(kio_network_SRCS
-  networkslave.cpp
-  main.cpp
+    networkslave.cpp
 )
 
 add_executable(kio_network ${kio_network_SRCS})

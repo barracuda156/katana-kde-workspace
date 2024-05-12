@@ -141,6 +141,12 @@ void NetworkSlave::listDir(const KUrl &url)
         error(KIO::ERR_UNSUPPORTED_ACTION, url.prettyUrl());
         return;
     }
+    // this slave has only one directory - the root directory
+    const QString urlpath = url.path();
+    if (!urlpath.isEmpty() && urlpath != QLatin1String("/")) {
+        error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
+        return;
+    }
     if (!m_kdnssd) {
         m_kdnssd = new KDNSSD();
     }

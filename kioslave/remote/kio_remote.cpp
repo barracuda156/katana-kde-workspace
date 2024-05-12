@@ -84,7 +84,7 @@ void RemoteProtocol::listDir(const KUrl &url)
 		return;
 	}
 
-	error(KIO::ERR_MALFORMED_URL, url.prettyUrl());
+	error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 }
 
 void RemoteProtocol::listRoot()
@@ -175,7 +175,7 @@ void RemoteProtocol::stat(const KUrl &url)
 		}
 	}
 
-	error(KIO::ERR_MALFORMED_URL, url.prettyUrl());
+	error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 }
 
 void RemoteProtocol::del(const KUrl &url, bool /*isFile*/)
@@ -209,7 +209,7 @@ void RemoteProtocol::get(const KUrl &url)
 		return;
 	}
 
-	error(KIO::ERR_MALFORMED_URL, url.prettyUrl());
+	error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
 }
 
 void RemoteProtocol::rename(const KUrl &src, const KUrl &dest,
