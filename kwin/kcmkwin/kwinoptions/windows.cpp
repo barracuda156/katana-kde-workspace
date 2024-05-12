@@ -269,9 +269,7 @@ void KFocusConfig::load(void)
     // on by default for non click to focus policies
     setActiveMouseScreen(cg.readEntry(KWIN_ACTIVE_MOUSE_SCREEN, getFocus() != 0));
 
-//    setFocusStealing( cg.readEntry(KWIN_FOCUS_STEALING, 2 ));
-    // TODO default to low for now
-    setFocusStealing(cg.readEntry(KWIN_FOCUS_STEALING, 1));
+    setFocusStealing(cg.readEntry(KWIN_FOCUS_STEALING, 0));
 
 
     emit KCModule::changed(false);
