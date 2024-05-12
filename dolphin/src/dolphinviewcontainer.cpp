@@ -43,8 +43,6 @@
 #include <KUrl>
 #include <KUrlComboBox>
 #include <KUrlNavigator>
-#include <KRun>
-
 
 #include "dolphin_generalsettings.h"
 #include "filterbar/filterbar.h"

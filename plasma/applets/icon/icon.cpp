@@ -32,7 +32,7 @@
 #include <KLocale>
 #include <KMenu>
 #include <KPropertiesDialog>
-#include <KRun>
+#include <KToolInvocation>
 #include <KSharedConfig>
 #include <KShell>
 #include <KSycoca>
@@ -258,11 +258,10 @@ void IconApplet::openUrl()
 {
     if (m_service) {
         emit releaseVisualFocus();
-        KUrl::List urls;
-        KRun::run(*m_service, urls, 0);
+        KToolInvocation::self()->startServiceByStorageId(m_service->entryPath());
     } else if (m_url.isValid()) {
         emit releaseVisualFocus();
-        new KRun(m_url, 0);
+        KToolInvocation::self()->startServiceForUrl(m_url.url());
     }
 }
 
@@ -421,7 +420,7 @@ void IconApplet::dropEvent(QGraphicsSceneDragDropEvent *event)
         constraintsEvent(Plasma::FormFactorConstraint);
         return;
     } else if (m_service) {
-        KRun::run(*m_service, urls, 0);
+        KToolInvocation::self()->startServiceByStorageId(m_service->entryPath(), urls.toStringList());
         return;
     }
 
@@ -433,24 +432,21 @@ void IconApplet::dropEvent(QGraphicsSceneDragDropEvent *event)
           KDesktopFile::isDesktopFile(m_url.toLocalFile()))) {
 
         if (KDesktopFile::isDesktopFile(m_url.toLocalFile())) {
-            //Extract the command from the Desktop file
-            KService service(m_url.toLocalFile());
-            KRun::run(service, urls, 0);
+            KToolInvocation::self()->startServiceByStorageId(m_url.toLocalFile(), urls.toStringList());
             return;
         }
 
         // Just exec the local executable
-        QString params;
+        QStringList params;
         foreach (const KUrl &url, urls) {
             if (url.isLocalFile()) {
-                params += ' ' + KShell::quoteArg(url.toLocalFile());
+                params << url.toLocalFile();
             } else {
-                params += ' ' + KShell::quoteArg(url.prettyUrl());
+                params << url.prettyUrl();
             }
         }
 
-        QString commandStr = KShell::quoteArg(m_url.path());
-        KRun::runCommand(commandStr + ' ' + params, 0);
+        KToolInvocation::self()->startProgram(m_url.path(), params);
     } else if (mimetype && mimetype->is("inode/directory")) {
         dropUrls(urls, m_url, event->modifiers());
     }

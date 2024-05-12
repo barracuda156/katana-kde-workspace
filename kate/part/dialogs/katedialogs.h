@@ -343,7 +343,7 @@ class KatePartPluginConfigPage : public KateConfigPage
  * This dialog will prompt the user for what do with a file that is
  * modified on disk.
  * If the file wasn't deleted, it has a 'diff' button, which will create
- * a diff file (uing diff(1)) and launch that using KRun.
+ * a diff file (uing diff(1)) and launch that using KToolInvocation.
  */
 class KateModOnHdPrompt : public KDialog
 {

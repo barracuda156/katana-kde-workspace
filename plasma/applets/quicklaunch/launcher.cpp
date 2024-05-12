@@ -19,16 +19,13 @@
  ***************************************************************************/
 #include "launcher.h"
 
-// Qt
+// Katie
 #include <QtCore/qnamespace.h>
 #include <QtGlobal>
 #include <QtGui/qgraphicssceneevent.h>
-#include <QtGui/qgraphicssceneevent.h>
 
 // KDE
-#include <KRun>
-
-// Plasma
+#include <KToolInvocation>
 #include <Plasma/ToolTipContent>
 #include <Plasma/ToolTipManager>
 
@@ -97,7 +94,7 @@ KUrl Launcher::url() const
 
 void Launcher::execute()
 {
-    new KRun(m_data.url(), 0);
+    KToolInvocation::self()->startServiceForUrl(m_data.url().url());
 }
 
 void Launcher::toolTipAboutToShow()

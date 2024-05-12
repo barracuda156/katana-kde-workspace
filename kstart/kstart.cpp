@@ -97,10 +97,7 @@ KStart::KStart()
             KStartupInfo::sendFinish(id); // failed to start
         }
     } else {
-        QString error;
-        if (KToolInvocation::self()->startServiceByDesktopPath(exe, url, &error) != 0) {
-            kError() << error;
-        }
+        KToolInvocation::self()->startServiceByStorageId(exe, QStringList() << url);
     }
 
   QTimer::singleShot(useRule ? 0 : 120 * 1000, qApp, SLOT(quit()));

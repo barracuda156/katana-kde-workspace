@@ -18,6 +18,8 @@
 
 #include "kioclient.h"
 
+#include <QTimer>
+#include <QDBusConnection>
 #include <kio/job.h>
 #include <kio/copyjob.h>
 #include <kio/deletejob.h>
@@ -32,9 +34,7 @@
 #include <kfiledialog.h>
 #include <kdebug.h>
 #include <kservice.h>
-#include <QTimer>
-#include <krun.h>
-#include <QtDBus/QtDBus>
+#include <ktoolinvocation.h>
 #include <kcomponentdata.h>
 #include <iostream>
 
@@ -145,18 +145,6 @@ int main( int argc, char **argv )
   return ClientApp::doIt() ? 0 /*no error*/ : 1 /*error*/;
 }
 
-bool krun_has_error = false;
-
-void ClientApp::delayedQuit()
-{
-    // Quit in 2 seconds. This leaves time for KRun to pop up
-    // "app not found" in KProcessRunner, if that was the case.
-    QTimer::singleShot( 2000, this, SLOT(quit()) );
-    // don't access the KRun instance later, it will be deleted after calling slots
-    if( static_cast< const KRun* >( sender())->hasError())
-        krun_has_error = true;
-}
-
 static void checkArgumentCount(int count, int min, int max)
 {
     if (count < min)
@@ -171,23 +159,22 @@ static void checkArgumentCount(int count, int min, int max)
     }
 }
 
-bool ClientApp::kde_open(const KUrl& url, const QString& mimeType, bool allowExec)
+bool ClientApp::kde_open(const KUrl& url, const QString& mimeType)
 {
     if ( mimeType.isEmpty() ) {
         kDebug() << url;
-        KRun * run = new KRun( url, 0 );
-        run->setRunExecutables(allowExec);
-        QObject::connect( run, SIGNAL( finished() ), this, SLOT( delayedQuit() ));
-        QObject::connect( run, SIGNAL( error() ), this, SLOT( delayedQuit() ));
+        bool ok = KToolInvocation::self()->startServiceForUrl( url.url() );
+        // Quit in 2 seconds. This leaves time for KToolInvocation to pop up
+        // "app not found", if that was the case.
+        QTimer::singleShot( 2000, this, SLOT(quit()) );
         this->exec();
-        return !krun_has_error;
+        return ok;
     } else {
-        const KUrl::List urls( url );
         const KService::List offers = KMimeTypeTrader::self()->query(
             mimeType, QLatin1String( "Application" ) );
         if (offers.isEmpty()) return 1;
         KService::Ptr serv = offers.first();
-        return KRun::run( *serv, urls, 0 );
+        return KToolInvocation::self()->startServiceByStorageId( serv->entryPath(), QStringList() << url.url() );
     }
 }
 
@@ -286,7 +273,7 @@ bool ClientApp::doIt()
         kFatal() << "Session bus not found" ;
 
 #ifdef KIOCLIENT_AS_KDEOPEN
-    return app.kde_open(args->url(0), QByteArray(), false);
+    return app.kde_open(args->url(0), QByteArray());
 #elif defined(KIOCLIENT_AS_KDECP)
     checkArgumentCount(argc, 2, 0);
     return app.doCopy(0);
@@ -321,8 +308,7 @@ bool ClientApp::doIt()
     {
         checkArgumentCount(argc, 2, 3);
         return app.kde_open( args->url( 1 ),
-                             argc == 3 ? args->arg( 2 ) : QString(),
-                             true );
+                             argc == 3 ? args->arg( 2 ) : QString());
     }
     else if ( command == "download" )
     {

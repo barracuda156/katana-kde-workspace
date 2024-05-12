@@ -26,7 +26,7 @@
 #include <QMenu>
 #include <QFileInfo>
 #include <QDir>
-#include <KRun>
+#include <KToolInvocation>
 #include <KIcon>
 #include <QProcess>
 #include <QApplication>
@@ -152,19 +152,19 @@ void KateProjectTreeViewContextMenu::exec(const QString& filename, const QPoint&
     } else if(openDirectoryWithMenu == action->parentWidget()) {
       // handle open directory with
       const QString openDirWith = action->data().toString();
-      if (KService::Ptr app = KService::serviceByDesktopPath(openDirWith)) {
+      if (!openDirWith.isEmpty()) {
         QFileInfo fi(filename);
-        QList<QUrl> list;
-        list << QUrl::fromLocalFile (fi.dir().absolutePath());
-        KRun::run(*app, list, parent);
+        QStringList list;
+        list << fi.dir().absolutePath();
+        KToolInvocation::self()->startServiceByStorageId(openDirWith, list, parent);
       }
     } else {
       // open with
       const QString openWith = action->data().toString();
-      if (KService::Ptr app = KService::serviceByDesktopPath(openWith)) {
-        QList<QUrl> list;
-        list << QUrl::fromLocalFile (filename);
-        KRun::run(*app, list, parent);
+      if (!openWith.isEmpty()) {
+        QStringList list;
+        list << filename;
+        KToolInvocation::self()->startServiceByStorageId(openWith, list, parent);
       }
     }
   }

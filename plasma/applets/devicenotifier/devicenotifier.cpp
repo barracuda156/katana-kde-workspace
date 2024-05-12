@@ -40,7 +40,7 @@
 #include <Solid/OpticalDrive>
 #include <Solid/PowerManagement>
 #include <KIcon>
-#include <KRun>
+#include <KToolInvocation>
 #include <KDiskFreeSpaceInfo>
 #include <KDebug>
 
@@ -308,7 +308,7 @@ void DeviceNotifierWidget::slotIconActivated()
         mountpoint = solidstorageacces->filePath();
     }
     if (!mountpoint.isEmpty()) {
-        KRun::runUrl(KUrl(mountpoint), "inode/directory", nullptr);
+        KToolInvocation::self()->startServiceForUrl(mountpoint);
     }
 }
 

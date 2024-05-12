@@ -24,7 +24,6 @@
 
 #include <KCmdLineArgs>
 #include <KDebug>
-#include <KRun>
 #include <KUrl>
 
 DolphinApplication::DolphinApplication() :

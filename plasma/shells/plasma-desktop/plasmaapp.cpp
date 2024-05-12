@@ -1018,7 +1018,7 @@ void PlasmaApp::restoreClients()
          }
         QString program = restartcommand.takeFirst();
         kDebug() << "restoring client" << program << restartcommand;
-        KToolInvocation::self()->kdeinitExec(program, restartcommand);
+        KToolInvocation::self()->startProgram(program, restartcommand);
      }
     sessiongroup.deleteGroup();
     sessiongroup.sync();
@@ -1159,12 +1159,12 @@ void PlasmaApp::logout(int confirm, int sdtype)
 
 void PlasmaApp::captureDesktop()
 {
-    KToolInvocation::self()->kdeinitExec("ksnapshot", QStringList() << "--fullscreen");
+    KToolInvocation::self()->startProgram("ksnapshot", QStringList() << "--fullscreen");
 }
 
 void PlasmaApp::captureCurrentWindow()
 {
-    KToolInvocation::self()->kdeinitExec("ksnapshot", QStringList() << "--current");
+    KToolInvocation::self()->startProgram("ksnapshot", QStringList() << "--current");
 }
 
 void PlasmaApp::cleanup()

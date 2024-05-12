@@ -111,9 +111,9 @@ static void kExecuteAction(const KServiceAction &kserviceaction, const Solid::De
         return;
     }
     const QString actionexe = actioncommand.takeFirst();
-    const int actionresult = KToolInvocation::self()->kdeinitExec(actionexe, actioncommand);
-    if (actionresult != 0) {
-        kWarning() << "could not execute action for" << kserviceaction.name() << actionresult;
+    const bool actionresult = KToolInvocation::self()->startProgram(actionexe, actioncommand);
+    if (!actionresult) {
+        kWarning() << "could not execute action for" << kserviceaction.name();
     }
 }
 

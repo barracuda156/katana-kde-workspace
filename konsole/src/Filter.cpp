@@ -20,7 +20,7 @@
 // Own
 #include "Filter.h"
 
-// Qt
+// Katie
 #include <QAction>
 #include <QApplication>
 #include <QtGui/QClipboard>
@@ -29,7 +29,7 @@
 
 // KDE
 #include <KLocalizedString>
-#include <KRun>
+#include <KToolInvocation>
 
 // Konsole
 #include "TerminalCharacterDecoder.h"
@@ -419,7 +419,7 @@ void UrlFilter::HotSpot::activate(QObject* object)
             url.prepend("mailto:");
         }
 
-        new KRun(url, QApplication::activeWindow());
+        KToolInvocation::self()->startServiceForUrl(url, QApplication::activeWindow());
     }
 }
 

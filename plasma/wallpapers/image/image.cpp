@@ -26,9 +26,9 @@
 #include <KStandardDirs>
 #include <KImageIO>
 #include <KIO/Job>
-#include <krun.h>
-
+#include <KToolInvocation>
 #include <Plasma/Theme>
+
 #include "backgroundlistmodel.h"
 #include "backgrounddelegate.h"
 #include "removebuttonmanager.h"
@@ -751,9 +751,8 @@ void Image::openSlide()
     }
 
     // open in image viewer
-    KUrl filepath(m_wallpaperPackage->filePath("preferred"));
-    //kDebug() << "opening file " << filepath.path();
-    new KRun(filepath, NULL);
+    //kDebug() << "opening file " << m_wallpaperPackage->filePath("preferred");
+    KToolInvocation::self()->startServiceForUrl(m_wallpaperPackage->filePath("preferred"));
 }
 
 void Image::renderWallpaper(const QString& image)

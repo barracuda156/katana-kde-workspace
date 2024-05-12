@@ -202,7 +202,7 @@ void KateSessionApplet::slotOnItemClicked(const QModelIndex &index)
     else if ( id > 2 )
         args <<"-n"<< "--start"<<m_sessions[ id-3 ];
 
-    KToolInvocation::self()->kdeinitExec("kate", args);
+    KToolInvocation::self()->startProgram("kate", args);
 }
 
 void KateSessionApplet::createConfigurationInterface(KConfigDialog *parent)

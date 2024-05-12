@@ -176,7 +176,7 @@ void KCrashModule::slotDirty(const QString &path)
                 kcrashargs.append(kcrashdisplay);
             }
             kDebug() << "Restarting" << kcrashfilepath << kcrashapppath << kcrashargs;
-            KToolInvocation::self()->kdeinitExec(kcrashapppath, kcrashargs);
+            KToolInvocation::self()->startProgram(kcrashapppath, kcrashargs);
         }
     }
 }

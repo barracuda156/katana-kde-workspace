@@ -21,7 +21,7 @@
 
 #include <KDebug>
 #include <KIcon>
-#include <KRun>
+#include <KToolInvocation>
 #include <Plasma/Containment>
 
 AppLauncher::AppLauncher(QObject *parent, const QVariantList &args)
@@ -101,7 +101,7 @@ void AppLauncher::switchTo(QAction *action)
 {
     const QString entrypath = action->data().toString();
     kDebug() << "running" << entrypath;
-    new KRun(KUrl(entrypath), nullptr);
+    KToolInvocation::self()->startServiceByStorageId(entrypath);
 }
 
 #include "moc_launch.cpp"

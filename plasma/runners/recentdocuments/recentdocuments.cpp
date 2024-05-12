@@ -26,7 +26,7 @@
 #include <KDebug>
 #include <KDirWatch>
 #include <KIcon>
-#include <KRun>
+#include <KToolInvocation>
 #include <KRecentDocument>
 
 RecentDocuments::RecentDocuments(QObject *parent, const QVariantList &args)
@@ -95,7 +95,7 @@ void RecentDocuments::run(const Plasma::QueryMatch &match)
 {
     const QString url = match.data().toString();
     kDebug() << "Opening Recent Document" << url;
-    new KRun(url, 0);
+    KToolInvocation::self()->startServiceForUrl(url);
 }
 
 QMimeData* RecentDocuments::mimeDataForMatch(const Plasma::QueryMatch &match)

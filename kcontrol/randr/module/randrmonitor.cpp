@@ -162,7 +162,7 @@ void RandrMonitorModule::processX11Event( XEvent* e )
 
 void RandrMonitorModule::showKcm()
 {
-    KToolInvocation::self()->kdeinitExec("kcmshell4", QStringList() << "randr");
+    KToolInvocation::self()->startProgram("kcmshell4", QStringList() << "randr");
 }
 
 void RandrMonitorModule::tryAutoConfig()
@@ -244,7 +244,7 @@ void RandrMonitorModule::switchDisplay()
         return;
     }
     // no idea what to do here
-    KToolInvocation::self()->kdeinitExec( "kcmshell4", QStringList() << "randr" );
+    KToolInvocation::self()->startProgram( "kcmshell4", QStringList() << "randr" );
 }
 
 void RandrMonitorModule::resumedFromSuspend()

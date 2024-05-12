@@ -102,20 +102,14 @@ static void kRunService(const QString &entrypath, LauncherApplet* launcherapplet
 {
     Q_ASSERT(launcherapplet != nullptr);
     launcherapplet->resetState();
-
-    KService::Ptr service = KService::serviceByDesktopPath(entrypath);
-    Q_ASSERT(!service.isNull());
-    if (!KRun::run(*service.data(), KUrl::List(), nullptr)) {
-        kWarning() << "could not run" << entrypath;
-    }
+    KToolInvocation::self()->startServiceByStorageId(entrypath);
 }
 
 static void kRunUrl(const QString &urlpath, LauncherApplet* launcherapplet)
 {
     Q_ASSERT(launcherapplet != nullptr);
     launcherapplet->resetState();
-
-    (void)new KRun(KUrl(urlpath), nullptr);
+    KToolInvocation::self()->startServiceForUrl(urlpath);
 }
 
 static KIcon kGenericIcon(const QString &name)
@@ -1827,11 +1821,8 @@ KBookmarkManager* LauncherApplet::bookmarkManager() const
 
 void LauncherApplet::slotEditMenu()
 {
-    if (KToolInvocation::self()->kdeinitExec("kmenuedit") == 0) {
-        hidePopup();
-    } else {
-        showMessage(KIcon("dialog-error"), i18n("Failed to launch menu editor"), Plasma::MessageButton::ButtonOk);
-    }
+    hidePopup();
+    KToolInvocation::self()->startServiceByStorageId("kmenuedit");
 }
 
 void LauncherApplet::slotConfigAccepted()

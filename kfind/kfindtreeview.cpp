@@ -32,7 +32,7 @@
 #include <kfiledialog.h>
 #include <klocale.h>
 #include <kapplication.h>
-#include <krun.h>
+#include <ktoolinvocation.h>
 #include <kmessagebox.h>
 #include <kglobal.h>
 #include <kdebug.h>
@@ -520,7 +520,7 @@ void KFindTreeView::openContainingFolder()
     //TODO if >1 add a warn ?
     Q_FOREACH( const KUrl & url, folderMaps.keys() )
     {
-        (void) new KRun(url, this);
+        KToolInvocation::self()->startServiceForUrl(url.url(), this);
     }
 }
 

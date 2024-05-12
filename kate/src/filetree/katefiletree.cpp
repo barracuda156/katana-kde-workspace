@@ -31,7 +31,7 @@
 #include <KMimeTypeTrader>
 #include <KMimeType>
 #include <KOpenWithDialog>
-#include <KRun>
+#include <KToolInvocation>
 #include <KMessageBox>
 
 #include <QtGui/QMenu>
@@ -261,19 +261,11 @@ void KateFileTree::slotOpenWithMenuAction(QAction* a)
     // display "open with" dialog
     KOpenWithDialog dlg(list);
     if (dlg.exec())
-      KRun::run(*dlg.service(), list, this);
+      KToolInvocation::self()->startServiceByStorageId(dlg.service()->entryPath(), list.toStringList(), this);
     return;
   }
 
-  KService::Ptr app = KService::serviceByDesktopPath(openWith);
-  if (app)
-  {
-    KRun::run(*app, list, this);
-  }
-  else
-  {
-    KMessageBox::error(this, i18n("Application '%1' not found.", openWith), i18n("Application not found"));
-  }
+  KToolInvocation::self()->startServiceByStorageId(openWith, list.toStringList(), this);
 }
 
 

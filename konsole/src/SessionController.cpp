@@ -37,7 +37,6 @@
 #include <KLocalizedString>
 #include <KMenu>
 #include <KMessageBox>
-#include <KRun>
 #include <KShell>
 #include <KToolInvocation>
 #include <KStandardDirs>
@@ -443,7 +442,7 @@ void SessionController::handleWebShortcutAction()
 
     if (KUriFilter::self()->filterUri(filterData, QStringList() << "kurisearchfilter")) {
         const KUrl& url = filterData.uri();
-        new KRun(url, QApplication::activeWindow());
+        KToolInvocation::self()->startServiceForUrl(url.url(), QApplication::activeWindow());
     }
 }
 
@@ -488,14 +487,14 @@ void SessionController::handleOpenWithAction()
 
     const QStringList actionData = action->data().toStringList();
     Q_ASSERT(actionData.count() == 2);
-    KUrl::List actionUrls;
+    QStringList actionUrls;
     actionUrls << actionData.at(1);
-    KRun::run(actionData.at(0), actionUrls, QApplication::activeWindow());
+    KToolInvocation::self()->startServiceByStorageId(actionData.at(0), actionUrls, QApplication::activeWindow());
 }
 
 void SessionController::configureWebShortcuts()
 {
-    KToolInvocation::self()->kdeinitExec("kcmshell4", QStringList() << "ebrowsing");
+    KToolInvocation::self()->startProgram("kcmshell4", QStringList() << "ebrowsing");
 }
 
 void SessionController::sendSignal(QAction* action)
@@ -973,9 +972,9 @@ void SessionController::openBrowser()
     KUrl currentUrl = url();
 
     if (currentUrl.isLocalFile())
-        new KRun(currentUrl, QApplication::activeWindow(), 0, true, true);
+        KToolInvocation::self()->startServiceForUrl(currentUrl.url(), QApplication::activeWindow());
     else
-        new KRun(KUrl(QDir::homePath()), QApplication::activeWindow(), 0, true, true);
+        KToolInvocation::self()->startServiceForUrl(QDir::homePath(), QApplication::activeWindow());
 }
 
 void SessionController::copy()

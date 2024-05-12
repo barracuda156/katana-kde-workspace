@@ -46,7 +46,7 @@
 #include <klocale.h>
 #include <kstandardaction.h>
 #include <kfiledialog.h>
-#include <krun.h>
+#include <ktoolinvocation.h>
 #include <kstandarddirs.h>
 #include <kbookmark.h>
 #include <kbookmarkmanager.h>
@@ -407,7 +407,7 @@ void ActionsImpl::slotOpenLink()
     for (it = bookmarks.constBegin(); it != end; ++it) {
         if ((*it).isGroup() || (*it).isSeparator())
             continue;
-        (void)new KRun((*it).url(), KEBApp::self());
+        KToolInvocation::self()->startServiceForUrl((*it).url().url(), KEBApp::self());
     }
 }
 

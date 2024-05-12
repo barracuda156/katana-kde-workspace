@@ -233,7 +233,7 @@ void SolidRunner::run(const Plasma::QueryMatch &match)
                     return;
                 }
                 const QString actionexe = actioncommand.takeFirst();
-                const int actionresult = KToolInvocation::self()->kdeinitExec(actionexe, actioncommand);
+                const int actionresult = KToolInvocation::self()->startProgram(actionexe, actioncommand);
                 if (actionresult != 0) {
                     kWarning() << "could not execute action for" << actionname << "in" << actionfilepath << actionresult;
                 }

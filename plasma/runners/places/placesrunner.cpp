@@ -25,7 +25,7 @@
 
 #include <KDebug>
 #include <KIcon>
-#include <KRun>
+#include <KToolInvocation>
 #include <KUrl>
 
 //Q_DECLARE_METATYPE(Plasma::RunnerContext)
@@ -127,7 +127,7 @@ void PlacesRunner::run(const Plasma::QueryMatch &action)
 {
     //I don't just pass the model index because the list could change before the user clicks on it, which would make everything go wrong. Ideally we don't want things to go wrong.
     if (action.data().canConvert<KUrl>()) {
-        new KRun(action.data().value<KUrl>().url(), 0);
+        KToolInvocation::self()->startServiceForUrl(action.data().value<KUrl>().url());
     } else if (action.data().canConvert<QString>()) {
         //search our list for the device with the same udi, then set it up (mount it).
         QString deviceUdi = action.data().toString();
@@ -158,7 +158,7 @@ void PlacesRunner::setupComplete(QModelIndex index, bool success)
     KFilePlacesModel *places = qobject_cast<KFilePlacesModel*>(sender());
     //kDebug() << "setup complete" << places << sender();
     if (success && places) {
-        new KRun(places->url(index), 0);
+        KToolInvocation::self()->startServiceForUrl(places->url(index).url());
         places->deleteLater();
     }
 }

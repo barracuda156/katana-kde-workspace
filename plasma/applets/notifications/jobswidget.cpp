@@ -21,7 +21,7 @@
 #include <QGraphicsGridLayout>
 #include <Plasma/Animation>
 #include <KLocale>
-#include <KRun>
+#include <KToolInvocation>
 #include <KIconLoader>
 #include <KIcon>
 #include <KMimeType>
@@ -224,9 +224,7 @@ void JobFrame::slotIcon0Activated()
 void JobFrame::slotIcon1Activated()
 {
     const KUrl desturl = KUrl(m_iconwidget1->property("_k_desturl").toString());
-    const KMimeType::Ptr kmimetype = KMimeType::findByUrl(desturl);
-    Q_ASSERT(kmimetype);
-    KRun::runUrl(desturl, kmimetype->name(), nullptr);
+    KToolInvocation::self()->startServiceForUrl(desturl.url());
 }
 
 

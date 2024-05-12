@@ -30,8 +30,7 @@
 #include <klocale.h>
 #include <kbookmarkmanager.h>
 #include <kbookmarkdialog.h>
-#include <kdebug.h>
-#include <krun.h>
+#include <ktoolinvocation.h>
 #include <kprotocolmanager.h>
 #include <kicon.h>
 #include <kiconloader.h>
@@ -44,6 +43,7 @@
 #include <kdesktopfile.h>
 #include <kglobal.h>
 #include <kacceleratormanager.h>
+#include <kdebug.h>
 
 #include <QFileInfo>
 
@@ -479,7 +479,7 @@ KFileItemActions* KonqPopupMenu::fileItemActions() const
 void KonqPopupMenuPrivate::slotPopupNewView()
 {
     Q_FOREACH(const KUrl& url, m_popupItemProperties.urlList()) {
-        (void) new KRun(url, m_parentWidget);
+        KToolInvocation::self()->startServiceForUrl(url.url(), m_parentWidget);
     }
 }
 
@@ -498,7 +498,7 @@ void KonqPopupMenuPrivate::slotPopupEmptyTrashBin()
 
 void KonqPopupMenuPrivate::slotConfigTrashBin()
 {
-  KRun::run("kcmshell4 kcmtrash", KUrl::List(), m_parentWidget);
+  KToolInvocation::self()->startProgram("kcmshell4", QStringList() << "kcmtrash", m_parentWidget);
 }
 
 void KonqPopupMenuPrivate::slotPopupRestoreTrashedItems()
@@ -580,7 +580,7 @@ void KonqPopupMenuPrivate::slotShowOriginalFile()
     }
     // Now destUrl points to the target file, let's go up to parent dir
     destUrl.setPath(destUrl.directory());
-    KRun::runUrl(destUrl, "inode/directory", m_parentWidget);
+    KToolInvocation::self()->startServiceForUrl(destUrl.url(), m_parentWidget);
 }
 
 #include "moc_konq_popupmenu.cpp"

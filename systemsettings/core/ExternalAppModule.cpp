@@ -19,10 +19,9 @@
 
 #include "ExternalAppModule.h"
 
-#include <QtGui/QApplication>
-
+#include <QApplication>
 #include <KCModuleInfo>
-#include <KRun>
+#include <KToolInvocation>
 
 ExternalAppModule::ExternalAppModule(QWidget * parent, KCModuleInfo * module)
 {
@@ -51,7 +50,9 @@ void ExternalAppModule::showEvent(QShowEvent * event)
 
 void ExternalAppModule::runExternal()
 {
-    KRun::run( *(moduleInfo->service()), KUrl::List(), qApp->activeWindow() ); // Launch it!
+    KToolInvocation::self()->startServiceByStorageId(
+        moduleInfo->service()->entryPath(), QStringList(), qApp->activeWindow()
+    );
 }
 
 #include "moc_ExternalAppModule.cpp"

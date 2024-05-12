@@ -1162,7 +1162,7 @@ void KColorCm::save()
     displayGroup.writeEntry("exportKDEColors", applyToAlien->isChecked());
     cfg.sync();
 
-    KToolInvocation::self()->startServiceByDesktopName("krdb");
+    KToolInvocation::self()->startServiceByStorageId("krdb");
 
     emit changed(false);
 }

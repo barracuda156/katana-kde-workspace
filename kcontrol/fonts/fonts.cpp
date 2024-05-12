@@ -270,7 +270,7 @@ bool FontAASettings::load()
     xft.apply();  // Save this setting
     KConfigGroup(&kglobals, "General").writeEntry("XftHintStyle", KXftConfig::toStr(hStyle));
     kglobals.sync();
-    KToolInvocation::self()->startServiceByDesktopName("krdb");
+    KToolInvocation::self()->startServiceByStorageId("krdb");
   }
 
   hintingStyle->setCurrentIndex(getIndex(hStyle));
@@ -731,7 +731,7 @@ void KFonts::save()
   }
 #endif
 #endif
-  KToolInvocation::self()->startServiceByDesktopName("krdb");
+  KToolInvocation::self()->startServiceByStorageId("krdb");
 
   emit changed(false);
 }

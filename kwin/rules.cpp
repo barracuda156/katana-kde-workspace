@@ -968,7 +968,7 @@ void RuleBook::edit(Client* c, bool whole_app)
     args << "--wid" << QString::number(c->window());
     if (whole_app)
         args << "--whole-app";
-    KToolInvocation::self()->kdeinitExec("kwin_rules_dialog", args);
+    KToolInvocation::self()->startProgram("kwin_rules_dialog", args);
 }
 
 void RuleBook::load()

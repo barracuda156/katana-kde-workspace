@@ -25,7 +25,7 @@
 #include <qprocess.h>
 #include <qtextstream.h>
 #include <kmessagebox.h>
-#include <krun.h>
+#include <ktoolinvocation.h>
 #include <klocale.h>
 
 //BEGIN SwapDiffCreator
@@ -149,12 +149,11 @@ void SwapDiffCreator::slotDiffFinished()
     return;
   }
 
-  // close diffFile and avoid removal, KRun will do that later!
+  // close diffFile and avoid removal
   m_diffFile.close ();
   m_diffFile.setAutoRemove (false);
 
-  // KRun::runUrl should delete the file, once the client exits
-  KRun::runUrl (KUrl::fromPath(m_diffFile.fileName()), "text/x-patch", m_swapFile->document()->activeView(), true );
+  KToolInvocation::self()->startServiceForUrl (m_diffFile.fileName(), m_swapFile->document()->activeView(), true );
 
   deleteLater();
 }

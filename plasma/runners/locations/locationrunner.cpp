@@ -21,7 +21,7 @@
 #include <QMimeData>
 
 #include <KDebug>
-#include <KRun>
+#include <KToolInvocation>
 #include <KLocale>
 #include <KMimeType>
 #include <KShell>
@@ -29,8 +29,6 @@
 #include <KIcon>
 #include <KProtocolInfo>
 #include <KUriFilter>
-
-#include <kservicetypetrader.h>
 
 
 LocationsRunner::LocationsRunner(QObject *parent, const QVariantList& args)
@@ -123,9 +121,8 @@ void LocationsRunner::run(const Plasma::QueryMatch &match)
 
     // kDebug() << "url: " << location << data;
 
-    KUrl urlToRun(KUriFilter::self()->filteredUri(location, QStringList() << QLatin1String("kshorturifilter")));
-
-    new KRun(urlToRun, nullptr);
+    KUrl urlToRun = KUriFilter::self()->filteredUri(location, QStringList() << QLatin1String("kshorturifilter"));
+    KToolInvocation::self()->startServiceForUrl(urlToRun.url());
 }
 
 QMimeData* LocationsRunner::mimeDataForMatch(const Plasma::QueryMatch &match)

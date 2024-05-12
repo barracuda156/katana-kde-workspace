@@ -23,7 +23,6 @@
 #include <KDebug>
 #include <KIcon>
 #include <KLocale>
-#include <KRun>
 #include <KShell>
 #include <KStandardDirs>
 #include <KToolInvocation>
@@ -66,7 +65,7 @@ void ShellRunner::run(const Plasma::QueryMatch &match)
     if (interminal) {
         KToolInvocation::self()->invokeTerminal(command);
     } else {
-        KRun::runCommand(command, nullptr);
+        KToolInvocation::self()->startProgram(command);
     }
 }
 

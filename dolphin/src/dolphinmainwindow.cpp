@@ -357,7 +357,7 @@ void DolphinMainWindow::updateFilterBarAction(bool show)
 
 void DolphinMainWindow::openNewMainWindow()
 {
-    KRun::run("dolphin %u", KUrl::List(), this);
+    KToolInvocation::self()->startServiceByStorageId("dolphin", QStringList(), this);
 }
 
 void DolphinMainWindow::openNewTab()
@@ -468,7 +468,7 @@ void DolphinMainWindow::openInNewWindow()
     }
 
     if (!newWindowUrl.isEmpty()) {
-        KRun::run("dolphin %u", KUrl::List() << newWindowUrl, this);
+        KToolInvocation::self()->startServiceByStorageId("dolphin", QStringList() << newWindowUrl.url(), this);
     }
 }
 
@@ -955,18 +955,15 @@ void DolphinMainWindow::openTabContextMenu(int index, const QPoint& pos)
         openNewTab(url);
         m_tabBar->setCurrentIndex(m_viewTab.count() - 1);
     } else if (selectedAction == detachTabAction) {
-        const QString separator(QLatin1Char(' '));
-        QString command = QLatin1String("dolphin");
-
+        QStringList dolphinArgs;
         const DolphinTabPage* tabPage = m_viewTab.at(index);
-
-        command += separator + tabPage->primaryViewContainer()->url().url();
+        dolphinArgs << tabPage->primaryViewContainer()->url().url();
         if (tabPage->splitViewEnabled()) {
-            command += separator + tabPage->secondaryViewContainer()->url().url();
-            command += separator + QLatin1String("-split");
+            dolphinArgs << tabPage->secondaryViewContainer()->url().url();
+            dolphinArgs << QLatin1String("-split");
         }
 
-        KRun::runCommand(command, this);
+        KToolInvocation::self()->startProgram("dolphin", dolphinArgs, this);
 
         closeTab(index);
     } else if (selectedAction == closeOtherTabsAction) {
@@ -1010,7 +1007,7 @@ void DolphinMainWindow::handleUrl(const KUrl& url)
                 this, SLOT(slotHandleUrlStatFinished(KJob*)));
 
     } else {
-        new KRun(url, this); // Automatically deletes itself after being finished
+        KToolInvocation::self()->startServiceForUrl(url.url(), this);
     }
 }
 
@@ -1022,7 +1019,7 @@ void DolphinMainWindow::slotHandleUrlStatFinished(KJob* job)
     if (entry.isDir()) {
         activeViewContainer()->setUrl(url);
     } else {
-        new KRun(url, this);  // Automatically deletes itself after being finished
+        KToolInvocation::self()->startServiceForUrl(url.url(), this);
     }
 }
 
@@ -1056,7 +1053,7 @@ void DolphinMainWindow::openContextMenu(const QPoint& pos,
 
     switch (command) {
     case DolphinContextMenu::OpenParentFolderInNewWindow: {
-        KRun::run("dolphin %u", KUrl::List() << item.url().upUrl(), this);
+        KToolInvocation::self()->startServiceByStorageId("dolphin", QStringList() << item.url().upUrl().url(), this);
         break;
     }
 

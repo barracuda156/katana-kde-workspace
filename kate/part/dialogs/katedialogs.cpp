@@ -74,7 +74,7 @@
 #include <kmimetypechooser.h>
 #include <knuminput.h>
 #include <kmenu.h>
-#include <krun.h>
+#include <ktoolinvocation.h>
 #include <kseparator.h>
 #include <kstandarddirs.h>
 #include <ktemporaryfile.h>
@@ -1250,12 +1250,11 @@ void KateModOnHdPrompt::slotPDone()
   }
 
   m_diffFile->setAutoRemove(false);
-  KUrl url = KUrl::fromPath(m_diffFile->fileName());
+  QString url = m_diffFile->fileName();
   delete m_diffFile;
   m_diffFile = 0;
 
-  // KRun::runUrl should delete the file, once the client exits
-  KRun::runUrl( url, "text/x-patch", this, true );
+  KToolInvocation::self()->startServiceForUrl( url, this, true );
 }
 
 void KateModOnHdPrompt::slotButtonClicked(int button)

@@ -34,7 +34,7 @@
 #include <KLocale>
 #include <KNotification>
 #include <QProcess>
-#include <KRun>
+#include <KToolInvocation>
 #include <KSharedConfig>
 #include <KStandardDirs>
 #include <KUrl>
@@ -187,7 +187,7 @@ void Trash::constraintsEvent(Plasma::Constraints constraints)
 void Trash::open()
 {
     emit releaseVisualFocus();
-    KRun::runUrl(KUrl("trash:/"), "inode/directory", 0);
+    KToolInvocation::self()->startServiceForUrl(QString::fromLatin1("trash:/"));
 }
 
 void Trash::empty()

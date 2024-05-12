@@ -33,7 +33,6 @@
 #include <KDirNotify>
 #include <KCharsets>
 #include <KDebug>
-#include <KRun>
 #include <KToolInvocation>
 #include <KProtocolInfo>
 
@@ -198,7 +197,7 @@ bool KNetAttach::validateCurrentPage()
             return false;
         }
 
-        KRun::runUrl(url, "inode/directory", this);
+        KToolInvocation::self()->startServiceForUrl(url.url(), this);
 
         QString name = _connectionName->text().trimmed();
 

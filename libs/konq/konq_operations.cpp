@@ -89,11 +89,10 @@ KonqOperations::~KonqOperations()
 
 void KonqOperations::editMimeType( const QString & mimeType, QWidget* parent )
 {
-    QString keditfiletype = QLatin1String("keditfiletype");
-    KRun::runCommand( keditfiletype
-                      + " --parent " + QString::number( (qptrdiff)parent->winId())
-                      + ' ' + KShell::quoteArg(mimeType),
-                      keditfiletype, keditfiletype /*unused*/, parent );
+    QStringList args;
+    args << "--parent" << QString::number( (qptrdiff)parent->winId());
+    args << mimeType;
+    KToolInvocation::self()->startProgram( QLatin1String("keditfiletype"), args, parent );
 }
 
 void KonqOperations::del( QWidget * parent, Operation method, const KUrl::List & selectedUrls )
@@ -381,10 +380,9 @@ void KonqOperations::asyncDrop( const KFileItem & destItem )
         KConfigGroup desktopGroup = desktopFile.desktopGroup();
         if ( desktopFile.hasApplicationType() )
         {
-            QString error;
-            const QStringList urlStrList = m_info->urls.toStringList();
-            if ( KToolInvocation::self()->startServiceByDesktopPath( m_destUrl.path(), urlStrList, &error ) > 0 )
-                KMessageBox::error( parentWidget(), error );
+            KToolInvocation::self()->startServiceByStorageId(
+                m_destUrl.path(), m_info->urls.toStringList(), parentWidget()
+            );
         }
         else
         {

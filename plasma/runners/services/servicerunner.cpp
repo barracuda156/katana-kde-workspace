@@ -23,7 +23,7 @@
 #include <KIcon>
 #include <KDebug>
 #include <KLocale>
-#include <KRun>
+#include <KToolInvocation>
 #include <KService>
 #include <KServiceTypeTrader>
 #include <KUrl>
@@ -191,10 +191,7 @@ void ServiceRunner::match(Plasma::RunnerContext &context)
 
 void ServiceRunner::run(const Plasma::QueryMatch &match)
 {
-    KService::Ptr service = KService::serviceByStorageId(match.data().toString());
-    if (service) {
-        KRun::run(*service, KUrl::List(), nullptr);
-    }
+    KToolInvocation::self()->startServiceByStorageId(match.data().toString());
 }
 
 QMimeData * ServiceRunner::mimeDataForMatch(const Plasma::QueryMatch &match)

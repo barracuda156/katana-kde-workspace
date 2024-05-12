@@ -35,11 +35,10 @@ private Q_SLOTS:
     void slotPrintData(KIO::Job *job, const QByteArray &data);
     void slotEntries(KIO::Job* job, const KIO::UDSEntryList& );
     void slotResult( KJob * );
-    void delayedQuit();
     void slotDialogCanceled();
 
 private:
-    bool kde_open( const KUrl& url, const QString& mimeType, bool allowExec );
+    bool kde_open( const KUrl& url, const QString& mimeType );
     bool doCopy( int firstArg );
     bool doMove( int firstArg );
     bool doList( int firstArg );

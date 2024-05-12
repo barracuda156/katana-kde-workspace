@@ -405,7 +405,7 @@ private slots:
 
     /**
      * If the URL can be listed, open it in the current view, otherwise
-     * run it through KRun.
+     * run it through KToolInvocation.
      */
     void handleUrl(const KUrl& url);
 
