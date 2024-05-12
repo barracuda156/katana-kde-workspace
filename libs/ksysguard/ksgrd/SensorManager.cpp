@@ -298,14 +298,14 @@ bool SensorManager::resynchronize( const QString &hostName )
     return false;
 
   QString shell, command;
-  int port;
+  int port = -1;
   hostInfo( hostName, shell, command, port );
 
   mAgents.remove( hostName );
 
   kDebug (1215) << "Re-synchronizing connection to " << hostName;
 
-  return engage( hostName, shell, command );
+  return engage( hostName, shell, command, port );
 }
 
 void SensorManager::notify( const QString &msg ) const
