@@ -25,6 +25,7 @@
 #include <kaboutdata.h>
 #include <kglobal.h>
 #include <kicon.h>
+#include <kstandarddirs.h>
 #include <kdebug.h>
 #include <KPluginFactory>
 #include <KPluginLoader>
@@ -34,7 +35,7 @@
 static const QStringList s_firmwarepaths = QStringList()
     << "/lib/firmware"
     << "/usr/lib/firmware"
-    << KDE_LIBDIR "/firmware";
+    << KStandardDirs::installPath("lib") + "firmware";
 
 K_PLUGIN_FACTORY(KCMKernelFactory, registerPlugin<KCMKernel>();)
 K_EXPORT_PLUGIN(KCMKernelFactory("kcmkernel"))
