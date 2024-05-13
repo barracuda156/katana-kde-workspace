@@ -468,7 +468,7 @@ void SessionController::updateOpenWithMenu(const QString &selectedText)
     for(KService::List::Iterator it = offers.begin(); it != offers.end(); ++it) {
         KService::Ptr service = *it;
         KAction *action = new KAction(KIcon(service->icon()), service->name(), _openWithMenu);
-        const QStringList actionData = QStringList() << service->exec() << searchText;
+        const QStringList actionData = QStringList() << service->entryPath() << searchText;
         action->setData(actionData);
         connect(action, SIGNAL(triggered()), this, SLOT(handleOpenWithAction()));
         _openWithMenu->addAction(action);
