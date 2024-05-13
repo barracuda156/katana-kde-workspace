@@ -180,7 +180,7 @@ bool KDisplayManager::isSwitchable()
             kWarning() << "Invalid seat reply";
             return false;
         }
-        kWarning() << "Invalid reply";
+        kWarning() << "Invalid session reply";
         return false;
     }
     return false;
@@ -290,7 +290,7 @@ bool KDisplayManager::localSessions(SessList &list)
             }
             return true;
         }
-        kWarning() << "Invalid reply";
+        kWarning() << "Invalid login1 reply";
         return false;
     }
 
@@ -331,7 +331,7 @@ bool KDisplayManager::localSessions(SessList &list)
             }
             return true;
         }
-        kWarning() << "Invalid reply";
+        kWarning() << "Invalid consolekit reply";
         return false;
     }
 
@@ -394,7 +394,7 @@ bool KDisplayManager::switchVT(int vt)
             kWarning() << "Could not find VT";
             return false;
         }
-        kWarning() << "Invalid reply";
+        kWarning() << "Invalid login1 reply";
         return false;
     }
 
@@ -426,7 +426,7 @@ bool KDisplayManager::switchVT(int vt)
             kWarning() << "Could not find VT";
             return false;
         }
-        kWarning() << "Invalid reply";
+        kWarning() << "Invalid consolekit reply";
         return false;
     }
 
