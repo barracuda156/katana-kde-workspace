@@ -332,10 +332,7 @@ void KFocusConfig::defaults()
     setAutoRaise(false);
     setClickRaise(true);
     setSeparateScreenFocus(false);
-
-//    setFocusStealing(2);
-    // TODO default to low for now
-    setFocusStealing(1);
+    setFocusStealing(0);
 
     // on by default for non click to focus policies
     setActiveMouseScreen(getFocus() != 0);
