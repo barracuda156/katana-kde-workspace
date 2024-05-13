@@ -487,8 +487,12 @@ void SessionController::handleOpenWithAction()
 
     const QStringList actionData = action->data().toStringList();
     Q_ASSERT(actionData.count() == 2);
+    QString actionDataString = actionData.at(1);
+    if (QDir::isRelativePath(actionDataString)) {
+        actionDataString = _session->currentWorkingDirectory() + QDir::separator() + actionDataString;
+    }
     QStringList actionUrls;
-    actionUrls << actionData.at(1);
+    actionUrls << actionDataString;
     KToolInvocation::self()->startServiceByStorageId(actionData.at(0), actionUrls, QApplication::activeWindow());
 }
 
