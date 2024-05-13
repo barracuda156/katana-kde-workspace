@@ -672,7 +672,7 @@ void KAccessConfig::save()
   // make kaccess reread the configuration
   // turning a11y features off needs to be done by kaccess
   // so run it to clear any enabled features and it will exit if it should
-  KToolInvocation::self()->startServiceByStorageId("kaccess");
+  KToolInvocation::self()->startProgram("kaccess");
 
   emit changed(false);
 }

@@ -389,7 +389,7 @@ void KCMStyle::save()
     // export fonts/colors settings.
     if (m_bStyleDirty | m_bToolbarDirty)    // Export only if necessary
     {
-        KToolInvocation::self()->startServiceByStorageId("krdb");
+        KToolInvocation::self()->startProgram("krdb");
     }
 
     // Clean up
