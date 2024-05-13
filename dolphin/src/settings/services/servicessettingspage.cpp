@@ -189,10 +189,10 @@ void ServicesSettingsPage::loadServices()
     const KService::List entries = KServiceTypeTrader::self()->query("KonqPopupMenu/Plugin");
     foreach (const KSharedPtr<KService>& service, entries) {
         const QString file = KStandardDirs::locate("services", service->entryPath());
-        const QList<KServiceAction> serviceActions =
-                                    KDesktopFileActions::userDefinedServices(file, true);
-
         KDesktopFile desktopFile(file);
+        const QList<KServiceAction> serviceActions =
+                                    KDesktopFileActions::userDefinedServices(desktopFile, true);
+
         const QString subMenuName = desktopFile.desktopGroup().readEntry("X-KDE-Submenu");
 
         foreach (const KServiceAction& action, serviceActions) {

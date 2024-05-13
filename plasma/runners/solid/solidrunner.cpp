@@ -108,7 +108,7 @@ QList<QAction*> SolidRunner::actionsForMatch(const Plasma::QueryMatch &match)
         const QString solidpredicatestring = kconfiggroup.readEntry("X-KDE-Solid-Predicate");
         const Solid::Predicate solidpredicate = Solid::Predicate::fromString(solidpredicatestring);
         if (solidpredicate.matches(soliddevice)) {
-            const QList<KServiceAction> kserviceactions = KDesktopFileActions::userDefinedServices(solidaction, true);
+            const QList<KServiceAction> kserviceactions = KDesktopFileActions::userDefinedServices(kdestopfile, true);
             foreach (const KServiceAction &kserviceaction, kserviceactions) {
                 const QString actionname = kserviceaction.name();
                 if (actionname.contains(s_actionidseparator)) {
@@ -218,7 +218,8 @@ void SolidRunner::run(const Plasma::QueryMatch &match)
         }
         const QString actionname = actionid.mid(0, actionseparatorindex);
         const QString actionfilepath = actionid.mid(actionseparatorindex + 1, actionid.size() - actionseparatorindex - 1);
-        const QList<KServiceAction> kserviceactions = KDesktopFileActions::userDefinedServices(actionfilepath, true);
+        const KDesktopFile kdestopfile(actionfilepath);
+        const QList<KServiceAction> kserviceactions = KDesktopFileActions::userDefinedServices(kdestopfile, true);
         foreach (const KServiceAction &kserviceaction, kserviceactions) {
             if (kserviceaction.name() == actionname) {
                 const Solid::Device soliddevice(kSolidUDI(match.id()));

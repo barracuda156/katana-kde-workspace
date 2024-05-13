@@ -67,7 +67,7 @@ static SolidUiActions kSolidDeviceActions()
             if (solidpredicate.matches(soliddevice)) {
                 SolidUiAction solidactionstruct;
                 solidactionstruct.device = soliddevice;
-                solidactionstruct.actions = KDesktopFileActions::userDefinedServices(solidaction, true);
+                solidactionstruct.actions = KDesktopFileActions::userDefinedServices(kdestopfile, true);
                 solidactionstruct.when = solidwhenlist;
                 const Solid::Block* solidblock = soliddevice.as<Solid::Block>();
                 if (solidblock) {
