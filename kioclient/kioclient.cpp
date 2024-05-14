@@ -24,6 +24,7 @@
 #include <kio/deletejob.h>
 #include <kio/jobuidelegate.h>
 #include <kcmdlineargs.h>
+#include <kaboutdata.h>
 #include <kpropertiesdialog.h>
 #include <klocale.h>
 #include <kstandarddirs.h>
@@ -31,16 +32,13 @@
 #include <kmessagebox.h>
 #include <kmimetypetrader.h>
 #include <kfiledialog.h>
-#include <kdebug.h>
 #include <kservice.h>
 #include <ktoolinvocation.h>
 #include <kcomponentdata.h>
+#include <kdebug.h>
 #include <iostream>
 
 static const char appName[] = "kioclient";
-static const char programName[] = I18N_NOOP("KIO Client");
-static const char description[] = I18N_NOOP("Command-line tool for network-transparent operations");
-static const char version[] = "2.0";
 
 bool ClientApp::m_ok = true;
 static bool s_interactive = true;
@@ -106,8 +104,12 @@ static void usage()
 
 int main( int argc, char **argv )
 {
-  KCmdLineArgs::init(argc, argv, appName, 0, ki18n(programName), version, ki18n(description), KCmdLineArgs::CmdLineArgNone);
-
+  KAboutData aboutData(
+    appName, 0, ki18n("KIO Client"),
+    "2.0", ki18n("Command-line tool for network-transparent operations")
+  );
+  aboutData.setProgramIconName("konqueror");
+  KCmdLineArgs::init(argc, argv, &aboutData, KCmdLineArgs::CmdLineArgNone);
 
   KCmdLineOptions options;
   options.add("noninteractive", ki18n("Non-interactive use: no message boxes"));
@@ -264,8 +266,6 @@ bool ClientApp::doIt()
 
     kDebug() << "Creating ClientApp";
     ClientApp app;
-    KComponentData componentData("kioclient"); // needed by KIO's internal use of KConfig
-    app.setApplicationName(componentData.componentName());
 
 #ifdef KIOCLIENT_AS_KDEOPEN
     return app.kde_open(args->url(0), QByteArray());
