@@ -10,5 +10,5 @@ moving=false
 linking=false
 copyFromFile=true
 copyToFile=true
-Icon=network-workgroup
+Icon=multimedia-player
 maxInstances=1
