@@ -709,12 +709,11 @@ Rules* RulesDialog::edit(Rules* r, WId window, bool show_hints)
 void RulesDialog::displayHints()
 {
     QString str = "<qt><p>";
-    str += i18n("This configuration dialog allows altering settings only for the selected window"
-                " or application. Find the setting you want to affect, enable the setting using the checkbox,"
-                " select in what way the setting should be affected and to which value.");
-#if 0 // maybe later
-    str += "</p><p>" + i18n("Consult the documentation for more details.");
-#endif
+    str += i18n(
+        "This configuration dialog allows altering settings only for the selected window<br/>"
+        "or application. Find the setting you want to affect, enable the setting using the<br/>"
+        "checkbox, select in what way the setting should be affected and to which value.<br/>"
+    );
     str += "</p></qt>";
     KMessageBox::information(this, str, QString(), "displayhints");
 }
