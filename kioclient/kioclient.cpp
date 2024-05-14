@@ -19,7 +19,6 @@
 #include "kioclient.h"
 
 #include <QTimer>
-#include <QDBusConnection>
 #include <kio/job.h>
 #include <kio/copyjob.h>
 #include <kio/deletejob.h>
@@ -267,10 +266,6 @@ bool ClientApp::doIt()
     ClientApp app;
     KComponentData componentData("kioclient"); // needed by KIO's internal use of KConfig
     app.setApplicationName(componentData.componentName());
-
-    // KIO needs dbus (for uiserver communication)
-    if (!QDBusConnection::sessionBus().isConnected())
-        kFatal() << "Session bus not found" ;
 
 #ifdef KIOCLIENT_AS_KDEOPEN
     return app.kde_open(args->url(0), QByteArray());
