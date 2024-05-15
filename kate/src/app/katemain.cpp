@@ -142,7 +142,6 @@ int main( int argc, char **argv )
   options.add("use", ki18n("Reuse existing Kate instance; default, only for compatibility"));
   options.add("+[URL]", ki18n("Document to open"));
   KCmdLineArgs::addCmdLineOptions (options);
-  KCmdLineArgs::addTempFileOption();
 
   // get our command line args ;)
   KCmdLineArgs* args = KCmdLineArgs::parsedArgs();
@@ -244,8 +243,6 @@ int main( int argc, char **argv )
 
     QString enc = args->isSet("encoding") ? args->getOption("encoding") : QByteArray("");
 
-    bool tempfileSet = KCmdLineArgs::isTempFileSet();
-
     // only block, if files to open there....
     bool needToBlock = args->isSet( "block" ) && (args->count() > 0);
     
@@ -260,7 +257,6 @@ int main( int argc, char **argv )
       QList<QVariant> dbusargs;
       dbusargs.append(args->url(z).url());
       dbusargs.append(enc);
-      dbusargs.append(tempfileSet);
       m.setArguments(dbusargs);
 
       QDBusMessage res=QDBusConnection::sessionBus().call (m);

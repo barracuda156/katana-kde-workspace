@@ -523,8 +523,7 @@ void KateMainWindow::slotOpenDocument(KUrl url)
 {
   m_viewManager->openUrl(url,
                         QString(),
-                        true,
-                        false);
+                        true);
 }
 
 void KateMainWindow::readOptions ()

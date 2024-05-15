@@ -120,7 +120,6 @@ Name[zh_TW]=Kate
 MimeType=text/plain;
 Exec=kate --icon '%i' --caption '%c' -b %U
 StartupNotify=true
-X-KDE-HasTempFileOption=true
 Icon=kate
 X-DocPath=kate/index.html
 Type=Application
