@@ -16,15 +16,15 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include <QCoreApplication>
+#include <QApplication>
 #include <KDebug>
 
 #include "keyboardconfig_common.h"
 
 int main(int argc, char *argv[])
 {
-    // application instance for events processing
-    QCoreApplication app(argc, argv);
+    // application instance for QX11Info::display()
+    QApplication app(argc, argv);
 
     kApplyKeyboardConfig();
     return 0;
