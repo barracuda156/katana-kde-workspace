@@ -75,12 +75,10 @@ class KateViewManager : public QSplitter
     KTextEditor::Document *openUrl (const KUrl &url,
                                     const QString& encoding,
                                     bool activate = true,
-                                    bool isTempFile = false,
                                     const KateDocumentInfo& docInfo = KateDocumentInfo());
 
     KTextEditor::Document *openUrls (const QList<KUrl> &url,
                                      const QString& encoding,
-                                     bool isTempFile = false,
                                      const KateDocumentInfo& docInfo = KateDocumentInfo());
 
     KTextEditor::View *openUrlWithView (const KUrl &url, const QString& encoding);

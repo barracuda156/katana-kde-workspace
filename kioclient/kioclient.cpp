@@ -131,7 +131,6 @@ int main( int argc, char **argv )
   #endif
 
   KCmdLineArgs::addCmdLineOptions( options );
-  KCmdLineArgs::addTempFileOption();
 
 #ifdef KIOCLIENT_AS_KIOCLIENT
   KCmdLineArgs *args = KCmdLineArgs::parsedArgs();

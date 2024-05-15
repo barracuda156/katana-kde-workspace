@@ -57,16 +57,6 @@ class KateAppAdaptor : public QDBusAbstractAdaptor
     QString tokenOpenUrl (QString url, QString encoding);
 
     /**
-     * Like the above, but adds an option to let the documentManager know
-     * if the file should be deleted when closed.
-     * @p isTempFile should be set to true with the --tempfile option set ONLY,
-     * files opened with this set to true will be deleted when closed.
-     */
-    bool openUrl(QString url, QString encoding, bool isTempFile);
-
-    QString tokenOpenUrl(QString url, QString encoding, bool isTempFile);
-    
-    /**
      * set cursor of active view in active main window
      * @param line line for cursor
      * @param column column for cursor

@@ -51,28 +51,15 @@ void KateAppAdaptor::activate ()
 
 bool KateAppAdaptor::openUrl (QString url, QString encoding)
 {
-  return m_app->openUrl (url, encoding, false);
-}
-
-bool KateAppAdaptor::openUrl (QString url, QString encoding, bool isTempFile)
-{
   kDebug () << "openURL";
-
-  return m_app->openUrl (url, encoding, isTempFile);
+  return m_app->openUrl (url, encoding);
 }
 
 //-----------
 QString KateAppAdaptor::tokenOpenUrl (QString url, QString encoding)
 {
-  KTextEditor::Document *doc=m_app->openDocUrl (url, encoding, false);
-  if (!doc) return QString("ERROR");
-  return QString::number((qptrdiff)doc);
-}
-
-QString KateAppAdaptor::tokenOpenUrl (QString url, QString encoding, bool isTempFile)
-{
   kDebug () << "openURL";
-  KTextEditor::Document *doc=m_app->openDocUrl (url, encoding, isTempFile);
+  KTextEditor::Document *doc=m_app->openDocUrl (url, encoding);
   if (!doc) return QString("ERROR");
   return QString::number((qptrdiff)doc);
 }

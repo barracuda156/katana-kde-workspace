@@ -217,14 +217,14 @@ bool KateDocManager::isOpen(KUrl url)
   return findDocument (url) != 0;
 }
 
-QList<KTextEditor::Document *> KateDocManager::openUrls(const QList<KUrl> &urls, const QString &encoding, bool isTempFile, const KateDocumentInfo& docInfo)
+QList<KTextEditor::Document *> KateDocManager::openUrls(const QList<KUrl> &urls, const QString &encoding, const KateDocumentInfo& docInfo)
 {
   QList<KTextEditor::Document *> docs;
 
   emit m_documentManager->aboutToLoadDocuments();
 
   foreach (const KUrl &url, urls) {
-    docs << openUrl(url, encoding, isTempFile, docInfo);
+    docs << openUrl(url, encoding, docInfo);
   }
 
   emit m_documentManager->documentsLoaded(docs);
@@ -232,7 +232,7 @@ QList<KTextEditor::Document *> KateDocManager::openUrls(const QList<KUrl> &urls,
   return docs;
 }
 
-KTextEditor::Document *KateDocManager::openUrl (const KUrl& url, const QString &encoding, bool isTempFile, const KateDocumentInfo& docInfo)
+KTextEditor::Document *KateDocManager::openUrl (const KUrl& url, const QString &encoding, const KateDocumentInfo& docInfo)
 {
   KUrl u(url);
   u.cleanPath();
@@ -254,16 +254,6 @@ KTextEditor::Document *KateDocManager::openUrl (const KUrl& url, const QString &
         doc->setEncoding(encoding);
 
       doc->setSuppressOpeningErrorDialogs (false);
-
-      if ( isTempFile && u.isLocalFile() )
-      {
-        QFileInfo fi( u.toLocalFile() );
-        if ( fi.exists() )
-        {
-          m_tempFiles[ doc] = qMakePair(u, fi.lastModified());
-          kDebug(13001) << "temporary file will be deleted after use unless modified: " << u.pathOrUrl();
-        }
-      }
     }
 
     connect(doc, SIGNAL(modifiedChanged(KTextEditor::Document*)), this, SLOT(slotModChanged(KTextEditor::Document*)));

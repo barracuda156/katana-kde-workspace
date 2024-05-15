@@ -208,8 +208,6 @@ bool KateApp::startupKate ()
 #endif
   QTextCodec *codec = m_args->isSet("encoding") ? QTextCodec::codecForName(m_args->getOption("encoding").toUtf8()) : 0;
 
-  bool tempfileSet = KCmdLineArgs::isTempFileSet();
-
   KTextEditor::Document *doc = 0;
   const QString codec_name = codec ? codec->name() : QString();
   KateDocManager::self()->setSuppressOpeningErrorDialogs(true);
@@ -226,7 +224,7 @@ bool KateApp::startupKate ()
                           i18n("The file '%1' could not be opened: it is not a normal file, it is a folder.", m_args->url(z).url()) );
     }
   }
-  doc = activeMainWindow()->viewManager()->openUrls(urls, codec_name, tempfileSet);
+  doc = activeMainWindow()->viewManager()->openUrls(urls, codec_name);
   KateDocManager::self()->setSuppressOpeningErrorDialogs(false);
 
   // handle stdin input
@@ -316,12 +314,12 @@ KateSessionManager *KateApp::sessionManager ()
   return m_sessionManager;
 }
 
-bool KateApp::openUrl (const KUrl &url, const QString &encoding, bool isTempFile)
+bool KateApp::openUrl (const KUrl &url, const QString &encoding)
 {
-  return openDocUrl(url,encoding,isTempFile);
+  return openDocUrl(url,encoding);
 }
 
-KTextEditor::Document* KateApp::openDocUrl (const KUrl &url, const QString &encoding, bool isTempFile)
+KTextEditor::Document* KateApp::openDocUrl (const KUrl &url, const QString &encoding)
 {
   KateMainWindow *mainWindow = activeMainWindow ();
 
@@ -342,9 +340,9 @@ KTextEditor::Document* KateApp::openDocUrl (const KUrl &url, const QString &enco
 
     // open a normal file
     if (codec)
-      doc=mainWindow->viewManager()->openUrl( url, codec->name(), true, isTempFile);
+      doc=mainWindow->viewManager()->openUrl( url, codec->name(), true);
     else
-      doc=mainWindow->viewManager()->openUrl( url, QString(), true, isTempFile );
+      doc=mainWindow->viewManager()->openUrl( url, QString(), true );
     
     // back to normal....
     documentManager()->setSuppressOpeningErrorDialogs (false);
