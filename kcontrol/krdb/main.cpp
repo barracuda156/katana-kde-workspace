@@ -45,10 +45,6 @@
 #include <klocale.h>
 #include <kstyle.h>
 
-#include <X11/Xlib.h>
-#include <fixx11h.h>
-#include <QtGui/qx11info_x11.h>
-
 inline const char * gtkEnvVar(int version)
 {
     return (2 == version ? "GTK2_RC_FILES" : "GTK_RC_FILES");
@@ -219,6 +215,10 @@ static void createGtkrc(bool exportColors, const QPalette &cg, int version)
 
 // -----------------------------------------------------------------------------
 
+QT_BEGIN_NAMESPACE
+extern void qt_x11_apply_settings_in_all_apps();
+QT_END_NAMESPACE
+
 int main(int argc, char *argv[])
 {
     // application instance for QX11Info::display()
@@ -380,19 +380,7 @@ int main(int argc, char *argv[])
 
     // Send notification for settings change to Katie applications
     QApplication::flush();
-    QDateTime settingsstamp = QDateTime::currentDateTime();
-
-    static const QByteArray atomname("_QT_SETTINGS_TIMESTAMP");
-    static Atom qt_settings_timestamp = XInternAtom( QX11Info::display(), atomname.constData(), False);
-
-    QBuffer stamp;
-    QDataStream s(&stamp.buffer(), QIODevice::WriteOnly);
-    s << settingsstamp;
-    XChangeProperty(
-        QX11Info::display(), QX11Info::appRootWindow(), qt_settings_timestamp,
-        qt_settings_timestamp, 8, PropModeReplace,
-        (unsigned char*) stamp.buffer().data(), stamp.buffer().size()
-    );
+    qt_x11_apply_settings_in_all_apps();
     QApplication::flush();
 
     return 0;
