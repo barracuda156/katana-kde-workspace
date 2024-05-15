@@ -666,6 +666,7 @@ private slots:
     void performMoveResize();
     void removeSyncSupport();
     void pingTimeout();
+    void killHelperFinished(int exitCode);
 
     //Signals for the scripting interface
     //Signals make an excellent way for communication
@@ -750,7 +751,6 @@ private:
     void createDecoration(const QRect &oldgeom);
 
     void pingWindow();
-    void killProcess(bool ask, xcb_timestamp_t timestamp = XCB_TIME_CURRENT_TIME);
     void updateUrgency();
     static void sendClientMessage(xcb_window_t w, xcb_atom_t a, xcb_atom_t protocol,
                                   long data1 = 0, long data2 = 0, long data3 = 0);

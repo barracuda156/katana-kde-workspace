@@ -99,7 +99,7 @@ Client::Client()
     , tab_group(NULL)
     , in_layer(UnknownLayer)
     , ping_timer(NULL)
-    , m_killHelperProc(0)
+    , m_killHelperProc(NULL)
     , m_pingTimestamp(XCB_TIME_CURRENT_TIME)
     , m_userTime(XCB_TIME_CURRENT_TIME)   // Not known yet
     , allowed_actions(0)
@@ -1248,9 +1248,11 @@ void Client::closeWindow()
     if (Pdeletewindow) {
         sendClientMessage(window(), atoms->wm_protocols, atoms->wm_delete_window);
         pingWindow();
-    } else // Client will not react on wm_delete_window. We have not choice
-        // but destroy his connection to the XServer.
+    } else {
+        // Client will not react on wm_delete_window, No choice but to destroy the
+        // connection to the XServer.
         killWindow();
+    }
 }
 
 
@@ -1260,7 +1262,6 @@ void Client::closeWindow()
 void Client::killWindow()
 {
     kDebug(1212) << "Client::killWindow():" << caption();
-    killProcess(false);
     XKillClient(display(), window());  // Always kill this client at the server
     destroyClient();
 }
@@ -1303,36 +1304,36 @@ void Client::pingTimeout()
     kDebug(1212) << "Ping timeout:" << caption();
     ping_timer->deleteLater();
     ping_timer = NULL;
-    killProcess(true, m_pingTimestamp);
-}
 
-void Client::killProcess(bool ask, xcb_timestamp_t timestamp)
-{
     if (m_killHelperProc && m_killHelperProc->state() == QProcess::Running) // means the process is alive
         return;
-    Q_ASSERT(!ask || timestamp != XCB_TIME_CURRENT_TIME);
+    Q_ASSERT(!ask || m_pingTimestamp != XCB_TIME_CURRENT_TIME);
     pid_t pid = info->pid();
     if (pid <= 0 || clientMachine()->hostName().isEmpty())  // Needed properties missing
         return;
     kDebug(1212) << "Kill process:" << pid << "(" << clientMachine()->hostName() << ")";
-    if (!ask) {
-        if (!clientMachine()->isLocal()) {
-            QStringList lst;
-            lst << clientMachine()->hostName() << "kill" << QString::number(pid);
-            QProcess::startDetached("xon", lst);
-        } else {
-            ::kill(pid, SIGTERM);
-        }
-    } else {
-        QString hostname = clientMachine()->isLocal() ? "localhost" : clientMachine()->hostName();
-        m_killHelperProc = new QProcess(this);
-        m_killHelperProc->start(KStandardDirs::findExe("kwin_killer_helper"),
-                                QStringList() << "--pid" << QByteArray::number(qulonglong(pid)) << "--hostname" << hostname
-                                << "--windowname" << caption()
-                                << "--applicationname" << resourceClass()
-                                << "--wid" << QString::number(window())
-                                << "--timestamp" << QString::number(timestamp));
+    QString hostname = clientMachine()->isLocal() ? "localhost" : clientMachine()->hostName();
+    m_killHelperProc = new QProcess(this);
+    connect(m_killHelperProc, SIGNAL(finished(int)), this, SLOT(killHelperFinished(int)));
+    m_killHelperProc->start(
+        KStandardDirs::findExe("kwin_killer_helper"),
+        QStringList() << "--pid" << QByteArray::number(qulonglong(pid)) << "--hostname" << hostname
+        << "--windowname" << caption()
+        << "--applicationname" << resourceClass()
+        << "--wid" << QString::number(window())
+        << "--timestamp" << QString::number(m_pingTimestamp)
+    );
+}
+
+void Client::killHelperFinished(int exitCode)
+{
+    if (exitCode == 2) {
+        kDebug(1212) << "Kill confirmed:" << caption();
+        killWindow();
     }
+    kDebug(1212) << "Kill not confirmed:" << caption();
+    m_killHelperProc->deleteLater();
+    m_killHelperProc = nullptr;
 }
 
 void Client::setSkipTaskbar(bool b, bool from_outside)

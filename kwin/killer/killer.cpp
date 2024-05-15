@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
     caption = Qt::escape(caption);
     appname = Qt::escape(appname);
     hostname = Qt::escape(hostname);
-    QString pidString = QString::number(pid); // format pid ourself as it does not make sense to format an ID according to locale settings
+    QString pidString = QString::number(pid);
 
     QString question = i18nc("@info", "<b>Application \"%1\" is not responding</b>", appname);
     question += isLocal
@@ -89,16 +89,7 @@ int main(int argc, char* argv[])
     KGuiItem cancelButton = KGuiItem(i18n("Wait Longer"), "chronometer");
     app.updateUserTimestamp(timestamp);
     if (KMessageBox::warningContinueCancelWId(id, question, QString(), continueButton, cancelButton) == KMessageBox::Continue) {
-        if (!isLocal) {
-            QStringList lst;
-            lst << hostname << "kill" << QString::number(pid);
-            QProcess::startDetached("xon", lst);
-        } else {
-            if (::kill(pid, SIGKILL) == -1) {
-                kWarning(1212) << "KWin process killer failed";
-            }
-        }
+        return 2;
     }
-
     return 0;
 }
