@@ -21,8 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *********************************************************************/
 
 #include "logout.h"
-// KConfigSkeleton
-#include "logoutconfig.h"
 
 #include <math.h>
 #include <kdebug.h>
@@ -36,10 +34,8 @@ LogoutEffect::LogoutEffect()
     : progress(0.0)
     , displayEffect(false)
     , logoutWindow(NULL)
-    , logoutWindowClosed(true)
     , logoutWindowPassed(false)
     , canDoPersistent(false)
-    , ignoredWindows()
 {
     // Persistent effect
     logoutAtom = XInternAtom(display(), "_KDE_LOGGING_OUT", False);
@@ -56,21 +52,12 @@ LogoutEffect::~LogoutEffect()
 {
 }
 
-void LogoutEffect::reconfigure(ReconfigureFlags)
-{
-    LogoutConfig::self()->readConfig();
-    frameDelay = 0;
-}
-
 void LogoutEffect::prePaintScreen(ScreenPrePaintData& data, int time)
 {
-    if (frameDelay)
-        --frameDelay;
-    else {
-        if (displayEffect)
-            progress = qMin(1.0, progress + time / animationTime(2000.0));
-        else if (progress > 0.0)
-            progress = qMax(0.0, progress - time / animationTime(500.0));
+    if (displayEffect) {
+        progress = qMin(1.0, progress + time / animationTime(2000.0));
+    } else if (progress > 0.0) {
+        progress = qMax(0.0, progress - time / animationTime(500.0));
     }
 
     data.paint |= effects->clientArea(FullArea, 0, 0);
@@ -104,7 +91,7 @@ void LogoutEffect::paintScreen(int mask, QRegion region, ScreenPaintData& data)
 
 void LogoutEffect::postPaintScreen()
 {
-    if ((progress != 0.0 && progress != 1.0) || frameDelay)
+    if (progress != 0.0 && progress != 1.0)
         effects->addRepaintFull();
 
     if (progress > 0.0)
@@ -116,7 +103,6 @@ void LogoutEffect::slotWindowAdded(EffectWindow* w)
 {
     if (isLogoutDialog(w)) {
         logoutWindow = w;
-        logoutWindowClosed = false; // So we don't blur the window on close
         progress = 0.0;
         displayEffect = true;
         ignoredWindows.clear();
@@ -129,7 +115,6 @@ void LogoutEffect::slotWindowAdded(EffectWindow* w)
 void LogoutEffect::slotWindowClosed(EffectWindow* w)
 {
     if (w == logoutWindow) {
-        logoutWindowClosed = true;
         if (!canDoPersistent)
             displayEffect = false; // Fade back to normal
         effects->addRepaintFull();
@@ -138,7 +123,6 @@ void LogoutEffect::slotWindowClosed(EffectWindow* w)
 
 void LogoutEffect::slotWindowDeleted(EffectWindow* w)
 {
-    windows.removeAll(w);
     ignoredWindows.removeAll(w);
     if (w == logoutWindow)
         logoutWindow = NULL;

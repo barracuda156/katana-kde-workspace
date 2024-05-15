@@ -36,7 +36,7 @@ class LogoutEffect
 public:
     LogoutEffect();
     ~LogoutEffect();
-    virtual void reconfigure(ReconfigureFlags);
+
     virtual void prePaintScreen(ScreenPrePaintData& data, int time);
     virtual void paintScreen(int mask, QRegion region, ScreenPaintData& data);
     virtual void postPaintScreen();
@@ -48,23 +48,17 @@ public Q_SLOTS:
     void slotWindowClosed(KWin::EffectWindow *w);
     void slotWindowDeleted(KWin::EffectWindow *w);
     void slotPropertyNotify(KWin::EffectWindow *w, long a);
+
 private:
     bool isLogoutDialog(EffectWindow* w);
+
     double progress; // 0-1
     bool displayEffect;
     EffectWindow* logoutWindow;
-    bool logoutWindowClosed;
     bool logoutWindowPassed;
-
-    // Persistent effect
     long logoutAtom;
     bool canDoPersistent;
     EffectWindowList ignoredWindows;
-
-    int frameDelay;
-    double windowOpacity;
-    EffectWindowList windows;
-    QHash< EffectWindow*, double > windowsOpacities;
 };
 
 } // namespace
