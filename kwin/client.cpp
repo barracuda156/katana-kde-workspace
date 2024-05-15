@@ -1249,7 +1249,7 @@ void Client::closeWindow()
         sendClientMessage(window(), atoms->wm_protocols, atoms->wm_delete_window);
         pingWindow();
     } else {
-        // Client will not react on wm_delete_window, No choice but to destroy the
+        // Client will not react on wm_delete_window, no choice but to destroy the
         // connection to the XServer.
         killWindow();
     }
