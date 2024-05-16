@@ -101,7 +101,7 @@ void NetworkSlave::stat(const KUrl &url)
     if (urlpath.isEmpty() || urlpath == QLatin1String("/")) {
         // fake the root entry, whenever listed it will list all services
         KIO::UDSEntry kioudsentry;
-        kioudsentry.insert(KIO::UDSEntry::UDS_NAME, "root");
+        kioudsentry.insert(KIO::UDSEntry::UDS_NAME, ".");
         kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
         kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, S_IRWXU | S_IRWXG | S_IRWXO);
         kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, "inode/directory");
