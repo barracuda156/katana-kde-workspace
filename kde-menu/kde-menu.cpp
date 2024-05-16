@@ -40,7 +40,6 @@ static bool utf8;
 
 static bool bPrintMenuId;
 static bool bPrintMenuName;
-static bool bHighlight;
 
 static void result(const QString &txt)
 {
@@ -83,17 +82,6 @@ static void findMenuEntry(KServiceGroup::Ptr parent, const QString &name, const 
             {
                result(name);
             }
-#if 0
-#ifdef Q_WS_X11
-            if (bHighlight)
-            {
-               QDBusInterface kicker( "org.kde.kicker", "/kicker", "org.kde.Kicker" );
-               QDBusReply<void> result = kicker.call( "highlightMenuItem", menuId );
-               if (!result.isValid())
-                  error(3, i18n("Menu item '%1' could not be highlighted.", menuId).toLocal8Bit());
-            }
-#endif
-#endif
             exit(0);
          }
       }
@@ -119,7 +107,6 @@ int main(int argc, char **argv)
    options.add("utf8", ki18n("Output data in UTF-8 instead of local encoding"));
    options.add("print-menu-id", ki18n("Print menu-id of the menu that contains\nthe application"));
    options.add("print-menu-name", ki18n("Print menu name (caption) of the menu that\ncontains the application"));
-   options.add("highlight", ki18n("Highlight the entry in the menu"));
    options.add("nocache-update", ki18n("Do not check if sycoca database is up to date"));
    options.add("+<application-id>", ki18n("The id of the menu entry to locate"));
    KCmdLineArgs::addCmdLineOptions(options);
@@ -134,10 +121,9 @@ int main(int argc, char **argv)
 
    bPrintMenuId = args->isSet("print-menu-id");
    bPrintMenuName = args->isSet("print-menu-name");
-   bHighlight = args->isSet("highlight");
 
-   if (!bPrintMenuId && !bPrintMenuName && !bHighlight)
-      KCmdLineArgs::usageError(i18n("You must specify at least one of --print-menu-id, --print-menu-name or --highlight"));
+   if (!bPrintMenuId && !bPrintMenuName)
+      KCmdLineArgs::usageError(i18n("You must specify at least one of --print-menu-id or --print-menu-name"));
 
    if (args->isSet("cache-update"))
    {
