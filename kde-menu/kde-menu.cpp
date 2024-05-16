@@ -39,18 +39,21 @@ static bool utf8 = false;
 static bool bPrintMenuId = false;
 static bool bPrintMenuName = false;
 
+static QByteArray convert(const QString &txt)
+{
+    return (utf8 ? txt.toUtf8() : txt.toLocal8Bit());
+}
+
 static void result(const QString &txt)
 {
-    if (utf8) {
-        puts(txt.toUtf8());
-    } else {
-        puts(txt.toLocal8Bit());
-    }
+    const QByteArray txtbytes = convert(txt);
+    puts(txtbytes.constData());
 }
 
 static void error(int exitCode, const QString &txt)
 {
-    qWarning("kde-menu: %s", txt.toLocal8Bit().data());
+    const QByteArray txtbytes = convert(txt);
+    qWarning("kde-menu: %s", txtbytes.constData());
     exit(exitCode);
 }
 
@@ -62,7 +65,7 @@ static void findMenuEntry(KServiceGroup::Ptr parent, const QString &name, const 
         KSycocaEntry::Ptr e = (*it);
 
         if (e->isType(KST_KServiceGroup)) {
-            KServiceGroup::Ptr g = KServiceGroup::Ptr::staticCast( e );
+            KServiceGroup::Ptr g = KServiceGroup::Ptr::staticCast(e);
 
             findMenuEntry(g, name.isEmpty() ? g->caption() : name + '/' + g->caption(), menuId);
         } else if (e->isType(KST_KService)) {
@@ -79,7 +82,6 @@ static void findMenuEntry(KServiceGroup::Ptr parent, const QString &name, const 
         }
     }
 }
-
 
 int main(int argc, char **argv)
 {
