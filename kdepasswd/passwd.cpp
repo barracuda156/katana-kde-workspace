@@ -98,7 +98,7 @@ int PasswdProcess::exec(const char *oldpass, const char *newpass, int check)
 
     ret = ConversePasswd(oldpass, newpass, check);
     if (ret < 0) {
-        kDebug(1512) << "Conversation with passwd failed. pid = " << pid();
+        kDebug(1512) << "Conversation with passwd failed. pid = " << pid() << ret;
     }
 
     if ((waitForChild() != 0) && !check) {

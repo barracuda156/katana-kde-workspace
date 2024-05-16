@@ -336,19 +336,21 @@ int PtyProcess::exec(const QByteArray &command, const QList<QByteArray> &args)
         path = QFile::encodeName(file);
     }
 
-    const char **argp = (const char **)malloc((args.count()+2)*sizeof(char *));
-    int i = 1;
-    argp[i] = path;
-    foreach (QByteArray it, args) {
-        argp[i] = it;
+    char **argp = new char*[args.count() + 2];
+    int i = 0;
+    argp[i] = qstrdup(path.constData());
+    i++;
+    foreach (const QByteArray &it, args) {
+        argp[i] = qstrdup(it.constData());
         i++;
     }
     argp[i] = NULL;
 
-    execv(path, const_cast<char **>(argp));
-    free(argp);
+    execv(path, argp);
+    delete[] argp;
 
-    kError(1512) << "execv(" << path << "):" << ::strerror(errno);
+    const int savederrno = errno;
+    kError(1512) << "execv(" << path << "):" << ::strerror(savederrno);
     _exit(1);
     return -1; // Shut up compiler. Never reached.
 }
