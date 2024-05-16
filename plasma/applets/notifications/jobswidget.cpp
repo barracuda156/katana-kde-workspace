@@ -24,7 +24,7 @@
 #include <KToolInvocation>
 #include <KIconLoader>
 #include <KIcon>
-#include <KMimeType>
+#include <KUrl>
 #include <KDebug>
 
 // NOTE: this is for generic jobs such as trash jobs which provide next to no info
@@ -184,7 +184,7 @@ void JobFrame::slotJobUpdated(const QString &name, const QVariantMap &data)
         m_iconwidget1->setVisible(true);
         if (!desturl.isEmpty()) {
             m_iconwidget1->setProperty("_k_desturl", desturl);
-            m_iconwidget1->setIcon(KIcon("system-file-manager"));
+            m_iconwidget1->setIcon(KIcon("system-run"));
             m_iconwidget1->setToolTip(i18n("Click to open the destination of the job."));
         } else {
             m_iconwidget1->setAcceptHoverEvents(false);
