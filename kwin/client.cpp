@@ -1327,14 +1327,14 @@ void Client::pingTimeout()
 
 void Client::killHelperFinished(int exitCode)
 {
+    m_killHelperProc->deleteLater();
+    m_killHelperProc = nullptr;
     if (exitCode == 2) {
         kDebug(1212) << "Kill confirmed:" << caption();
         killWindow();
-    } else {
-        kDebug(1212) << "Kill not confirmed:" << caption();
+        return;
     }
-    m_killHelperProc->deleteLater();
-    m_killHelperProc = nullptr;
+    kDebug(1212) << "Kill not confirmed:" << caption();
 }
 
 void Client::setSkipTaskbar(bool b, bool from_outside)
