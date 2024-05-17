@@ -1330,8 +1330,9 @@ void Client::killHelperFinished(int exitCode)
     if (exitCode == 2) {
         kDebug(1212) << "Kill confirmed:" << caption();
         killWindow();
+    } else {
+        kDebug(1212) << "Kill not confirmed:" << caption();
     }
-    kDebug(1212) << "Kill not confirmed:" << caption();
     m_killHelperProc->deleteLater();
     m_killHelperProc = nullptr;
 }
