@@ -226,12 +226,6 @@ add_feature_info(rzsz
     "ZModem support in Konsole"
 )
 
-find_program(LSOF_EXECUTABLE lsof)
-add_feature_info(lsof
-    LSOF_EXECUTABLE
-    "Open files widget (KLsofWidget)"
-)
-
 find_program(XKILL_EXECUTABLE xkill)
 add_feature_info(xkill
     XKILL_EXECUTABLE
