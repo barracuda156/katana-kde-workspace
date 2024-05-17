@@ -1262,6 +1262,16 @@ void Client::closeWindow()
 void Client::killWindow()
 {
     kDebug(1212) << "Client::killWindow():" << caption();
+    if (clientMachine()->isLocal()) {
+        pid_t pid = info->pid();
+        if (pid > 0) {
+            if (::kill(pid, SIGKILL) == -1) {
+                kWarning(1212) << "kill failed";
+            } else {
+                kDebug(1212) << "killed client via SIGKILL";
+            }
+        }
+    }
     XKillClient(display(), window());  // Always kill this client at the server
     destroyClient();
 }
