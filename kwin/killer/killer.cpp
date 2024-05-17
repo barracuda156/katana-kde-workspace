@@ -28,10 +28,8 @@ DEALINGS IN THE SOFTWARE.
 #include <KIcon>
 #include <KLocalizedString>
 #include <kdebug.h>
-#include <QProcess>
-#include <X11/Xlib.h>
-#include <QtGui/qx11info_x11.h>
 
+#include <X11/Xlib.h>
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
