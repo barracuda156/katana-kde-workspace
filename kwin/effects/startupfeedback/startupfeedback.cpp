@@ -91,7 +91,7 @@ void StartupFeedbackEffect::reconfigure(Effect::ReconfigureFlags flags)
     const bool busyCursor = c.readEntry("BusyCursor", true);
     c = conf.group("BusyCursorSettings");
     const int timeout = c.readEntry("Timeout", 10);
-    m_startupInfo->setTimeout(timeout);
+    m_startupInfo->setTimeout(qMax(timeout, 1));
     if (!busyCursor) {
         m_type = StartupFeedbackEffect::NoFeedback;
     } else {

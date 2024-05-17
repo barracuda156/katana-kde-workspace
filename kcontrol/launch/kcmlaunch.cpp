@@ -78,7 +78,7 @@ LaunchConfig::LaunchConfig(QWidget * parent, const QVariantList &)
     lbl_cursorTimeout->setText(i18n("&Startup indication timeout:"));
     GroupBox1Layout->addWidget(lbl_cursorTimeout, 2, 0);
     sb_cursorTimeout = new KIntNumInput( GroupBox1);
-    sb_cursorTimeout->setRange( 0, 99 );
+    sb_cursorTimeout->setRange(1, 99);
     sb_cursorTimeout->setSuffix(i18n(" sec"));
     GroupBox1Layout->addWidget(sb_cursorTimeout, 2, 1);
     lbl_cursorTimeout->setBuddy(sb_cursorTimeout);
