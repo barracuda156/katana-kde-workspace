@@ -244,6 +244,12 @@ add_feature_info(eject
     "Eject CD and DVD devices"
 )
 
+find_program(DIFF_EXECUTABLE diff)
+add_feature_info(diff
+    DIFF_EXECUTABLE
+    "Show difference between files in Kate"
+)
+
 include(ConfigureChecks.cmake)
 configure_file(config-unix.h.cmake ${CMAKE_BINARY_DIR}/config-unix.h )
 configure_file(config-X11.h.cmake ${CMAKE_BINARY_DIR}/config-X11.h )
