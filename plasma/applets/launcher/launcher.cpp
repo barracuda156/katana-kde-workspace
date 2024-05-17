@@ -1536,6 +1536,9 @@ public:
     void resetSearch();
     void setAllowedRunners(const QStringList &runners);
 
+protected:
+    void focusInEvent(QFocusEvent *event) final;
+
 public Q_SLOTS:
     void slotUpdateLayout();
 
@@ -1679,6 +1682,14 @@ void LauncherAppletWidget::resetSearch()
 void LauncherAppletWidget::setAllowedRunners(const QStringList &runners)
 {
     m_searchwidget->setAllowedRunners(runners);
+}
+
+void LauncherAppletWidget::focusInEvent(QFocusEvent *event)
+{
+    QGraphicsWidget::focusInEvent(event);
+    if (!m_lineedit->hasFocus()) {
+        m_lineedit->setFocus(event->reason());
+    }
 }
 
 void LauncherAppletWidget::slotUpdateLayout()
