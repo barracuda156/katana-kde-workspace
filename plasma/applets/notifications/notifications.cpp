@@ -100,6 +100,8 @@ void NotificationsWidget::slotCountChanged()
 {
     const int totalcount = (m_jobswidget->count() + m_applicationswidget->count());
     if (totalcount > 0) {
+        m_notifications->setPopupIcon(kNotificationIcon(m_notifications, true));
+        m_notifications->setStatus(Plasma::ItemStatus::NeedsAttentionStatus);
         // if the popup was shown before the signal it is probably because it is being interacted
         // with so no automatic tab switching in that case
         if (!m_notifications->isPopupShowing()) {
@@ -110,8 +112,6 @@ void NotificationsWidget::slotCountChanged()
             }
             m_notifications->showPopup(s_popuptimeout);
         }
-        m_notifications->setPopupIcon(kNotificationIcon(m_notifications, true));
-        m_notifications->setStatus(Plasma::ItemStatus::ActiveStatus);
     } else {
         m_notifications->setPopupIcon(kNotificationIcon(m_notifications, false));
         m_notifications->setStatus(Plasma::ItemStatus::PassiveStatus);
