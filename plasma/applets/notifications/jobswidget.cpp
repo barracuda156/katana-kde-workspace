@@ -169,18 +169,32 @@ void JobFrame::slotJobUpdated(const QString &name, const QVariantMap &data)
             )
         );
     }
+    // because adjustSize() is expensive and the job data may be updated very often (in the ms
+    // range) it is called conditionally on item visibility change
+    bool shouldadjustsize = false;
     if (percentage > 0) {
-        m_meter->setVisible(true);
+        if (!m_meter->isVisible()) {
+            shouldadjustsize = true;
+            m_meter->setVisible(true);
+        }
         m_meter->setValue(percentage);
     }
     if (killable) {
-        m_iconwidget0->setVisible(true);
+        if (!m_iconwidget0->isVisible()) {
+            shouldadjustsize = true;
+            m_iconwidget0->setVisible(true);
+        }
     }
     if (state == "stopped") {
+        if (!m_iconwidget0->isVisible()) {
+            shouldadjustsize = true;
+            m_iconwidget0->setVisible(true);
+        }
         m_iconwidget0->setIcon(KIcon("dialog-close"));
         m_iconwidget0->setToolTip(i18n("Click to remove this job notification."));
         m_iconwidget0->setProperty("_k_stopped", true);
 
+        shouldadjustsize = true;
         m_iconwidget1->setVisible(true);
         if (!desturl.isEmpty()) {
             m_iconwidget1->setProperty("_k_desturl", desturl);
@@ -193,13 +207,16 @@ void JobFrame::slotJobUpdated(const QString &name, const QVariantMap &data)
     }
     // error overrides everything iconwidget1 does
     if (!error.isEmpty()) {
-        m_iconwidget1->setVisible(false);
+        shouldadjustsize = true;
+        m_iconwidget1->setVisible(true);
         m_iconwidget1->setAcceptHoverEvents(false);
         m_iconwidget1->setAcceptedMouseButtons(Qt::NoButton);
         m_iconwidget1->setIcon(KIcon("task-attention"));
         m_iconwidget1->setToolTip(error);
     }
-    adjustSize();
+    if (shouldadjustsize) {
+        adjustSize();
+    }
 }
 
 void JobFrame::slotIcon0Activated()
