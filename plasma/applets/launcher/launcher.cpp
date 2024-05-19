@@ -1661,11 +1661,14 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_iconwidget = new Plasma::IconWidget(this);
     m_iconwidget->setAcceptHoverEvents(false);
     m_iconwidget->setAcceptedMouseButtons(Qt::NoButton);
+    m_iconwidget->setFlag(QGraphicsItem::ItemIsFocusable, false);
     m_iconwidget->setIcon(s_usericon);
     m_toplayout->addItem(m_iconwidget);
 
     m_label = new Plasma::Label(this);
     m_label->setWordWrap(false);
+    m_label->nativeWidget()->setTextInteractionFlags(Qt::NoTextInteraction);
+    m_label->setFlag(QGraphicsItem::ItemIsFocusable, false);
     m_toplayout->addItem(m_label);
     m_toplayout->setAlignment(m_label, Qt::AlignCenter);
 
