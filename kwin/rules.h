@@ -66,7 +66,6 @@ public:
     bool checkIgnoreGeometry(bool ignore, bool init = false) const;
     int checkDesktop(int desktop, bool init = false) const;
     int checkScreen(int screen, bool init = false) const;
-    QString checkActivity(QString activity, bool init = false) const;
     NET::WindowType checkType(NET::WindowType type) const;
     MaximizeMode checkMaximize(MaximizeMode mode, bool init = false) const;
     bool checkMinimize(bool minimized, bool init = false) const;
@@ -110,7 +109,7 @@ public:
         Shade = 1<<6, SkipTaskbar = 1<<7, SkipPager = 1<<8,
         SkipSwitcher = 1<<9, Above = 1<<10, Below = 1<<11, Fullscreen = 1<<12,
         NoBorder = 1<<13, OpacityActive = 1<<14, OpacityInactive = 1<<15,
-        Activity = 1<<16, Screen = 1<<17, DemandAttention = 1<<18, All = 0xffffffff
+        Screen = 1<<16, DemandAttention = 1<<17, All = 0xffffffff
     };
     Q_DECLARE_FLAGS(Types, Type)
     void write(KConfigGroup&) const;
@@ -133,7 +132,6 @@ public:
     bool applyIgnoreGeometry(bool& ignore, bool init) const;
     bool applyDesktop(int& desktop, bool init) const;
     bool applyScreen(int& desktop, bool init) const;
-    bool applyActivity(QString& activity, bool init) const;
     bool applyType(NET::WindowType& type) const;
     bool applyMaximizeVert(MaximizeMode& mode, bool init) const;
     bool applyMaximizeHoriz(MaximizeMode& mode, bool init) const;
@@ -233,8 +231,6 @@ private:
     SetRule desktoprule;
     int screen;
     SetRule screenrule;
-    QString activity;
-    SetRule activityrule;
     NET::WindowType type; // type for setting
     ForceRule typerule;
     bool maximizevert;

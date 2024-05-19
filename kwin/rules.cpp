@@ -57,7 +57,6 @@ Rules::Rules()
     , ignoregeometryrule(UnusedSetRule)
     , desktoprule(UnusedSetRule)
     , screenrule(UnusedSetRule)
-    , activityrule(UnusedSetRule)
     , typerule(UnusedForceRule)
     , maximizevertrule(UnusedSetRule)
     , maximizehorizrule(UnusedSetRule)
@@ -165,7 +164,6 @@ void Rules::readFromCfg(const KConfigGroup& cfg)
     READ_SET_RULE(ignoregeometry, , false);
     READ_SET_RULE(desktop, , 0);
     READ_SET_RULE(screen, , 0);
-    READ_SET_RULE(activity, , QString());
     type = readType(cfg, "type");
     typerule = type != NET::Unknown ? readForceRule(cfg, "typerule") : UnusedForceRule;
     READ_SET_RULE(maximizevert, , false);
@@ -257,7 +255,6 @@ void Rules::write(KConfigGroup& cfg) const
     WRITE_SET_RULE(ignoregeometry,);
     WRITE_SET_RULE(desktop,);
     WRITE_SET_RULE(screen,);
-    WRITE_SET_RULE(activity,);
     WRITE_FORCE_RULE(type, int);
     WRITE_SET_RULE(maximizevert,);
     WRITE_SET_RULE(maximizehoriz,);
@@ -300,7 +297,6 @@ bool Rules::isEmpty() const
            && ignoregeometryrule == UnusedSetRule
            && desktoprule == UnusedSetRule
            && screenrule == UnusedSetRule
-           && activityrule == UnusedSetRule
            && typerule == UnusedForceRule
            && maximizevertrule == UnusedSetRule
            && maximizehorizrule == UnusedSetRule
@@ -592,7 +588,6 @@ APPLY_RULE(ignoregeometry, IgnoreGeometry, bool)
 
 APPLY_RULE(desktop, Desktop, int)
 APPLY_RULE(screen, Screen, int)
-APPLY_RULE(activity, Activity, QString)
 APPLY_FORCE_RULE(type, Type, NET::WindowType)
 
 bool Rules::applyMaximizeHoriz(MaximizeMode& mode, bool init) const
@@ -684,7 +679,6 @@ void Rules::discardUsed(bool withdrawn)
     DISCARD_USED_SET_RULE(ignoregeometry);
     DISCARD_USED_SET_RULE(desktop);
     DISCARD_USED_SET_RULE(screen);
-    DISCARD_USED_SET_RULE(activity);
     DISCARD_USED_FORCE_RULE(type);
     DISCARD_USED_SET_RULE(maximizevert);
     DISCARD_USED_SET_RULE(maximizehoriz);
@@ -795,7 +789,6 @@ CHECK_FORCE_RULE(OpacityInactive, int)
 CHECK_RULE(IgnoreGeometry, bool)
 
 CHECK_RULE(Desktop, int)
-CHECK_RULE(Activity, QString)
 CHECK_FORCE_RULE(Type, NET::WindowType)
 CHECK_RULE(MaximizeVert, KDecorationDefines::MaximizeMode)
 CHECK_RULE(MaximizeHoriz, KDecorationDefines::MaximizeMode)
