@@ -117,6 +117,9 @@ QGraphicsWidget* NotesApplet::graphicsWidget()
 
 void NotesApplet::configChanged()
 {
+    if (!m_noteswidget) {
+        return;
+    }
     Plasma::TextEdit* plasmatextedit = m_noteswidget->textEdit();
     KTextEdit* nativetextedit = plasmatextedit->nativeWidget();
     KConfigGroup configgroup = config();
@@ -130,6 +133,9 @@ void NotesApplet::configChanged()
 
 void NotesApplet::saveState(KConfigGroup &group) const
 {
+    if (!m_noteswidget) {
+        return;
+    }
     Plasma::TextEdit* plasmatextedit = m_noteswidget->textEdit();
     KTextEdit* nativetextedit = plasmatextedit->nativeWidget();
     group.writeEntry("text", plasmatextedit->text());
