@@ -519,6 +519,9 @@ public:
     void prepare();
     void query(const QString &text);
 
+Q_SIGNALS:
+    void queryFinished();
+
 private Q_SLOTS:
     void slotUpdateLayout();
     void slotTriggered();
@@ -641,6 +644,7 @@ void LauncherSearch::slotUpdateLayout()
             this, SLOT(slotActivated())
         );
     }
+    emit queryFinished();
 }
 
 void LauncherSearch::slotTriggered()
@@ -1578,6 +1582,7 @@ private Q_SLOTS:
     void slotSearch(const QString &text);
     void slotUserTimeout();
     void slotSearchTimeout();
+    void slotQueryFinished();
 
 private:
     LauncherApplet* m_launcherapplet;
@@ -1675,6 +1680,10 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_searchscrollwidget->setMinimumSize(s_minimumsize);
     m_searchscrollwidget->setVisible(false);
     m_searchwidget = new LauncherSearch(m_searchscrollwidget, m_launcherapplet);
+    connect(
+        m_searchwidget, SIGNAL(queryFinished()),
+        this, SLOT(slotQueryFinished())
+    );
     m_searchscrollwidget->setWidget(m_searchwidget);
     m_layout->addItem(m_searchscrollwidget);
     connect(
@@ -1773,9 +1782,15 @@ void LauncherAppletWidget::slotUserTimeout()
 
 void LauncherAppletWidget::slotSearchTimeout()
 {
+    m_lineedit->setEnabled(false);
     m_searchwidget->query(m_lineedit->text());
     m_tabbar->setVisible(false);
     m_searchscrollwidget->setVisible(true);
+}
+
+void LauncherAppletWidget::slotQueryFinished()
+{
+    m_lineedit->setEnabled(true);
 }
 
 
