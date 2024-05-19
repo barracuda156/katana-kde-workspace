@@ -73,7 +73,7 @@ static const QString s_recenticon = QString::fromLatin1("document-open-recent");
 static const int s_searchdelay = 500; // ms
 static const int s_polltimeout = 5000; // ms
 // enough time for the animation to finish
-static const int s_leavedelay = 500; // ms
+static const int s_launcherdelay = 500; // ms
 
 static QSizeF kIconSize()
 {
@@ -523,6 +523,7 @@ private Q_SLOTS:
     void slotUpdateLayout();
     void slotTriggered();
     void slotActivated();
+    void slotDelayedRun();
 
 private:
     QMutex m_mutex;
@@ -532,6 +533,7 @@ private:
     Plasma::Label* m_label;
     Plasma::BusyWidget* m_busywidget;
     Plasma::RunnerManager* m_runnermanager;
+    Plasma::QueryMatch m_match;
 };
 
 LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
@@ -540,7 +542,8 @@ LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcher
     m_layout(nullptr),
     m_label(nullptr),
     m_busywidget(nullptr),
-    m_runnermanager(nullptr)
+    m_runnermanager(nullptr),
+    m_match(nullptr)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
@@ -645,10 +648,11 @@ void LauncherSearch::slotTriggered()
     QAction* matchaction = qobject_cast<QAction*>(sender());
     const QString matchid = matchaction->property("_k_id").toString();
     m_launcherapplet->resetState();
-    foreach (Plasma::QueryMatch match, m_runnermanager->matches()) {
+    foreach (const Plasma::QueryMatch &match, m_runnermanager->matches()) {
         if (match.id() == matchid) {
-            match.setSelectedAction(matchaction);
-            match.run();
+            m_match = match;
+            m_match.setSelectedAction(matchaction);
+            QTimer::singleShot(s_launcherdelay, this, SLOT(slotDelayedRun()));
             return;
         }
     }
@@ -662,11 +666,17 @@ void LauncherSearch::slotActivated()
     const QString matchid = launcherwidget->data();
     foreach (const Plasma::QueryMatch &match, m_runnermanager->matches()) {
         if (match.id() == matchid) {
-            match.run();
+            m_match = match;
+            QTimer::singleShot(s_launcherdelay, this, SLOT(slotDelayedRun()));
             return;
         }
     }
     kWarning() << "could not find match for" << matchid;
+}
+
+void LauncherSearch::slotDelayedRun()
+{
+    m_match.run();
 }
 
 
@@ -1488,7 +1498,7 @@ void LauncherLeave::slotActivated()
     const QString launcherwidgetdata = launcherwidget->data();
     m_launcherapplet->resetState();
     if (launcherwidgetdata == QLatin1String("switch")) {
-        QTimer::singleShot(s_leavedelay, this, SLOT(slotDelayedSwitch()));
+        QTimer::singleShot(s_launcherdelay, this, SLOT(slotDelayedSwitch()));
     } else if (launcherwidgetdata == QLatin1String("suspendram")) {
         Solid::PowerManagement::requestSleep(Solid::PowerManagement::SuspendState);
     } else if (launcherwidgetdata == QLatin1String("suspenddisk")) {
