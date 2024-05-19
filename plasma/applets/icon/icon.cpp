@@ -257,10 +257,8 @@ void IconApplet::updateDesktopFile()
 void IconApplet::openUrl()
 {
     if (m_service) {
-        emit releaseVisualFocus();
         KToolInvocation::self()->startServiceByStorageId(m_service->entryPath());
     } else if (m_url.isValid()) {
-        emit releaseVisualFocus();
         KToolInvocation::self()->startServiceForUrl(m_url.url());
     }
 }

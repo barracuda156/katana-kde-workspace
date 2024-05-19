@@ -186,7 +186,6 @@ void Trash::constraintsEvent(Plasma::Constraints constraints)
 
 void Trash::open()
 {
-    emit releaseVisualFocus();
     KToolInvocation::self()->startServiceForUrl(QString::fromLatin1("trash:/"));
 }
 
@@ -196,7 +195,6 @@ void Trash::empty()
         return;
     }
 
-    emit releaseVisualFocus();
     if (m_confirmEmptyDialog) {
         KWindowSystem::forceActiveWindow(m_confirmEmptyDialog.data()->winId());
     } else {

@@ -2079,8 +2079,6 @@ void FolderView::activated(const QModelIndex &index)
         Plasma::WindowEffects::slideWindow(m_dialog, location());
         m_dialog->hide();
     }
-
-    emit releaseVisualFocus();
 }
 
 void FolderView::indexesMoved(const QModelIndexList &indexes)
