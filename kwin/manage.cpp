@@ -133,6 +133,7 @@ bool Client::manage(xcb_window_t w, bool isMapped)
 
     original_skip_taskbar = skip_taskbar = (info->state() & NET::SkipTaskbar) != 0;
     skip_pager = (info->state() & NET::SkipPager) != 0;
+    bool init_demand_attention = rules()->checkDemandAttention(info->state() & NET::DemandsAttention, !isMapped);
 
     setupCompositing();
 
@@ -434,12 +435,15 @@ bool Client::manage(xcb_window_t w, bool isMapped)
                 visible_parent = true;
         if (!visible_parent) {
             init_minimize = true;
-            demandAttention();
+            init_demand_attention = true;
         }
     }
 
     if (init_minimize)
         minimize(true);   // No animation
+
+    if (init_demand_attention)
+        demandAttention();
 
     // Other settings from the previous session
     if (session) {
@@ -485,7 +489,7 @@ bool Client::manage(xcb_window_t w, bool isMapped)
         if (info->state() & NET::Modal)
             setModal(true);
         setFullScreen(rules()->checkFullScreen(info->state() & NET::FullScreen, !isMapped), false);
-        demandAttention(rules()->checkDemandAttention(info->state() & NET::DemandsAttention, !isMapped));
+        demandAttention(init_demand_attention);
     }
 
     updateAllowedActions(true);
