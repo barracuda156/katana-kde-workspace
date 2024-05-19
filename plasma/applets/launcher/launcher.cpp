@@ -53,7 +53,6 @@
 #include <Plasma/ToolButton>
 #include <Plasma/ScrollWidget>
 #include <Plasma/BusyWidget>
-#include <Plasma/RunnerManager>
 #include <Plasma/Animation>
 #include <KDebug>
 
@@ -515,7 +514,6 @@ class LauncherSearch : public QGraphicsWidget
 public:
     LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
 
-    void setAllowedRunners(const QStringList &runners);
     void prepare();
     void query(const QString &text);
 
@@ -545,7 +543,7 @@ LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcher
     m_layout(nullptr),
     m_label(nullptr),
     m_busywidget(nullptr),
-    m_runnermanager(nullptr),
+    m_runnermanager(launcherapplet->runnerManager()),
     m_match(nullptr)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -561,17 +559,10 @@ LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcher
     m_busywidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_layout->addItem(m_busywidget);
 
-    m_runnermanager = new Plasma::RunnerManager(this);
     connect(
         m_runnermanager, SIGNAL(queryFinished()),
         this, SLOT(slotUpdateLayout())
     );
-}
-
-void LauncherSearch::setAllowedRunners(const QStringList &runners)
-{
-    m_runnermanager->reloadConfiguration();
-    m_runnermanager->setAllowedRunners(runners);
 }
 
 void LauncherSearch::prepare()
@@ -681,6 +672,32 @@ void LauncherSearch::slotActivated()
 void LauncherSearch::slotDelayedRun()
 {
     m_match.run();
+}
+
+
+class LauncherSearchHelp : public QGraphicsWidget
+{
+    Q_OBJECT
+public:
+    LauncherSearchHelp(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
+
+private:
+    LauncherApplet* m_launcherapplet;
+    QGraphicsLinearLayout* m_layout;
+    Plasma::RunnerManager* m_runnermanager;
+};
+
+LauncherSearchHelp::LauncherSearchHelp(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
+    : QGraphicsWidget(parent),
+    m_launcherapplet(launcherapplet),
+    m_layout(nullptr),
+    m_runnermanager(launcherapplet->runnerManager())
+{
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
+    setLayout(m_layout);
+
+    // TODO: fill with text about the runners
 }
 
 
@@ -1570,7 +1587,6 @@ public:
     ~LauncherAppletWidget();
 
     void resetSearch();
-    void setAllowedRunners(const QStringList &runners);
 
 protected:
     void focusInEvent(QFocusEvent *event) final;
@@ -1580,6 +1596,7 @@ public Q_SLOTS:
 
 private Q_SLOTS:
     void slotSearch(const QString &text);
+    void slotActivated();
     void slotUserTimeout();
     void slotSearchTimeout();
     void slotQueryFinished();
@@ -1591,6 +1608,7 @@ private:
     Plasma::IconWidget* m_iconwidget;
     Plasma::Label* m_label;
     Plasma::LineEdit* m_lineedit;
+    Plasma::IconWidget* m_helpiconwidget;
     Plasma::TabBar* m_tabbar;
     Plasma::ScrollWidget* m_favoritesscrollwidget;
     LauncherFavorites* m_favoriteswidget;
@@ -1601,6 +1619,8 @@ private:
     LauncherLeave* m_leavewidget;
     Plasma::ScrollWidget* m_searchscrollwidget;
     LauncherSearch* m_searchwidget;
+    Plasma::ScrollWidget* m_searchhelpscrollwidget;
+    LauncherSearchHelp* m_searchhelpwidget;
     KUser* m_user;
     QTimer* m_usertimer;
     QTimer* m_searchtimer;
@@ -1614,6 +1634,7 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_iconwidget(nullptr),
     m_label(nullptr),
     m_lineedit(nullptr),
+    m_helpiconwidget(nullptr),
     m_tabbar(nullptr),
     m_favoritesscrollwidget(nullptr),
     m_favoriteswidget(nullptr),
@@ -1624,6 +1645,8 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_leavewidget(nullptr),
     m_searchscrollwidget(nullptr),
     m_searchwidget(nullptr),
+    m_searchhelpscrollwidget(nullptr),
+    m_searchhelpwidget(nullptr),
     m_user(nullptr),
     m_usertimer(nullptr),
     m_searchtimer(nullptr)
@@ -1652,6 +1675,18 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_toplayout->addItem(m_lineedit);
     m_toplayout->setAlignment(m_lineedit, Qt::AlignCenter);
     setFocusProxy(m_lineedit);
+
+    m_helpiconwidget = new Plasma::IconWidget(this);
+    m_helpiconwidget->setAcceptHoverEvents(false);
+    m_helpiconwidget->setAcceptedMouseButtons(Qt::NoButton);
+    m_helpiconwidget->setIcon("help-contextual");
+    // TODO: enable once implemented
+    m_helpiconwidget->setVisible(false);
+    connect(
+        m_helpiconwidget, SIGNAL(activated()),
+        this, SIGNAL(slotActivated())
+    );
+    m_toplayout->addItem(m_helpiconwidget);
 
     m_tabbar = new Plasma::TabBar(this);
     m_favoritesscrollwidget = kMakeScrollWidget(m_tabbar);
@@ -1691,6 +1726,13 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
         this, SLOT(slotSearch(QString))
     );
 
+    m_searchhelpscrollwidget = kMakeScrollWidget(this);
+    m_searchhelpscrollwidget->setMinimumSize(s_minimumsize);
+    m_searchhelpscrollwidget->setVisible(false);
+    m_searchhelpwidget = new LauncherSearchHelp(m_searchhelpscrollwidget, m_launcherapplet);
+    m_searchhelpscrollwidget->setWidget(m_searchhelpwidget);
+    m_layout->addItem(m_searchhelpscrollwidget);
+
     m_usertimer = new QTimer(this);
     m_usertimer->setInterval(s_polltimeout);
     connect(
@@ -1718,11 +1760,6 @@ LauncherAppletWidget::~LauncherAppletWidget()
 void LauncherAppletWidget::resetSearch()
 {
     m_lineedit->setText(QString());
-}
-
-void LauncherAppletWidget::setAllowedRunners(const QStringList &runners)
-{
-    m_searchwidget->setAllowedRunners(runners);
 }
 
 void LauncherAppletWidget::focusInEvent(QFocusEvent *event)
@@ -1756,6 +1793,11 @@ void LauncherAppletWidget::slotSearch(const QString &text)
         m_searchwidget->prepare();
     }
     m_searchtimer->start();
+}
+
+void LauncherAppletWidget::slotActivated()
+{
+    m_searchhelpscrollwidget->setVisible(!m_searchhelpscrollwidget->isVisible());
 }
 
 void LauncherAppletWidget::slotUserTimeout()
@@ -1798,6 +1840,7 @@ LauncherApplet::LauncherApplet(QObject *parent, const QVariantList &args)
     : Plasma::PopupApplet(parent, args),
     m_launcherwidget(nullptr),
     m_bookmarkmanager(nullptr),
+    m_runnermanager(nullptr),
     m_editmenuaction(nullptr),
     m_selector(nullptr),
     m_shareconfig(nullptr)
@@ -1810,6 +1853,7 @@ LauncherApplet::LauncherApplet(QObject *parent, const QVariantList &args)
     const QString bookmarfile = KStandardDirs::locateLocal("data", "plasma/bookmarks.xml");
     m_bookmarkmanager = KBookmarkManager::managerForFile(bookmarfile, "launcher");
     // m_bookmarkmanager->slotEditBookmarks();
+    m_runnermanager = new Plasma::RunnerManager(this);
 }
 
 void LauncherApplet::init()
@@ -1822,7 +1866,7 @@ void LauncherApplet::init()
 
     m_launcherwidget = new LauncherAppletWidget(this);
     setFocusProxy(m_launcherwidget);
-    m_launcherwidget->setAllowedRunners(kAllowedRunners(m_configgroup));
+    m_runnermanager->setAllowedRunners(kAllowedRunners(m_configgroup));
     QTimer::singleShot(1000, m_launcherwidget, SLOT(slotUpdateLayout()));
 }
 
@@ -1877,6 +1921,11 @@ KBookmarkManager* LauncherApplet::bookmarkManager() const
     return m_bookmarkmanager;
 }
 
+Plasma::RunnerManager* LauncherApplet::runnerManager() const
+{
+    return m_runnermanager;
+}
+
 void LauncherApplet::slotEditMenu()
 {
     hidePopup();
@@ -1890,7 +1939,8 @@ void LauncherApplet::slotConfigAccepted()
     m_selector->save();
     m_configgroup.sync();
     m_shareconfig->sync();
-    m_launcherwidget->setAllowedRunners(kAllowedRunners(m_configgroup));
+    m_runnermanager->reloadConfiguration();
+    m_runnermanager->setAllowedRunners(kAllowedRunners(m_configgroup));
     m_launcherwidget->resetSearch();
     emit configNeedsSaving();
 }

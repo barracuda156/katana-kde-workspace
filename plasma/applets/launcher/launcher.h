@@ -26,6 +26,7 @@
 #include <KPluginSelector>
 #include <KSharedConfig>
 #include <Plasma/PopupApplet>
+#include <Plasma/RunnerManager>
 
 class LauncherAppletWidget;
 
@@ -43,6 +44,7 @@ public:
     // internal
     void resetState();
     KBookmarkManager* bookmarkManager() const;
+    Plasma::RunnerManager* runnerManager() const;
 
 private Q_SLOTS:
     void slotEditMenu();
@@ -52,6 +54,7 @@ private:
     friend LauncherAppletWidget;
     LauncherAppletWidget* m_launcherwidget;
     KBookmarkManager* m_bookmarkmanager;
+    Plasma::RunnerManager* m_runnermanager;
     QAction* m_editmenuaction;
     KPluginSelector* m_selector;
     KSharedConfig::Ptr m_shareconfig;
