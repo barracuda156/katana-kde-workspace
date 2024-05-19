@@ -73,6 +73,9 @@ static const int s_searchdelay = 500; // ms
 static const int s_polltimeout = 5000; // ms
 // enough time for the animation to finish
 static const int s_launcherdelay = 500; // ms
+// NOTE: same as the one in:
+// kdelibs/plasma/animations/animation.cpp
+static const int s_animationduration = 250;
 
 static QSizeF kIconSize()
 {
@@ -155,15 +158,19 @@ static QMimeData* kMakeMimeData(const QString &url)
     return mimedata;
 }
 
-class LauncherWidget : public QGraphicsWidget
+class LauncherWidget : public Plasma::SvgWidget
 {
     Q_OBJECT
+    Q_PROPERTY(qreal hover READ hover WRITE setHover)
 public:
     LauncherWidget(QGraphicsWidget *parent);
     ~LauncherWidget();
 
+    qreal hover() const;
+    void setHover(qreal hover);
+
     void setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext);
-    void disableHover();
+    void disableActivation();
 
     QString data() const;
     void setData(const QString &data);
@@ -177,9 +184,11 @@ Q_SIGNALS:
     void activated();
 
 private Q_SLOTS:
+    void slotClicked(const Qt::MouseButton button);
     void slotUpdateFonts();
 
 protected:
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) final;
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) final;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) final;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) final;
@@ -191,6 +200,9 @@ private:
     bool handleMouseEvent(QGraphicsSceneMouseEvent *event) const;
 
     QGraphicsLinearLayout* m_layout;
+    Plasma::FrameSvg* m_framesvg;
+    qreal m_hover;
+    QPropertyAnimation* m_hoveranimation;
     Plasma::IconWidget* m_iconwidget;
     QGraphicsLinearLayout* m_textlayout;
     Plasma::Label* m_textwidget;
@@ -210,8 +222,11 @@ private:
 };
 
 LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
-    : QGraphicsWidget(parent),
+    : Plasma::SvgWidget(parent),
     m_layout(nullptr),
+    m_framesvg(nullptr),
+    m_hover(0.0),
+    m_hoveranimation(nullptr),
     m_iconwidget(nullptr),
     m_textlayout(nullptr),
     m_textwidget(nullptr),
@@ -231,7 +246,18 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
     setLayout(m_layout);
 
+    setAcceptHoverEvents(true);
+    m_framesvg = new Plasma::FrameSvg(this);
+    m_framesvg->setImagePath("widgets/viewitem");
+    m_framesvg->setElementPrefix("hover");
+    setSvg(m_framesvg);
+    connect(
+        this, SIGNAL(clicked(Qt::MouseButton)),
+        this, SLOT(slotClicked(Qt::MouseButton))
+    );
+
     m_iconwidget = new Plasma::IconWidget(this);
+    m_iconwidget->setAcceptHoverEvents(false);
     m_layout->addItem(m_iconwidget);
     connect(
         m_iconwidget, SIGNAL(activated()),
@@ -278,6 +304,17 @@ LauncherWidget::~LauncherWidget()
     }
 }
 
+qreal LauncherWidget::hover() const
+{
+    return m_hover;
+}
+
+void LauncherWidget::setHover(qreal hover)
+{
+    m_hover = hover;
+    update();
+}
+
 void LauncherWidget::setup(const QSizeF &iconsize, const QIcon &icon, const QString &text, const QString &subtext)
 {
     m_iconwidget->setMinimumIconSize(iconsize);
@@ -287,9 +324,9 @@ void LauncherWidget::setup(const QSizeF &iconsize, const QIcon &icon, const QStr
     m_subtextwidget->setVisible(!subtext.isEmpty());
 }
 
-void LauncherWidget::disableHover()
+void LauncherWidget::disableActivation()
 {
-    m_iconwidget->setAcceptHoverEvents(false);
+    setAcceptedMouseButtons(Qt::NoButton);
     m_iconwidget->setAcceptedMouseButtons(Qt::NoButton);
 }
 
@@ -357,7 +394,6 @@ void LauncherWidget::addAction(QAction *action)
         }
     }
     m_actioncounter++;
-    setAcceptHoverEvents(m_actioncounter > 0);
 }
 
 void LauncherWidget::removeAction(const int actionnumber)
@@ -396,11 +432,42 @@ void LauncherWidget::removeAction(const int actionnumber)
             m_actioncounter--;
         }
     }
-    setAcceptHoverEvents(m_actioncounter > 0);
+}
+
+void LauncherWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+    painter->setRenderHint(QPainter::Antialiasing);
+    const QRectF brect = boundingRect();
+    const QSizeF brectsize = brect.size();
+    if (m_hover > 0.0) {
+        const qreal oldopacity = painter->opacity();
+        m_framesvg->setElementPrefix("hover");
+        m_framesvg->resizeFrame(brectsize);
+        painter->setOpacity(m_hover);
+        m_framesvg->paintFrame(painter, brect);
+        painter->setOpacity(oldopacity);
+    } else if (hasFocus()) {
+        m_framesvg->setElementPrefix("selected");
+        m_framesvg->resizeFrame(brectsize);
+        m_framesvg->paintFrame(painter, brect);
+    }
 }
 
 void LauncherWidget::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
+    Q_UNUSED(event);
+    if (m_hoveranimation) {
+        m_hoveranimation->stop();
+    } else {
+        m_hoveranimation = new QPropertyAnimation(this, "hover", this);
+        m_hoveranimation->setDuration(s_animationduration);
+    }
+    m_hoveranimation->setStartValue(m_hover);
+    m_hoveranimation->setEndValue(1.0);
+    m_hoveranimation->start(QAbstractAnimation::KeepWhenStopped);
+
     m_action1animation = animateFadeIn(m_action1animation, m_action1widget);
     m_action2animation = animateFadeIn(m_action2animation, m_action2widget);
     m_action3animation = animateFadeIn(m_action3animation, m_action3widget);
@@ -409,6 +476,17 @@ void LauncherWidget::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 
 void LauncherWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
+    Q_UNUSED(event);
+    if (m_hoveranimation) {
+        m_hoveranimation->stop();
+    } else {
+        m_hoveranimation = new QPropertyAnimation(this, "hover", this);
+        m_hoveranimation->setDuration(s_animationduration);
+    }
+    m_hoveranimation->setStartValue(m_hover);
+    m_hoveranimation->setEndValue(0.0);
+    m_hoveranimation->start(QAbstractAnimation::KeepWhenStopped);
+
     m_action1animation = animateFadeOut(m_action1animation, m_action1widget);
     m_action2animation = animateFadeOut(m_action2animation, m_action2widget);
     m_action3animation = animateFadeOut(m_action3animation, m_action3widget);
@@ -495,6 +573,13 @@ bool LauncherWidget::handleMouseEvent(QGraphicsSceneMouseEvent *event) const
         return true;
     }
     return false;
+}
+
+void LauncherWidget::slotClicked(const Qt::MouseButton button)
+{
+    if (button == Qt::LeftButton) {
+        emit activated();
+    }
 }
 
 void LauncherWidget::slotUpdateFonts()
@@ -610,7 +695,7 @@ void LauncherSearch::slotUpdateLayout()
         );
         launcherwidget->setData(match.id());
         if (!match.isEnabled()) {
-            launcherwidget->disableHover();
+            launcherwidget->disableActivation();
         }
         int counter = 0;
         const QList<QAction*> matchactions = m_runnermanager->actionsForMatch(match);
@@ -1660,7 +1745,6 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
 
     m_iconwidget = new Plasma::IconWidget(this);
     m_iconwidget->setAcceptHoverEvents(false);
-    m_iconwidget->setAcceptedMouseButtons(Qt::NoButton);
     m_iconwidget->setFocusPolicy(Qt::NoFocus);
     m_iconwidget->setIcon(s_usericon);
     m_toplayout->addItem(m_iconwidget);
@@ -1688,7 +1772,7 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_helpiconwidget->setVisible(false);
     connect(
         m_helpiconwidget, SIGNAL(activated()),
-        this, SIGNAL(slotActivated())
+        this, SLOT(slotActivated())
     );
     m_toplayout->addItem(m_helpiconwidget);
 
