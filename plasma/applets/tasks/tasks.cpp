@@ -18,6 +18,7 @@
 
 #include "tasks.h"
 
+#include <QTimer>
 #include <QGridLayout>
 #include <QLabel>
 #include <QSpacerItem>
@@ -40,6 +41,9 @@ static const TasksApplet::ToolTipMode s_defaultooltipmode = TasksApplet::ToolTip
 // NOTE: same as the one in:
 // kdelibs/plasma/animations/animation.cpp
 static const int s_animationduration = 250;
+// NOTE: same as the one in:
+// kdelibs/plasma/popupapplet.cpp
+static const int s_attentioninterval = 500;
 
 static bool kIsPanel(const Plasma::FormFactor formfactor)
 {
@@ -104,9 +108,10 @@ private Q_SLOTS:
     void slotUpdate();
     void slotUpdateSvg();
     void slotTaskChanged(const WId task);
+    void slotTimeout();
 
 private:
-    void updatePixmapAndToolTip();
+    void updateTaskAndToolTip();
 
     WId m_task;
     Plasma::FrameSvg* m_framesvg;
@@ -115,6 +120,8 @@ private:
     qreal m_hover;
     QPixmap m_pixmap;
     QString m_name;
+    bool m_demandsattention;
+    QTimer* m_attentiontimer;
     TasksApplet::ToolTipMode m_tooltipmode;
 
     // for updateGeometry()
@@ -128,9 +135,11 @@ TasksSvg::TasksSvg(const WId task, const TasksApplet::ToolTipMode tooltipmode, Q
     m_hoversvg(nullptr),
     m_animation(nullptr),
     m_hover(0.0),
+    m_demandsattention(false),
+    m_attentiontimer(nullptr),
     m_tooltipmode(tooltipmode)
 {
-    updatePixmapAndToolTip();
+    updateTaskAndToolTip();
     slotUpdateSvg();
     setAcceptHoverEvents(true);
     connect(
@@ -197,7 +206,7 @@ void TasksSvg::animatedRemove()
 void TasksSvg::setup(const TasksApplet::ToolTipMode tooltipmode)
 {
     m_tooltipmode = tooltipmode;
-    updatePixmapAndToolTip();
+    updateTaskAndToolTip();
 }
 
 void TasksSvg::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -205,11 +214,10 @@ void TasksSvg::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     Q_UNUSED(option);
     Q_UNUSED(widget);
     const bool isactive = KTaskManager::isActive(m_task);
-    const bool demandsattention = KTaskManager::demandsAttention(m_task);
     painter->setRenderHint(QPainter::Antialiasing);
     const QRectF brect = boundingRect();
     const QSizeF brectsize = brect.size();
-    m_framesvg->setElementPrefix(kElementPrefixForTask(isactive, demandsattention));
+    m_framesvg->setElementPrefix(kElementPrefixForTask(isactive, m_demandsattention));
     m_framesvg->resizeFrame(brectsize);
     m_framesvg->paintFrame(painter, brect);
     const qreal oldopacity = painter->opacity();
@@ -228,7 +236,7 @@ void TasksSvg::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
         );
     }
     // gray-out unless the task is active or demands attention
-    if (!iconpixmap.isNull() && !isactive && !demandsattention) {
+    if (!iconpixmap.isNull() && !isactive && !m_demandsattention) {
         iconpixmap = KIconEffect::apply(iconpixmap, KIconEffect::ToGray, 0.5, QColor(), QColor(), true);
     }
     if (!iconpixmap.isNull()) {
@@ -279,8 +287,9 @@ void TasksSvg::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     m_animation->start(QAbstractAnimation::KeepWhenStopped);
 }
 
-void TasksSvg::updatePixmapAndToolTip()
+void TasksSvg::updateTaskAndToolTip()
 {
+    m_demandsattention = KTaskManager::demandsAttention(m_task);
     // during task removal (when the window is no more) getting icon will not work
     const QPixmap windowicon = KWindowSystem::icon(
         m_task, -1, -1, false,
@@ -327,6 +336,17 @@ void TasksSvg::updatePixmapAndToolTip()
         }
     }
     Plasma::ToolTipManager::self()->setContent(this, plasmatooltip);
+    if (m_demandsattention) {
+        if (!m_attentiontimer) {
+            m_attentiontimer = new QTimer(this);
+            m_attentiontimer->setInterval(s_attentioninterval);
+            connect(m_attentiontimer, SIGNAL(timeout()), this, SLOT(slotTimeout()));
+            m_attentiontimer->start();
+        }
+    } else if (m_attentiontimer) {
+        m_attentiontimer->deleteLater();
+        m_attentiontimer = nullptr;
+    }
 }
 
 void TasksSvg::slotClicked(const Qt::MouseButton button)
@@ -344,14 +364,6 @@ void TasksSvg::slotWindowPreviewActivated(const WId window)
     KWindowSystem::raiseWindow(window);
 }
 
-void TasksSvg::slotTaskChanged(const WId task)
-{
-    if (task == m_task) {
-        updatePixmapAndToolTip();
-        update();
-    }
-}
-
 void TasksSvg::slotUpdate()
 {
     update();
@@ -367,6 +379,20 @@ void TasksSvg::slotUpdateSvg()
     m_hoversvg = new Plasma::FrameSvg(this);
     m_hoversvg->setImagePath("widgets/tasks");
     m_hoversvg->setElementPrefix(QString::fromLatin1("hover"));
+}
+
+void TasksSvg::slotTaskChanged(const WId task)
+{
+    if (task == m_task) {
+        updateTaskAndToolTip();
+        update();
+    }
+}
+
+void TasksSvg::slotTimeout()
+{
+    m_demandsattention = !m_demandsattention;
+    update();
 }
 
 
