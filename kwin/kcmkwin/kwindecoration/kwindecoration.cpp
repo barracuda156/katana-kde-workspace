@@ -86,6 +86,7 @@ KWinDecorationModule::KWinDecorationModule(QWidget *parent, const QVariantList &
 KWinDecorationModule::~KWinDecorationModule()
 {
     delete m_pluginObject;
+    delete m_pluginConfigWidget;
 }
 
 void KWinDecorationModule::load()
