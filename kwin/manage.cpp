@@ -482,11 +482,10 @@ bool Client::manage(xcb_window_t w, bool isMapped)
         setSkipTaskbar(rules()->checkSkipTaskbar(info->state() & NET::SkipTaskbar, !isMapped), true);
         setSkipPager(rules()->checkSkipPager(info->state() & NET::SkipPager, !isMapped));
         setSkipSwitcher(rules()->checkSkipSwitcher(false, !isMapped));
-        if (info->state() & NET::DemandsAttention)
-            demandAttention();
         if (info->state() & NET::Modal)
             setModal(true);
         setFullScreen(rules()->checkFullScreen(info->state() & NET::FullScreen, !isMapped), false);
+        demandAttention(rules()->checkDemandAttention(info->state() & NET::DemandsAttention, !isMapped));
     }
 
     updateAllowedActions(true);
