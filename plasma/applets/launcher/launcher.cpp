@@ -1332,6 +1332,8 @@ public Q_SLOTS:
 private Q_SLOTS:
     void slotActivated();
     void slotDelayedSwitch();
+    void slotDelayedSleep();
+    void slotDelayedShutdown();
 
 private:
     QMutex m_mutex;
@@ -1344,6 +1346,8 @@ private:
     bool m_canreboot;
     bool m_canshutdown;
     KDisplayManager m_displaymanager;
+    KWorkSpace::ShutdownType m_shutdowntype;
+    Solid::PowerManagement::SleepState m_sleepstate;
 };
 
 LauncherLeave::LauncherLeave(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
@@ -1353,7 +1357,9 @@ LauncherLeave::LauncherLeave(QGraphicsWidget *parent, LauncherApplet *launcherap
     m_timer(nullptr),
     m_canswitch(false),
     m_canreboot(false),
-    m_canshutdown(false)
+    m_canshutdown(false),
+    m_shutdowntype(KWorkSpace::ShutdownTypeNone),
+    m_sleepstate(Solid::PowerManagement::SuspendState)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
@@ -1500,17 +1506,23 @@ void LauncherLeave::slotActivated()
     if (launcherwidgetdata == QLatin1String("switch")) {
         QTimer::singleShot(s_launcherdelay, this, SLOT(slotDelayedSwitch()));
     } else if (launcherwidgetdata == QLatin1String("suspendram")) {
-        Solid::PowerManagement::requestSleep(Solid::PowerManagement::SuspendState);
+        m_sleepstate = Solid::PowerManagement::SuspendState;
+        QTimer::singleShot(s_launcherdelay, this, SLOT(slotDelayedSleep()));
     } else if (launcherwidgetdata == QLatin1String("suspenddisk")) {
-        Solid::PowerManagement::requestSleep(Solid::PowerManagement::HibernateState);
+        m_sleepstate = Solid::PowerManagement::HibernateState;
+        QTimer::singleShot(s_launcherdelay, this, SLOT(slotDelayedSleep()));
     } else if (launcherwidgetdata == QLatin1String("suspendhybrid")) {
-        Solid::PowerManagement::requestSleep(Solid::PowerManagement::HybridSuspendState);
+        m_sleepstate = Solid::PowerManagement::HybridSuspendState;
+        QTimer::singleShot(s_launcherdelay, this, SLOT(slotDelayedSleep()));
     } else if (launcherwidgetdata == QLatin1String("restart")) {
-        KWorkSpace::requestShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeReboot);
+        m_shutdowntype = KWorkSpace::ShutdownTypeReboot;
+        QTimer::singleShot(s_launcherdelay, this, SLOT(slotDelayedShutdown()));
     } else if (launcherwidgetdata == QLatin1String("shutdown")) {
-        KWorkSpace::requestShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeHalt);
+        m_shutdowntype = KWorkSpace::ShutdownTypeHalt;
+        QTimer::singleShot(s_launcherdelay, this, SLOT(slotDelayedShutdown()));
     } else if (launcherwidgetdata == QLatin1String("logout")) {
-        KWorkSpace::requestShutDown(KWorkSpace::ShutdownConfirmDefault, KWorkSpace::ShutdownTypeNone);
+        m_shutdowntype = KWorkSpace::ShutdownTypeNone;
+        QTimer::singleShot(s_launcherdelay, this, SLOT(slotDelayedShutdown()));
     } else {
         Q_ASSERT(false);
         kWarning() << "invalid url" << launcherwidgetdata;
@@ -1533,6 +1545,16 @@ void LauncherLeave::slotTimeout()
 void LauncherLeave::slotDelayedSwitch()
 {
     m_displaymanager.newSession();
+}
+
+void LauncherLeave::slotDelayedSleep()
+{
+    Solid::PowerManagement::requestSleep(m_sleepstate);
+}
+
+void LauncherLeave::slotDelayedShutdown()
+{
+    KWorkSpace::requestShutDown(KWorkSpace::ShutdownConfirmDefault, m_shutdowntype);
 }
 
 
