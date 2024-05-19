@@ -80,6 +80,7 @@ Rules::Rules()
     , strictgeometryrule(UnusedForceRule)
     , shortcutrule(UnusedSetRule)
     , disableglobalshortcutsrule(UnusedForceRule)
+    , demandattentionrule(UnusedSetRule)
 {
 }
 
@@ -188,6 +189,7 @@ void Rules::readFromCfg(const KConfigGroup& cfg)
     READ_FORCE_RULE(strictgeometry, , false);
     READ_SET_RULE(shortcut, , QString());
     READ_FORCE_RULE(disableglobalshortcuts, , false);
+    READ_SET_RULE(demandattention, , false);
 }
 
 #undef READ_MATCH_STRING
@@ -278,6 +280,7 @@ void Rules::write(KConfigGroup& cfg) const
     WRITE_FORCE_RULE(strictgeometry,);
     WRITE_SET_RULE(shortcut,);
     WRITE_FORCE_RULE(disableglobalshortcuts,);
+    WRITE_SET_RULE(demandattention,);
 }
 
 #undef WRITE_MATCH_STRING
@@ -319,7 +322,8 @@ bool Rules::isEmpty() const
            && autogroupidrule == UnusedForceRule
            && strictgeometryrule == UnusedForceRule
            && shortcutrule == UnusedSetRule
-           && disableglobalshortcutsrule == UnusedForceRule);
+           && disableglobalshortcutsrule == UnusedForceRule
+           && demandattentionrule == UnusedSetRule);
 }
 
 Rules::SetRule Rules::readSetRule(const KConfigGroup& cfg, const QString& key)
@@ -523,6 +527,10 @@ bool Rules::update(Client* c, int selection)
     if NOW_REMEMBER(OpacityInactive, opacityinactive) {
         // TODO
     }
+    if NOW_REMEMBER(DemandAttention, demandattention) {
+        updated = updated || demandattention != c->isDemandingAttention();
+        demandattention = c->isDemandingAttention();
+    }
     return updated;
 }
 
@@ -631,6 +639,7 @@ APPLY_FORCE_RULE(autogroupid, AutogroupById, QString)
 APPLY_FORCE_RULE(strictgeometry, StrictGeometry, bool)
 APPLY_RULE(shortcut, Shortcut, QString)
 APPLY_FORCE_RULE(disableglobalshortcuts, DisableGlobalShortcuts, bool)
+APPLY_RULE(demandattention, DemandAttention, bool)
 
 
 #undef APPLY_RULE
@@ -698,6 +707,7 @@ void Rules::discardUsed(bool withdrawn)
     DISCARD_USED_FORCE_RULE(strictgeometry);
     DISCARD_USED_SET_RULE(shortcut);
     DISCARD_USED_FORCE_RULE(disableglobalshortcuts);
+    DISCARD_USED_SET_RULE(demandattention);
 }
 #undef DISCARD_USED_SET_RULE
 #undef DISCARD_USED_FORCE_RULE
@@ -830,6 +840,7 @@ CHECK_FORCE_RULE(AutogroupById, QString)
 CHECK_FORCE_RULE(StrictGeometry, bool)
 CHECK_RULE(Shortcut, QString)
 CHECK_FORCE_RULE(DisableGlobalShortcuts, bool)
+CHECK_RULE(DemandAttention, bool)
 
 #undef CHECK_RULE
 #undef CHECK_FORCE_RULE
@@ -892,6 +903,7 @@ void Client::applyWindowRules()
         workspace()->disableGlobalShortcutsForClient(rules()->checkDisableGlobalShortcuts(false));
     } else
         setOpacity(rules()->checkOpacityInactive(qRound(opacity() * 100.0)) / 100.0);
+    demandAttention(rules()->checkDemandAttention(false));
 }
 
 void Client::updateWindowRules(Rules::Types selection)

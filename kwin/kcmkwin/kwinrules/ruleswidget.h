@@ -88,6 +88,7 @@ private slots:
     void updateEnablemaxsize();
     void updateEnablestrictgeometry();
     void updateEnableshortcut();
+    void updateEnabledemandattention();
     void updateEnabledisableglobalshortcuts();
     void updateEnableblockcompositing();
     // internal

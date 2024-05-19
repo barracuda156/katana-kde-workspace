@@ -1405,6 +1405,50 @@ like your complete screen area.</string>
          </item>
         </widget>
        </item>
+       <item row="17" column="1" colspan="6">
+        <widget class="Line" name="line_17">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="2" colspan="2">
+        <widget class="KComboBox" name="rule_demandattention">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <item>
+          <property name="text">
+           <string>Do Not Affect</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Apply Initially</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Remember</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Force</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Apply Now</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Force Temporarily</string>
+          </property>
+         </item>
+        </widget>
+       </item>
        <item row="13" column="4" colspan="3">
         <widget class="YesNoBox" name="skippager" native="true">
          <property name="enabled">
@@ -1456,7 +1500,7 @@ like your complete screen area.</string>
          </property>
         </widget>
        </item>
-       <item row="17" column="0" colspan="8">
+       <item row="19" column="0" colspan="8">
         <spacer name="verticalSpacer_6">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -1572,6 +1616,23 @@ like your complete screen area.</string>
          </property>
          <property name="shortcut">
           <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="1">
+        <widget class="QCheckBox" name="enable_demandattention">
+         <property name="toolTip">
+          <string>Window shall (not) appear as if it demands attention.</string>
+         </property>
+         <property name="text">
+          <string>Demand &amp;attention</string>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="4" colspan="3">
+        <widget class="YesNoBox" name="demandattention" native="true">
+         <property name="enabled">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -2503,6 +2564,8 @@ but this may sometimes fail or superact.
   <tabstop>rule_skipswitcher</tabstop>
   <tabstop>enable_shortcut</tabstop>
   <tabstop>rule_shortcut</tabstop>
+  <tabstop>enable_demandattention</tabstop>
+  <tabstop>rule_demandattention</tabstop>
   <tabstop>shortcut</tabstop>
   <tabstop>shortcut_edit</tabstop>
   <tabstop>enable_noborder</tabstop>

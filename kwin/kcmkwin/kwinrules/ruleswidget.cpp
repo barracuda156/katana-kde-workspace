@@ -107,6 +107,7 @@ RulesWidget::RulesWidget(QWidget* parent)
     SETUP(opacityactive, force);
     SETUP(opacityinactive, force);
     SETUP(shortcut, force);
+    SETUP(demandattention, set);
     // workarounds tab
     SETUP(fsplevel, force);
     SETUP(type, force);
@@ -172,6 +173,8 @@ void RulesWidget::updateEnableshortcut()
     shortcut->setEnabled(enable_shortcut->isChecked() && rule_shortcut->currentIndex() != 0);
     shortcut_edit->setEnabled(enable_shortcut->isChecked() && rule_shortcut->currentIndex() != 0);
 }
+
+UPDATE_ENABLE_SLOT(demandattention)
 // workarounds tab
 UPDATE_ENABLE_SLOT(fsplevel)
 UPDATE_ENABLE_SLOT(type)
@@ -408,6 +411,7 @@ void RulesWidget::setRules(Rules* rules)
     SPINBOX_FORCE_RULE(opacityactive,);
     SPINBOX_FORCE_RULE(opacityinactive,);
     LINEEDIT_SET_RULE(shortcut,);
+    CHECKBOX_SET_RULE(demandattention,);
     COMBOBOX_FORCE_RULE(fsplevel,);
     COMBOBOX_FORCE_RULE(type, typeToCombo);
     CHECKBOX_SET_RULE(ignoregeometry,);
@@ -502,6 +506,7 @@ Rules* RulesWidget::rules() const
     SPINBOX_FORCE_RULE(opacityactive,);
     SPINBOX_FORCE_RULE(opacityinactive,);
     LINEEDIT_SET_RULE(shortcut,);
+    CHECKBOX_SET_RULE(demandattention,);
     COMBOBOX_FORCE_RULE(fsplevel,);
     COMBOBOX_FORCE_RULE(type, comboToType);
     CHECKBOX_SET_RULE(ignoregeometry,);
@@ -622,6 +627,7 @@ void RulesWidget::prefillUnusedValues(const KWindowInfo& info)
     SPINBOX_PREFILL(opacityactive, , 100 /*get the actual opacity somehow*/);
     SPINBOX_PREFILL(opacityinactive, , 100 /*get the actual opacity somehow*/);
     //LINEEDIT_PREFILL( shortcut, );
+    CHECKBOX_PREFILL(demandattention, , info.state() & NET::DemandsAttention);
     //COMBOBOX_PREFILL( fsplevel, );
     COMBOBOX_PREFILL(type, typeToCombo, info.windowType(SUPPORTED_MANAGED_WINDOW_TYPES_MASK));
     //CHECKBOX_PREFILL( ignoregeometry, );

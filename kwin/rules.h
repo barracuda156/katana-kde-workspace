@@ -88,6 +88,7 @@ public:
     bool checkStrictGeometry(bool strict) const;
     QString checkShortcut(QString s, bool init = false) const;
     bool checkDisableGlobalShortcuts(bool disable) const;
+    bool checkDemandAttention(bool demand, bool init = false) const;
 private:
     MaximizeMode checkMaximizeVert(MaximizeMode mode, bool init) const;
     MaximizeMode checkMaximizeHoriz(MaximizeMode mode, bool init) const;
@@ -109,7 +110,7 @@ public:
         Shade = 1<<6, SkipTaskbar = 1<<7, SkipPager = 1<<8,
         SkipSwitcher = 1<<9, Above = 1<<10, Below = 1<<11, Fullscreen = 1<<12,
         NoBorder = 1<<13, OpacityActive = 1<<14, OpacityInactive = 1<<15,
-        Activity = 1<<16, Screen = 1<<17, All = 0xffffffff
+        Activity = 1<<16, Screen = 1<<17, DemandAttention = 1<<18, All = 0xffffffff
     };
     Q_DECLARE_FLAGS(Types, Type)
     void write(KConfigGroup&) const;
@@ -155,6 +156,7 @@ public:
     bool applyStrictGeometry(bool& strict) const;
     bool applyShortcut(QString& shortcut, bool init) const;
     bool applyDisableGlobalShortcuts(bool& disable) const;
+    bool applyDemandAttention(bool& demand, bool init) const;
 private:
 #endif
     bool matchType(NET::WindowType match_type) const;
@@ -277,6 +279,8 @@ private:
     SetRule shortcutrule;
     bool disableglobalshortcuts;
     ForceRule disableglobalshortcutsrule;
+    bool demandattention;
+    SetRule demandattentionrule;
     friend QDebug& operator<<(QDebug& stream, const Rules*);
 };
 
