@@ -82,9 +82,6 @@ Atoms::Atoms()
     atoms[n] = &net_wm_take_activity;
     names[n++] = (char*) "_NET_WM_TAKE_ACTIVITY";
 
-    atoms[n] = &net_wm_window_opacity;
-    names[n++] = (char*) "_NET_WM_WINDOW_OPACITY";
-
     Atom fake;
     atoms[n] = &fake;
     names[n++] = (char *) "_DT_SM_WINDOW_INFO";

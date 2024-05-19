@@ -51,7 +51,6 @@ public:
     Atom net_wm_user_time;
     Atom kde_net_wm_user_creation_time;
     Atom net_wm_take_activity;
-    Atom net_wm_window_opacity;
     Atom xdnd_aware;
     Atom xdnd_position;
     Atom net_frame_extents;
