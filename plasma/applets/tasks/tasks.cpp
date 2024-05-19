@@ -70,12 +70,15 @@ static QSizeF kTaskSize(const QSizeF appletsize, const Plasma::FormFactor formfa
     return QSizeF(iconsize, iconsize);
 }
 
-static QString kElementPrefixForTask(const bool isactive, const bool demandsattention)
+static QString kElementPrefixForTask(const bool isactive, const bool demandsattention,
+                                     const bool minimized)
 {
     if (isactive) {
         return QString::fromLatin1("focus");
     } else if (demandsattention) {
         return QString::fromLatin1("attention");
+    } else if (minimized) {
+        return QString::fromLatin1("minimized");
     }
     return QString::fromLatin1("normal");
 }
@@ -122,6 +125,7 @@ private:
     QString m_name;
     bool m_demandsattention;
     QTimer* m_attentiontimer;
+    bool m_minimized;
     TasksApplet::ToolTipMode m_tooltipmode;
 
     // for updateGeometry()
@@ -137,6 +141,7 @@ TasksSvg::TasksSvg(const WId task, const TasksApplet::ToolTipMode tooltipmode, Q
     m_hover(0.0),
     m_demandsattention(false),
     m_attentiontimer(nullptr),
+    m_minimized(false),
     m_tooltipmode(tooltipmode)
 {
     updateTaskAndToolTip();
@@ -217,7 +222,7 @@ void TasksSvg::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->setRenderHint(QPainter::Antialiasing);
     const QRectF brect = boundingRect();
     const QSizeF brectsize = brect.size();
-    m_framesvg->setElementPrefix(kElementPrefixForTask(isactive, m_demandsattention));
+    m_framesvg->setElementPrefix(kElementPrefixForTask(isactive, m_demandsattention, m_minimized));
     m_framesvg->resizeFrame(brectsize);
     m_framesvg->paintFrame(painter, brect);
     const qreal oldopacity = painter->opacity();
@@ -303,11 +308,15 @@ void TasksSvg::updateTaskAndToolTip()
     if (m_pixmap.isNull()) {
         m_pixmap = KIconLoader::global()->loadIcon("xorg", KIconLoader::Small);
     }
-    const KWindowInfo kwindowinfo = KWindowSystem::windowInfo(m_task, NET::WMVisibleName | NET::WMDesktop);
+    const KWindowInfo kwindowinfo = KWindowSystem::windowInfo(
+        m_task,
+        NET::WMVisibleName | NET::WMDesktop | NET::WMState | NET::XAWMState
+    );
     const QString windowname = kwindowinfo.visibleName();
     if (!windowname.isEmpty()) {
         m_name = windowname;
     }
+    m_minimized = kwindowinfo.isMinimized();
     const bool oncurrentdesktop = kwindowinfo.isOnDesktop(KWindowSystem::currentDesktop());
     const bool isvisible = isVisible();
     if (!isvisible && oncurrentdesktop) {
