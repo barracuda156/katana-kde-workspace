@@ -442,9 +442,6 @@ bool Client::manage(xcb_window_t w, bool isMapped)
     if (init_minimize)
         minimize(true);   // No animation
 
-    if (init_demand_attention)
-        demandAttention();
-
     // Other settings from the previous session
     if (session) {
         // Session restored windows are not considered to be new windows WRT rules,
@@ -489,7 +486,6 @@ bool Client::manage(xcb_window_t w, bool isMapped)
         if (info->state() & NET::Modal)
             setModal(true);
         setFullScreen(rules()->checkFullScreen(info->state() & NET::FullScreen, !isMapped), false);
-        demandAttention(init_demand_attention);
     }
 
     updateAllowedActions(true);
@@ -585,6 +581,8 @@ bool Client::manage(xcb_window_t w, bool isMapped)
     applyWindowRules(); // Just in case
     RuleBook::self()->discardUsed(this, false);   // Remove ApplyNow rules
     updateWindowRules(Rules::All); // Was blocked while !isManaged()
+
+    demandAttention(init_demand_attention);
 
     updateCompositeBlocking(true);
 
