@@ -558,7 +558,7 @@ CalculatorApplet::CalculatorApplet(QObject *parent, const QVariantList &args)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_calculator");
     setAspectRatioMode(Plasma::AspectRatioMode::KeepAspectRatio);
-    setStatus(Plasma::ItemStatus::AcceptingInputStatus);
+    setStatus(Plasma::ItemStatus::ActiveStatus);
     setPopupIcon("accessories-calculator");
 }
 

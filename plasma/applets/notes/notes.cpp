@@ -83,7 +83,7 @@ NotesApplet::NotesApplet(QObject *parent, const QVariantList &args)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_notes");
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
-    setStatus(Plasma::AcceptingInputStatus);
+    setStatus(Plasma::ItemStatus::ActiveStatus);
     setPopupIcon("knotes");
 }
 

@@ -133,11 +133,6 @@ public Q_SLOTS:
     void checkUnhide(Plasma::ItemStatus newStatus);
 
     /**
-     * Decides whether give focus to the panel
-     */
-    void statusUpdated(Plasma::ItemStatus newStatus);
-
-    /**
      * Pinches the min/max sizes of the containment to the current screen resolution
      */
     void pinchContainmentToCurrentScreen();

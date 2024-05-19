@@ -293,7 +293,6 @@ void PanelView::setContainment(Plasma::Containment *containment)
 
     PlasmaApp::self()->prepareContainment(containment);
 
-    connect(containment, SIGNAL(newStatus(Plasma::ItemStatus)), this, SLOT(statusUpdated(Plasma::ItemStatus)));
     connect(containment, SIGNAL(destroyed(QObject*)), this, SLOT(panelDeleted()));
     connect(containment, SIGNAL(toolBoxToggled()), this, SLOT(togglePanelController()));
     connect(containment, SIGNAL(appletAdded(Plasma::Applet*,QPointF)), this, SLOT(appletAdded(Plasma::Applet*)));
@@ -1281,13 +1280,6 @@ void PanelView::unhide(bool destroyTrigger)
         KWindowSystem::clearState(winId(), NET::KeepBelow);
         KWindowSystem::raiseWindow(winId());
         QTimer::singleShot(0, this, SLOT(resetTriggerEnteredSuppression()));
-    }
-}
-
-void PanelView::statusUpdated(Plasma::ItemStatus newStatus)
-{
-    if (newStatus == Plasma::AcceptingInputStatus) {
-        KWindowSystem::forceActiveWindow(winId());
     }
 }
 

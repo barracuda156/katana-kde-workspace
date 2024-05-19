@@ -216,7 +216,7 @@ DictApplet::DictApplet(QObject *parent, const QVariantList &args)
     KGlobal::locale()->insertCatalog("plasma_applet_qstardict");
     setPopupIcon(s_defaultpopupicon);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
-    setStatus(Plasma::ItemStatus::AcceptingInputStatus);
+    setStatus(Plasma::ItemStatus::ActiveStatus);
 }
 
 void DictApplet::init()
