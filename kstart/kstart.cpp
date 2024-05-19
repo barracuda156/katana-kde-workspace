@@ -160,7 +160,7 @@ void KStart::sendRule()
             message += "fullscreen=true\nfullscreenrule=3\n";
         }
         if (state & NET::DemandsAttention) {
-            message += "demandattention=true\n";
+            message += "demandattention=true\ndemandattentionrule=3\n";
         }
     }
 
