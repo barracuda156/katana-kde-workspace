@@ -159,6 +159,9 @@ void KStart::sendRule()
         if (state & NET::FullScreen) {
             message += "fullscreen=true\nfullscreenrule=3\n";
         }
+        if (state & NET::DemandsAttention) {
+            message += "demandattention=true\n";
+        }
     }
 
     msg.broadcastMessage("_KDE_NET_WM_TEMPORARY_RULES", message, -1);
@@ -336,6 +339,7 @@ int main(int argc, char *argv[])
     options.add("maximize", ki18n("Maximize the window"));
     options.add("maximize-vertically", ki18n("Maximize the window vertically"));
     options.add("maximize-horizontally", ki18n("Maximize the window horizontally"));
+    options.add("demands-attention", ki18n("Make the window demand attention"));
     options.add("fullscreen", ki18n("Show window fullscreen"));
     options.add("type <type>", ki18n("The window type: Normal, Desktop, Dock, Toolbar, \nMenu, Dialog or TopMenu"));
     options.add("activate",
@@ -438,6 +442,11 @@ int main(int argc, char *argv[])
     if (args->isSet("maximize-horizontally")) {
         state |= NET::MaxHoriz;
         mask |= NET::MaxHoriz;
+    }
+
+    if (args->isSet("demands-attention")) {
+        state |= NET::DemandsAttention;
+        mask |= NET::DemandsAttention;
     }
 
     iconify = args->isSet("iconify");
