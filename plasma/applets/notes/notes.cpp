@@ -85,26 +85,27 @@ NotesApplet::NotesApplet(QObject *parent, const QVariantList &args)
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
     setStatus(Plasma::AcceptingInputStatus);
     setPopupIcon("knotes");
+}
+
+void NotesApplet::init()
+{
+    Plasma::PopupApplet::init();
 
     m_noteswidget = new NotesAppletWidget(this);
 
+    const QVariantList args = startupArguments();
     if (args.size() > 0) {
         // drop, the first argument is a path to temporary file;
         const QString filepath = args.at(0).toString();
         QFile file(filepath);
         if (!file.open(QIODevice::ReadOnly)) {
             kWarning() << "could not open" << filepath << file.errorString();
-            return;
+        } else {
+            QTextStream textstream(&file);
+            Plasma::TextEdit* plasmatextedit = m_noteswidget->textEdit();
+            plasmatextedit->setText(textstream.readAll());
         }
-        QTextStream textstream(&file);
-        Plasma::TextEdit* plasmatextedit = m_noteswidget->textEdit();
-        plasmatextedit->setText(textstream.readAll());
     }
-}
-
-void NotesApplet::init()
-{
-    Plasma::PopupApplet::init();
 
     configChanged();
 }
