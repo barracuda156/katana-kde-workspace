@@ -556,7 +556,7 @@ bool Client::manage(xcb_window_t w, bool isMapped)
                     if (options->focusPolicyIsReasonable() && wantsTabFocus())
                         workspace()->requestFocus(this);
             } else if (!session && !isSpecialWindow())
-                demandAttention();
+                init_demand_attention = true;
         }
     } else
         updateVisibility();
