@@ -1661,20 +1661,21 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_iconwidget = new Plasma::IconWidget(this);
     m_iconwidget->setAcceptHoverEvents(false);
     m_iconwidget->setAcceptedMouseButtons(Qt::NoButton);
-    m_iconwidget->setFlag(QGraphicsItem::ItemIsFocusable, false);
+    m_iconwidget->setFocusPolicy(Qt::NoFocus);
     m_iconwidget->setIcon(s_usericon);
     m_toplayout->addItem(m_iconwidget);
 
     m_label = new Plasma::Label(this);
     m_label->setWordWrap(false);
     m_label->nativeWidget()->setTextInteractionFlags(Qt::NoTextInteraction);
-    m_label->setFlag(QGraphicsItem::ItemIsFocusable, false);
+    m_label->setFocusPolicy(Qt::NoFocus);
     m_toplayout->addItem(m_label);
     m_toplayout->setAlignment(m_label, Qt::AlignCenter);
 
     m_lineedit = new Plasma::LineEdit(this);
     m_lineedit->setClickMessage(i18n("Search"));
     m_lineedit->setClearButtonShown(true);
+    m_lineedit->setFocusPolicy(Qt::StrongFocus);
     m_toplayout->addItem(m_lineedit);
     m_toplayout->setAlignment(m_lineedit, Qt::AlignCenter);
     setFocusProxy(m_lineedit);
