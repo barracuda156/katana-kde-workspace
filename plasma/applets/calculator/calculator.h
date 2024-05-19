@@ -30,6 +30,8 @@ public:
     CalculatorApplet(QObject *parent, const QVariantList &args);
     ~CalculatorApplet();
 
+    // Plasma::Applet reimplementation
+    void init() final;
     // Plasma::PopupApplet reimplementation
     QGraphicsWidget* graphicsWidget() final;
 

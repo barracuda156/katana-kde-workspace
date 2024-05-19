@@ -560,13 +560,18 @@ CalculatorApplet::CalculatorApplet(QObject *parent, const QVariantList &args)
     setAspectRatioMode(Plasma::AspectRatioMode::KeepAspectRatio);
     setStatus(Plasma::ItemStatus::AcceptingInputStatus);
     setPopupIcon("accessories-calculator");
-
-    m_calculatorwidget = new CalculatorAppletWidget(this);
 }
 
 CalculatorApplet::~CalculatorApplet()
 {
     delete m_calculatorwidget;
+}
+
+void CalculatorApplet::init()
+{
+    Plasma::PopupApplet::init();
+
+    m_calculatorwidget = new CalculatorAppletWidget(this);
 }
 
 QGraphicsWidget* CalculatorApplet::graphicsWidget()

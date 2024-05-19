@@ -217,6 +217,11 @@ DictApplet::DictApplet(QObject *parent, const QVariantList &args)
     setPopupIcon(s_defaultpopupicon);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
     setStatus(Plasma::ItemStatus::AcceptingInputStatus);
+}
+
+void DictApplet::init()
+{
+    Plasma::PopupApplet::init();
 
     m_dictwidget = new DictAppletWidget(this);
 }

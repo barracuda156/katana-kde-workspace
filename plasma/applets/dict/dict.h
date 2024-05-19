@@ -30,6 +30,8 @@ class DictApplet : public Plasma::PopupApplet
 public:
     DictApplet(QObject *parent, const QVariantList &args);
 
+    // Plasma::Applet reimplementation
+    void init() final;
     // Plasma::PopupApplet reimplementation
     QGraphicsWidget* graphicsWidget() final;
 
