@@ -235,7 +235,7 @@ void Rules::readFromCfg(const KConfigGroup& cfg)
 
 void Rules::write(KConfigGroup& cfg) const
 {
-    cfg.writeEntry("id", ruleid);
+    cfg.writeEntry("id", ruleid.isEmpty() ? QByteArray::number(qHash(description)) : ruleid);
     cfg.writeEntry("Description", description);
     // always write wmclass
     WRITE_MATCH_STRING(wmclass, (const char*), true);
