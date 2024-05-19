@@ -19,9 +19,11 @@
 #include <kcmdlineargs.h>
 #include <kapplication.h>
 #include <kconfig.h>
-#include <KLocalizedString>
+#include <klocalizedstring.h>
+#include <kstandarddirs.h>
 #include <kwindowsystem.h>
 #include <QtDBus/QtDBus>
+
 #include <X11/Xlib.h>
 #include <fixx11h.h>
 
@@ -35,15 +37,34 @@ namespace KWin
 
 static void loadRules(QList< Rules* >& rules)
 {
+    QList<QByteArray> ruleids;
     KConfig _cfg("kwinrulesrc");
     KConfigGroup cfg(&_cfg, "General");
     int count = cfg.readEntry("count", 0);
-    for (int i = 1;
-            i <= count;
-            ++i) {
+    for (int i = 1; i <= count; ++i) {
         cfg = KConfigGroup(&_cfg, QString::number(i));
+        const QByteArray id = cfg.readEntry("id", QByteArray());
+        if (ruleids.contains(id)) {
+            continue;
+        }
         Rules* rule = new Rules(cfg);
         rules.append(rule);
+        ruleids.append(id);
+    }
+    const QStringList kwinrules = KGlobal::dirs()->findAllResources("data", "kwin/default_rules/*.kwinrules");
+    foreach (const QString &kwinrule, kwinrules) {
+        KConfig cfg(kwinrule, KConfig::NoGlobals);
+        count = cfg.group("General").readEntry("count", 0);
+        for (int i = 1; i <= count; ++i) {
+            KConfigGroup cg(&cfg, QString::number(i));
+            const QByteArray id = cg.readEntry("id", QByteArray());
+            if (ruleids.contains(id)) {
+                continue;
+            }
+            Rules* rule = new Rules(cg);
+            rules.append(rule);
+            ruleids.append(id);
+        }
     }
 }
 
