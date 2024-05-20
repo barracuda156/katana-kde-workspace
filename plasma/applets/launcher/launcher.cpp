@@ -348,6 +348,7 @@ void LauncherWidget::setMimeData(QMimeData *mimedata)
     if (mimedata) {
         m_mimedata = mimedata;
         setAcceptedMouseButtons(Qt::LeftButton);
+        // Plasma::IconWidget is kinda special, event filter is a must for DnD
         m_iconwidget->setAcceptedMouseButtons(Qt::LeftButton);
         m_iconwidget->installSceneEventFilter(this);
     }
@@ -446,7 +447,6 @@ void LauncherWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
         const QRectF brect = boundingRect();
         const QSizeF brectsize = brect.size();
         const qreal oldopacity = painter->opacity();
-        m_framesvg->setElementPrefix("hover");
         m_framesvg->resizeFrame(brectsize);
         painter->setOpacity(m_hover);
         m_framesvg->paintFrame(painter, brect);
@@ -484,7 +484,7 @@ void LauncherWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 bool LauncherWidget::sceneEventFilter(QGraphicsItem *item, QEvent *event)
 {
-    if ((item == m_iconwidget || item == m_textwidget) && event->type() == QEvent::GraphicsSceneMouseMove) {
+    if (item == m_iconwidget && event->type() == QEvent::GraphicsSceneMouseMove) {
         QGraphicsSceneMouseEvent* mouseevent = static_cast<QGraphicsSceneMouseEvent*>(event);
         if (m_mimedata && handleMouseEvent(mouseevent)) {
             return true;
