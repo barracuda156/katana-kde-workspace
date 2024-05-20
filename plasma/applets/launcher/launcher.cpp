@@ -258,6 +258,7 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
 
     m_iconwidget = new Plasma::IconWidget(this);
     m_iconwidget->setAcceptHoverEvents(false);
+    m_iconwidget->setContentsMargins(2, 2, 2, 2);
     m_layout->addItem(m_iconwidget);
     connect(
         m_iconwidget, SIGNAL(activated()),
