@@ -193,6 +193,7 @@ protected:
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) final;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) final;
     bool sceneEventFilter(QGraphicsItem *item, QEvent *event) final;
+    QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) final;
 
 private:
     QPropertyAnimation* animateHover(QPropertyAnimation *animation, const bool fadeout);
@@ -440,20 +441,16 @@ void LauncherWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
-    painter->setRenderHint(QPainter::Antialiasing);
-    const QRectF brect = boundingRect();
-    const QSizeF brectsize = brect.size();
     if (m_hover > 0.0) {
+        painter->setRenderHint(QPainter::Antialiasing);
+        const QRectF brect = boundingRect();
+        const QSizeF brectsize = brect.size();
         const qreal oldopacity = painter->opacity();
         m_framesvg->setElementPrefix("hover");
         m_framesvg->resizeFrame(brectsize);
         painter->setOpacity(m_hover);
         m_framesvg->paintFrame(painter, brect);
         painter->setOpacity(oldopacity);
-    } else if (hasFocus()) {
-        m_framesvg->setElementPrefix("selected");
-        m_framesvg->resizeFrame(brectsize);
-        m_framesvg->paintFrame(painter, brect);
     }
 }
 
@@ -482,7 +479,7 @@ void LauncherWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if (m_mimedata && handleMouseEvent(event)) {
         return;
     }
-    QGraphicsWidget::mouseMoveEvent(event);
+    Plasma::SvgWidget::mouseMoveEvent(event);
 }
 
 bool LauncherWidget::sceneEventFilter(QGraphicsItem *item, QEvent *event)
@@ -494,6 +491,22 @@ bool LauncherWidget::sceneEventFilter(QGraphicsItem *item, QEvent *event)
         }
     }
     return false;
+}
+
+QVariant LauncherWidget::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+{
+    const QVariant result = Plasma::SvgWidget::itemChange(change, value);
+    switch (change) {
+        case QGraphicsItem::ItemPositionHasChanged:
+        case QGraphicsItem::ItemVisibleHasChanged: {
+            m_hoveranimation = animateHover(m_hoveranimation, !isUnderMouse());
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+    return result;
 }
 
 Plasma::Animation* LauncherWidget::animateButton(Plasma::Animation *animation,
