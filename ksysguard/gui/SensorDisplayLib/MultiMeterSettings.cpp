@@ -21,7 +21,6 @@
 #include "ui_MultiMeterSettingsWidget.h"
 
 #include <klocale.h>
-#include <knumvalidator.h>
 
 MultiMeterSettings::MultiMeterSettings( QWidget *parent, const char *name )
     : KDialog( parent )
@@ -35,8 +34,6 @@ MultiMeterSettings::MultiMeterSettings( QWidget *parent, const char *name )
 
   m_settingsWidget = new Ui_MultiMeterSettingsWidget;
   m_settingsWidget->setupUi( mainWidget );
-  m_settingsWidget->m_lowerLimit->setValidator(new KDoubleValidator(m_settingsWidget->m_lowerLimit));
-  m_settingsWidget->m_upperLimit->setValidator(new KDoubleValidator(m_settingsWidget->m_upperLimit));
 
   m_settingsWidget->m_title->setFocus();
 
@@ -70,12 +67,12 @@ bool MultiMeterSettings::upperLimitActive()
 
 double MultiMeterSettings::lowerLimit()
 {
-  return m_settingsWidget->m_lowerLimit->text().toDouble();
+  return m_settingsWidget->m_lowerLimit->value();
 }
 
 double MultiMeterSettings::upperLimit()
 {
-  return m_settingsWidget->m_upperLimit->text().toDouble();
+  return m_settingsWidget->m_upperLimit->value();
 }
 
 QColor MultiMeterSettings::normalDigitColor()
@@ -115,12 +112,12 @@ void MultiMeterSettings::setUpperLimitActive( bool b )
 
 void MultiMeterSettings::setLowerLimit( double limit )
 {
-  m_settingsWidget->m_lowerLimit->setText( QString::number( limit ) );
+  m_settingsWidget->m_lowerLimit->setValue( limit );
 }
 
 void MultiMeterSettings::setUpperLimit( double limit )
 {
-  m_settingsWidget->m_upperLimit->setText( QString::number( limit ) );
+  m_settingsWidget->m_upperLimit->setValue( limit );
 }
 
 void MultiMeterSettings::setNormalDigitColor( const QColor &c )

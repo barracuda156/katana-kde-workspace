@@ -28,7 +28,6 @@
 
 #include <kdebug.h>
 #include <klocale.h>
-#include <knumvalidator.h>
 #include <ksgrd/SensorManager.h>
 #include "StyleEngine.h"
 
