@@ -128,37 +128,38 @@
      <property name="checked" >
       <bool>false</bool>
      </property>
-     <layout class="QVBoxLayout" >
-      <item>
+     <layout class="QGridLayout" >
+      <item row="0" column="0" colspan="2">
        <widget class="QCheckBox" name="filteringContextMatchOnly" >
         <property name="text" >
          <string>Suitable context matches only</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="1" column="0" colspan="2">
        <widget class="QCheckBox" name="filteringHideAttributes" >
         <property name="text" >
          <string>Hide completions with the following attributes:</string>
         </property>
        </widget>
       </item>
-      <item>
+      <item row="2" column="0" colspan="2">
        <widget class="QListWidget" name="filteringAttributesList" />
       </item>
-      <item>
-       <widget class="KIntNumInput" name="filteringMaximumInheritanceDepth" >
-        <property name="label" >
+      <item row="3" column="0" colspan="1">>
+       <widget class="QLabel" name="filteringAttributesListLabel" >
+        <property name="text" >
          <string>Maximum inheritance depth:</string>
         </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="1">>
+       <widget class="KIntNumInput" name="filteringMaximumInheritanceDepth" >
         <property name="minimum" >
          <number>0</number>
         </property>
         <property name="maximum" >
          <number>20</number>
-        </property>
-        <property name="referencePoint" >
-         <number>0</number>
         </property>
         <property name="specialValueText" >
          <string>Infinity</string>

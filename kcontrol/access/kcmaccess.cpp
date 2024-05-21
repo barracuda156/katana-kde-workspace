@@ -266,11 +266,13 @@ KAccessConfig::KAccessConfig(QWidget *parent, const QVariantList& args)
   vvbox->addLayout(hbox);
   hbox->addSpacing(24);
 
+  durationLabel = new QLabel(i18n("Duration:"), grp);
+  hbox->addWidget(durationLabel);
+
   durationSlider = new KDoubleNumInput(grp);
-  durationSlider->setRange(100, 2000, 100);
-  durationSlider->setExponentRatio(2);
+  durationSlider->setRange(100, 2000);
+  durationSlider->setSingleStep(100);
   durationSlider->setDecimals(0);
-  durationSlider->setLabel(i18n("Duration:"));
   durationSlider->setSuffix(i18n(" msec"));
   hbox->addWidget(durationSlider);
   durationSlider->setWhatsThis( i18n("Here you can customize the duration of the \"visible bell\" effect being shown.") );
@@ -381,13 +383,18 @@ KAccessConfig::KAccessConfig(QWidget *parent, const QVariantList& args)
   hbox = new QHBoxLayout();
   vvbox->addLayout(hbox);
   hbox->addSpacing(24);
+
+  slowKeysLabel = new QLabel(i18n("Acceptance dela&y:"), grp);
+  slowKeysLabel->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
+  hbox->addWidget(slowKeysLabel);
+
   slowKeysDelay = new KDoubleNumInput(grp);
-  slowKeysDelay->setRange(50, 10000, 100);
-  slowKeysDelay->setExponentRatio(2);
+  slowKeysDelay->setRange(50, 10000);
+  slowKeysDelay->setSingleStep(100);
   slowKeysDelay->setDecimals(0);
   slowKeysDelay->setSuffix(i18n(" msec"));
-  slowKeysDelay->setLabel(i18n("Acceptance dela&y:"), Qt::AlignVCenter|Qt::AlignLeft);
   hbox->addWidget(slowKeysDelay);
+  slowKeysLabel->setBuddy(slowKeysDelay);
 
   hbox = new QHBoxLayout();
   vvbox->addLayout(hbox);
@@ -421,13 +428,18 @@ KAccessConfig::KAccessConfig(QWidget *parent, const QVariantList& args)
   hbox = new QHBoxLayout();
   vvbox->addLayout(hbox);
   hbox->addSpacing(24);
+
+  bounceKeysLabel = new QLabel(i18n("D&ebounce time:"), grp);
+  bounceKeysLabel->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
+  hbox->addWidget(bounceKeysLabel);
+
   bounceKeysDelay = new KDoubleNumInput(grp);
-  bounceKeysDelay->setRange(100, 5000, 100);
-  bounceKeysDelay->setExponentRatio(2);
+  bounceKeysDelay->setRange(100, 5000);
+  bounceKeysDelay->setSingleStep(100);
   bounceKeysDelay->setDecimals(0);
   bounceKeysDelay->setSuffix(i18n(" msec"));
-  bounceKeysDelay->setLabel(i18n("D&ebounce time:"), Qt::AlignVCenter|Qt::AlignLeft);;
   hbox->addWidget(bounceKeysDelay);
+  bounceKeysLabel->setBuddy(bounceKeysDelay);
 
   hbox = new QHBoxLayout();
   vvbox->addLayout(hbox);
@@ -484,11 +496,16 @@ KAccessConfig::KAccessConfig(QWidget *parent, const QVariantList& args)
   hbox = new QHBoxLayout();
   vvbox->addLayout(hbox);
   hbox->addSpacing(24);
+  timeoutLabel = new QLabel(grp);
+  timeoutLabel->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
+  timeoutLabel->setText(i18n("Timeout:"));
+  hbox->addWidget(timeoutLabel);
   timeoutDelay = new KIntNumInput(grp);
   timeoutDelay->setSuffix(i18n(" min"));
-  timeoutDelay->setRange(1, 30, 4);
-  timeoutDelay->setLabel(i18n("Timeout:"), Qt::AlignVCenter|Qt::AlignLeft);;
+  timeoutDelay->setRange(1, 30);
+  timeoutDelay->setSingleStep(4);
   hbox->addWidget(timeoutDelay);
+  timeoutLabel->setBuddy(timeoutDelay);
 
   grp = new QGroupBox(i18n("Notification"), features);
   layout = new QHBoxLayout;
@@ -745,6 +762,7 @@ void KAccessConfig::checkAccess()
   invertScreen->setEnabled(visible);
   flashScreen->setEnabled(visible);
   colorButton->setEnabled(visible);
+  durationLabel->setEnabled(visible);
   durationSlider->setEnabled(visible);
 
   bool sticky = stickyKeys->isChecked();
@@ -753,15 +771,18 @@ void KAccessConfig::checkAccess()
   stickyKeysBeep->setEnabled(sticky);
 
   bool slow = slowKeys->isChecked();
+  slowKeysLabel->setEnabled(slow);
   slowKeysDelay->setEnabled(slow);
   slowKeysPressBeep->setEnabled(slow);
   slowKeysAcceptBeep->setEnabled(slow);
   slowKeysRejectBeep->setEnabled(slow);
 
   bool bounce = bounceKeys->isChecked();
+  bounceKeysLabel->setEnabled(bounce);
   bounceKeysDelay->setEnabled(bounce);
   bounceKeysRejectBeep->setEnabled(bounce);
 
   bool useTimeout = timeout->isChecked();
+  timeoutLabel->setEnabled(useTimeout);
   timeoutDelay->setEnabled(useTimeout);
 }

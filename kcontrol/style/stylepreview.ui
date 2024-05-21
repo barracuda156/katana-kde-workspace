@@ -103,7 +103,7 @@
            <item>
             <layout class="QHBoxLayout">
              <item>
-              <widget class="KIntSpinBox" name="SpinBox1">
+              <widget class="KIntNumInput" name="SpinBox1">
                <property name="maximum">
                 <number>999999</number>
                </property>
@@ -161,8 +161,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
  </customwidgets>

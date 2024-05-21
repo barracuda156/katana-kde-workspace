@@ -21,6 +21,8 @@
 
 #include <QGraphicsSceneWheelEvent>
 #include <QCheckBox>
+#include <QLabel>
+#include <QSpacerItem>
 #include <KIntNumInput>
 #include <KConfigDialog>
 #include <KColorButton>
@@ -56,9 +58,11 @@ private:
     QColor m_visualizercolor;
     bool m_visualizericon;
     QCheckBox* m_visualizerbox;
+    QLabel* m_visualizerscalelabel;
     KIntNumInput* m_visualizerscalebox;
     KColorButton* m_visualizerbutton;
     QCheckBox* m_visualizericonbox;
+    QSpacerItem* m_spacer;
 };
 
 #endif // MIXER_H

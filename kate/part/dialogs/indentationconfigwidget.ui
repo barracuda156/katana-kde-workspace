@@ -74,7 +74,7 @@
        </widget>
       </item>
       <item row="1" column="3">
-       <widget class="KIntSpinBox" name="sbIndentWidth">
+       <widget class="KIntNumInput" name="sbIndentWidth">
         <property name="whatsThis">
          <string>The indentation width is the number of spaces which is used to indent a line. If the option &lt;b&gt;Insert spaces instead of tabulators&lt;/b&gt; in the section &lt;b&gt;Editing&lt;/b&gt; is disabled, a &lt;b&gt;Tab&lt;/b&gt; character is inserted if the indentation is divisible by the tab width.</string>
         </property>
@@ -123,7 +123,7 @@
        </widget>
       </item>
       <item row="0" column="3">
-       <widget class="KIntSpinBox" name="sbTabWidth">
+       <widget class="KIntNumInput" name="sbTabWidth">
         <property name="minimum">
          <number>1</number>
         </property>
@@ -273,8 +273,8 @@ p, li { white-space: pre-wrap; }
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
   <customwidget>

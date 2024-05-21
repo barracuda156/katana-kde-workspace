@@ -216,7 +216,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="KIntSpinBox" name="terminalColumnsEntry">
+           <widget class="KIntNumInput" name="terminalColumnsEntry">
             <property name="minimum">
              <number>1</number>
             </property>
@@ -233,7 +233,7 @@
            </widget>
           </item>
           <item row="0" column="3">
-           <widget class="KIntSpinBox" name="terminalRowsEntry">
+           <widget class="KIntNumInput" name="terminalRowsEntry">
             <property name="minimum">
              <number>1</number>
             </property>
@@ -381,7 +381,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="KIntSpinBox" name="silenceSecondsSpinner">
+           <widget class="KIntNumInput" name="silenceSecondsSpinner">
             <property name="toolTip">
              <string>The threshold for continuous silence to be detected by Konsole</string>
             </property>
@@ -1114,7 +1114,7 @@
              </widget>
             </item>
             <item>
-             <widget class="KIntSpinBox" name="lineSpacingSpinner">
+             <widget class="KIntNumInput" name="lineSpacingSpinner">
               <property name="toolTip">
                <string>The number of pixels between two lines</string>
               </property>
@@ -1363,8 +1363,8 @@
    <header>klineedit.h</header>
   </customwidget>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
   <customwidget>

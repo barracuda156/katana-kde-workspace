@@ -95,7 +95,7 @@ HostConnector::HostConnector( QWidget *parent, const char *name )
   label = new QLabel( i18n( "Port:" ));
   groupLayout->addWidget( label, 1, 0 );
 
-  mPort = new KIntSpinBox();
+  mPort = new KIntNumInput();
   mPort->setRange( 1, 65535 );
   mPort->setEnabled( false );
   mPort->setValue( 3112 );

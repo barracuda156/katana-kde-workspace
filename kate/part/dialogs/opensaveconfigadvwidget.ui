@@ -28,7 +28,7 @@
          </widget>
         </item>
         <item>
-         <widget class="KIntSpinBox" name="sbConfigFileSearchDepth">
+         <widget class="KIntNumInput" name="sbConfigFileSearchDepth">
           <property name="whatsThis">
            <string>The editor will search the given number of folder levels upwards for a .kateconfig file and load the settings line from it.</string>
           </property>
@@ -170,8 +170,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
   <customwidget>

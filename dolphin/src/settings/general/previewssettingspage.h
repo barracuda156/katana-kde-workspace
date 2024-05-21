@@ -25,7 +25,7 @@
 #include <QListView>
 #include <QModelIndex>
 
-class KIntSpinBox;
+class KIntNumInput;
 
 /**
  * @brief Allows the configuration of file previews.
@@ -62,9 +62,9 @@ private:
     bool m_initialized;
     QListView *m_listView;
     QStringList m_enabledPreviewPlugins;
-    KIntSpinBox* m_localFileSizeBox;
-    KIntSpinBox* m_remoteFileSizeBox;
-    KIntSpinBox* m_iconAlphaBox;
+    KIntNumInput* m_localFileSizeBox;
+    KIntNumInput* m_remoteFileSizeBox;
+    KIntNumInput* m_iconAlphaBox;
 };
 
 #endif

@@ -22,13 +22,12 @@
 
 #include "dolphinprivate_export.h"
 
+#include <QString>
 #include <KDialog>
 #include <KFileItem>
 
 class KLineEdit;
-class KIntSpinBox;
-
-#include <QString>
+class KIntNumInput;
 
 /**
  * @brief Dialog for renaming a variable number of files.
@@ -65,7 +64,7 @@ private:
     KLineEdit* m_lineEdit;
     KFileItemList m_items;
     bool m_allExtensionsDifferent;
-    KIntSpinBox* m_spinBox;
+    KIntNumInput* m_spinBox;
 };
 
 #endif

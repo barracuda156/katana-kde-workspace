@@ -89,10 +89,10 @@ namespace Oxygen
             simulator().selectComboBoxItem( ui.kcombobox, 2 );
             simulator().selectComboBoxItem( ui.kcombobox, 0 );
 
-            simulator().clearText( ui.kintspinbox );
-            simulator().writeText( ui.kintspinbox, "10" );
-            simulator().clearText( ui.kintspinbox );
-            simulator().writeText( ui.kintspinbox, "0" );
+            simulator().clearText( ui.kintnuminput );
+            simulator().writeText( ui.kintnuminput, "10" );
+            simulator().clearText( ui.kintnuminput );
+            simulator().writeText( ui.kintnuminput, "0" );
 
         }
 
@@ -127,7 +127,6 @@ namespace Oxygen
         ui.klineedit->setFrame( !value );
         ui.klineedit_2->setFrame( !value );
         ui.kcombobox->setFrame( !value );
-        ui.kintspinbox->setFrame( !value );
     }
 
     //________________________________________________________________

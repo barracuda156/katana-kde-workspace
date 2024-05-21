@@ -20,7 +20,7 @@
 
 #include <QTimer>
 #include <QApplication>
-#include <QVBoxLayout>
+#include <QGridLayout>
 #include <QGraphicsGridLayout>
 #include <Plasma/TabBar>
 #include <Plasma/Frame>
@@ -964,8 +964,10 @@ MixerApplet::MixerApplet(QObject *parent, const QVariantList &args)
     m_visualizerscale(s_visualizerscale),
     m_visualizericon(s_visualizericon),
     m_visualizerbox(nullptr),
+    m_visualizerscalelabel(nullptr),
     m_visualizerscalebox(nullptr),
-    m_visualizerbutton(nullptr)
+    m_visualizerbutton(nullptr),
+    m_spacer(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_mixer");
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
@@ -991,17 +993,21 @@ void MixerApplet::init()
 void MixerApplet::createConfigurationInterface(KConfigDialog *parent)
 {
     QWidget* widget = new QWidget();
-    QVBoxLayout* widgetlayout = new QVBoxLayout(widget);
+    QGridLayout* widgetlayout = new QGridLayout(widget);
     m_visualizerbox = new QCheckBox(widget);
     m_visualizerbox->setChecked(m_showvisualizer);
     m_visualizerbox->setText(i18n("Show visualizer"));
-    widgetlayout->addWidget(m_visualizerbox);
+    widgetlayout->addWidget(m_visualizerbox, 0, 0, 1, 2);
+
+    m_visualizerscalelabel = new QLabel(widget);
+    m_visualizerscalelabel->setText(i18n("Smooth-factor"));
+    widgetlayout->addWidget(m_visualizerscalelabel, 1, 0, 1, 1, Qt::AlignRight | Qt::AlignVCenter);
 
     m_visualizerscalebox = new KIntNumInput(widget);
+    m_visualizerscalebox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     m_visualizerscalebox->setRange(1, 5);
     m_visualizerscalebox->setValue(m_visualizerscale);
-    m_visualizerscalebox->setLabel(i18n("Smooth-factor"));
-    widgetlayout->addWidget(m_visualizerscalebox);
+    widgetlayout->addWidget(m_visualizerscalebox, 1, 1, 1, 1);
 
     const QColor defaultvisualizercolor = kDefaultVisualizerColor();
     QColor visualizercolor = m_visualizercolor;
@@ -1011,14 +1017,16 @@ void MixerApplet::createConfigurationInterface(KConfigDialog *parent)
     m_visualizerbutton = new KColorButton(widget);
     m_visualizerbutton->setDefaultColor(defaultvisualizercolor);
     m_visualizerbutton->setColor(visualizercolor);
-    widgetlayout->addWidget(m_visualizerbutton);
+    widgetlayout->addWidget(m_visualizerbutton, 2, 0, 1, 2);
 
     m_visualizericonbox = new QCheckBox(widget);
     m_visualizericonbox->setChecked(m_visualizericon);
     m_visualizericonbox->setText(i18n("Show icon"));
-    widgetlayout->addWidget(m_visualizericonbox);
+    widgetlayout->addWidget(m_visualizericonbox, 3, 0, 1, 2);
 
-    widgetlayout->addStretch();
+    m_spacer = new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Expanding);
+    widgetlayout->addItem(m_spacer, 4, 0, 1, 2);
+
     widget->setLayout(widgetlayout);
     parent->addPage(widget, i18n("Visualizer"), "player-volume");
 

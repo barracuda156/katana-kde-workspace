@@ -170,12 +170,20 @@ FontAASettings::FontAASettings(QWidget *parent)
 
   excludeRange=new QCheckBox(i18n("E&xclude range:"), mw);
   QHBoxLayout *rangeLayout = new QHBoxLayout();
-  excludeFrom=new KDoubleNumInput(0, 72, 8.0, mw, 1, 1);
+  excludeFrom=new KDoubleNumInput(mw);
+  excludeFrom->setRange(0, 72);
+  excludeFrom->setValue(8.0);
+  excludeFrom->setSingleStep(1);
+  excludeFrom->setDecimals(1);
   excludeFrom->setSuffix(i18n(" pt"));
   rangeLayout->addWidget(excludeFrom);
   excludeToLabel=new QLabel(i18n(" to "), mw);
   rangeLayout->addWidget(excludeToLabel);
-  excludeTo=new KDoubleNumInput(0, 72, 15.0, mw, 1, 1);
+  excludeTo=new KDoubleNumInput(mw);
+  excludeTo->setRange(0, 72);
+  excludeTo->setValue(15.0);
+  excludeTo->setSingleStep(1);
+  excludeTo->setDecimals(1);
   excludeTo->setSuffix(i18n(" pt"));
   rangeLayout->addWidget(excludeTo);
   layout->addRow(excludeRange, rangeLayout);

@@ -68,7 +68,6 @@ namespace KIO
 class KComboBox;
 class KTemporaryFile;
 class KIntNumInput;
-class KIntSpinBox;
 class KPluginSelector;
 class KPluginInfo;
 
@@ -127,7 +126,7 @@ class KateGotoBar : public KateViewBarWidget
 
   private:
     KTextEditor::View *const m_view;
-    KIntSpinBox *gotoRange;
+    KIntNumInput *gotoRange;
 };
 
 class KateDictionaryBar : public KateViewBarWidget
@@ -311,7 +310,7 @@ class KateSaveConfigTab : public KateConfigPage
     QCheckBox *cbLocalFiles, *cbRemoteFiles;
     QCheckBox *replaceTabs, *removeSpaces, *allowEolDetection;
     KIntNumInput *dirSearchDepth;
-    class KIntSpinBox *blockCount;
+    class KIntNumInput *blockCount;
     class QLabel *blockCountLabel;
 
   private:

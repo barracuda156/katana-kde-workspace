@@ -70,18 +70,20 @@ WorkSheetSettings::WorkSheetSettings( QWidget* parent, bool locked )
     label = new QLabel( i18n( "Rows:" ), group );
     groupLayout->addWidget( label, ++row_num, 0 );
 
-    mRows = new KIntNumInput( 3, group );
+    mRows = new KIntNumInput( group );
     mRows->setMaximum( 42 );
     mRows->setMinimum( 1 );
+    mRows->setValue( 3 );
     groupLayout->addWidget( mRows, row_num, 1 );
     label->setBuddy( mRows );
 
     label = new QLabel( i18n( "Columns:" ), group );
     groupLayout->addWidget( label, ++row_num, 0 );
 
-    mColumns = new KIntNumInput( 1, group );
+    mColumns = new KIntNumInput( group );
     mColumns->setMaximum( 42 );
     mColumns->setMinimum( 1 );
+    mColumns->setValue( 1 );
     groupLayout->addWidget( mColumns, 1, 1 );
     label->setBuddy( mColumns );
     mRows->setWhatsThis( i18n( "Enter the number of rows the sheet should have." ) );
@@ -90,7 +92,11 @@ WorkSheetSettings::WorkSheetSettings( QWidget* parent, bool locked )
   label = new QLabel( i18n( "Update interval:" ), group );
   groupLayout->addWidget( label, ++row_num, 0 );
 
-  mInterval = new KDoubleNumInput( 0.00/*minimum*/, 1000.0/*maximum*/, 1/*default*/, group/*parent*/, 0.5/*stepsize*/, 2/*precision*/ );
+  mInterval = new KDoubleNumInput( group );
+  mInterval->setRange( 0.00, 1000.0);
+  mInterval->setSingleStep( 0.5 );
+  mInterval->setValue( 1.0 );
+  mInterval->setDecimals( 2 );
   mInterval->setSuffix( i18n( " sec" ) );
   groupLayout->addWidget( mInterval, row_num, 1 );
   label->setBuddy( mInterval );

@@ -55,7 +55,7 @@
       </widget>
      </item>
      <item>
-      <widget class="KIntSpinBox" name="historyLineSpinner">
+      <widget class="KIntNumInput" name="historyLineSpinner">
        <property name="toolTip">
         <string>Number of lines of output to remember</string>
        </property>
@@ -112,8 +112,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
   <customwidget>

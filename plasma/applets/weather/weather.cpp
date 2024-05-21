@@ -744,8 +744,10 @@ WeatherApplet::WeatherApplet(QObject *parent, const QVariantList &args)
     m_tempunitbox(nullptr),
     m_locationbox(nullptr),
     m_latitude(KTimeZone::UNKNOWN),
+    m_latitudelabel(nullptr),
     m_latitudeinput(nullptr),
     m_longitude(KTimeZone::UNKNOWN),
+    m_longitudelabel(nullptr),
     m_longitudeinput(nullptr),
     m_spacer(nullptr)
 {
@@ -816,16 +818,20 @@ void WeatherApplet::createConfigurationInterface(KConfigDialog *parent)
         m_locationbox->addItem(sortedzonesiter.key(), sortedzonesiter.value());
     }
     widgetlayout->addWidget(m_locationbox, 1, 1, 1, 1);
+    m_latitudelabel = new QLabel(widget);
+    m_latitudelabel->setText(i18n("Latitude:"));
+    widgetlayout->addWidget(m_latitudelabel, 2, 0, 1, 1, Qt::AlignRight | Qt::AlignVCenter);
     m_latitudeinput = new KDoubleNumInput(widget);
     m_latitudeinput->setSliderEnabled(true);
-    m_latitudeinput->setLabel(i18n("Latitude:"));
     m_latitudeinput->setValue(m_latitude);
-    widgetlayout->addWidget(m_latitudeinput, 2, 0, 1, 2);
+    widgetlayout->addWidget(m_latitudeinput, 2, 1, 1, 1);
+    m_longitudelabel = new QLabel(widget);
+    m_longitudelabel->setText(i18n("Longitude:"));
+    widgetlayout->addWidget(m_longitudelabel, 3, 0, 1, 1, Qt::AlignRight | Qt::AlignVCenter);
     m_longitudeinput = new KDoubleNumInput(widget);
     m_longitudeinput->setSliderEnabled(true);
-    m_longitudeinput->setLabel(i18n("Longitude:"));
     m_longitudeinput->setValue(m_longitude);
-    widgetlayout->addWidget(m_longitudeinput, 3, 0, 1, 2);
+    widgetlayout->addWidget(m_longitudeinput, 3, 1, 1, 1);
     m_spacer = new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Expanding);
     widgetlayout->addItem(m_spacer, 4, 0, 1, 2);
     widget->setLayout(widgetlayout);
@@ -863,16 +869,20 @@ void WeatherApplet::slotCheckLocation()
 {
     const int locationindex = m_locationbox->currentIndex();
     if (locationindex == 1) {
+        m_latitudelabel->setVisible(true);
         m_latitudeinput->setVisible(true);
         m_latitudeinput->setRange(-90.0, 90.0);
         m_latitudeinput->setValue((!m_location.isEmpty() || m_latitude == KTimeZone::UNKNOWN) ? 0.0 : m_latitude);
+        m_longitudelabel->setVisible(true);
         m_longitudeinput->setVisible(true);
         m_longitudeinput->setRange(-180.0, 180.0);
         m_longitudeinput->setValue((!m_location.isEmpty() || m_longitude == KTimeZone::UNKNOWN) ? 0.0 : m_longitude);
     } else {
+        m_latitudelabel->setVisible(false);
         m_latitudeinput->setVisible(false);
         m_latitudeinput->setRange(KTimeZone::UNKNOWN, KTimeZone::UNKNOWN);
         m_latitudeinput->setValue(KTimeZone::UNKNOWN);
+        m_longitudelabel->setVisible(false);
         m_longitudeinput->setVisible(false);
         m_longitudeinput->setRange(KTimeZone::UNKNOWN, KTimeZone::UNKNOWN);
         m_longitudeinput->setValue(KTimeZone::UNKNOWN);

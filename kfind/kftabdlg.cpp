@@ -182,7 +182,7 @@ KfindTabWidget::KfindTabWidget(QWidget *parent)
     fromDate->setObjectName( QLatin1String( "fromDate" ) );
     toDate = new KDateCombo(pages[1] );
     toDate->setObjectName( QLatin1String( "toDate" ) );
-    timeBox = new KIntSpinBox( pages[1] );
+    timeBox = new KIntNumInput( pages[1] );
     timeBox->setRange( 1, 60 );
     timeBox->setSingleStep( 1 );
     timeBox->setObjectName( QLatin1String( "timeBox" ) );
@@ -191,7 +191,7 @@ KfindTabWidget::KfindTabWidget(QWidget *parent)
     sizeBox->setObjectName( QLatin1String( "sizeBox" ) );
     QLabel * sizeL   =new QLabel(i18n("File &size is:"), pages[1]);
     sizeL->setBuddy( sizeBox );
-    sizeEdit=new KIntSpinBox(pages[1] );
+    sizeEdit=new KIntNumInput(pages[1] );
     sizeEdit->setRange( 0, INT_MAX );
     sizeEdit->setSingleStep( 1 );
     sizeEdit->setObjectName( QLatin1String( "sizeEdit" ) );

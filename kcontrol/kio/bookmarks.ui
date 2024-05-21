@@ -77,7 +77,7 @@ It looks less nice but it may help if you have a very big folder you want to spr
          </widget>
         </item>
         <item>
-         <widget class="KIntSpinBox" name="sbColumns">
+         <widget class="KIntNumInput" name="sbColumns">
           <property name="whatsThis">
            <string/>
           </property>
@@ -184,11 +184,6 @@ It looks less nice but it may help if you have a very big folder you want to spr
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header>knuminput.h</header>
-  </customwidget>
   <customwidget>
    <class>KIntNumInput</class>
    <extends>QWidget</extends>

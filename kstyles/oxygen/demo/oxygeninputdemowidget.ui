@@ -117,12 +117,12 @@
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
      <property name="buddy">
-      <cstring>kintspinbox</cstring>
+      <cstring>kintnuminput</cstring>
      </property>
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="KIntSpinBox" name="kintspinbox"/>
+    <widget class="KIntNumInput" name="kintnuminput"/>
    </item>
    <item row="5" column="0" colspan="3">
     <widget class="QFrame" name="frame">
@@ -162,8 +162,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
   <customwidget>
@@ -186,7 +186,7 @@
   <tabstop>klineedit</tabstop>
   <tabstop>klineedit_2</tabstop>
   <tabstop>kcombobox</tabstop>
-  <tabstop>kintspinbox</tabstop>
+  <tabstop>kintnuminput</tabstop>
   <tabstop>flatCheckBox</tabstop>
   <tabstop>textedit</tabstop>
   <tabstop>wrapCheckBox</tabstop>

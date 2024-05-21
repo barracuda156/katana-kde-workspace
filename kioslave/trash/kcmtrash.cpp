@@ -28,7 +28,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QListWidget>
-#include <QtGui/qlistwidget.h>
+#include <QListWidget>
 
 #include <kconfig.h>
 #include <kconfiggroup.h>
@@ -38,8 +38,7 @@
 #include <klocale.h>
 #include <kpluginfactory.h>
 #include <kpluginloader.h>
-#include <KIntSpinBox>
-#include <KDebug>
+#include <kdebug.h>
 
 K_PLUGIN_FACTORY( KCMTrashConfigFactory, registerPlugin<TrashConfigModule>( "trash" ); )
 K_EXPORT_PLUGIN( KCMTrashConfigFactory( "kcmtrash" ) )
@@ -250,11 +249,11 @@ void TrashConfigModule::setupGui()
                                      "<p>Check this box to allow <b>automatic deletion</b> of files that are older than the value specified. "
                                      "Leave this disabled to <b>not</b> automatically delete any items after a certain timespan</p>" ) );
     daysLayout->addWidget( mUseTimeLimit );
-    mDays = new KIntSpinBox( this );
-    
+
+    mDays = new KIntNumInput( this );
     mDays->setRange( 1, 365 );
     mDays->setSingleStep( 1 );
-    mDays->setSuffix( i18np(" day", " days", mDays->value()) );
+    mDays->setSuffix( ki18np(" day", " days") );
     mDays->setWhatsThis( i18nc( "@info:whatsthis",
                                      "<p>Set the number of days that files can remain in the trash. "
                                      "Any files older than this will be automatically deleted.</p>" ) );

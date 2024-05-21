@@ -989,7 +989,7 @@ KateGotoBar::KateGotoBar(KTextEditor::View *view, QWidget *parent)
 
   QHBoxLayout *topLayout = new QHBoxLayout( centralWidget() );
   topLayout->setMargin(0);
-  gotoRange = new KIntSpinBox(centralWidget());
+  gotoRange = new KIntNumInput(centralWidget());
 
   QLabel *label = new QLabel(i18n("&Go to line:"), centralWidget() );
   label->setBuddy(gotoRange);
@@ -1019,7 +1019,6 @@ void KateGotoBar::updateData()
     gotoRange->adjustSize(); // ### does not respect the range :-(
   }
   gotoRange->setFocus(Qt::OtherFocusReason);
-  gotoRange->selectAll();
 }
 
 void KateGotoBar::keyPressEvent(QKeyEvent* event)

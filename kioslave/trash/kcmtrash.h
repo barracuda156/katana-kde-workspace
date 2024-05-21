@@ -21,6 +21,7 @@
 #define KCMTRASH_H
 
 #include <kcmodule.h>
+#include <knuminput.h>
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -28,7 +29,7 @@
 #include <QFrame>
 #include <QLabel>
 #include <QListWidgetItem>
-class KIntSpinBox;
+
 class TrashImpl;
 
 /**
@@ -57,7 +58,7 @@ class TrashConfigModule : public KCModule
         void setupGui();
 
         QCheckBox *mUseTimeLimit;
-        KIntSpinBox *mDays;
+        KIntNumInput *mDays;
         QCheckBox *mUseSizeLimit;
         QWidget *mSizeWidget;
         QDoubleSpinBox *mPercent;

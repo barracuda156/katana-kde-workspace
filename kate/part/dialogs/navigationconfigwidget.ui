@@ -48,7 +48,7 @@
          </widget>
         </item>
         <item>
-         <widget class="KIntSpinBox" name="sbAutoCenterCursor">
+         <widget class="KIntNumInput" name="sbAutoCenterCursor">
           <property name="whatsThis">
            <string>Sets the number of lines to maintain visible above and below the cursor when possible.</string>
           </property>
@@ -152,8 +152,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
  </customwidgets>

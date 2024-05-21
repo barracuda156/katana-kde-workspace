@@ -86,12 +86,12 @@ PreviewsSettingsPage::PreviewsSettingsPage(QWidget* parent) :
     QLabel* localFileSizeLabel = new QLabel(i18nc("@label", "Skip previews for local files above:"), this);
     QLabel* remoteFileSizeLabel = new QLabel(i18nc("@label", "Skip previews for remote files above:"), this);
 
-    m_localFileSizeBox = new KIntSpinBox(this);
+    m_localFileSizeBox = new KIntNumInput(this);
     m_localFileSizeBox->setSingleStep(1);
     m_localFileSizeBox->setSuffix(QLatin1String(" MB"));
     m_localFileSizeBox->setRange(0, 9999999); /* MB */
 
-    m_remoteFileSizeBox = new KIntSpinBox(this);
+    m_remoteFileSizeBox = new KIntNumInput(this);
     m_remoteFileSizeBox->setSingleStep(1);
     m_remoteFileSizeBox->setSuffix(QLatin1String(" MB"));
     m_remoteFileSizeBox->setRange(0, 9999999); /* MB */
@@ -104,7 +104,7 @@ PreviewsSettingsPage::PreviewsSettingsPage(QWidget* parent) :
 
     QLabel* iconAlphaLabel = new QLabel(i18nc("@label", "Icon alpha:"), this);
 
-    m_iconAlphaBox = new KIntSpinBox(this);
+    m_iconAlphaBox = new KIntNumInput(this);
     m_iconAlphaBox->setSingleStep(1);
     m_iconAlphaBox->setRange(0, 255);
 

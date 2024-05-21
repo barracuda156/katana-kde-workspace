@@ -23,13 +23,12 @@
 #define KSG_HOSTCONNECTOR_H
 
 #include <QLabel>
+#include <QRadioButton>
 
 #include <kdialog.h>
 
 class KComboBox;
-
-#include <QRadioButton>
-class KIntSpinBox;
+class KIntNumInput;
 
 class HostConnector : public KDialog
 {
@@ -70,7 +69,7 @@ class HostConnector : public KDialog
     QRadioButton *mUseDaemon;
     QRadioButton *mUseCustom;
 
-    KIntSpinBox *mPort;
+    KIntNumInput *mPort;
 };
 
 #endif

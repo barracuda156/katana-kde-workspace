@@ -90,14 +90,14 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="KIntSpinBox" name="shadowSize">
+    <widget class="KIntNumInput" name="shadowSize">
      <property name="suffix">
       <string>px</string>
      </property>
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="KIntSpinBox" name="verticalOffset">
+    <widget class="KIntNumInput" name="verticalOffset">
      <property name="suffix">
       <string>px</string>
      </property>
@@ -112,8 +112,8 @@
    <header>kcolorbutton.h</header>
   </customwidget>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
  </customwidgets>

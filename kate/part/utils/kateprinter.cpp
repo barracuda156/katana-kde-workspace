@@ -1142,7 +1142,7 @@ KatePrintLayout::KatePrintLayout( QWidget *parent)
 
   QLabel *lBoxWidth = new QLabel( i18n("W&idth:"), gbBoxProps );
   grid->addWidget(lBoxWidth, 0, 0);
-  sbBoxWidth = new KIntSpinBox( gbBoxProps );
+  sbBoxWidth = new KIntNumInput( gbBoxProps );
   sbBoxWidth->setRange( 1, 100 );
   sbBoxWidth->setSingleStep( 1 );
   grid->addWidget(sbBoxWidth, 0, 1);
@@ -1150,7 +1150,7 @@ KatePrintLayout::KatePrintLayout( QWidget *parent)
 
   QLabel *lBoxMargin = new QLabel( i18n("&Margin:"), gbBoxProps );
   grid->addWidget(lBoxMargin, 1, 0);
-  sbBoxMargin = new KIntSpinBox( gbBoxProps );
+  sbBoxMargin = new KIntNumInput( gbBoxProps );
   sbBoxMargin->setRange( 0, 100 );
   sbBoxMargin->setSingleStep( 1 );
   grid->addWidget(sbBoxMargin, 1, 1);

@@ -47,7 +47,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="KIntSpinBox" name="numberSpinBox">
+           <widget class="KIntNumInput" name="numberSpinBox">
             <property name="whatsThis">
              <string>Here you can set how many virtual desktops you want on your KDE desktop.</string>
             </property>
@@ -76,7 +76,7 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="KIntSpinBox" name="rowsSpinBox">
+           <widget class="KIntNumInput" name="rowsSpinBox">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -209,7 +209,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="KIntSpinBox" name="popupHideSpinBox">
+           <widget class="KIntNumInput" name="popupHideSpinBox">
             <property name="suffix">
              <string> msec</string>
             </property>
@@ -271,8 +271,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
   <customwidget>

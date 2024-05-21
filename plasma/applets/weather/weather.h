@@ -21,6 +21,7 @@
 
 #include <QComboBox>
 #include <QSpacerItem>
+#include <QLabel>
 #include <KDoubleNumInput>
 #include <KConfigDialog>
 #include <KUnitConversion>
@@ -53,8 +54,10 @@ private:
     QString m_location;
     QComboBox* m_locationbox;
     float m_latitude;
+    QLabel* m_latitudelabel;
     KDoubleNumInput* m_latitudeinput;
     float m_longitude;
+    QLabel* m_longitudelabel;
     KDoubleNumInput* m_longitudeinput;
     QSpacerItem* m_spacer;
 };

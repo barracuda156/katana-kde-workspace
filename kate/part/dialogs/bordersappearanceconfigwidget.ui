@@ -92,7 +92,7 @@
           </widget>
          </item>
          <item row="1" column="2">
-          <widget class="KIntSpinBox" name="spBoxMiniMapWidth">
+          <widget class="KIntNumInput" name="spBoxMiniMapWidth">
            <property name="minimum">
             <number>40</number>
            </property>
@@ -234,8 +234,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
  </customwidgets>

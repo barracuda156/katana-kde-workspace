@@ -19,26 +19,25 @@
 #ifndef KFTABDLG_H
 #define KFTABDLG_H
 
-#include <QValidator> // for KDigitValidator
+#include <QButtonGroup>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QString>
+#include <QDate>
+#include <QRegExp>
+#include <QLabel>
+#include <QValidator>
 
 #include <kurl.h>
 #include <ktabwidget.h>
 #include <kmimetype.h>
 
 class KUrlComboBox;
-#include <QButtonGroup>
-#include <QPushButton>
-#include <QRadioButton>
-#include <QCheckBox>
 class KLineEdit;
-#include <QString>
-#include <QDate>
-#include <QRegExp>
 class KDialog;
 class KComboBox;
-class KIntSpinBox;
-#include <QLabel>
-
+class KIntNumInput;
 class KfDirDialog;
 class KDateCombo;
 
@@ -118,12 +117,12 @@ private:
   QRadioButton *rb[2];
   KDateCombo * fromDate;
   KDateCombo * toDate;
-  KIntSpinBox *timeBox;
+  KIntNumInput *timeBox;
 
   //3rd page
   KComboBox *sizeBox;
   KComboBox *sizeUnitBox;
-  KIntSpinBox *sizeEdit;
+  KIntNumInput *sizeEdit;
   QCheckBox *caseContextCb;
   QCheckBox *binaryContextCb;
   QCheckBox *regexpContentCb;

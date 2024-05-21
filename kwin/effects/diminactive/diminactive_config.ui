@@ -72,7 +72,7 @@
     </widget>
    </item>
    <item row="0" column="2">
-    <widget class="KIntSpinBox" name="kcfg_Strength">
+    <widget class="KIntNumInput" name="kcfg_Strength">
      <property name="minimum">
       <number>1</number>
      </property>
@@ -101,8 +101,8 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
  </customwidgets>

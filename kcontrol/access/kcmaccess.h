@@ -12,14 +12,13 @@
 #include <kcmodule.h>
 #include <knuminput.h>
 
-
 #include <QCheckBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QRadioButton>
+
 class KColorButton;
-#include <QSlider>
 
 class KAccessConfig : public KCModule
 {
@@ -52,6 +51,7 @@ private:
   QLineEdit *soundEdit;
   QPushButton *soundButton;
   KColorButton *colorButton;
+  QLabel *durationLabel;
   KDoubleNumInput *durationSlider;
 
   QCheckBox *stickyKeys, *stickyKeysLock, *stickyKeysAutoOff;
@@ -59,12 +59,14 @@ private:
   QPushButton *kNotifyModifiersButton;
 
   QCheckBox *slowKeys, *bounceKeys;
+  QLabel *slowKeysLabel, *bounceKeysLabel;
   KDoubleNumInput *slowKeysDelay, *bounceKeysDelay;
   QCheckBox *slowKeysPressBeep, *slowKeysAcceptBeep;
   QCheckBox *slowKeysRejectBeep, *bounceKeysRejectBeep;
 
   QCheckBox *gestures, *gestureConfirmation;
   QCheckBox *timeout;
+  QLabel *timeoutLabel;
   KIntNumInput *timeoutDelay;
   QCheckBox *accessxBeep, *kNotifyAccessX;
   QPushButton *kNotifyAccessXButton;

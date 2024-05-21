@@ -126,9 +126,10 @@ FancyPlotterSettings::FancyPlotterSettings( QWidget* parent, bool locked )
   groupBox = new QGroupBox( i18n( "Horizontal scale" ), page );
   QFormLayout *formLayout = new QFormLayout(groupBox);
 
-  mHorizontalScale = new KIntNumInput( 1, groupBox );
+  mHorizontalScale = new KIntNumInput( groupBox );
   mHorizontalScale->setMinimum( 1 );
   mHorizontalScale->setMaximum( 50 );
+  mHorizontalScale->setValue( 1 );
 
   formLayout->addRow( i18n("Pixels per time period:"), mHorizontalScale );
 
@@ -155,7 +156,7 @@ FancyPlotterSettings::FancyPlotterSettings( QWidget* parent, bool locked )
   label = new QLabel( i18n( "Distance:" ), groupBox );
   boxLayout->addWidget( label, 0, 2 );
 
-  mVerticalLinesDistance = new KIntNumInput( 0, groupBox );
+  mVerticalLinesDistance = new KIntNumInput( groupBox );
   mVerticalLinesDistance->setMinimum( 10 );
   mVerticalLinesDistance->setMaximum( 120 );
   mVerticalLinesDistance->setWhatsThis( i18n( "Enter the distance between two vertical lines here." ) );
@@ -184,9 +185,10 @@ FancyPlotterSettings::FancyPlotterSettings( QWidget* parent, bool locked )
   label = new QLabel( i18n( "Font size:" ), groupBox );
   boxLayout->addWidget( label, 1, 0 );
 
-  mFontSize = new KIntNumInput( 8, groupBox );
+  mFontSize = new KIntNumInput( groupBox );
   mFontSize->setMinimum( 1 );
   mFontSize->setMaximum( 1000 );
+  mFontSize->setValue( 8 );
   boxLayout->addWidget( mFontSize, 1, 1 );
   label->setBuddy( mFontSize );
 

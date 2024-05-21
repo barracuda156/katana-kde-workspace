@@ -41,12 +41,12 @@ KIOPreferences::KIOPreferences(QWidget *parent, const QVariantList &)
     mainLayout->addWidget( gb_Timeout );
 
     QFormLayout* timeoutLayout = new QFormLayout(gb_Timeout);
-    sb_serverConnect = new KIntNumInput( 0, this );
+    sb_serverConnect = new KIntNumInput( this );
     sb_serverConnect->setSuffix( ki18np( " second", " seconds" ) );
     connect(sb_serverConnect, SIGNAL(valueChanged(int)), SLOT(configChanged()));
     timeoutLayout->addRow(i18n("Server co&nnect:"), sb_serverConnect);
 
-    sb_serverResponse = new KIntNumInput( 0, this );
+    sb_serverResponse = new KIntNumInput( this );
     sb_serverResponse->setSuffix( ki18np( " second", " seconds" ) );
     connect(sb_serverResponse, SIGNAL(valueChanged(int)), SLOT(configChanged()));
     timeoutLayout->addRow(i18n("&Server response:"), sb_serverResponse);
@@ -76,7 +76,7 @@ KIOPreferences::KIOPreferences(QWidget *parent, const QVariantList &)
     mainLayout->addWidget( gb_Misc );
     QFormLayout* miscLayout = new QFormLayout(gb_Misc);
 
-    sb_minimumKeepSize = new KIntNumInput( 0, this );
+    sb_minimumKeepSize = new KIntNumInput( this );
     sb_minimumKeepSize->setSuffix( ki18np( " bytes", " bytes" ) );
     connect(sb_minimumKeepSize, SIGNAL(valueChanged(int)), SLOT(configChanged()));
     miscLayout->addRow(i18n( "Minimum keep size:" ), sb_minimumKeepSize);

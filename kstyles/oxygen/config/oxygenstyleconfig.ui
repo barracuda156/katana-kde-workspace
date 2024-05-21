@@ -361,7 +361,7 @@
           </widget>
          </item>
          <item>
-          <widget class="KIntSpinBox" name="_scrollBarWidth">
+          <widget class="KIntNumInput" name="_scrollBarWidth">
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
@@ -533,8 +533,8 @@
    <header>kcombobox.h</header>
   </customwidget>
   <customwidget>
-   <class>KIntSpinBox</class>
-   <extends>QSpinBox</extends>
+   <class>KIntNumInput</class>
+   <extends>QWidget</extends>
    <header>knuminput.h</header>
   </customwidget>
   <customwidget>
