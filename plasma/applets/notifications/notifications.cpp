@@ -53,6 +53,9 @@ class NotificationsWidget : public Plasma::TabBar
 public:
     NotificationsWidget(NotificationsApplet* notifications);
 
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) final;
+
 private Q_SLOTS:
     void slotCountChanged();
 
@@ -62,13 +65,15 @@ private:
     JobsWidget* m_jobswidget;
     Plasma::ScrollWidget* m_applicationsscrollwidget;
     ApplicationsWidget* m_applicationswidget;
+    bool m_automaticpopup;
 };
 
 NotificationsWidget::NotificationsWidget(NotificationsApplet* notifications)
     : Plasma::TabBar(notifications),
     m_notifications(notifications),
     m_jobswidget(nullptr),
-    m_applicationswidget(nullptr)
+    m_applicationswidget(nullptr),
+    m_automaticpopup(false)
 {
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     setMinimumSize(s_minimumsize);
@@ -96,8 +101,18 @@ NotificationsWidget::NotificationsWidget(NotificationsApplet* notifications)
     addTab(KIcon("dialog-information"), i18n("Notifications"), m_applicationsscrollwidget);
 }
 
+void NotificationsWidget::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    Plasma::TabBar::mousePressEvent(event);
+    if (m_automaticpopup) {
+        // stop auto-hide timer of the popup
+        m_notifications->showPopup(0);
+    }
+}
+
 void NotificationsWidget::slotCountChanged()
 {
+    m_automaticpopup = false;
     const int totalcount = (m_jobswidget->count() + m_applicationswidget->count());
     if (totalcount > 0) {
         m_notifications->setPopupIcon(kNotificationIcon(m_notifications, true));
@@ -110,6 +125,7 @@ void NotificationsWidget::slotCountChanged()
             } else {
                 setCurrentIndex(1);
             }
+            m_automaticpopup = true;
             m_notifications->showPopup(s_popuptimeout);
         }
     } else {
