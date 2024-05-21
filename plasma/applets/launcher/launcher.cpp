@@ -76,6 +76,8 @@ static const int s_launcherdelay = 500; // ms
 // NOTE: same as the one in:
 // kdelibs/plasma/animations/animation.cpp
 static const int s_animationduration = 250;
+static const int s_iconmargin = 2;
+static const int s_actionmargin = 1;
 
 static QSizeF kIconSize()
 {
@@ -260,7 +262,7 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
 
     m_iconwidget = new Plasma::IconWidget(this);
     m_iconwidget->setAcceptHoverEvents(false);
-    m_iconwidget->setContentsMargins(2, 2, 2, 2);
+    m_iconwidget->setContentsMargins(s_iconmargin, s_iconmargin, s_iconmargin, s_iconmargin);
     m_layout->addItem(m_iconwidget);
     connect(
         m_iconwidget, SIGNAL(activated()),
@@ -279,6 +281,7 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_textlayout->addItem(m_subtextwidget);
 
     m_actionslayout = new QGraphicsGridLayout(m_layout);
+    m_actionslayout->setContentsMargins(s_actionmargin, s_actionmargin, s_actionmargin, s_actionmargin);
     m_layout->addItem(m_actionslayout);
     m_action1widget = new Plasma::ToolButton(this);
     m_action1widget->setVisible(false);
