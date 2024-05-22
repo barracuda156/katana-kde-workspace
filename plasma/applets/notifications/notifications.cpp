@@ -54,7 +54,7 @@ public:
     NotificationsWidget(NotificationsApplet* notifications);
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) final;
+    bool sceneEventFilter(QGraphicsItem *watched, QEvent *event) final;
 
 private Q_SLOTS:
     void slotCountChanged();
@@ -79,6 +79,8 @@ NotificationsWidget::NotificationsWidget(NotificationsApplet* notifications)
     setMinimumSize(s_minimumsize);
     // makes it truly passive popup
     setWindowFlags(windowFlags() | Qt::X11BypassWindowManagerHint);
+    // the easy way to cancel auto-hide on activity
+    setFiltersChildEvents(true);
 
     m_jobsscrollwidget = new Plasma::ScrollWidget(this);
     m_jobsscrollwidget->setMinimumSize(s_minimumsize);
@@ -101,13 +103,26 @@ NotificationsWidget::NotificationsWidget(NotificationsApplet* notifications)
     addTab(KIcon("dialog-information"), i18n("Notifications"), m_applicationsscrollwidget);
 }
 
-void NotificationsWidget::mousePressEvent(QGraphicsSceneMouseEvent *event)
+bool NotificationsWidget::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
 {
-    Plasma::TabBar::mousePressEvent(event);
+    const bool result = Plasma::TabBar::sceneEventFilter(watched, event);
     if (m_automaticpopup) {
-        // stop auto-hide timer of the popup
-        m_notifications->showPopup(0);
+        switch (event->type()) {
+            case QEvent::KeyPress:
+            case QEvent::MouseButtonPress:
+            case QEvent::GraphicsSceneMousePress:
+            case QEvent::GraphicsSceneWheel: {
+                // stop auto-hide timer of the popup
+                m_automaticpopup = false;
+                m_notifications->showPopup(0);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
     }
+    return result;
 }
 
 void NotificationsWidget::slotCountChanged()
@@ -145,6 +160,7 @@ NotificationsApplet::NotificationsApplet(QObject *parent, const QVariantList &ar
     setPopupIcon(kNotificationIcon(this, false));
     setStatus(Plasma::ItemStatus::PassiveStatus);
     m_notificationswidget = new NotificationsWidget(this);
+    installEventFilter(m_notificationswidget);
 }
 
 NotificationsApplet::~NotificationsApplet()
