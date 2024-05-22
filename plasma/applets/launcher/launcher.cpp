@@ -30,7 +30,6 @@
 #include <QDBusInterface>
 #include <QGraphicsSceneMouseEvent>
 #include <KUser>
-#include <kdbusconnectionpool.h>
 #include <KIcon>
 #include <KIconLoader>
 #include <KStandardDirs>
