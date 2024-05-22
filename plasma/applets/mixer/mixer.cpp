@@ -43,7 +43,7 @@ static const int s_svgiconsize = 256;
 static const QString s_defaultpopupicon = QString::fromLatin1("audio-card");
 static const int s_defaultsoundcard = -1;
 static const int s_alsapollinterval = 250;
-// for butter-smooth visualization the poll interval is very frequent when visualization is enabled
+// for butter-smooth visualization the poll interval is very frequent
 static const int s_alsavisualizerinterval = 50;
 // deciding factor for the visualization samples frequency
 static const int s_alsapcmbuffersize = 256;
@@ -319,6 +319,7 @@ public:
 
     bool setup(const QByteArray &cardname);
     void showVisualizer(const bool show, const uint scale, const QColor &color, const bool icon);
+    void pauseVisualizer(const bool pause);
      // can't be const because Plasma::Svg requires non-const parent
     QIcon mainVolumeIcon();
     Plasma::ToolTipContent toolTipContent() const;
@@ -333,13 +334,15 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void slotSliderMovedOrChanged(const int value);
-    void slotTimeout();
+    void slotEventsTimeout();
+    void slotVisualizerTimeout();
 
 private:
     QGraphicsLinearLayout* m_layout;
     snd_mixer_t* m_alsamixer;
     snd_pcm_t* m_alsapcm;
-    QTimer* m_timer;
+    QTimer* m_eventstimer;
+    QTimer* m_visualizertimer;
     QGraphicsWidget* m_spacer;
     Plasma::Frame* m_plotterframe;
     MixerPlotter* m_signalplotter;
@@ -355,7 +358,8 @@ MixerTabWidget::MixerTabWidget(const bool isdefault, const QString &alsamixernam
     m_layout(nullptr),
     m_alsamixer(nullptr),
     m_alsapcm(nullptr),
-    m_timer(nullptr),
+    m_eventstimer(nullptr),
+    m_visualizertimer(nullptr),
     m_spacer(nullptr),
     m_plotterframe(nullptr),
     m_signalplotter(nullptr),
@@ -369,17 +373,25 @@ MixerTabWidget::MixerTabWidget(const bool isdefault, const QString &alsamixernam
     m_layout->setContentsMargins(0, 0, 0, 0);
     setLayout(m_layout);
 
-    m_timer = new QTimer(this);
-    m_timer->setInterval(s_alsapollinterval);
+    m_eventstimer = new QTimer(this);
+    m_eventstimer->setInterval(s_alsapollinterval);
     connect(
-        m_timer, SIGNAL(timeout()),
-        this, SLOT(slotTimeout())
+        m_eventstimer, SIGNAL(timeout()),
+        this, SLOT(slotEventsTimeout())
+    );
+
+    m_visualizertimer = new QTimer(this);
+    m_visualizertimer->setInterval(s_alsavisualizerinterval);
+    connect(
+        m_visualizertimer, SIGNAL(timeout()),
+        this, SLOT(slotVisualizerTimeout())
     );
 }
 
 MixerTabWidget::~MixerTabWidget()
 {
-    m_timer->stop();
+    m_eventstimer->stop();
+    m_visualizertimer->stop();
     if (m_alsapcm) {
         snd_pcm_close(m_alsapcm);
     }
@@ -512,7 +524,7 @@ bool MixerTabWidget::setup(const QByteArray &alsacardname)
     m_layout->addItem(m_spacer);
 
     if (hasvalidelement) {
-        m_timer->start();
+        m_eventstimer->start();
     }
 
     adjustSize();
@@ -522,8 +534,8 @@ bool MixerTabWidget::setup(const QByteArray &alsacardname)
 
 void MixerTabWidget::showVisualizer(const bool show, const uint scale, const QColor &color, const bool icon)
 {
-    const bool starttimer = m_timer->isActive();
-    m_timer->stop();
+    const bool starttimer = m_visualizertimer->isActive();
+    m_visualizertimer->stop();
     if (m_alsapcm) {
         snd_pcm_close(m_alsapcm);
         m_alsapcm = nullptr;
@@ -544,9 +556,7 @@ void MixerTabWidget::showVisualizer(const bool show, const uint scale, const QCo
 
     if (!show) {
         if (starttimer) {
-            // the inteval for when there is no visualization is different
-            m_timer->setInterval(s_alsapollinterval);
-            m_timer->start();
+            m_visualizertimer->start();
         }
         m_spacer = kMakeSpacer(this);
         m_layout->addItem(m_spacer);
@@ -615,14 +625,38 @@ void MixerTabWidget::showVisualizer(const bool show, const uint scale, const QCo
         m_signalplotter->addPlot(color);
         plotterframelayout->addItem(m_signalplotter);
         m_layout->addItem(m_plotterframe);
+
+        m_visualizertimer->start();
     } else {
         m_spacer = kMakeSpacer(this);
         m_layout->addItem(m_spacer);
     }
+}
 
-    // if there are no valid elements then snd_pcm_open() will probably fail anyway
-    m_timer->setInterval(s_alsavisualizerinterval);
-    m_timer->start();
+void MixerTabWidget::pauseVisualizer(const bool pause)
+{
+    if (!m_alsapcm) {
+        return;
+    }
+    if (pause) {
+        kDebug() << "Pausing visualizer";
+        m_visualizertimer->stop();
+        const int alsaresult = snd_pcm_drop(m_alsapcm);
+        if (alsaresult != 0) {
+            kWarning() << "Could not drop PCM" << snd_strerror(alsaresult);
+        }
+    } else if (m_signalplotter) {
+        kDebug() << "Unpausing visualizer";
+        int alsaresult = snd_pcm_prepare(m_alsapcm);
+        if (alsaresult != 0) {
+            kWarning() << "Could not prepare PCM" << snd_strerror(alsaresult);
+        }
+        alsaresult = snd_pcm_start(m_alsapcm);
+        if (alsaresult != 0) {
+            kWarning() << "Could not start PCM" << snd_strerror(alsaresult);
+        }
+        m_visualizertimer->start();
+    }
 }
 
 QIcon MixerTabWidget::mainVolumeIcon()
@@ -730,12 +764,15 @@ void MixerTabWidget::slotSliderMovedOrChanged(const int value)
     kWarning() << "Could not find the element" << slider->alsaelementindex;
 }
 
-void MixerTabWidget::slotTimeout()
+void MixerTabWidget::slotEventsTimeout()
 {
     if (Q_LIKELY(m_alsamixer)) {
         snd_mixer_handle_events(m_alsamixer);
     }
+}
 
+void MixerTabWidget::slotVisualizerTimeout()
+{
     if (m_alsapcm) {
         switch (snd_pcm_state(m_alsapcm)) {
             case SND_PCM_STATE_PREPARED:
@@ -809,6 +846,7 @@ public:
     MixerWidget(MixerApplet *mixer);
 
     void showVisualizer(const bool show, const uint scale, const QColor &color, const bool icon);
+    void pauseVisualizer(const bool pause);
     void decreaseVolume();
     void increaseVolume();
 
@@ -921,6 +959,13 @@ void MixerWidget::showVisualizer(const bool show, const uint scale, const QColor
     }
 }
 
+void MixerWidget::pauseVisualizer(const bool pause)
+{
+    foreach (MixerTabWidget *mixertabwidget, m_tabwidgets) {
+        mixertabwidget->pauseVisualizer(pause);
+    }
+}
+
 void MixerWidget::decreaseVolume()
 {
     if (m_tabwidgets.size() < 1) {
@@ -973,8 +1018,6 @@ MixerApplet::MixerApplet(QObject *parent, const QVariantList &args)
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
     setHasConfigurationInterface(true);
     setPopupIcon(kMixerIcon(this, 0));
-
-    m_mixerwidget = new MixerWidget(this);
 }
 
 MixerApplet::~MixerApplet()
@@ -986,6 +1029,7 @@ void MixerApplet::init()
 {
     Plasma::PopupApplet::init();
 
+    m_mixerwidget = new MixerWidget(this);
     slotThemeChanged();
     connect(Plasma::Theme::defaultTheme(), SIGNAL(themeChanged()), this, SLOT(slotThemeChanged()));
 }
@@ -1045,8 +1089,19 @@ QGraphicsWidget* MixerApplet::graphicsWidget()
     return m_mixerwidget;
 }
 
+void MixerApplet::popupEvent(bool show)
+{
+    if (!m_mixerwidget) {
+        return;
+    }
+    m_mixerwidget->pauseVisualizer(!show);
+}
+
 void MixerApplet::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
+    if (!m_mixerwidget) {
+        return;
+    }
     if (event->delta() < 0) {
         m_mixerwidget->decreaseVolume();
     } else {
@@ -1063,6 +1118,7 @@ void MixerApplet::slotVisualizerToggled(bool toggled)
 
 void MixerApplet::slotConfigAccepted()
 {
+    Q_ASSERT(m_mixerwidget != nullptr);
     Q_ASSERT(m_visualizerbox != nullptr);
     Q_ASSERT(m_visualizerscalebox != nullptr);
     Q_ASSERT(m_visualizerbutton != nullptr);
@@ -1082,10 +1138,12 @@ void MixerApplet::slotConfigAccepted()
     configgroup.writeEntry("visualizerIcon", m_visualizericon);
     emit configNeedsSaving();
     m_mixerwidget->showVisualizer(m_showvisualizer, m_visualizerscale, m_visualizercolor, m_visualizericon);
+    m_mixerwidget->pauseVisualizer(isIconified() && !isPopupShowing());
 }
 
 void MixerApplet::slotThemeChanged()
 {
+    Q_ASSERT(m_mixerwidget != nullptr);
     KConfigGroup configgroup = config();
     m_showvisualizer = configgroup.readEntry("showVisualizer", s_showvisualizer);
     m_visualizerscale = configgroup.readEntry("visualizerScale", s_visualizerscale);
@@ -1096,6 +1154,7 @@ void MixerApplet::slotThemeChanged()
     m_visualizericon = configgroup.readEntry("visualizerIcon", s_visualizericon);
 
     m_mixerwidget->showVisualizer(m_showvisualizer, m_visualizerscale, m_visualizercolor, m_visualizericon);
+    m_mixerwidget->pauseVisualizer(isIconified() && !isPopupShowing());
 }
 
 K_EXPORT_PLASMA_APPLET(mixer, MixerApplet)

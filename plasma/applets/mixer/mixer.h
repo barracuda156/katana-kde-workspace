@@ -40,8 +40,9 @@ public:
     // Plasma::Applet reimplementations
     void init() final;
     void createConfigurationInterface(KConfigDialog *parent) final;
-    // Plasma::PopupApplet reimplementation
+    // Plasma::PopupApplet reimplementations
     QGraphicsWidget* graphicsWidget() final;
+    void popupEvent(bool show) final;
     // QGraphicsWidget reimplementation
     void wheelEvent(QGraphicsSceneWheelEvent *event) final;
 
