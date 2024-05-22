@@ -781,9 +781,13 @@ void MixerTabWidget::slotVisualizerTimeout()
                     ::memset(m_alsapcmbuffer, 0, sizeof(m_alsapcmbuffer));
                     const int alsaresult = snd_pcm_readi(m_alsapcm, m_alsapcmbuffer, s_alsapcmbuffersize);
                     if (alsaresult < 1) {
+                        if (errno == EAGAIN) {
+                            // no data? snd_pcm_recover() does not handle it anyway
+                            break;
+                        }
                         // NOTE: this happens when the data is drained which is quite often because
                         // the visualization timer is 50ms
-                        // kDebug() << "Could not read PCM data" << snd_strerror(alsaresult);
+                        kWarning() << "Could not read PCM data" << snd_strerror(alsaresult);
                         snd_pcm_recover(m_alsapcm, alsaresult, 1);
                         break;
                     }
