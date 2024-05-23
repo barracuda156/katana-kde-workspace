@@ -188,6 +188,7 @@ Q_SIGNALS:
 private Q_SLOTS:
     void slotClicked(const Qt::MouseButton button);
     void slotUpdateFonts();
+    void slotTimeout();
 
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) final;
@@ -201,7 +202,7 @@ private:
     QPropertyAnimation* animateHover(QPropertyAnimation *animation, const bool fadeout);
     Plasma::Animation* animateButton(Plasma::Animation *animation, Plasma::ToolButton *toolbutton,
                                      const bool fadeout);
-    bool handleMouseEvent(QGraphicsSceneMouseEvent *event) const;
+    bool handleMouseEvent(QGraphicsSceneMouseEvent *event);
 
     QGraphicsLinearLayout* m_layout;
     Plasma::FrameSvg* m_framesvg;
@@ -223,6 +224,7 @@ private:
     QString m_data;
     int m_actioncounter;
     QPointer<QMimeData> m_mimedata;
+    QTimer* m_undermousetimer;
 };
 
 LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
@@ -245,7 +247,8 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_action3animation(nullptr),
     m_action4animation(nullptr),
     m_actioncounter(0),
-    m_mimedata(nullptr)
+    m_mimedata(nullptr),
+    m_undermousetimer(nullptr)
 {
     m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
     setLayout(m_layout);
@@ -300,6 +303,15 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     connect(
         KGlobalSettings::self(), SIGNAL(kdisplayFontChanged()),
         this, SLOT(slotUpdateFonts())
+    );
+
+    m_undermousetimer = new QTimer(this);
+    // this could be done on scroll event (Plasma::ScrollWidget::scrollStateChanged()) but that
+    // means locking for thread-safety
+    m_undermousetimer->setInterval(s_animationduration * 4);
+    connect(
+        m_undermousetimer, SIGNAL(timeout()),
+        this, SLOT(slotTimeout())
     );
 }
 
@@ -448,9 +460,8 @@ void LauncherWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
     if (m_hover > 0.0) {
         painter->setRenderHint(QPainter::Antialiasing);
         const QRectF brect = boundingRect();
-        const QSizeF brectsize = brect.size();
         const qreal oldopacity = painter->opacity();
-        m_framesvg->resizeFrame(brectsize);
+        m_framesvg->resizeFrame(brect.size());
         painter->setOpacity(m_hover);
         m_framesvg->paintFrame(painter, brect);
         painter->setOpacity(oldopacity);
@@ -500,9 +511,12 @@ QVariant LauncherWidget::itemChange(QGraphicsItem::GraphicsItemChange change, co
 {
     const QVariant result = Plasma::SvgWidget::itemChange(change, value);
     switch (change) {
-        case QGraphicsItem::ItemPositionHasChanged:
         case QGraphicsItem::ItemVisibleHasChanged: {
-            m_hoveranimation = animateHover(m_hoveranimation, !isUnderMouse());
+            if (value.toBool()) {
+                m_undermousetimer->start();
+            } else {
+                m_undermousetimer->stop();
+            }
             break;
         }
         default: {
@@ -546,7 +560,7 @@ QPropertyAnimation* LauncherWidget::animateHover(QPropertyAnimation *animation, 
     return animation;
 }
 
-bool LauncherWidget::handleMouseEvent(QGraphicsSceneMouseEvent *event) const
+bool LauncherWidget::handleMouseEvent(QGraphicsSceneMouseEvent *event)
 {
     if (event->buttons() & Qt::LeftButton &&
         (event->pos() - event->buttonDownPos(Qt::LeftButton)).manhattanLength() > KGlobalSettings::dndEventDelay())
@@ -588,6 +602,11 @@ void LauncherWidget::slotUpdateFonts()
     QFont subtextfont = KGlobalSettings::smallestReadableFont();
     subtextfont.setItalic(true);
     m_subtextwidget->setFont(subtextfont);
+}
+
+void LauncherWidget::slotTimeout()
+{
+    m_hoveranimation = animateHover(m_hoveranimation, !isUnderMouse());
 }
 
 
