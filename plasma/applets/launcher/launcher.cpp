@@ -279,9 +279,11 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_layout->setStretchFactor(m_textlayout, 100);
     m_textwidget = new Plasma::Label(this);
     m_textwidget->setWordWrap(false);
+    m_textwidget->setElideText(true);
     m_textlayout->addItem(m_textwidget);
     m_subtextwidget = new Plasma::Label(this);
     m_subtextwidget->setWordWrap(false);
+    m_subtextwidget->setElideText(true);
     m_textlayout->addItem(m_subtextwidget);
 
     m_actionslayout = new QGraphicsGridLayout(m_layout);
