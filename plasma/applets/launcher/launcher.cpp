@@ -1067,68 +1067,85 @@ void LauncherNavigator::slotReleased()
     emit navigate(toolbutton->property("_k_id").toString());
 }
 
-class LauncherApplications : public QGraphicsWidget
+class LauncherServiceWidget : public QGraphicsWidget
 {
     Q_OBJECT
 public:
-    LauncherApplications(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
+    LauncherServiceWidget(QGraphicsWidget *parent, LauncherApplet *launcherapplet, const QString &serviceid);
 
-public Q_SLOTS:
-    void slotUpdateLayout();
+    QString serviceID() const;
+
+Q_SIGNALS:
+    void navigate(const QString &serviceid);
 
 private Q_SLOTS:
-    void slotNavigate(const QString &id);
-    void slotDelayedNavigate();
     void slotGroupActivated();
     void slotAppActivated();
     void slotCheckBookmarks();
     void slotTriggered();
 
 private:
-    void addGroup(KServiceGroup::Ptr servicegroup);
-
     QMutex m_mutex;
     LauncherApplet* m_launcherapplet;
     KBookmarkManager* m_bookmarkmanager;
     QGraphicsLinearLayout* m_layout;
-    LauncherNavigator* m_launchernavigator;
-    Plasma::ScrollWidget* m_scrollwidget;
-    QGraphicsWidget* m_launchersswidget;
-    QGraphicsLinearLayout* m_launcherslayout;
     QList<LauncherWidget*> m_launcherwidgets;
-    QString m_id;
+    QString m_serviceid;
 };
 
-LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
+LauncherServiceWidget::LauncherServiceWidget(QGraphicsWidget *parent, LauncherApplet *launcherapplet, const QString &serviceid)
     : QGraphicsWidget(parent),
     m_launcherapplet(launcherapplet),
     m_bookmarkmanager(launcherapplet->bookmarkManager()),
     m_layout(nullptr),
-    m_launchernavigator(nullptr),
-    m_scrollwidget(nullptr),
-    m_launchersswidget(nullptr),
-    m_launcherslayout(nullptr)
-    
+    m_serviceid(serviceid)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
     setLayout(m_layout);
 
-    m_launchernavigator = new LauncherNavigator(this);
-    m_layout->addItem(m_launchernavigator);
+    KServiceGroup::Ptr servicegroup = KServiceGroup::group(serviceid);
+    if (!servicegroup.isNull() && servicegroup->isValid()) {
+        const QSizeF iconsize = kIconSize();
+        foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
+            if (subgroup->noDisplay() || subgroup->childCount() < 1) {
+                continue;
+            }
+            LauncherWidget* launcherwidget = new LauncherWidget(this);
+            launcherwidget->setup(
+                iconsize, kGenericIcon(subgroup->icon()), subgroup->caption(), subgroup->comment()
+            );
+            launcherwidget->setData(subgroup->relPath());
+            m_launcherwidgets.append(launcherwidget);
+            m_layout->addItem(launcherwidget);
+            connect(
+                launcherwidget, SIGNAL(activated()),
+                this, SLOT(slotGroupActivated())
+            );
+        }
+        foreach (const KService::Ptr appservice, servicegroup->serviceEntries(KServiceGroup::NoOptions)) {
+            if (appservice->noDisplay()) {
+                continue;
+            }
+            const QString entrypath = appservice->entryPath();
+            LauncherWidget* launcherwidget = new LauncherWidget(this);
+            launcherwidget->setup(
+                iconsize, kGenericIcon(appservice->icon()), appservice->name(), appservice->comment()
+            );
+            launcherwidget->setData(entrypath);
+            launcherwidget->setMimeData(kMakeMimeData(entrypath));
+            m_launcherwidgets.append(launcherwidget);
+            m_layout->addItem(launcherwidget);
+            connect(
+                launcherwidget, SIGNAL(activated()),
+                this, SLOT(slotAppActivated())
+            );
+        }
+    } else {
+        kWarning() << "invalid serivce group" << serviceid;
+    }
 
-    m_scrollwidget = kMakeScrollWidget(this);
-    m_launchersswidget = new QGraphicsWidget(m_scrollwidget);
-    m_launchersswidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_launcherslayout = new QGraphicsLinearLayout(Qt::Vertical, m_launchersswidget);
-    m_launchersswidget->setLayout(m_launcherslayout);
-    m_scrollwidget->setWidget(m_launchersswidget);
-    m_layout->addItem(m_scrollwidget);
-
-    connect(
-        m_launchernavigator, SIGNAL(navigate(QString)),
-        this, SLOT(slotNavigate(QString))
-    );
+    slotCheckBookmarks();
     connect(
         m_bookmarkmanager, SIGNAL(changed(QString,QString)),
         this, SLOT(slotCheckBookmarks())
@@ -1137,151 +1154,26 @@ LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherAppl
         m_bookmarkmanager, SIGNAL(bookmarksChanged(QString)),
         this, SLOT(slotCheckBookmarks())
     );
-    connect(
-        KSycoca::self(), SIGNAL(databaseChanged(QStringList)),
-        this, SLOT(slotUpdateLayout())
-    );
 }
 
-void LauncherApplications::slotUpdateLayout()
+QString LauncherServiceWidget::serviceID() const
 {
-    QMutexLocker locker(&m_mutex);
-    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
-        m_launcherslayout->removeItem(launcherwidget);
-    }
-    qDeleteAll(m_launcherwidgets);
-    m_launcherwidgets.clear();
-
-    m_launchernavigator->reset();
-
-    m_launchersswidget->adjustSize();
-    adjustSize();
-
-    m_id.clear();
-    KServiceGroup::Ptr rootgroup = KServiceGroup::root();
-    if (!rootgroup.isNull() && rootgroup->isValid()) {
-        m_id = rootgroup->relPath();
-        m_launchernavigator->addNavigation(m_id, rootgroup->caption());
-        addGroup(rootgroup);
-        m_launchernavigator->finish();
-    }
-
-    locker.unlock();
-    slotCheckBookmarks();
+    return m_serviceid;
 }
 
-void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
-{
-    const QSizeF iconsize = kIconSize();
-    foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
-        if (subgroup->noDisplay() || subgroup->childCount() < 1) {
-            continue;
-        }
-        LauncherWidget* launcherwidget = new LauncherWidget(m_launchersswidget);
-        launcherwidget->setup(
-            iconsize, kGenericIcon(subgroup->icon()), subgroup->caption(), subgroup->comment()
-        );
-        launcherwidget->setData(subgroup->relPath());
-        m_launcherwidgets.append(launcherwidget);
-        m_launcherslayout->addItem(launcherwidget);
-        connect(
-            launcherwidget, SIGNAL(activated()),
-            this, SLOT(slotGroupActivated())
-        );
-    }
-    foreach (const KService::Ptr appservice, servicegroup->serviceEntries(KServiceGroup::NoOptions)) {
-        if (appservice->noDisplay()) {
-            continue;
-        }
-        const QString entrypath = appservice->entryPath();
-        LauncherWidget* launcherwidget = new LauncherWidget(m_launchersswidget);
-        launcherwidget->setup(
-            iconsize, kGenericIcon(appservice->icon()), appservice->name(), appservice->comment()
-        );
-        launcherwidget->setData(entrypath);
-        launcherwidget->setMimeData(kMakeMimeData(entrypath));
-        m_launcherwidgets.append(launcherwidget);
-        m_launcherslayout->addItem(launcherwidget);
-        connect(
-            launcherwidget, SIGNAL(activated()),
-            this, SLOT(slotAppActivated())
-        );
-    }
-    const QString serviceid = servicegroup->relPath();
-    if (serviceid.isEmpty() || serviceid == QLatin1String("/")) {
-        // hide the navigator when the root group is empty
-        m_launchernavigator->setVisible(m_launcherwidgets.size() > 0);
-    }
-}
-
-void LauncherApplications::slotNavigate(const QString &id)
-{
-    if (id == m_id) {
-        return;
-    }
-
-    m_id = id;
-    // delayed because this is connected to widgets that will be destroyed
-    QTimer::singleShot(100, this, SLOT(slotDelayedNavigate()));
-}
-
-void LauncherApplications::slotDelayedNavigate()
-{
-    QMutexLocker locker(&m_mutex);
-    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
-        m_launcherslayout->removeItem(launcherwidget);
-    }
-    qDeleteAll(m_launcherwidgets);
-    m_launcherwidgets.clear();
-
-    m_launchernavigator->reset();
-
-    m_launchersswidget->adjustSize();
-    adjustSize();
-
-    KServiceGroup::Ptr servicegroup = KServiceGroup::group(m_id);
-    if (!servicegroup.isNull() && servicegroup->isValid()) {
-        KServiceGroup::Ptr rootgroup = KServiceGroup::root();
-        if (!rootgroup.isNull() && rootgroup->isValid()) {
-            m_launchernavigator->addNavigation(rootgroup->relPath(), rootgroup->caption());
-        } else {
-            kWarning() << "root group is not valid";
-        }
-
-        QString groupid;
-        foreach (const QString &subname, m_id.split(QLatin1Char('/'), QString::SkipEmptyParts)) {
-            groupid.append(subname);
-            groupid.append(QLatin1Char('/'));
-            KServiceGroup::Ptr subgroup = KServiceGroup::group(groupid);
-            if (subgroup.isNull() || !subgroup->isValid()) {
-                kWarning() << "invalid subgroup" << subname;
-                continue;
-            }
-            m_launchernavigator->addNavigation(groupid, subgroup->caption());
-        }
-        addGroup(servicegroup);
-    } else {
-        kWarning() << "invalid group" << m_id;
-    }
-    m_launchernavigator->finish();
-
-    locker.unlock();
-    slotCheckBookmarks();
-}
-
-void LauncherApplications::slotGroupActivated()
+void LauncherServiceWidget::slotGroupActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
-    slotNavigate(launcherwidget->data());
+    emit navigate(launcherwidget->data());
 }
 
-void LauncherApplications::slotAppActivated()
+void LauncherServiceWidget::slotAppActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
     kRunService(launcherwidget->data(), m_launcherapplet);
 }
 
-void LauncherApplications::slotCheckBookmarks()
+void LauncherServiceWidget::slotCheckBookmarks()
 {
     QStringList bookmarkurls;
     KBookmarkGroup bookmarkgroup = m_bookmarkmanager->root();
@@ -1314,7 +1206,7 @@ void LauncherApplications::slotCheckBookmarks()
     }
 }
 
-void LauncherApplications::slotTriggered()
+void LauncherServiceWidget::slotTriggered()
 {
     QAction* favoriteaction = qobject_cast<QAction*>(sender());
     const QString favoriteid = favoriteaction->property("_k_id").toString();
@@ -1327,6 +1219,148 @@ void LauncherApplications::slotTriggered()
     } else {
         kWarning() << "invalid favorite serivce" << favoriteid;
     }
+}
+
+class LauncherApplications : public QGraphicsWidget
+{
+    Q_OBJECT
+public:
+    LauncherApplications(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
+
+public Q_SLOTS:
+    void slotUpdateLayout();
+
+private Q_SLOTS:
+    void slotNavigate(const QString &id);
+
+private:
+    void addGroup(KServiceGroup::Ptr servicegroup);
+
+    QMutex m_mutex;
+    LauncherApplet* m_launcherapplet;
+    QGraphicsLinearLayout* m_layout;
+    LauncherNavigator* m_launchernavigator;
+    Plasma::ScrollWidget* m_scrollwidget;
+    QList<LauncherServiceWidget*> m_servicewidgets;
+};
+
+LauncherApplications::LauncherApplications(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
+    : QGraphicsWidget(parent),
+    m_launcherapplet(launcherapplet),
+    m_layout(nullptr),
+    m_launchernavigator(nullptr),
+    m_scrollwidget(nullptr)
+    
+{
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
+    setLayout(m_layout);
+
+    m_launchernavigator = new LauncherNavigator(this);
+    m_layout->addItem(m_launchernavigator);
+
+    m_scrollwidget = kMakeScrollWidget(this);
+    m_layout->addItem(m_scrollwidget);
+
+    connect(
+        m_launchernavigator, SIGNAL(navigate(QString)),
+        this, SLOT(slotNavigate(QString)),
+        Qt::QueuedConnection
+    );
+    connect(
+        KSycoca::self(), SIGNAL(databaseChanged(QStringList)),
+        this, SLOT(slotUpdateLayout())
+    );
+}
+
+void LauncherApplications::slotUpdateLayout()
+{
+    QMutexLocker locker(&m_mutex);
+    foreach (LauncherServiceWidget* servicewidget, m_servicewidgets) {
+        m_layout->removeItem(servicewidget);
+    }
+    qDeleteAll(m_servicewidgets);
+    m_servicewidgets.clear();
+
+    adjustSize();
+
+    QString rootid;
+    KServiceGroup::Ptr rootgroup = KServiceGroup::root();
+    if (!rootgroup.isNull() && rootgroup->isValid()) {
+        rootid = rootgroup->relPath();
+        addGroup(rootgroup);
+    }
+
+    locker.unlock();
+    slotNavigate(rootid);
+}
+
+void LauncherApplications::addGroup(KServiceGroup::Ptr servicegroup)
+{
+    const QSizeF iconsize = kIconSize();
+    const QString serviceid = servicegroup->relPath();
+    if (!servicegroup->noDisplay() && servicegroup->childCount() > 0) {
+        LauncherServiceWidget* servicewidget = new LauncherServiceWidget(m_scrollwidget, m_launcherapplet, serviceid);
+        servicewidget->setVisible(false);
+        m_servicewidgets.append(servicewidget);
+        connect(
+            servicewidget, SIGNAL(navigate(QString)),
+            this, SLOT(slotNavigate(QString)),
+            Qt::QueuedConnection
+        );
+    }
+    foreach (const KServiceGroup::Ptr subgroup, servicegroup->groupEntries(KServiceGroup::NoOptions)) {
+        if (subgroup->noDisplay() || subgroup->childCount() < 1) {
+            continue;
+        }
+        addGroup(subgroup);
+    }
+    if (serviceid.isEmpty() || serviceid == QLatin1String("/")) {
+        // hide the navigator when the root group is empty
+        m_launchernavigator->setVisible(m_servicewidgets.size() > 0);
+    }
+}
+
+void LauncherApplications::slotNavigate(const QString &id)
+{
+    QMutexLocker locker(&m_mutex);
+    foreach (LauncherServiceWidget* servicewidget, m_servicewidgets) {
+        if (servicewidget->serviceID() == id) {
+            m_scrollwidget->setWidget(servicewidget);
+            servicewidget->setVisible(true);
+        } else {
+            servicewidget->setVisible(false);
+        }
+    }
+
+    m_launchernavigator->reset();
+
+    adjustSize();
+
+    KServiceGroup::Ptr servicegroup = KServiceGroup::group(id);
+    if (!servicegroup.isNull() && servicegroup->isValid()) {
+        KServiceGroup::Ptr rootgroup = KServiceGroup::root();
+        if (!rootgroup.isNull() && rootgroup->isValid()) {
+            m_launchernavigator->addNavigation(rootgroup->relPath(), rootgroup->caption());
+        } else {
+            kWarning() << "root group is not valid";
+        }
+
+        QString groupid;
+        foreach (const QString &subname, id.split(QLatin1Char('/'), QString::SkipEmptyParts)) {
+            groupid.append(subname);
+            groupid.append(QLatin1Char('/'));
+            KServiceGroup::Ptr subgroup = KServiceGroup::group(groupid);
+            if (subgroup.isNull() || !subgroup->isValid()) {
+                kWarning() << "invalid subgroup" << subname;
+                continue;
+            }
+            m_launchernavigator->addNavigation(groupid, subgroup->caption());
+        }
+    } else {
+        kWarning() << "invalid group" << id;
+    }
+    m_launchernavigator->finish();
 }
 
 
