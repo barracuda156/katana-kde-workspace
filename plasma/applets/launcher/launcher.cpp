@@ -78,6 +78,8 @@ static const int s_launcherdelay = 500; // ms
 static const int s_animationduration = 250;
 static const int s_iconmargin = 2;
 static const int s_actionmargin = 1;
+// double the usual animation time
+static const int s_undertimeout = 500; // ms
 
 static QSizeF kIconSize()
 {
@@ -182,13 +184,14 @@ public:
     void addAction(QAction *action);
     void removeAction(const int action);
 
+    void setUnderMouse(const bool undermouse);
+
 Q_SIGNALS:
     void activated();
 
 private Q_SLOTS:
     void slotClicked(const Qt::MouseButton button);
     void slotUpdateFonts();
-    void slotTimeout();
 
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) final;
@@ -225,7 +228,6 @@ private:
     QString m_data;
     int m_actioncounter;
     QPointer<QMimeData> m_mimedata;
-    QTimer* m_undermousetimer;
 };
 
 LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
@@ -248,8 +250,7 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_action3animation(nullptr),
     m_action4animation(nullptr),
     m_actioncounter(0),
-    m_mimedata(nullptr),
-    m_undermousetimer(nullptr)
+    m_mimedata(nullptr)
 {
     m_layout = new QGraphicsLinearLayout(Qt::Horizontal, this);
     setLayout(m_layout);
@@ -306,15 +307,6 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     connect(
         KGlobalSettings::self(), SIGNAL(kdisplayFontChanged()),
         this, SLOT(slotUpdateFonts())
-    );
-
-    m_undermousetimer = new QTimer(this);
-    // this could be done on scroll event (Plasma::ScrollWidget::scrollStateChanged()) but that
-    // means locking for thread-safety
-    m_undermousetimer->setInterval(s_animationduration * 4);
-    connect(
-        m_undermousetimer, SIGNAL(timeout()),
-        this, SLOT(slotTimeout())
     );
 }
 
@@ -456,6 +448,11 @@ void LauncherWidget::removeAction(const int actionnumber)
     }
 }
 
+void LauncherWidget::setUnderMouse(const bool undermouse)
+{
+    animateHoverAndButtons(!undermouse);
+}
+
 void LauncherWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option);
@@ -508,9 +505,7 @@ QVariant LauncherWidget::itemChange(QGraphicsItem::GraphicsItemChange change, co
     switch (change) {
         case QGraphicsItem::ItemVisibleHasChanged: {
             if (value.toBool()) {
-                m_undermousetimer->start();
-            } else {
-                m_undermousetimer->stop();
+                setUnderMouse(isUnderMouse());
             }
             break;
         }
@@ -608,13 +603,98 @@ void LauncherWidget::slotUpdateFonts()
     m_subtextwidget->setFont(subtextfont);
 }
 
-void LauncherWidget::slotTimeout()
+
+class LauncherWidgetBase : public QGraphicsWidget
 {
-    animateHoverAndButtons(!isUnderMouse());
+    Q_OBJECT
+public:
+    LauncherWidgetBase(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
+
+protected:
+    QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) final;
+
+    void clearLauncherWidgets();
+    void checkUnderMouse();
+
+    QMutex b_mutex;
+    LauncherApplet* b_launcherapplet;
+    QGraphicsLinearLayout* b_layout;
+    QList<LauncherWidget*> b_launcherwidgets;
+
+private Q_SLOTS:
+    void slotTimeout();
+
+private:
+    QTimer* m_undertimer;
+};
+
+LauncherWidgetBase::LauncherWidgetBase(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
+    : QGraphicsWidget(parent),
+    b_launcherapplet(launcherapplet),
+    b_layout(nullptr),
+    m_undertimer(nullptr)
+{
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    b_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
+    setLayout(b_layout);
+}
+
+QVariant LauncherWidgetBase::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+{
+    const QVariant result = QGraphicsWidget::itemChange(change, value);
+    switch (change) {
+        case QGraphicsItem::ItemPositionHasChanged: {
+            if (!m_undertimer) {
+                m_undertimer = new QTimer(this);
+                m_undertimer->setInterval(s_undertimeout);
+                m_undertimer->setSingleShot(true);
+                connect(
+                    m_undertimer, SIGNAL(timeout()),
+                    this, SLOT(slotTimeout())
+                );
+            }
+            if (!m_undertimer->isActive()) {
+                QMutexLocker locker(&b_mutex);
+                foreach (LauncherWidget* launcherwidget, b_launcherwidgets) {
+                    launcherwidget->setUnderMouse(false);
+                }
+            }
+            // compresses checks until position stop changing
+            m_undertimer->start();
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+    return result;
+}
+
+void LauncherWidgetBase::clearLauncherWidgets()
+{
+    foreach (LauncherWidget* launcherwidget, b_launcherwidgets) {
+        b_layout->removeItem(launcherwidget);
+    }
+    qDeleteAll(b_launcherwidgets);
+    b_launcherwidgets.clear();
+    adjustSize();
+}
+
+void LauncherWidgetBase::checkUnderMouse()
+{
+    QMutexLocker locker(&b_mutex);
+    foreach (LauncherWidget* launcherwidget, b_launcherwidgets) {
+        launcherwidget->setUnderMouse(launcherwidget->isUnderMouse());
+    }
+}
+
+void LauncherWidgetBase::slotTimeout()
+{
+    checkUnderMouse();
 }
 
 
-class LauncherSearch : public QGraphicsWidget
+class LauncherSearch : public LauncherWidgetBase
 {
     Q_OBJECT
 public:
@@ -633,10 +713,6 @@ private Q_SLOTS:
     void slotDelayedRun();
 
 private:
-    QMutex m_mutex;
-    LauncherApplet* m_launcherapplet;
-    QGraphicsLinearLayout* m_layout;
-    QList<LauncherWidget*> m_launcherwidgets;
     Plasma::Label* m_label;
     Plasma::BusyWidget* m_busywidget;
     Plasma::RunnerManager* m_runnermanager;
@@ -644,26 +720,20 @@ private:
 };
 
 LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
-    : QGraphicsWidget(parent),
-    m_launcherapplet(launcherapplet),
-    m_layout(nullptr),
+    : LauncherWidgetBase(parent, launcherapplet),
     m_label(nullptr),
     m_busywidget(nullptr),
     m_runnermanager(launcherapplet->runnerManager()),
     m_match(nullptr)
 {
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
-    setLayout(m_layout);
-
     m_label = new Plasma::Label(this);
     m_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_label->setAlignment(Qt::AlignCenter);
-    m_layout->addItem(m_label);
+    b_layout->addItem(m_label);
 
     m_busywidget = new Plasma::BusyWidget(this);
     m_busywidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_layout->addItem(m_busywidget);
+    b_layout->addItem(m_busywidget);
 
     connect(
         m_runnermanager, SIGNAL(queryFinished()),
@@ -673,12 +743,8 @@ LauncherSearch::LauncherSearch(QGraphicsWidget *parent, LauncherApplet *launcher
 
 void LauncherSearch::prepare()
 {
-    QMutexLocker locker(&m_mutex);
-    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
-        m_layout->removeItem(launcherwidget);
-    }
-    qDeleteAll(m_launcherwidgets);
-    m_launcherwidgets.clear();
+    QMutexLocker locker(&b_mutex);
+    clearLauncherWidgets();
 
     m_label->setText(i18n("Searching.."));
     m_label->setVisible(true);
@@ -696,7 +762,7 @@ void LauncherSearch::query(const QString &text)
 
 void LauncherSearch::slotUpdateLayout()
 {
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&b_mutex);
     const QList<Plasma::QueryMatch> matches = m_runnermanager->matches();
     m_busywidget->setRunning(false);
     m_busywidget->setVisible(false);
@@ -734,13 +800,15 @@ void LauncherSearch::slotUpdateLayout()
             }
         }
         launcherwidget->setMimeData(m_runnermanager->mimeDataForMatch(match));
-        m_launcherwidgets.append(launcherwidget);
-        m_layout->addItem(launcherwidget);
+        b_launcherwidgets.append(launcherwidget);
+        b_layout->addItem(launcherwidget);
         connect(
             launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
     }
+    locker.unlock();
+    checkUnderMouse();
     emit queryFinished();
 }
 
@@ -748,7 +816,7 @@ void LauncherSearch::slotTriggered()
 {
     QAction* matchaction = qobject_cast<QAction*>(sender());
     const QString matchid = matchaction->property("_k_id").toString();
-    m_launcherapplet->resetState();
+    b_launcherapplet->resetState();
     foreach (const Plasma::QueryMatch &match, m_runnermanager->matches()) {
         if (match.id() == matchid) {
             m_match = match;
@@ -763,7 +831,7 @@ void LauncherSearch::slotTriggered()
 void LauncherSearch::slotActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
-    m_launcherapplet->resetState();
+    b_launcherapplet->resetState();
     const QString matchid = launcherwidget->data();
     foreach (const Plasma::QueryMatch &match, m_runnermanager->matches()) {
         if (match.id() == matchid) {
@@ -781,33 +849,7 @@ void LauncherSearch::slotDelayedRun()
 }
 
 
-class LauncherSearchHelp : public QGraphicsWidget
-{
-    Q_OBJECT
-public:
-    LauncherSearchHelp(QGraphicsWidget *parent, LauncherApplet *launcherapplet);
-
-private:
-    LauncherApplet* m_launcherapplet;
-    QGraphicsLinearLayout* m_layout;
-    Plasma::RunnerManager* m_runnermanager;
-};
-
-LauncherSearchHelp::LauncherSearchHelp(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
-    : QGraphicsWidget(parent),
-    m_launcherapplet(launcherapplet),
-    m_layout(nullptr),
-    m_runnermanager(launcherapplet->runnerManager())
-{
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
-    setLayout(m_layout);
-
-    // TODO: fill with text about the runners
-}
-
-
-class LauncherFavorites : public QGraphicsWidget
+class LauncherFavorites : public LauncherWidgetBase
 {
     Q_OBJECT
 public:
@@ -821,23 +863,13 @@ private Q_SLOTS:
     void slotTriggered();
 
 private:
-    QMutex m_mutex;
-    LauncherApplet* m_launcherapplet;
     KBookmarkManager* m_bookmarkmanager;
-    QGraphicsLinearLayout* m_layout;
-    QList<LauncherWidget*> m_launcherwidgets;
 };
 
 LauncherFavorites::LauncherFavorites(QGraphicsWidget *parent, LauncherApplet* launcherapplet)
-    : QGraphicsWidget(parent),
-    m_launcherapplet(launcherapplet),
-    m_bookmarkmanager(launcherapplet->bookmarkManager()),
-    m_layout(nullptr)
+    : LauncherWidgetBase(parent, launcherapplet),
+    m_bookmarkmanager(launcherapplet->bookmarkManager())
 {
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
-    setLayout(m_layout);
-
     connect(
         m_bookmarkmanager, SIGNAL(changed(QString,QString)),
         this, SLOT(slotUpdateLayout())
@@ -854,14 +886,8 @@ LauncherFavorites::LauncherFavorites(QGraphicsWidget *parent, LauncherApplet* la
 
 void LauncherFavorites::slotUpdateLayout()
 {
-    QMutexLocker locker(&m_mutex);
-    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
-        m_layout->removeItem(launcherwidget);
-    }
-    qDeleteAll(m_launcherwidgets);
-    m_launcherwidgets.clear();
-
-    adjustSize();
+    QMutexLocker locker(&b_mutex);
+    clearLauncherWidgets();
 
     bool isfirsttime = true;
     KBookmarkGroup bookmarkgroup = m_bookmarkmanager->root();
@@ -931,8 +957,8 @@ void LauncherFavorites::slotUpdateLayout()
         );
         launcherwidget->addAction(favoriteaction);
         launcherwidget->setMimeData(kMakeMimeData(entrypath));
-        m_launcherwidgets.append(launcherwidget);
-        m_layout->addItem(launcherwidget);
+        b_launcherwidgets.append(launcherwidget);
+        b_layout->addItem(launcherwidget);
         connect(
             launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
@@ -951,12 +977,15 @@ void LauncherFavorites::slotUpdateLayout()
             this, SLOT(slotUpdateLayout())
         );
     }
+
+    locker.unlock();
+    checkUnderMouse();
 }
 
 void LauncherFavorites::slotActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
-    kRunService(launcherwidget->data(), m_launcherapplet);
+    kRunService(launcherwidget->data(), b_launcherapplet);
 }
 
 void LauncherFavorites::slotTriggered()
@@ -1090,7 +1119,7 @@ void LauncherNavigator::slotReleased()
     emit navigate(toolbutton->property("_k_id").toString());
 }
 
-class LauncherServiceWidget : public QGraphicsWidget
+class LauncherServiceWidget : public LauncherWidgetBase
 {
     Q_OBJECT
 public:
@@ -1108,25 +1137,15 @@ private Q_SLOTS:
     void slotTriggered();
 
 private:
-    QMutex m_mutex;
-    LauncherApplet* m_launcherapplet;
     KBookmarkManager* m_bookmarkmanager;
-    QGraphicsLinearLayout* m_layout;
-    QList<LauncherWidget*> m_launcherwidgets;
     QString m_serviceid;
 };
 
 LauncherServiceWidget::LauncherServiceWidget(QGraphicsWidget *parent, LauncherApplet *launcherapplet, const QString &serviceid)
-    : QGraphicsWidget(parent),
-    m_launcherapplet(launcherapplet),
+    : LauncherWidgetBase(parent, launcherapplet),
     m_bookmarkmanager(launcherapplet->bookmarkManager()),
-    m_layout(nullptr),
     m_serviceid(serviceid)
 {
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
-    setLayout(m_layout);
-
     KServiceGroup::Ptr servicegroup = KServiceGroup::group(serviceid);
     if (!servicegroup.isNull() && servicegroup->isValid()) {
         const QSizeF iconsize = kIconSize();
@@ -1139,8 +1158,8 @@ LauncherServiceWidget::LauncherServiceWidget(QGraphicsWidget *parent, LauncherAp
                 iconsize, kGenericIcon(subgroup->icon()), subgroup->caption(), subgroup->comment()
             );
             launcherwidget->setData(subgroup->relPath());
-            m_launcherwidgets.append(launcherwidget);
-            m_layout->addItem(launcherwidget);
+            b_launcherwidgets.append(launcherwidget);
+            b_layout->addItem(launcherwidget);
             connect(
                 launcherwidget, SIGNAL(activated()),
                 this, SLOT(slotGroupActivated())
@@ -1157,8 +1176,8 @@ LauncherServiceWidget::LauncherServiceWidget(QGraphicsWidget *parent, LauncherAp
             );
             launcherwidget->setData(entrypath);
             launcherwidget->setMimeData(kMakeMimeData(entrypath));
-            m_launcherwidgets.append(launcherwidget);
-            m_layout->addItem(launcherwidget);
+            b_launcherwidgets.append(launcherwidget);
+            b_layout->addItem(launcherwidget);
             connect(
                 launcherwidget, SIGNAL(activated()),
                 this, SLOT(slotAppActivated())
@@ -1168,6 +1187,7 @@ LauncherServiceWidget::LauncherServiceWidget(QGraphicsWidget *parent, LauncherAp
         kWarning() << "invalid serivce group" << serviceid;
     }
 
+    checkUnderMouse();
     slotCheckBookmarks();
     connect(
         m_bookmarkmanager, SIGNAL(changed(QString,QString)),
@@ -1193,7 +1213,7 @@ void LauncherServiceWidget::slotGroupActivated()
 void LauncherServiceWidget::slotAppActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
-    kRunService(launcherwidget->data(), m_launcherapplet);
+    kRunService(launcherwidget->data(), b_launcherapplet);
 }
 
 void LauncherServiceWidget::slotCheckBookmarks()
@@ -1206,8 +1226,8 @@ void LauncherServiceWidget::slotCheckBookmarks()
         bookmark = bookmarkgroup.next(bookmark);
     }
 
-    QMutexLocker locker(&m_mutex);
-    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
+    QMutexLocker locker(&b_mutex);
+    foreach (LauncherWidget* launcherwidget, b_launcherwidgets) {
         const QString launcherdata = launcherwidget->data();
         const bool isinfavorites = bookmarkurls.contains(launcherdata);
         // there is only one action, it is known which one is that
@@ -1387,7 +1407,7 @@ void LauncherApplications::slotNavigate(const QString &id)
 }
 
 
-class LauncherRecent : public QGraphicsWidget
+class LauncherRecent : public LauncherWidgetBase
 {
     Q_OBJECT
 public:
@@ -1401,23 +1421,13 @@ private Q_SLOTS:
     void slotTriggered();
 
 private:
-    QMutex m_mutex;
-    LauncherApplet* m_launcherapplet;
-    QGraphicsLinearLayout* m_layout;
-    QList<LauncherWidget*> m_launcherwidgets;
     KDirWatch* m_dirwatch;
 };
 
 LauncherRecent::LauncherRecent(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
-    : QGraphicsWidget(parent),
-    m_launcherapplet(launcherapplet),
-    m_layout(nullptr),
+    : LauncherWidgetBase(parent, launcherapplet),
     m_dirwatch(nullptr)
 {
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
-    setLayout(m_layout);
-
     m_dirwatch = new KDirWatch(this);
     m_dirwatch->addDir(KRecentDocument::recentDocumentDirectory());
     connect(
@@ -1428,14 +1438,8 @@ LauncherRecent::LauncherRecent(QGraphicsWidget *parent, LauncherApplet *launcher
 
 void LauncherRecent::slotUpdateLayout()
 {
-    QMutexLocker locker(&m_mutex);
-    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
-        m_layout->removeItem(launcherwidget);
-    }
-    qDeleteAll(m_launcherwidgets);
-    m_launcherwidgets.clear();
-
-    adjustSize();
+    QMutexLocker locker(&b_mutex);
+    clearLauncherWidgets();
 
     const QSizeF iconsize = kIconSize();
     foreach (const QString &recent, KRecentDocument::recentDocuments()) {
@@ -1455,19 +1459,22 @@ void LauncherRecent::slotUpdateLayout()
             Qt::QueuedConnection
         );
         launcherwidget->addAction(recenteaction);
-        m_launcherwidgets.append(launcherwidget);
-        m_layout->addItem(launcherwidget);
+        b_launcherwidgets.append(launcherwidget);
+        b_layout->addItem(launcherwidget);
         connect(
             launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
         );
     }
+
+    locker.unlock();
+    checkUnderMouse();
 }
 
 void LauncherRecent::slotActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
-    kRunUrl(launcherwidget->data(), m_launcherapplet);
+    kRunUrl(launcherwidget->data(), b_launcherapplet);
 }
 
 void LauncherRecent::slotTriggered()
@@ -1480,7 +1487,7 @@ void LauncherRecent::slotTriggered()
 }
 
 
-class LauncherLeave : public QGraphicsWidget
+class LauncherLeave : public LauncherWidgetBase
 {
     Q_OBJECT
 public:
@@ -1497,10 +1504,6 @@ private Q_SLOTS:
     void slotDelayedShutdown();
 
 private:
-    QMutex m_mutex;
-    LauncherApplet* m_launcherapplet;
-    QGraphicsLinearLayout* m_layout;
-    QList<LauncherWidget*> m_launcherwidgets;
     Plasma::Separator* m_systemseparator;
     QTimer* m_timer;
     bool m_canswitch;
@@ -1512,8 +1515,7 @@ private:
 };
 
 LauncherLeave::LauncherLeave(QGraphicsWidget *parent, LauncherApplet *launcherapplet)
-    : QGraphicsWidget(parent),
-    m_launcherapplet(launcherapplet),
+    : LauncherWidgetBase(parent, launcherapplet),
     m_systemseparator(nullptr),
     m_timer(nullptr),
     m_canswitch(false),
@@ -1522,10 +1524,6 @@ LauncherLeave::LauncherLeave(QGraphicsWidget *parent, LauncherApplet *launcherap
     m_shutdowntype(KWorkSpace::ShutdownTypeNone),
     m_sleepstate(Solid::PowerManagement::SuspendState)
 {
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
-    setLayout(m_layout);
-
     m_timer = new QTimer(this);
     m_timer->setInterval(s_polltimeout);
     connect(
@@ -1542,15 +1540,11 @@ LauncherLeave::LauncherLeave(QGraphicsWidget *parent, LauncherApplet *launcherap
 
 void LauncherLeave::slotUpdateLayout()
 {
-    QMutexLocker locker(&m_mutex);
-    foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
-        m_layout->removeItem(launcherwidget);
-    }
-    qDeleteAll(m_launcherwidgets);
-    m_launcherwidgets.clear();
+    QMutexLocker locker(&b_mutex);
+    clearLauncherWidgets();
 
     if (m_systemseparator) {
-        m_layout->removeItem(m_systemseparator);
+        b_layout->removeItem(m_systemseparator);
         delete m_systemseparator;
         m_systemseparator = nullptr;
     }
@@ -1565,8 +1559,8 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-switch-user"), i18n("Switch user"), i18n("Start a parallel session as a different user")
         );
         launcherwidget->setData("switch");
-        m_launcherwidgets.append(launcherwidget);
-        m_layout->addItem(launcherwidget);
+        b_launcherwidgets.append(launcherwidget);
+        b_layout->addItem(launcherwidget);
         connect(
             launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
@@ -1576,7 +1570,7 @@ void LauncherLeave::slotUpdateLayout()
     if (hassessionicon) {
         m_systemseparator = new Plasma::Separator(this);
         m_systemseparator->setOrientation(Qt::Horizontal);
-        m_layout->addItem(m_systemseparator);
+        b_layout->addItem(m_systemseparator);
     }
 
     const QSet<Solid::PowerManagement::SleepState> sleepsates = Solid::PowerManagement::supportedSleepStates();
@@ -1586,8 +1580,8 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-suspend"), i18n("Sleep"), i18n("Suspend to RAM")
         );
         launcherwidget->setData("suspendram");
-        m_launcherwidgets.append(launcherwidget);
-        m_layout->addItem(launcherwidget);
+        b_launcherwidgets.append(launcherwidget);
+        b_layout->addItem(launcherwidget);
         connect(
             launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
@@ -1599,8 +1593,8 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-suspend-hibernate"), i18n("Hibernate"), i18n("Suspend to disk")
         );
         launcherwidget->setData("suspenddisk");
-        m_launcherwidgets.append(launcherwidget);
-        m_layout->addItem(launcherwidget);
+        b_launcherwidgets.append(launcherwidget);
+        b_layout->addItem(launcherwidget);
         connect(
             launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
@@ -1612,8 +1606,8 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-suspend"), i18n("Hybrid Suspend"), i18n("Hybrid Suspend")
         );
         launcherwidget->setData("suspendhybrid");
-        m_launcherwidgets.append(launcherwidget);
-        m_layout->addItem(launcherwidget);
+        b_launcherwidgets.append(launcherwidget);
+        b_layout->addItem(launcherwidget);
         connect(
             launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
@@ -1626,8 +1620,8 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-reboot"), i18nc("Restart computer", "Restart"), i18n("Restart computer")
         );
         launcherwidget->setData("restart");
-        m_launcherwidgets.append(launcherwidget);
-        m_layout->addItem(launcherwidget);
+        b_launcherwidgets.append(launcherwidget);
+        b_layout->addItem(launcherwidget);
         connect(
             launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
@@ -1639,8 +1633,8 @@ void LauncherLeave::slotUpdateLayout()
             iconsize, KIcon("system-shutdown"), i18n("Shut down"), i18n("Turn off computer")
         );
         launcherwidget->setData("shutdown");
-        m_launcherwidgets.append(launcherwidget);
-        m_layout->addItem(launcherwidget);
+        b_launcherwidgets.append(launcherwidget);
+        b_layout->addItem(launcherwidget);
         connect(
             launcherwidget, SIGNAL(activated()),
             this, SLOT(slotActivated())
@@ -1651,19 +1645,22 @@ void LauncherLeave::slotUpdateLayout()
         iconsize, KIcon("system-log-out"), i18n("Log out"), i18n("End session")
     );
     launcherwidget->setData("logout");
-    m_launcherwidgets.append(launcherwidget);
-    m_layout->addItem(launcherwidget);
+    b_launcherwidgets.append(launcherwidget);
+    b_layout->addItem(launcherwidget);
     connect(
         launcherwidget, SIGNAL(activated()),
         this, SLOT(slotActivated())
     );
+
+    locker.unlock();
+    checkUnderMouse();
 }
 
 void LauncherLeave::slotActivated()
 {
     LauncherWidget* launcherwidget = qobject_cast<LauncherWidget*>(sender());
     const QString launcherwidgetdata = launcherwidget->data();
-    m_launcherapplet->resetState();
+    b_launcherapplet->resetState();
     if (launcherwidgetdata == QLatin1String("switch")) {
         QTimer::singleShot(s_launcherdelay, this, SLOT(slotDelayedSwitch()));
     } else if (launcherwidgetdata == QLatin1String("suspendram")) {
@@ -1736,7 +1733,6 @@ public Q_SLOTS:
 
 private Q_SLOTS:
     void slotSearch(const QString &text);
-    void slotActivated();
     void slotUserTimeout();
     void slotSearchTimeout();
     void slotQueryFinished();
@@ -1748,7 +1744,6 @@ private:
     Plasma::IconWidget* m_iconwidget;
     Plasma::Label* m_label;
     Plasma::LineEdit* m_lineedit;
-    Plasma::IconWidget* m_helpiconwidget;
     Plasma::TabBar* m_tabbar;
     Plasma::ScrollWidget* m_favoritesscrollwidget;
     LauncherFavorites* m_favoriteswidget;
@@ -1759,8 +1754,6 @@ private:
     LauncherLeave* m_leavewidget;
     Plasma::ScrollWidget* m_searchscrollwidget;
     LauncherSearch* m_searchwidget;
-    Plasma::ScrollWidget* m_searchhelpscrollwidget;
-    LauncherSearchHelp* m_searchhelpwidget;
     KUser* m_user;
     QTimer* m_usertimer;
     QTimer* m_searchtimer;
@@ -1774,7 +1767,6 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_iconwidget(nullptr),
     m_label(nullptr),
     m_lineedit(nullptr),
-    m_helpiconwidget(nullptr),
     m_tabbar(nullptr),
     m_favoritesscrollwidget(nullptr),
     m_favoriteswidget(nullptr),
@@ -1785,8 +1777,6 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_leavewidget(nullptr),
     m_searchscrollwidget(nullptr),
     m_searchwidget(nullptr),
-    m_searchhelpscrollwidget(nullptr),
-    m_searchhelpwidget(nullptr),
     m_user(nullptr),
     m_usertimer(nullptr),
     m_searchtimer(nullptr)
@@ -1818,18 +1808,6 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
     m_toplayout->addItem(m_lineedit);
     m_toplayout->setAlignment(m_lineedit, Qt::AlignCenter);
     setFocusProxy(m_lineedit);
-
-    m_helpiconwidget = new Plasma::IconWidget(this);
-    m_helpiconwidget->setAcceptHoverEvents(false);
-    m_helpiconwidget->setAcceptedMouseButtons(Qt::NoButton);
-    m_helpiconwidget->setIcon("help-contextual");
-    // TODO: enable once implemented
-    m_helpiconwidget->setVisible(false);
-    connect(
-        m_helpiconwidget, SIGNAL(activated()),
-        this, SLOT(slotActivated())
-    );
-    m_toplayout->addItem(m_helpiconwidget);
 
     m_tabbar = new Plasma::TabBar(this);
     m_favoritesscrollwidget = kMakeScrollWidget(m_tabbar);
@@ -1868,13 +1846,6 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
         m_lineedit, SIGNAL(textChanged(QString)),
         this, SLOT(slotSearch(QString))
     );
-
-    m_searchhelpscrollwidget = kMakeScrollWidget(this);
-    m_searchhelpscrollwidget->setMinimumSize(s_minimumsize);
-    m_searchhelpscrollwidget->setVisible(false);
-    m_searchhelpwidget = new LauncherSearchHelp(m_searchhelpscrollwidget, m_launcherapplet);
-    m_searchhelpscrollwidget->setWidget(m_searchhelpwidget);
-    m_layout->addItem(m_searchhelpscrollwidget);
 
     m_usertimer = new QTimer(this);
     m_usertimer->setInterval(s_polltimeout);
@@ -1936,11 +1907,6 @@ void LauncherAppletWidget::slotSearch(const QString &text)
         m_searchwidget->prepare();
     }
     m_searchtimer->start();
-}
-
-void LauncherAppletWidget::slotActivated()
-{
-    m_searchhelpscrollwidget->setVisible(!m_searchhelpscrollwidget->isVisible());
 }
 
 void LauncherAppletWidget::slotUserTimeout()
