@@ -1229,7 +1229,7 @@ void LauncherApplications::slotDelayedNavigate()
 {
     QMutexLocker locker(&m_mutex);
     foreach (LauncherWidget* launcherwidget, m_launcherwidgets) {
-        m_layout->removeItem(launcherwidget);
+        m_launcherslayout->removeItem(launcherwidget);
     }
     qDeleteAll(m_launcherwidgets);
     m_launcherwidgets.clear();
