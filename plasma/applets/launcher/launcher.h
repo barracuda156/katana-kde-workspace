@@ -49,6 +49,7 @@ public:
 private Q_SLOTS:
     void slotEditMenu();
     void slotConfigAccepted();
+    void slotUpdateToolTip();
 
 private:
     friend LauncherAppletWidget;

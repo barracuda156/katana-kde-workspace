@@ -53,6 +53,7 @@
 #include <Plasma/ScrollWidget>
 #include <Plasma/BusyWidget>
 #include <Plasma/Animation>
+#include <Plasma/ToolTipManager>
 #include <KDebug>
 
 // TODO: maybe favorites moving, animated layout updates
@@ -1953,6 +1954,11 @@ void LauncherApplet::init()
     setFocusProxy(m_launcherwidget);
     m_runnermanager->setAllowedRunners(kAllowedRunners(m_configgroup));
     QTimer::singleShot(1000, m_launcherwidget, SLOT(slotUpdateLayout()));
+    slotUpdateToolTip();
+    connect(
+        KGlobalSettings::self(), SIGNAL(localeChanged()),
+        this, SLOT(slotUpdateToolTip())
+    );
 }
 
 QGraphicsWidget* LauncherApplet::graphicsWidget()
@@ -2028,6 +2034,15 @@ void LauncherApplet::slotConfigAccepted()
     m_runnermanager->setAllowedRunners(kAllowedRunners(m_configgroup));
     m_launcherwidget->resetSearch();
     emit configNeedsSaving();
+}
+
+void LauncherApplet::slotUpdateToolTip()
+{
+    Plasma::ToolTipContent plasmatooltipcontent = Plasma::ToolTipContent(
+        i18n("Application Launcher"), i18n("Favorites, applications, recently used, session and search"),
+        KIcon(s_defaultpopupicon)
+    );
+    Plasma::ToolTipManager::self()->setContent(this, plasmatooltipcontent);
 }
 
 #include "launcher.moc"
