@@ -160,10 +160,10 @@ static QString kIconForElement(const QString &alsaelementname)
     return QString::fromLatin1("mixer-line");
 }
 
-static int kFixedVolume(const int value, const int alsavolumemax)
+static int kFixedVolume(const long alsavolume, const long alsavolumemax)
 {
     const qreal valuefactor = (qreal(alsavolumemax) / 100);
-    return qRound(qreal(value) / valuefactor);
+    return qRound(qreal(alsavolume) / valuefactor);
 }
 
 static int kVolumeStep()
