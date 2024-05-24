@@ -90,6 +90,7 @@ CalendarApplet::CalendarApplet(QObject *parent, const QVariantList &args)
     m_kcmclockproxy(nullptr)
 {
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
+    setHasConfigurationInterface(true);
     setPopupIcon(s_defaultpopupicon);
 
     m_calendarwidget = new CalendarWidget(this);
