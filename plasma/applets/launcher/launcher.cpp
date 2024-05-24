@@ -1438,11 +1438,12 @@ void LauncherRecent::slotUpdateLayout()
     const QSizeF iconsize = kIconSize();
     foreach (const QString &recent, KRecentDocument::recentDocuments()) {
         KDesktopFile recentfile(recent);
+        const QString recenturl = recentfile.readUrl();
         LauncherWidget* launcherwidget = new LauncherWidget(this);
         launcherwidget->setup(
             iconsize, kRecentIcon(recentfile.readIcon()), recentfile.readName(), recentfile.readComment()
         );
-        launcherwidget->setData(recentfile.readUrl());
+        launcherwidget->setData(recenturl);
         QAction* recenteaction = new QAction(launcherwidget);
         recenteaction->setIcon(KIcon("edit-delete"));
         recenteaction->setToolTip(i18n("Remove"));
@@ -1453,6 +1454,7 @@ void LauncherRecent::slotUpdateLayout()
             Qt::QueuedConnection
         );
         launcherwidget->addAction(recenteaction);
+        launcherwidget->setMimeData(kMakeMimeData(recenturl));
         b_launcherwidgets.append(launcherwidget);
         b_layout->addItem(launcherwidget);
         connect(
