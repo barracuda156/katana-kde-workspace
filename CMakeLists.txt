@@ -250,6 +250,36 @@ add_feature_info(xrandr
     "Set size, orientation, etc. of screens"
 )
 
+find_program(XRDB_EXECUTABLE xrdb)
+add_feature_info(xrdb
+    XRDB_EXECUTABLE
+    "Manage X server resource database"
+)
+
+find_program(XAUTH_EXECUTABLE xauth)
+add_feature_info(xauth
+    XAUTH_EXECUTABLE
+    "Manage X server authorization"
+)
+
+find_program(XSETROOT_EXECUTABLE xsetroot)
+add_feature_info(xsetroot
+    XSETROOT_EXECUTABLE
+    "Startup script"
+)
+
+find_program(XMESSAGE_EXECUTABLE xmessage)
+add_feature_info(xmessage
+    XMESSAGE_EXECUTABLE
+    "Startup script"
+)
+
+find_program(XPROP_EXECUTABLE xprop)
+add_feature_info(xprop
+    XPROP_EXECUTABLE
+    "Startup script"
+)
+
 include(ConfigureChecks.cmake)
 configure_file(config-unix.h.cmake ${CMAKE_BINARY_DIR}/config-unix.h )
 configure_file(config-X11.h.cmake ${CMAKE_BINARY_DIR}/config-X11.h )
