@@ -29,15 +29,19 @@
 #include <QAction>
 
 RandROutput::RandROutput(RandRScreen *parent, RROutput id)
-    : QObject(parent)
-{	
-    m_screen = parent;
+    : QObject(parent),
+    m_id(id),
+    m_screen(parent),
+    m_crtc(nullptr),
+    m_proposedRotation(0),
+    m_proposedRate(0.0),
+    m_originalRotation(0),
+    m_originalRate(0.0),
+    m_rotations(0),
+    m_connected(false)
+{
     Q_ASSERT(m_screen);
 
-    m_id = id;
-    m_crtc = 0;
-    m_rotations = 0;
-    
     queryOutputInfo();
     
     m_proposedRotation = m_originalRotation;
@@ -86,7 +90,7 @@ void RandROutput::queryOutputInfo(void)
         m_possibleCrtcs.append(info->crtcs[i]);
     }
 
-    //TODO: is it worth notifying changes on mode list changing?
+    // TODO: is it worth notifying changes on mode list changing?
     m_modes.clear();
     
     for (int i = 0; i < info->nmode; ++i) {
@@ -232,7 +236,7 @@ void RandROutput::handlePropertyEvent(XRROutputPropertyNotifyEvent *event)
 
 QString RandROutput::name() const
 {
-	return m_name;
+    return m_name;
 }
 
 QString RandROutput::icon() const
@@ -380,7 +384,7 @@ void RandROutput::load(KConfig &config)
     }
 
     KConfigGroup cg = config.group("Screen_" + QString::number(m_screen->index()) +
-                                    "_Output_" + m_name);
+                                   "_Output_" + m_name);
     
     bool active = cg.readEntry("Active", true);
 
@@ -655,7 +659,7 @@ bool RandROutput::applyProposed(int changes, bool confirm)
         return false;
     }
 
-    //then try an empty crtc
+    // then try an empty crtc
     crtc = findEmptyCrtc();
 
     // TODO: check if we can add this output to a CRTC which already has an output 
