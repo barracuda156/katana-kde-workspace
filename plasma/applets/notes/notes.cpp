@@ -28,7 +28,6 @@
 #include <KDebug>
 
 static const QSizeF s_minimumsize = QSizeF(256, 256);
-static const QString s_defaultpopupicon = QString::fromLatin1("knotes");
 
 void kSetTextEditFont(KTextEdit *ktextedit, const QString &fontstring)
 {
@@ -119,7 +118,7 @@ NotesApplet::NotesApplet(QObject *parent, const QVariantList &args)
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
     setHasConfigurationInterface(true);
     setStatus(Plasma::ItemStatus::ActiveStatus);
-    setPopupIcon(s_defaultpopupicon);
+    setPopupIcon("knotes");
 }
 
 void NotesApplet::init()
@@ -162,7 +161,7 @@ void NotesApplet::createConfigurationInterface(KConfigDialog *parent)
     widgetlayout->addItem(m_spacer, 2, 0, 1, 2);
 
     widget->setLayout(widgetlayout);
-    parent->addPage(widget, i18n("Notes"), s_defaultpopupicon);
+    parent->addPage(widget, i18n("Editor"), "accessories-text-editor");
 
     connect(parent, SIGNAL(applyClicked()), this, SLOT(slotConfigAccepted()));
     connect(parent, SIGNAL(okClicked()), this, SLOT(slotConfigAccepted()));
