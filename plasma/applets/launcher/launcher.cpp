@@ -619,6 +619,7 @@ protected:
     LauncherApplet* b_launcherapplet;
     QGraphicsLinearLayout* b_layout;
     QList<LauncherWidget*> b_launcherwidgets;
+    bool b_disableundercheck;
 
 private Q_SLOTS:
     void slotTimeout();
@@ -631,6 +632,7 @@ LauncherWidgetBase::LauncherWidgetBase(QGraphicsWidget *parent, LauncherApplet *
     : QGraphicsWidget(parent),
     b_launcherapplet(launcherapplet),
     b_layout(nullptr),
+    b_disableundercheck(false),
     m_undertimer(nullptr)
 {
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -641,29 +643,31 @@ LauncherWidgetBase::LauncherWidgetBase(QGraphicsWidget *parent, LauncherApplet *
 QVariant LauncherWidgetBase::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
     const QVariant result = QGraphicsWidget::itemChange(change, value);
-    switch (change) {
-        case QGraphicsItem::ItemPositionHasChanged: {
-            if (!m_undertimer) {
-                m_undertimer = new QTimer(this);
-                m_undertimer->setInterval(s_undertimeout);
-                m_undertimer->setSingleShot(true);
-                connect(
-                    m_undertimer, SIGNAL(timeout()),
-                    this, SLOT(slotTimeout())
-                );
-            }
-            if (!m_undertimer->isActive()) {
-                QMutexLocker locker(&b_mutex);
-                foreach (LauncherWidget* launcherwidget, b_launcherwidgets) {
-                    launcherwidget->setUnderMouse(false);
+    if (!b_disableundercheck) {
+        switch (change) {
+            case QGraphicsItem::ItemPositionHasChanged: {
+                if (!m_undertimer) {
+                    m_undertimer = new QTimer(this);
+                    m_undertimer->setInterval(s_undertimeout);
+                    m_undertimer->setSingleShot(true);
+                    connect(
+                        m_undertimer, SIGNAL(timeout()),
+                        this, SLOT(slotTimeout())
+                    );
                 }
+                if (!m_undertimer->isActive()) {
+                    QMutexLocker locker(&b_mutex);
+                    foreach (LauncherWidget* launcherwidget, b_launcherwidgets) {
+                        launcherwidget->setUnderMouse(false);
+                    }
+                }
+                // compresses checks until position stop changing
+                m_undertimer->start();
+                break;
             }
-            // compresses checks until position stop changing
-            m_undertimer->start();
-            break;
-        }
-        default: {
-            break;
+            default: {
+                break;
+            }
         }
     }
     return result;
@@ -671,12 +675,15 @@ QVariant LauncherWidgetBase::itemChange(QGraphicsItem::GraphicsItemChange change
 
 void LauncherWidgetBase::clearLauncherWidgets()
 {
+    Q_ASSERT(b_disableundercheck == false);
+    b_disableundercheck = true;
     foreach (LauncherWidget* launcherwidget, b_launcherwidgets) {
         b_layout->removeItem(launcherwidget);
     }
     qDeleteAll(b_launcherwidgets);
     b_launcherwidgets.clear();
     adjustSize();
+    b_disableundercheck = false;
 }
 
 void LauncherWidgetBase::checkUnderMouse()
@@ -762,6 +769,7 @@ void LauncherSearch::query(const QString &text)
 void LauncherSearch::slotUpdateLayout()
 {
     QMutexLocker locker(&b_mutex);
+    b_disableundercheck = true;
     const QList<Plasma::QueryMatch> matches = m_runnermanager->matches();
     m_busywidget->setRunning(false);
     m_busywidget->setVisible(false);
@@ -806,6 +814,7 @@ void LauncherSearch::slotUpdateLayout()
             this, SLOT(slotActivated())
         );
     }
+    b_disableundercheck = false;
     locker.unlock();
     checkUnderMouse();
     emit queryFinished();
@@ -887,6 +896,7 @@ void LauncherFavorites::slotUpdateLayout()
 {
     QMutexLocker locker(&b_mutex);
     clearLauncherWidgets();
+    b_disableundercheck = true;
 
     bool isfirsttime = true;
     KBookmarkGroup bookmarkgroup = m_bookmarkmanager->root();
@@ -962,6 +972,7 @@ void LauncherFavorites::slotUpdateLayout()
         m_bookmarkmanager->blockSignals(false);
     }
 
+    b_disableundercheck = false;
     locker.unlock();
     checkUnderMouse();
 }
@@ -1130,6 +1141,7 @@ LauncherServiceWidget::LauncherServiceWidget(QGraphicsWidget *parent, LauncherAp
     m_bookmarkmanager(launcherapplet->bookmarkManager()),
     m_serviceid(serviceid)
 {
+    b_disableundercheck = true;
     KServiceGroup::Ptr servicegroup = KServiceGroup::group(serviceid);
     if (!servicegroup.isNull() && servicegroup->isValid()) {
         const QSizeF iconsize = kIconSize();
@@ -1170,6 +1182,7 @@ LauncherServiceWidget::LauncherServiceWidget(QGraphicsWidget *parent, LauncherAp
     } else {
         kWarning() << "invalid serivce group" << serviceid;
     }
+    b_disableundercheck = false;
 
     checkUnderMouse();
     slotCheckBookmarks();
@@ -1424,6 +1437,7 @@ void LauncherRecent::slotUpdateLayout()
 {
     QMutexLocker locker(&b_mutex);
     clearLauncherWidgets();
+    b_disableundercheck = true;
 
     const QSizeF iconsize = kIconSize();
     foreach (const QString &recent, KRecentDocument::recentDocuments()) {
@@ -1453,6 +1467,7 @@ void LauncherRecent::slotUpdateLayout()
         );
     }
 
+    b_disableundercheck = false;
     locker.unlock();
     checkUnderMouse();
 }
@@ -1528,6 +1543,7 @@ void LauncherLeave::slotUpdateLayout()
 {
     QMutexLocker locker(&b_mutex);
     clearLauncherWidgets();
+    b_disableundercheck = true;
 
     if (m_systemseparator) {
         b_layout->removeItem(m_systemseparator);
@@ -1638,6 +1654,7 @@ void LauncherLeave::slotUpdateLayout()
         this, SLOT(slotActivated())
     );
 
+    b_disableundercheck = false;
     locker.unlock();
     checkUnderMouse();
 }
