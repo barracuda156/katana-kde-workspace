@@ -202,10 +202,9 @@ protected:
     QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) final;
 
 private:
-    QPropertyAnimation* animateHover(QPropertyAnimation *animation, const bool fadeout);
+    QPropertyAnimation* animateHover(QPropertyAnimation *animation, const bool fadein);
     Plasma::Animation* animateButton(Plasma::Animation *animation, Plasma::ToolButton *toolbutton,
-                                     const bool fadeout);
-    void animateHoverAndButtons(const bool fadeout);
+                                     const bool fadein);
     bool handleMouseEvent(QGraphicsSceneMouseEvent *event);
 
     QGraphicsLinearLayout* m_layout;
@@ -450,7 +449,11 @@ void LauncherWidget::removeAction(const int actionnumber)
 
 void LauncherWidget::setUnderMouse(const bool undermouse)
 {
-    animateHoverAndButtons(!undermouse);
+    m_hoveranimation = animateHover(m_hoveranimation, undermouse);
+    m_action1animation = animateButton(m_action1animation, m_action1widget, undermouse);
+    m_action2animation = animateButton(m_action2animation, m_action2widget, undermouse);
+    m_action3animation = animateButton(m_action3animation, m_action3widget, undermouse);
+    m_action4animation = animateButton(m_action4animation, m_action4widget, undermouse);
 }
 
 void LauncherWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -471,13 +474,13 @@ void LauncherWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 void LauncherWidget::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    animateHoverAndButtons(false);
+    setUnderMouse(true);
 }
 
 void LauncherWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    animateHoverAndButtons(true);
+    setUnderMouse(false);
 }
 
 void LauncherWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -516,7 +519,7 @@ QVariant LauncherWidget::itemChange(QGraphicsItem::GraphicsItemChange change, co
     return result;
 }
 
-QPropertyAnimation* LauncherWidget::animateHover(QPropertyAnimation *animation, const bool fadeout)
+QPropertyAnimation* LauncherWidget::animateHover(QPropertyAnimation *animation, const bool fadein)
 {
     if (animation) {
         animation->stop();
@@ -525,14 +528,14 @@ QPropertyAnimation* LauncherWidget::animateHover(QPropertyAnimation *animation, 
         animation->setDuration(s_animationduration);
     }
     animation->setStartValue(m_hover);
-    animation->setEndValue(fadeout ? 0.0 : 1.0);
+    animation->setEndValue(fadein ? 1.0 : 0.0);
     animation->start(QAbstractAnimation::KeepWhenStopped);
     return animation;
 }
 
 Plasma::Animation* LauncherWidget::animateButton(Plasma::Animation *animation,
                                                  Plasma::ToolButton *toolbutton,
-                                                 const bool fadeout)
+                                                 const bool fadein)
 {
     if (!toolbutton->isVisible()) {
         return nullptr;
@@ -545,18 +548,9 @@ Plasma::Animation* LauncherWidget::animateButton(Plasma::Animation *animation,
         animation->setTargetWidget(toolbutton);
     }
     animation->setProperty("startOpacity", toolbutton->opacity());
-    animation->setProperty("targetOpacity", fadeout ? 0.0 : 1.0);
+    animation->setProperty("targetOpacity", fadein ? 1.0 : 0.0);
     animation->start(QAbstractAnimation::KeepWhenStopped);
     return animation;
-}
-
-void LauncherWidget::animateHoverAndButtons(const bool fadeout)
-{
-    m_hoveranimation = animateHover(m_hoveranimation, fadeout);
-    m_action1animation = animateButton(m_action1animation, m_action1widget, fadeout);
-    m_action2animation = animateButton(m_action2animation, m_action2widget, fadeout);
-    m_action3animation = animateButton(m_action3animation, m_action3widget, fadeout);
-    m_action4animation = animateButton(m_action4animation, m_action4widget, fadeout);
 }
 
 bool LauncherWidget::handleMouseEvent(QGraphicsSceneMouseEvent *event)
