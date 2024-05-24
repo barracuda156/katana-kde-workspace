@@ -267,6 +267,7 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_iconwidget = new Plasma::IconWidget(this);
     m_iconwidget->setAcceptHoverEvents(false);
     m_iconwidget->setContentsMargins(s_iconmargin, s_iconmargin, s_iconmargin, s_iconmargin);
+    m_iconwidget->setFocusPolicy(Qt::NoFocus);
     m_layout->addItem(m_iconwidget);
     connect(
         m_iconwidget, SIGNAL(activated()),
@@ -280,10 +281,14 @@ LauncherWidget::LauncherWidget(QGraphicsWidget *parent)
     m_textwidget = new Plasma::Label(this);
     m_textwidget->setWordWrap(false);
     m_textwidget->setElideText(true);
+    m_textwidget->nativeWidget()->setTextInteractionFlags(Qt::NoTextInteraction);
+    m_textwidget->setFocusPolicy(Qt::NoFocus);
     m_textlayout->addItem(m_textwidget);
     m_subtextwidget = new Plasma::Label(this);
     m_subtextwidget->setWordWrap(false);
     m_subtextwidget->setElideText(true);
+    m_subtextwidget->nativeWidget()->setTextInteractionFlags(Qt::NoTextInteraction);
+    m_subtextwidget->setFocusPolicy(Qt::NoFocus);
     m_textlayout->addItem(m_subtextwidget);
 
     m_actionslayout = new QGraphicsGridLayout(m_layout);
