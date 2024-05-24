@@ -41,7 +41,6 @@
 #include <Plasma/Theme>
 #include <Plasma/ToolTipContent>
 #include <Plasma/ToolTipManager>
-#include <Plasma/ItemBackground>
 #include <kworkspace/kworkspace.h>
 
 #include <limits.h>
