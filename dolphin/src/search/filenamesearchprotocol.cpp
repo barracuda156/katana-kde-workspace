@@ -85,6 +85,7 @@ void FileNameSearchProtocol::searchDirectory(const KUrl& directory)
     // Get all items of the directory
     KDirLister *dirLister = new KDirLister();
     dirLister->setDelayedMimeTypes(false);
+    dirLister->setAutoUpdate(false);
     dirLister->setAutoErrorHandlingEnabled(false, 0);
 
     QEventLoop eventLoop;
