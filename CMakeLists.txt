@@ -244,6 +244,12 @@ add_feature_info(diff
     "Show difference between files in Kate"
 )
 
+find_program(XRANDR_EXECUTABLE xrandr)
+add_feature_info(xrandr
+    XRANDR_EXECUTABLE
+    "Set size, orientation, etc. of screens"
+)
+
 include(ConfigureChecks.cmake)
 configure_file(config-unix.h.cmake ${CMAKE_BINARY_DIR}/config-unix.h )
 configure_file(config-X11.h.cmake ${CMAKE_BINARY_DIR}/config-X11.h )
