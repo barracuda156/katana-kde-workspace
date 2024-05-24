@@ -20,6 +20,9 @@
 #ifndef NOTES_H
 #define NOTES_H
 
+#include <QSpacerItem>
+#include <KConfigDialog>
+#include <KFontRequester>
 #include <Plasma/PopupApplet>
 
 class NotesAppletWidget;
@@ -30,20 +33,25 @@ class NotesApplet : public Plasma::PopupApplet
 public:
     NotesApplet(QObject *parent, const QVariantList &args);
 
-    // Plasma::Applet reimplementation
+    // Plasma::Applet reimplementations
     void init() final;
+    void createConfigurationInterface(KConfigDialog *parent) final;
     // Plasma::PopupApplet reimplementation
     QGraphicsWidget* graphicsWidget() final;
 
     // Plasma::Applet reimplementations
 public Q_SLOTS:
     void configChanged();
+    void slotConfigAccepted();
+
 protected:
     void saveState(KConfigGroup &group) const final;
 
 private:
     friend NotesAppletWidget;
     NotesAppletWidget *m_noteswidget;
+    KFontRequester* m_fontrequester;
+    QSpacerItem* m_spacer;
 };
 
 #endif // NOTES_H

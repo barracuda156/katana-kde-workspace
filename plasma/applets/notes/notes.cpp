@@ -21,12 +21,33 @@
 
 #include <QFile>
 #include <QTextStream>
+#include <QGridLayout>
 #include <KTextEdit>
 #include <Plasma/Frame>
 #include <Plasma/TextEdit>
 #include <KDebug>
 
 static const QSizeF s_minimumsize = QSizeF(256, 256);
+static const QString s_defaultpopupicon = QString::fromLatin1("knotes");
+
+void kSetTextEditFont(KTextEdit *ktextedit, const QString &fontstring)
+{
+    QFont font;
+    if (!font.fromString(fontstring)) {
+        kWarning() << "could not create QFont from" << fontstring;
+        return;
+    }
+    ktextedit->setEnabled(false);
+    // if only it was that easy..
+    ktextedit->setFont(font);
+    // have to save the cursor, select all, change the text format and move the cursor back in
+    // position
+    const QTextCursor oldtextcursor = ktextedit->textCursor();
+    ktextedit->selectAll();
+    ktextedit->setCurrentFont(font);
+    ktextedit->setTextCursor(oldtextcursor);
+    ktextedit->setEnabled(true);
+}
 
 class NotesAppletWidget : public QGraphicsWidget
 {
@@ -35,12 +56,14 @@ public:
     NotesAppletWidget(QGraphicsWidget *parent);
 
     Plasma::TextEdit* textEdit() const;
+    KTextEdit* nativeTextEdit() const;
 
 private:
     QGraphicsLinearLayout* m_layout;
     Plasma::Frame* m_frame;
     QGraphicsLinearLayout* m_framelayout;
     Plasma::TextEdit* m_textedit;
+    KTextEdit* m_nativetextedit;
 };
 
 NotesAppletWidget::NotesAppletWidget(QGraphicsWidget *parent)
@@ -48,7 +71,8 @@ NotesAppletWidget::NotesAppletWidget(QGraphicsWidget *parent)
     m_layout(nullptr),
     m_frame(nullptr),
     m_framelayout(nullptr),
-    m_textedit(nullptr)
+    m_textedit(nullptr),
+    m_nativetextedit(nullptr)
 {
     m_layout = new QGraphicsLinearLayout(this);
     m_layout->setOrientation(Qt::Vertical);
@@ -66,6 +90,9 @@ NotesAppletWidget::NotesAppletWidget(QGraphicsWidget *parent)
     m_framelayout->addItem(m_textedit);
     m_layout->addItem(m_frame);
 
+    m_nativetextedit = m_textedit->nativeWidget();
+    m_nativetextedit->setAcceptRichText(false);
+
     setLayout(m_layout);
 
     adjustSize();
@@ -76,15 +103,23 @@ Plasma::TextEdit* NotesAppletWidget::textEdit() const
     return m_textedit;
 }
 
+KTextEdit* NotesAppletWidget::nativeTextEdit() const
+{
+    return m_nativetextedit;
+}
+
 
 NotesApplet::NotesApplet(QObject *parent, const QVariantList &args)
     : Plasma::PopupApplet(parent, args),
-    m_noteswidget(nullptr)
+    m_noteswidget(nullptr),
+    m_fontrequester(nullptr),
+    m_spacer(nullptr)
 {
     KGlobal::locale()->insertCatalog("plasma_applet_notes");
     setAspectRatioMode(Plasma::AspectRatioMode::IgnoreAspectRatio);
+    setHasConfigurationInterface(true);
     setStatus(Plasma::ItemStatus::ActiveStatus);
-    setPopupIcon("knotes");
+    setPopupIcon(s_defaultpopupicon);
 }
 
 void NotesApplet::init()
@@ -110,6 +145,30 @@ void NotesApplet::init()
     configChanged();
 }
 
+void NotesApplet::createConfigurationInterface(KConfigDialog *parent)
+{
+    KTextEdit* nativetextedit = m_noteswidget->nativeTextEdit();
+
+    QWidget* widget = new QWidget();
+    QGridLayout* widgetlayout = new QGridLayout(widget);
+    QLabel* fontlabel = new QLabel(widget);
+    fontlabel->setText(i18n("Font:"));
+    widgetlayout->addWidget(fontlabel, 0, 0, Qt::AlignRight | Qt::AlignVCenter);
+    m_fontrequester = new KFontRequester(widget);
+    m_fontrequester->setFont(nativetextedit->font());
+    widgetlayout->addWidget(m_fontrequester, 0, 1);
+
+    m_spacer = new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Expanding);
+    widgetlayout->addItem(m_spacer, 2, 0, 1, 2);
+
+    widget->setLayout(widgetlayout);
+    parent->addPage(widget, i18n("Notes"), s_defaultpopupicon);
+
+    connect(parent, SIGNAL(applyClicked()), this, SLOT(slotConfigAccepted()));
+    connect(parent, SIGNAL(okClicked()), this, SLOT(slotConfigAccepted()));
+    connect(m_fontrequester, SIGNAL(fontSelected(QFont)), parent, SLOT(settingsModified()));
+}
+
 QGraphicsWidget* NotesApplet::graphicsWidget()
 {
     return m_noteswidget;
@@ -121,7 +180,7 @@ void NotesApplet::configChanged()
         return;
     }
     Plasma::TextEdit* plasmatextedit = m_noteswidget->textEdit();
-    KTextEdit* nativetextedit = plasmatextedit->nativeWidget();
+    KTextEdit* nativetextedit = m_noteswidget->nativeTextEdit();
     KConfigGroup configgroup = config();
     const bool checkSpellingEnabled = configgroup.readEntry("checkspelling", nativetextedit->checkSpellingEnabled());
     nativetextedit->setCheckSpellingEnabled(checkSpellingEnabled);
@@ -129,6 +188,20 @@ void NotesApplet::configChanged()
         const QString text = configgroup.readEntry("text", QString());
         plasmatextedit->setText(text);
     }
+    const QString configfont = configgroup.readEntry("font", nativetextedit->font().toString());
+    kSetTextEditFont(nativetextedit, configfont);
+}
+
+void NotesApplet::slotConfigAccepted()
+{
+    Q_ASSERT(m_fontrequester != nullptr);
+    Plasma::TextEdit* plasmatextedit = m_noteswidget->textEdit();
+    KTextEdit* nativetextedit = plasmatextedit->nativeWidget();
+    KConfigGroup configgroup = config();
+    const QString fontrequesterfont = m_fontrequester->font().toString();
+    configgroup.writeEntry("font", fontrequesterfont);
+    kSetTextEditFont(nativetextedit, fontrequesterfont);
+    emit configNeedsSaving();
 }
 
 void NotesApplet::saveState(KConfigGroup &group) const
@@ -140,6 +213,7 @@ void NotesApplet::saveState(KConfigGroup &group) const
     KTextEdit* nativetextedit = plasmatextedit->nativeWidget();
     group.writeEntry("text", plasmatextedit->text());
     group.writeEntry("checkspelling", nativetextedit->checkSpellingEnabled());
+    group.writeEntry("font", nativetextedit->font().toString());
     Plasma::PopupApplet::saveState(group);
 }
 
