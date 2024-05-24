@@ -7,7 +7,7 @@ COPYING.
 -->
 <!--
 Notes:
-- the mime types are for services as described at: http://www.dns-sd.org/ServiceTypes.html.
+- the mime types are for services as described at: https://dns-sd.org/ServiceTypes.html.
 -->
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="inode/vnd.kde.network">

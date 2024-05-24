@@ -3024,7 +3024,7 @@ void TerminalDisplay::dropEvent(QDropEvent* event)
     QString dropText;
     if (!urls.isEmpty()) {
         for (int i = 0 ; i < urls.count() ; i++) {
-            KUrl url = KIO::NetAccess::mostLocalUrl(urls[i] , 0);
+            const KUrl url = urls[i];
             QString urlText;
 
             if (url.isLocalFile())
@@ -3056,7 +3056,7 @@ void TerminalDisplay::dropEvent(QDropEvent* event)
             additionalActions.append(pasteAction);
 
             if (urls.count() == 1) {
-                const KUrl url = KIO::NetAccess::mostLocalUrl(urls[0] , 0);
+                const KUrl url = urls[0];
 
                 if (url.isLocalFile()) {
                     const QFileInfo fileInfo(url.path());

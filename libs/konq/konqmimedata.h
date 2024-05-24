@@ -39,12 +39,12 @@ public:
      *                 Must not be 0.
      * @param kdeURLs list of urls (which can include kde-specific protocols).
      * This list can be empty if only local urls are being used anyway.
-     * @param mostLocalURLs "most local urls" (which try to resolve those to file:/ where possible),
+     * @param localURLs local urls (which resolve to file:/),
      * @param cut if true, the user selected "cut" (saved as application/x-kde-cutselection in the mimedata).
      */
     static void populateMimeData( QMimeData* mimeData,
                                   const KUrl::List& kdeURLs,
-                                  const KUrl::List& mostLocalURLs,
+                                  const KUrl::List& localURLs,
                                   bool cut = false );
 
     /**

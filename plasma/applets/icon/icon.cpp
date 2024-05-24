@@ -139,7 +139,7 @@ void IconApplet::setUrl(const KUrl& url, bool fromConfigDialog)
 
     m_url = url;
     if (!m_url.protocol().isEmpty()) {
-        m_url = KIO::NetAccess::mostLocalUrl(url, 0);
+        m_url = url;
     }
 
     m_service = 0;

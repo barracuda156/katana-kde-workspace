@@ -22,13 +22,10 @@
 
 #include <panels/panel.h>
 
-class TerminalInterface;
 #include <QVBoxLayout>
 #include <QWidget>
 
-namespace KIO {
-    class StatJob;
-}
+class TerminalInterface;
 
 namespace KParts {
     class ReadOnlyPart;
@@ -66,7 +63,6 @@ protected:
     virtual void showEvent(QShowEvent* event);
 
 private slots:
-    void slotMostLocalUrlResult(KJob* job);
     void slotKonsolePartCurrentDirectoryChanged(const QString& dir);
 
 private:
@@ -75,7 +71,6 @@ private:
 
 private:
     bool m_clearTerminal;
-    KIO::StatJob* m_mostLocalUrlJob;
 
     QVBoxLayout* m_layout;
     TerminalInterface* m_terminal;

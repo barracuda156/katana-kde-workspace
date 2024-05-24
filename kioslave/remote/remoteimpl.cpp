@@ -189,7 +189,7 @@ bool RemoteImpl::createWizardEntry(KIO::UDSEntry &entry) const
     entry.insert( KIO::UDSEntry::UDS_NAME, i18n("Add Network Folder"));
     entry.insert( KIO::UDSEntry::UDS_FILE_TYPE, S_IFREG);
     entry.insert( KIO::UDSEntry::UDS_URL, QString::fromLatin1(WIZARD_URL) );
-    entry.insert( KIO::UDSEntry::UDS_LOCAL_PATH, url.path());
+    entry.insert( KIO::UDSEntry::UDS_TARGET_URL, url.path());
     entry.insert( KIO::UDSEntry::UDS_ACCESS, 0500);
     entry.insert( KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("application/x-desktop"));
     entry.insert( KIO::UDSEntry::UDS_ICON_NAME, QString::fromLatin1("folder-new"));

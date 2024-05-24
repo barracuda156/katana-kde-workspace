@@ -24,8 +24,6 @@
 #include <kio/job.h>
 #include <kurl.h>
 
-
-
 class RemoteImpl
 {
 public:

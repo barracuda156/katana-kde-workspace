@@ -23,13 +23,13 @@
 
 void KonqMimeData::populateMimeData( QMimeData* mimeData,
                                      const KUrl::List& kdeURLs,
-                                     const KUrl::List& mostLocalURLs,
+                                     const KUrl::List& localURLs,
                                      bool cut )
 {
-    if (mostLocalURLs.isEmpty())
+    if (localURLs.isEmpty())
         kdeURLs.populateMimeData(mimeData);
     else
-        kdeURLs.populateMimeData(mostLocalURLs, mimeData);
+        kdeURLs.populateMimeData(localURLs, mimeData);
 
     addIsCutSelection(mimeData, cut);
 }

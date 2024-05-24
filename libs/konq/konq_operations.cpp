@@ -354,8 +354,7 @@ KonqOperations *KonqOperations::doDrop( const KFileItem & destItem, const KUrl &
 void KonqOperations::asyncDrop( const KFileItem & destItem )
 {
     assert(m_info); // setDropInfo should have been called before asyncDrop
-    bool m_destIsLocal = false;
-    m_destUrl = destItem.mostLocalUrl(m_destIsLocal); // #168154
+    m_destUrl = destItem.url(); // #168154
 
     //kDebug(1203) << "destItem->mode=" << destItem->mode() << " url=" << m_destUrl;
     // Check what the destination is
@@ -364,7 +363,7 @@ void KonqOperations::asyncDrop( const KFileItem & destItem )
         doDropFileCopy();
         return;
     }
-    if ( !m_destIsLocal )
+    if ( !m_destUrl.isLocalFile() )
     {
         // We dropped onto a remote URL that is not a directory!
         // (e.g. an HTTP link in the sidebar).

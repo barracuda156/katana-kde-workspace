@@ -27,8 +27,6 @@
 #include <kde_terminal_interface.h>
 #include <KParts/Part>
 #include <KShell>
-#include <KIO/Job>
-#include <KIO/JobUiDelegate>
 
 #include <QBoxLayout>
 #include <QDir>
@@ -37,7 +35,6 @@
 TerminalPanel::TerminalPanel(QWidget* parent) :
     Panel(parent),
     m_clearTerminal(true),
-    m_mostLocalUrlJob(0),
     m_layout(0),
     m_terminal(0),
     m_terminalWidget(0),
@@ -124,17 +121,8 @@ void TerminalPanel::showEvent(QShowEvent* event)
 
 void TerminalPanel::changeDir(const KUrl& url)
 {
-    delete m_mostLocalUrlJob;
-    m_mostLocalUrlJob = 0;
-
     if (url.isLocalFile()) {
         sendCdToTerminal(url.toLocalFile());
-    } else {
-        m_mostLocalUrlJob = KIO::mostLocalUrl(url, KIO::HideProgressInfo);
-        if (m_mostLocalUrlJob->ui()) {
-            m_mostLocalUrlJob->ui()->setWindow(this);
-        }
-        connect(m_mostLocalUrlJob, SIGNAL(result(KJob*)), this, SLOT(slotMostLocalUrlResult(KJob*)));
     }
 }
 
@@ -163,17 +151,6 @@ void TerminalPanel::sendCdToTerminal(const QString& dir)
         m_terminal->sendInput(" clear\n");
         m_clearTerminal = false;
     }
-}
-
-void TerminalPanel::slotMostLocalUrlResult(KJob* job)
-{
-    KIO::StatJob* statJob = static_cast<KIO::StatJob *>(job);
-    const KUrl url = statJob->mostLocalUrl();
-    if (url.isLocalFile()) {
-        sendCdToTerminal(url.toLocalFile());
-    }
-
-    m_mostLocalUrlJob = 0;
 }
 
 void TerminalPanel::slotKonsolePartCurrentDirectoryChanged(const QString& dir)

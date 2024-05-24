@@ -41,7 +41,7 @@ void KonqMimeDataTest::testPopulate()
     KUrl mediaURL( "media:/hda1/tmp/Mat%C3%A9riel" );
     KUrl localURL( "file:///tmp/Mat%C3%A9riel" );
     //KUrl::List kdeURLs; kdeURLs << mediaURL;
-    //KUrl::List mostLocalURLs; mostLocalURLs << localURL;
+    //KUrl::List localURLs; localURLs << localURL;
 
     KonqMimeData::populateMimeData( mimeData, mediaURL, localURL );
 
