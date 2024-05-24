@@ -906,14 +906,7 @@ void LauncherFavorites::slotUpdateLayout()
                 kWarning() << "invalid first-time serivce" << name;
             }
         }
-        disconnect(
-            m_bookmarkmanager, SIGNAL(changed(QString,QString)),
-            this, SLOT(slotUpdateLayout())
-        );
-        disconnect(
-            m_bookmarkmanager, SIGNAL(bookmarksChanged(QString)),
-            this, SLOT(slotUpdateLayout())
-        );
+        m_bookmarkmanager->blockSignals(true);
         m_bookmarkmanager->emitChanged(bookmarkgroup);
     }
 
@@ -961,15 +954,7 @@ void LauncherFavorites::slotUpdateLayout()
     }
 
     if (isfirsttime) {
-        locker.unlock();
-        connect(
-            m_bookmarkmanager, SIGNAL(changed(QString,QString)),
-            this, SLOT(slotUpdateLayout())
-        );
-        connect(
-            m_bookmarkmanager, SIGNAL(bookmarksChanged(QString)),
-            this, SLOT(slotUpdateLayout())
-        );
+        m_bookmarkmanager->blockSignals(false);
     }
 
     locker.unlock();
@@ -1779,7 +1764,7 @@ LauncherAppletWidget::LauncherAppletWidget(LauncherApplet* auncherapplet)
 {
     m_layout = new QGraphicsLinearLayout(Qt::Vertical, this);
     m_toplayout = new QGraphicsLinearLayout(Qt::Horizontal, m_layout);
-    m_toplayout->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    m_toplayout->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     m_layout->addItem(m_toplayout);
 
     m_user = new KUser(KUser::UseEffectiveUID);
