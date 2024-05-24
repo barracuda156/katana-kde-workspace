@@ -37,11 +37,6 @@
 #include <cmath>  //For floor, ceil, log10 etc for calculating ranges
 #include <limits>
 
-#ifdef SVG_SUPPORT
-#include <plasma/svg.h>
-#endif
-
-
 #define VERTICAL_LINE_OFFSET 1
 //Never store less 1000 samples if not visible.  This is kinda arbituary
 #define NUM_SAMPLES_WHEN_INVISIBLE ((uint)1000)
@@ -309,27 +304,6 @@ void KSignalPlotter::setShowAxis( bool value )
 bool KSignalPlotter::showAxis() const
 {
     return d->mShowAxis;
-}
-
-QString KSignalPlotter::svgBackground() const {
-    return d->mSvgFilename;
-}
-void KSignalPlotter::setSvgBackground( const QString &filename )
-{
-    if(d->mSvgFilename == filename) return;
-    d->mSvgFilename = filename;
-#ifdef SVG_SUPPORT
-    if(filename.isEmpty()) {
-        delete d->mSvgRenderer;
-        d->mSvgRenderer = NULL;
-    } else {
-        if(!d->mSvgRenderer)
-            d->mSvgRenderer = new Plasma::Svg(this);
-        d->mSvgRenderer->setImagePath(d->mSvgFilename);
-    }
-#endif
-    d->mBackgroundImage = QPixmap();
-    update();
 }
 
 void KSignalPlotter::setMaxAxisTextWidth(int axisTextWidth)
@@ -606,15 +580,6 @@ void GraphWidget::paintEvent( QPaintEvent*)
 
 void KSignalPlotterPrivate::drawWidget(QPainter *p, const QRect &boundingBox)
 {
-#ifdef SVG_SUPPORT
-    if(!mSvgFilename.isEmpty()) {
-        if(mBackgroundImage.isNull() || mBackgroundImage.height() != boundingBox.height() || mBackgroundImage.width() != boundingBox.width()) { //recreate on resize etc
-            updateSvgBackground(boundingBox);
-        }
-        p->drawPixmap(boundingBox, mBackgroundImage);
-    }
-#endif
-
     if( mScrollableImage.isNull() )
         redrawScrollableImage();
 
@@ -642,12 +607,7 @@ void KSignalPlotterPrivate::drawWidget(QPainter *p, const QRect &boundingBox)
 void KSignalPlotterPrivate::drawBackground(QPainter *p, const QRect &boundingBox) const
 {
     p->setRenderHint(QPainter::Antialiasing, false);
-#ifdef SVG_SUPPORT
-    if(!mSvgFilename.isEmpty()) //our background is an svg, so don't paint over the top of it
-        p->fillRect(boundingBox, Qt::transparent);
-    else
-#endif
-        p->fillRect(boundingBox, q->palette().brush(QPalette::Base));
+    p->fillRect(boundingBox, q->palette().brush(QPalette::Base));
 
     if ( mShowHorizontalLines )
         drawHorizontalLines(p, boundingBox.adjusted(0,0,1,0));
@@ -662,6 +622,7 @@ bool KSignalPlotter::thinFrame() const
 {
     return d->mShowThinFrame;
 }
+
 void KSignalPlotter::setThinFrame(bool thinFrame)
 {
     if(thinFrame == d->mShowThinFrame)
@@ -671,21 +632,6 @@ void KSignalPlotter::setThinFrame(bool thinFrame)
     update(); //Trigger a repaint
 }
 
-#ifdef SVG_SUPPORT
-void KSignalPlotterPrivate::updateSvgBackground(const QRect &boundingBox)
-{
-    Q_ASSERT(!mSvgFilename.isEmpty());
-    Q_ASSERT(boundingBox.isNull());
-    mBackgroundImage = QPixmap(boundingBox.width(), boundingBox.height());
-    Q_ASSERT(!mBackgroundImage.isNull());
-    QPainter pCache(&mBackgroundImage);
-    pCache.fill( q->palette().color(QPalette::Base) );
-
-    svgRenderer->resize(boundingBox.size());
-    svgRenderer->paint(&pCache, 0, 0);
-
-}
-#endif
 void KSignalPlotterPrivate::redrawScrollableImage()
 {
     //Align width of bounding box to the size of the horizontal scale

@@ -44,7 +44,6 @@ Q_DECLARE_METATYPE(KLocalizedString)
  *  Features include:
  *  \li Points are joined by a bezier curve.
  *  \li Lines are anti-aliased
- *  \li Background can be set as a specified SVG
  *  \li The lines can be reordered
  *  \li Uses as little memory and CPU as possible
  *  \li Graph can be smoothed using the formula (value * 2 + last_value)/3
@@ -80,7 +79,6 @@ class KDE_EXPORT KSignalPlotter : public QWidget
   Q_PROPERTY(bool verticalLinesScroll READ verticalLinesScroll WRITE setVerticalLinesScroll)
   Q_PROPERTY(uint verticalLinesDistance READ verticalLinesDistance WRITE setVerticalLinesDistance)
   Q_PROPERTY(bool showAxis READ showAxis WRITE setShowAxis)
-  Q_PROPERTY(QString svgBackground READ svgBackground WRITE setSvgBackground)
   Q_PROPERTY(bool thinFrame READ thinFrame WRITE setThinFrame)
   Q_PROPERTY(int maxAxisTextWidth READ maxAxisTextWidth WRITE setMaxAxisTextWidth)
   Q_PROPERTY(bool smoothGraph READ smoothGraph WRITE setSmoothGraph)
@@ -352,14 +350,6 @@ class KDE_EXPORT KSignalPlotter : public QWidget
      * Default is true.
      * \sa setShowAxis(), axisFont(), axisFontColor(), maxAxisTextWidth() */
     bool showAxis() const;
-
-    /** \brief Set the filename of the SVG background.
-     *
-     * Set to empty (default) to disable again. */
-    void setSvgBackground( const QString &filename );
-
-    /** \brief The filename of the SVG background. */
-    QString svgBackground() const;
 
     /** \brief Return the last value that we have for the given beam index.
      *

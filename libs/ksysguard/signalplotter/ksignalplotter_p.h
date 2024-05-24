@@ -24,19 +24,8 @@
 
 //#define USE_QIMAGE
 
-// SVG support causes it to crash at the moment :(
-//#define SVG_SUPPORT
-// Use a seperate child widget to draw the graph in
-
 #include <QWidget>
 #include <QtGui/qevent.h>
-
-#ifdef SVG_SUPPORT
-namespace Plasma
-{
-    class SVG;
-}
-#endif
 
 class GraphWidget;
 class KSignalPlotter;
@@ -65,17 +54,12 @@ public:
     /** Return the given value as a string, with the given precision */
     QString scaledValueAsString( qreal value, int precision) const;
     void addSample( const QList<qreal>& sampleBuf );
-#ifdef SVG_SUPPORT
-    void updateSvgBackground(const QRect &boundingBox);
-    Plasma::SVG* mSvgRenderer;
-#endif
-    QString mSvgFilename;
 
-    QPixmap mBackgroundImage;	///A cache of the background of the widget. Contains the SVG or just white background with lines
+    QPixmap mBackgroundImage;	///A cache of the background of the widget. Contains just white background with lines
 #ifdef USE_QIMAGE
-    QImage mScrollableImage;	///The scrollable image for the widget.  Contains the SVG lines
+    QImage mScrollableImage;	///The scrollable image for the widget.  Contains the lines
 #else
-    QPixmap mScrollableImage;	///The scrollable image for the widget.  Contains the SVG lines
+    QPixmap mScrollableImage;	///The scrollable image for the widget.  Contains the lines
 #endif
     int mScrollOffset;		///The scrollable image is, well, scrolled in a wrap-around window.  mScrollOffset determines where the left hand side of the mScrollableImage should be drawn relative to the right hand side of view.  0 <= mScrollOffset < mScrollableImage.width()
     qreal mMinValue;		///The minimum value (unscaled) currently being displayed

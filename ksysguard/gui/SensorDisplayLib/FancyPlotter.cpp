@@ -778,12 +778,6 @@ bool FancyPlotter::restoreSettings( QDomElement &element )
     mPlotter->setShowHorizontalLines( element.attribute( "hLines", "1" ).toUInt() );
     mPlotter->setStackGraph( element.attribute("stacked", "0").toInt());
 
-    QString filename = element.attribute( "svgBackground");
-    if (!filename.isEmpty() && filename[0] == '/') {
-        KStandardDirs* kstd = KGlobal::dirs();
-        filename = kstd->findResource( "data", "ksysguard/" + filename);
-    }
-    mPlotter->setSvgBackground( filename );
     if(version >= 1) {
         mPlotter->setShowAxis( element.attribute( "labels", "1" ).toUInt() );
         uint fontsize = element.attribute( "fontSize", "0").toUInt();
@@ -850,7 +844,6 @@ bool FancyPlotter::saveSettings( QDomDocument &doc, QDomElement &element)
 
     element.setAttribute( "hLines", mPlotter->showHorizontalLines() );
 
-    element.setAttribute( "svgBackground", mPlotter->svgBackground() );
     element.setAttribute( "stacked", mPlotter->stackGraph() );
 
     element.setAttribute( "version", 1 );
