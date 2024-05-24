@@ -741,7 +741,7 @@ void MixerTabWidget::increaseVolume()
 {
     foreach (MixerSlider *slider, sliders) {
         if (slider->alsaelementname == m_mainelement) {
-            slider->setValue(qMax(slider->value() + kVolumeStep(), 100));
+            slider->setValue(qMin(slider->value() + kVolumeStep(), 100));
         }
     }
 }
