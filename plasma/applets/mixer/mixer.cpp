@@ -42,9 +42,9 @@ static const QSizeF s_minimumvisualizersize = QSizeF(120, 70);
 static const int s_svgiconsize = 256;
 static const QString s_defaultpopupicon = QString::fromLatin1("audio-card");
 static const int s_defaultsoundcard = -1;
-static const int s_alsapollinterval = 250;
+static const int s_alsapollinterval = 250; // ms
 // for butter-smooth visualization the poll interval is very frequent
-static const int s_alsavisualizerinterval = 50;
+static const int s_alsavisualizerinterval = 50; // ms
 // deciding factor for the visualization samples frequency
 static const int s_alsapcmbuffersize = 256;
 static const bool s_showvisualizer = true;
@@ -801,11 +801,11 @@ void MixerTabWidget::slotVisualizerTimeout()
                     const int alsaresult = snd_pcm_readi(m_alsapcm, m_alsapcmbuffer, s_alsapcmbuffersize);
                     if (alsaresult < 1) {
                         if (errno == EAGAIN) {
-                            // no data? snd_pcm_recover() does not handle it anyway
+                            // NOTE: this happens when the data is drained which is quite often
+                            // because the visualization timer is 50ms, there is no data and
+                            // snd_pcm_recover() does not handle it anyway
                             break;
                         }
-                        // NOTE: this happens when the data is drained which is quite often because
-                        // the visualization timer is 50ms
                         kWarning() << "Could not read PCM data" << snd_strerror(alsaresult);
                         snd_pcm_recover(m_alsapcm, alsaresult, 1);
                         break;
