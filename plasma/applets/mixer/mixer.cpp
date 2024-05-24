@@ -171,12 +171,6 @@ static int kVolumeStep()
     return qMax(QApplication::wheelScrollLines(), 1);
 }
 
-static int kStepVolume(const int value, const int maxvalue, const int step)
-{
-    const qreal valuefactor = (qreal(maxvalue) / 100);
-    return (value + (valuefactor * step));
-}
-
 static QIcon kMixerIcon(QObject *parent, const int value)
 {
     QIcon result;
@@ -228,6 +222,13 @@ public:
                          const QString &alsaelementname,
                          QGraphicsWidget *parent);
 
+
+    void setVolume(const long alsavolumemin, const long alsavolumemax, const long alsavolume);
+    long alsaVolume() const;
+
+    long alsavolumemin;
+    long alsavolumemax;
+    long alsavolume;
     uint alsaelementindex;
     snd_mixer_selem_channel_id_t alsaelementchannel;
     QString alsaelementname;
@@ -238,10 +239,33 @@ MixerSlider::MixerSlider(const uint _alsaelementindex,
                          const QString &_alsaelementname,
                          QGraphicsWidget *parent)
     : Plasma::Slider(parent),
+    alsavolumemin(0),
+    alsavolumemax(0),
+    alsavolume(0),
     alsaelementindex(_alsaelementindex),
     alsaelementchannel(_alsaelementchannel),
     alsaelementname(_alsaelementname)
 {
+    setOrientation(Qt::Vertical);
+    setRange(0, 100);
+    setValue(0);
+    setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
+    setMinimumSize(s_minimumslidersize);
+    setToolTip(QString::fromLocal8Bit(snd_mixer_selem_channel_name(alsaelementchannel)));
+}
+
+void MixerSlider::setVolume(const long _alsavolumemin, const long _alsavolumemax, const long _alsavolume)
+{
+    alsavolumemin = _alsavolumemin;
+    alsavolumemax = _alsavolumemax;
+    alsavolume = _alsavolume;
+    setValue(kFixedVolume(alsavolume, alsavolumemax));
+}
+
+long MixerSlider::alsaVolume() const
+{
+    const qreal valuefactor = (qreal(alsavolumemax) / 100);
+    return (valuefactor * value());
 }
 
 
@@ -477,12 +501,7 @@ bool MixerTabWidget::setup(const QByteArray &alsacardname)
             }
             const QString alsaelementchannelname = QString::fromLocal8Bit(snd_mixer_selem_channel_name(alsaelementchannel));
             MixerSlider* slider = new MixerSlider(alsaelementindex, alsaelementchannel, alsaelementname, frame);
-            slider->setOrientation(Qt::Vertical);
-            slider->setRange(int(alsavolumemin), int(alsavolumemax));
-            slider->setValue(int(alsavolume));
-            slider->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
-            slider->setMinimumSize(s_minimumslidersize);
-            slider->setToolTip(alsaelementchannelname);
+            slider->setVolume(alsavolumemin, alsavolumemax, alsavolume);
             connect(
                 slider, SIGNAL(sliderMoved(int)),
                 this, SLOT(slotSliderMovedOrChanged(int))
@@ -714,7 +733,7 @@ void MixerTabWidget::decreaseVolume()
 {
     foreach (MixerSlider *slider, sliders) {
         if (slider->alsaelementname == m_mainelement) {
-            slider->setValue(kStepVolume(slider->value(), slider->maximum(), -kVolumeStep()));
+            slider->setValue(qMax(slider->value() - kVolumeStep(), 0));
         }
     }
 }
@@ -722,7 +741,7 @@ void MixerTabWidget::increaseVolume()
 {
     foreach (MixerSlider *slider, sliders) {
         if (slider->alsaelementname == m_mainelement) {
-            slider->setValue(kStepVolume(slider->value(), slider->maximum(), kVolumeStep()));
+            slider->setValue(qMax(slider->value() + kVolumeStep(), 100));
         }
     }
 }
@@ -743,13 +762,13 @@ void MixerTabWidget::slotSliderMovedOrChanged(const int value)
             kDebug() << "Changing" << slider->alsaelementindex << "volume to" << value;
             const bool alsahascapture = snd_mixer_selem_has_capture_volume(alsaelement);
             if (alsahascapture) {
-                const int alsaresult = snd_mixer_selem_set_capture_volume(alsaelement, slider->alsaelementchannel, long(value));
+                const int alsaresult = snd_mixer_selem_set_capture_volume(alsaelement, slider->alsaelementchannel, slider->alsaVolume());
                 if (alsaresult != 0) {
                     kWarning() << "Could not set capture volume" << snd_strerror(alsaresult);
                     return;
                 }
             } else {
-                const int alsaresult = snd_mixer_selem_set_playback_volume(alsaelement, slider->alsaelementchannel, long(value));
+                const int alsaresult = snd_mixer_selem_set_playback_volume(alsaelement, slider->alsaelementchannel, slider->alsaVolume());
                 if (alsaresult != 0) {
                     kWarning() << "Could not set playback volume" << snd_strerror(alsaresult);
                     return;
@@ -834,8 +853,7 @@ int k_alsa_element_callback(snd_mixer_elem_t *alsaelement, unsigned int alsamask
                 if (!gotvolumes) {
                     continue;
                 }
-                slider->setRange(int(alsavolumemin), int(alsavolumemax));
-                slider->setValue(int(alsavolume));
+                slider->setVolume(alsavolumemin, alsavolumemax, alsavolume);
             }
         }
     }
