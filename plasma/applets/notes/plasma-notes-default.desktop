@@ -118,7 +118,7 @@ Comment[zh_TW]=桌面便利貼
 Icon=knotes
 Type=Service
 
-X-Plasma-DropMimeTypes=text/plain,text/richtext
+X-Plasma-DropMimeTypes=text/plain
 X-KDE-ServiceTypes=Plasma/Applet
 X-KDE-Library=plasma_applet_notes
 X-KDE-PluginInfo-Author=Ivailo Monev
