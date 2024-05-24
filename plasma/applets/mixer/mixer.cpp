@@ -19,7 +19,6 @@
 #include "mixer.h"
 
 #include <QTimer>
-#include <QApplication>
 #include <QGridLayout>
 #include <QGraphicsGridLayout>
 #include <Plasma/TabBar>
@@ -50,6 +49,8 @@ static const int s_alsapcmbuffersize = 256;
 static const bool s_showvisualizer = true;
 static const uint s_visualizerscale = 2;
 static const bool s_visualizericon = false;
+// as little as possible for precision
+static const int s_volumestep = 1;
 
 static QList<snd_mixer_selem_channel_id_t> kALSAChannelTypes(snd_mixer_elem_t *alsaelement, const bool capture)
 {
@@ -166,11 +167,6 @@ static int kFixedVolume(const long alsavolume, const long alsavolumemax)
     return qRound(qreal(alsavolume) / valuefactor);
 }
 
-static int kVolumeStep()
-{
-    return qMax(QApplication::wheelScrollLines(), 1);
-}
-
 static QIcon kMixerIcon(QObject *parent, const int value)
 {
     QIcon result;
@@ -248,6 +244,7 @@ MixerSlider::MixerSlider(const uint _alsaelementindex,
 {
     setOrientation(Qt::Vertical);
     setRange(0, 100);
+    nativeWidget()->setSingleStep(s_volumestep);
     setValue(0);
     setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
     setMinimumSize(s_minimumslidersize);
@@ -733,7 +730,7 @@ void MixerTabWidget::decreaseVolume()
 {
     foreach (MixerSlider *slider, sliders) {
         if (slider->alsaelementname == m_mainelement) {
-            slider->setValue(qMax(slider->value() - kVolumeStep(), 0));
+            slider->setValue(qMax(slider->value() - s_volumestep, 0));
         }
     }
 }
@@ -741,7 +738,7 @@ void MixerTabWidget::increaseVolume()
 {
     foreach (MixerSlider *slider, sliders) {
         if (slider->alsaelementname == m_mainelement) {
-            slider->setValue(qMin(slider->value() + kVolumeStep(), 100));
+            slider->setValue(qMin(slider->value() + s_volumestep, 100));
         }
     }
 }
