@@ -35,6 +35,13 @@ KCMRulesList::KCMRulesList(QWidget* parent)
     : QWidget(parent)
 {
     setupUi(this);
+    new_button->setIcon(KIcon("list-add"));
+    modify_button->setIcon(KIcon("document-edit"));
+    delete_button->setIcon(KIcon("list-remove"));
+    moveup_button->setIcon(KIcon("arrow-up"));
+    movedown_button->setIcon(KIcon("arrow-down"));
+    import_button->setIcon(KIcon("document-import"));
+    export_button->setIcon(KIcon("document-export"));
     // connect both current/selected, so that current==selected (stupid QListBox :( )
     connect(rules_listbox, SIGNAL(itemChanged(QListWidgetItem*)),
             SLOT(activeChanged()));
