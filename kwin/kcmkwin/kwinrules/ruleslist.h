@@ -49,7 +49,7 @@ private slots:
     void importClicked();
     void activeChanged();
 private:
-    QVector< Rules* > rules;
+    QList< Rules* > rules;
 };
 
 } // namespace

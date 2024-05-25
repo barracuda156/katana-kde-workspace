@@ -190,6 +190,68 @@ void Rules::readFromCfg(const KConfigGroup& cfg)
     READ_SET_RULE(demandattention, , false);
 }
 
+void Rules::loadRules(QList< Rules* >& rules)
+{
+    Q_ASSERT(rules.size() == 0);
+    QList<QByteArray> ruleids;
+    KConfig _cfg("kwinrulesrc");
+    KConfigGroup cfg(&_cfg, "General");
+    int count = cfg.readEntry("count", 0);
+    rules.reserve(count);
+    for (int i = 1; i <= count; ++i) {
+        cfg = KConfigGroup(&_cfg, QString::number(i));
+        const QByteArray id = cfg.readEntry("id", QByteArray());
+        if (ruleids.contains(id)) {
+            continue;
+        }
+        Rules* rule = new Rules(cfg);
+        rules.append(rule);
+        ruleids.append(id);
+    }
+    const QStringList kwinrules = KGlobal::dirs()->findAllResources("data", "kwin/default_rules/*.kwinrules");
+    foreach (const QString &kwinrule, kwinrules) {
+        KConfig cfg(kwinrule, KConfig::NoGlobals);
+        count = cfg.group("General").readEntry("count", 0);
+        for (int i = 1; i <= count; ++i) {
+            KConfigGroup cg(&cfg, QString::number(i));
+            const QByteArray id = cg.readEntry("id", QByteArray());
+            if (ruleids.contains(id)) {
+                continue;
+            }
+            Rules* rule = new Rules(cg);
+            rules.append(rule);
+            ruleids.append(id);
+        }
+    }
+}
+
+void Rules::saveRules(const QList< Rules* >& rules, const bool temporary)
+{
+#ifdef KCMRULES
+    Q_UNUSED(temporary);
+#endif
+    KConfig cfg("kwinrulesrc");
+    QStringList groups = cfg.groupList();
+    for (QStringList::ConstIterator it = groups.constBegin();
+            it != groups.constEnd();
+            ++it)
+        cfg.deleteGroup(*it);
+    cfg.group("General").writeEntry("count", rules.count());
+    int i = 1;
+    for (QList< Rules* >::ConstIterator it = rules.constBegin();
+            it != rules.constEnd();
+            ++it) {
+#ifndef KCMRULES
+        if (!temporary && (*it)->isTemporary())
+            continue;
+#endif
+        KConfigGroup cg(&cfg, QString::number(i));
+        (*it)->write(cg);
+        ++i;
+    }
+}
+
+
 #undef READ_MATCH_STRING
 #undef READ_SET_RULE
 #undef READ_FORCE_RULE
@@ -979,56 +1041,13 @@ void RuleBook::edit(Client* c, bool whole_app)
 void RuleBook::load()
 {
     deleteAll();
-    QList<QByteArray> ruleids;
-    KConfig cfg("kwinrulesrc", KConfig::NoGlobals);
-    int count = cfg.group("General").readEntry("count", 0);
-    for (int i = 1; i <= count; ++i) {
-        KConfigGroup cg(&cfg, QString::number(i));
-        const QByteArray id = cg.readEntry("id", QByteArray());
-        if (ruleids.contains(id)) {
-            continue;
-        }
-        Rules* rule = new Rules(cg);
-        m_rules.append(rule);
-        ruleids.append(id);
-    }
-    const QStringList kwinrules = KGlobal::dirs()->findAllResources("data", "kwin/default_rules/*.kwinrules");
-    foreach (const QString &kwinrule, kwinrules) {
-        KConfig cfg(kwinrule, KConfig::NoGlobals);
-        count = cfg.group("General").readEntry("count", 0);
-        for (int i = 1; i <= count; ++i) {
-            KConfigGroup cg(&cfg, QString::number(i));
-            const QByteArray id = cg.readEntry("id", QByteArray());
-            if (ruleids.contains(id)) {
-                continue;
-            }
-            Rules* rule = new Rules(cg);
-            m_rules.append(rule);
-            ruleids.append(id);
-        }
-    }
+    Rules::loadRules(m_rules);
 }
 
 void RuleBook::save()
 {
     m_updateTimer->stop();
-    KConfig cfg("kwinrulesrc", KConfig::NoGlobals);
-    QStringList groups = cfg.groupList();
-    for (QStringList::ConstIterator it = groups.constBegin();
-            it != groups.constEnd();
-            ++it)
-        cfg.deleteGroup(*it);
-    cfg.group("General").writeEntry("count", m_rules.count());
-    int i = 1;
-    for (QList< Rules* >::ConstIterator it = m_rules.constBegin();
-            it != m_rules.constEnd();
-            ++it) {
-        if ((*it)->isTemporary())
-            continue;
-        KConfigGroup cg(&cfg, QString::number(i));
-        (*it)->write(cg);
-        ++i;
-    }
+    Rules::saveRules(m_rules, false);
 }
 
 void RuleBook::temporaryRulesMessage(const QString& message)

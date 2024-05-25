@@ -43,17 +43,18 @@ class Client;
 class Rules;
 
 #ifndef KCMRULES // only for kwin core
-
 class WindowRules
     : public KDecorationDefines
 {
 public:
     explicit WindowRules(const QVector< Rules* >& rules);
     WindowRules();
+
     void update(Client*, int selection);
     void discardTemporary();
     bool contains(const Rules* rule) const;
     void remove(Rules* rule);
+
     Placement::Policy checkPlacement(Placement::Policy placement) const;
     QRect checkGeometry(QRect rect, bool init = false) const;
     // use 'invalidPoint' with checkPosition, unlike QSize() and QRect(), QPoint() is a valid point
@@ -88,13 +89,14 @@ public:
     QString checkShortcut(QString s, bool init = false) const;
     bool checkDisableGlobalShortcuts(bool disable) const;
     bool checkDemandAttention(bool demand, bool init = false) const;
+
 private:
     MaximizeMode checkMaximizeVert(MaximizeMode mode, bool init) const;
     MaximizeMode checkMaximizeHoriz(MaximizeMode mode, bool init) const;
+
     QVector< Rules* > rules;
 };
-
-#endif
+#endif // KCMRULES
 
 class Rules
     : public KDecorationDefines
@@ -103,6 +105,7 @@ public:
     Rules();
     explicit Rules(const KConfigGroup&);
     Rules(const QString&, bool temporary);
+
     enum Type {
         Position = 1<<0, Size = 1<<1, Desktop = 1<<2,
         MaximizeVert = 1<<3, MaximizeHoriz = 1<<4, Minimize = 1<<5,
@@ -112,6 +115,10 @@ public:
         Screen = 1<<16, DemandAttention = 1<<17, All = 0xffffffff
     };
     Q_DECLARE_FLAGS(Types, Type)
+
+    static void loadRules(QList< Rules* >& rules);
+    static void saveRules(const QList< Rules* >& rules, bool temporary = true);
+
     void write(KConfigGroup&) const;
     bool isEmpty() const;
 #ifndef KCMRULES
@@ -120,6 +127,7 @@ public:
     bool update(Client*, int selection);
     bool isTemporary() const;
     bool discardTemporary(bool force);   // removes if temporary and forced or too old
+
     bool applyPlacement(Placement::Policy& placement) const;
     bool applyGeometry(QRect& rect, bool init) const;
     // use 'invalidPoint' with applyPosition, unlike QSize() and QRect(), QPoint() is a valid point
@@ -155,13 +163,15 @@ public:
     bool applyShortcut(QString& shortcut, bool init) const;
     bool applyDisableGlobalShortcuts(bool& disable) const;
     bool applyDemandAttention(bool& demand, bool init) const;
+
 private:
-#endif
+#endif // KCMRULES
     bool matchType(NET::WindowType match_type) const;
     bool matchWMClass(const QByteArray& match_class, const QByteArray& match_name) const;
     bool matchRole(const QByteArray& match_role) const;
     bool matchTitle(const QString& match_title) const;
     bool matchClientMachine(const QByteArray& match_machine, bool local) const;
+
     // All these values are saved to the cfg file, and are also used in kstart!
     enum {
         Unused = 0,
@@ -172,14 +182,17 @@ private:
         ApplyNow,   // apply immediatelly, then forget the setting
         ForceTemporarily // apply and force until the window is withdrawn
     };
+
     enum SetRule {
         UnusedSetRule = Unused,
         SetRuleDummy = 256   // so that it's at least short int
     };
+
     enum ForceRule {
         UnusedForceRule = Unused,
         ForceRuleDummy = 256   // so that it's at least short int
     };
+
     enum StringMatch {
         FirstStringMatch,
         UnimportantMatch = FirstStringMatch,
@@ -188,6 +201,7 @@ private:
         RegExpMatch,
         LastStringMatch = RegExpMatch
     };
+
     void readFromCfg(const KConfigGroup& cfg);
     static SetRule readSetRule(const KConfigGroup&, const QString& key);
     static ForceRule readForceRule(const KConfigGroup&, const QString& key);
@@ -198,6 +212,7 @@ private:
     static bool checkSetStop(SetRule rule);
     static bool checkForceStop(ForceRule rule);
 #endif
+
     int temporary_state; // e.g. for kstart
     QByteArray ruleid;
     QString description;
@@ -277,6 +292,7 @@ private:
     ForceRule disableglobalshortcutsrule;
     bool demandattention;
     SetRule demandattentionrule;
+
     friend QDebug& operator<<(QDebug& stream, const Rules*);
 };
 
@@ -286,6 +302,7 @@ class RuleBook : public QObject
     Q_OBJECT
 public:
     virtual ~RuleBook();
+
     WindowRules find(const Client*, bool);
     void discardUsed(Client* c, bool withdraw);
     void setUpdatesDisabled(bool disable);
@@ -293,6 +310,7 @@ public:
     void load();
     void edit(Client* c, bool whole_app);
     void requestDiskStorage();
+
 private Q_SLOTS:
     void temporaryRulesMessage(const QString&);
     void cleanupTemporaryRules();
@@ -367,8 +385,7 @@ void WindowRules::remove(Rules* rule)
     if (pos != rules.end())
         rules.erase(pos);
 }
-
-#endif
+#endif // KCMRULES
 
 QDebug& operator<<(QDebug& stream, const Rules*);
 

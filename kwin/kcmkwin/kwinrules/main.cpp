@@ -20,9 +20,9 @@
 #include <kapplication.h>
 #include <kconfig.h>
 #include <klocalizedstring.h>
-#include <kstandarddirs.h>
 #include <kwindowsystem.h>
-#include <QtDBus/QtDBus>
+#include <QDBusMessage>
+#include <QDBusConnection>
 
 #include <X11/Xlib.h>
 #include <fixx11h.h>
@@ -34,58 +34,6 @@
 
 namespace KWin
 {
-
-static void loadRules(QList< Rules* >& rules)
-{
-    QList<QByteArray> ruleids;
-    KConfig _cfg("kwinrulesrc");
-    KConfigGroup cfg(&_cfg, "General");
-    int count = cfg.readEntry("count", 0);
-    for (int i = 1; i <= count; ++i) {
-        cfg = KConfigGroup(&_cfg, QString::number(i));
-        const QByteArray id = cfg.readEntry("id", QByteArray());
-        if (ruleids.contains(id)) {
-            continue;
-        }
-        Rules* rule = new Rules(cfg);
-        rules.append(rule);
-        ruleids.append(id);
-    }
-    const QStringList kwinrules = KGlobal::dirs()->findAllResources("data", "kwin/default_rules/*.kwinrules");
-    foreach (const QString &kwinrule, kwinrules) {
-        KConfig cfg(kwinrule, KConfig::NoGlobals);
-        count = cfg.group("General").readEntry("count", 0);
-        for (int i = 1; i <= count; ++i) {
-            KConfigGroup cg(&cfg, QString::number(i));
-            const QByteArray id = cg.readEntry("id", QByteArray());
-            if (ruleids.contains(id)) {
-                continue;
-            }
-            Rules* rule = new Rules(cg);
-            rules.append(rule);
-            ruleids.append(id);
-        }
-    }
-}
-
-static void saveRules(const QList< Rules* >& rules)
-{
-    KConfig cfg("kwinrulesrc");
-    QStringList groups = cfg.groupList();
-    for (QStringList::ConstIterator it = groups.constBegin();
-            it != groups.constEnd();
-            ++it)
-        cfg.deleteGroup(*it);
-    cfg.group("General").writeEntry("count", rules.count());
-    int i = 1;
-    for (QList< Rules* >::ConstIterator it = rules.constBegin();
-            it != rules.constEnd();
-            ++it) {
-        KConfigGroup cg(&cfg, QString::number(i));
-        (*it)->write(cg);
-        ++i;
-    }
-}
 
 static Rules* findRule(const QList< Rules* >& rules, Window wid, bool whole_app)
 {
@@ -229,7 +177,7 @@ static Rules* findRule(const QList< Rules* >& rules, Window wid, bool whole_app)
 static int edit(Window wid, bool whole_app)
 {
     QList< Rules* > rules;
-    loadRules(rules);
+    Rules::loadRules(rules);
     Rules* orig_rule = findRule(rules, wid, whole_app);
     RulesDialog dlg;
     if (whole_app)
@@ -249,7 +197,7 @@ static int edit(Window wid, bool whole_app)
             rules.prepend(edited_rule);
         delete orig_rule;
     }
-    saveRules(rules);
+    Rules::saveRules(rules);
     // Send signal to all kwin instances
     QDBusMessage message =
         QDBusMessage::createSignal("/KWin", "org.kde.KWin", "reloadConfig");
