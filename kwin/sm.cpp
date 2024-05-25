@@ -92,6 +92,7 @@ void Workspace::storeClient(KConfigGroup &cg, int num, Client *c)
     cg.writeEntry(QString("skipTaskbar") + n, c->skipTaskbar(true));
     cg.writeEntry(QString("skipPager") + n, c->skipPager());
     cg.writeEntry(QString("skipSwitcher") + n, c->skipSwitcher());
+    cg.writeEntry(QString("demandAttention") + n, c->isDemandingAttention());
     // not really just set by user, but name kept for back. comp. reasons
     cg.writeEntry(QString("userNoBorder") + n, c->noBorder());
     cg.writeEntry(QString("windowType") + n, windowTypeToTxt(c->windowType()));
@@ -137,6 +138,7 @@ void Workspace::loadSessionInfo()
         info->skipTaskbar = cg.readEntry(QString("skipTaskbar") + n, false);
         info->skipPager = cg.readEntry(QString("skipPager") + n, false);
         info->skipSwitcher = cg.readEntry(QString("skipSwitcher") + n, false);
+        info->demandAttention = cg.readEntry(QString("demandAttention") + n, false);
         info->noBorder = cg.readEntry(QString("userNoBorder") + n, false);
         info->windowType = txtToWindowType(cg.readEntry(QString("windowType") + n, QString()).toLatin1());
         info->shortcut = cg.readEntry(QString("shortcut") + n, QString());

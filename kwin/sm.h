@@ -54,6 +54,7 @@ struct SessionInfo {
     bool skipTaskbar;
     bool skipPager;
     bool skipSwitcher;
+    bool demandAttention;
     bool noBorder;
     NET::WindowType windowType;
     QString shortcut;
@@ -61,7 +62,6 @@ struct SessionInfo {
     int stackingOrder;
     float opacity;
     int tabGroup; // Unique identifier for the client group that this window is in
-
     Client* tabGroupClient; // The first client created that has an identical identifier
 };
 

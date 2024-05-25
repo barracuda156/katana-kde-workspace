@@ -23,26 +23,18 @@
 #define KKWMWINDOWS_H
 
 #include <QWidget>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QPushButton>
+#include <QGroupBox>
+#include <QLabel>
+#include <QSlider>
 #include <kcmodule.h>
 #include <config-workspace.h>
 
 #include "ui_advanced.h"
 #include "ui_focus.h"
 #include "ui_moving.h"
-
-#include <QRadioButton>
-#include <QCheckBox>
-#include <QPushButton>
-class KComboBox;
-#include <QGroupBox>
-#include <QLabel>
-#include <QSlider>
-class KButtonGroup;
-// #include <QSpinBox>
-
-class KColorButton;
-class KIntNumInput;
-
 
 class KWinFocusConfigForm : public QWidget, public Ui::KWinFocusConfigForm
 {
