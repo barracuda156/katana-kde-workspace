@@ -66,12 +66,13 @@ static unsigned long state = 0;
 static unsigned long mask = 0;
 static NET::WindowType windowtype = NET::Unknown;
 static Atom wm_state_atom = None;
+static bool norule = false;
 
 KStart::KStart()
     : QObject()
 {
     NETRootInfo i(QX11Info::display(), NET::Supported);
-    bool useRule = i.isSupported(NET::WM2KDETemporaryRules);
+    bool useRule = (!norule && i.isSupported(NET::WM2KDETemporaryRules));
 
     if (useRule) {
         sendRule();
@@ -353,6 +354,7 @@ int main(int argc, char *argv[])
     options.add("keepbelow", ki18n("Try to keep the window below other windows"));
     options.add("skiptaskbar", ki18n("The window does not get an entry in the taskbar"));
     options.add("skippager", ki18n("The window does not get an entry on the pager"));
+    options.add("norule", ki18n("Do not use temporary KWin rule, on by default"));
     KCmdLineArgs::addCmdLineOptions(options); // Add our own options.
 
     KComponentData componentData( &aboutData);
@@ -457,6 +459,8 @@ int main(int argc, char *argv[])
             mask |= NET::FullScreen;
         }
     }
+
+    norule = !args->isSet("rule");
 
     fcntl(ConnectionNumber(QX11Info::display()), F_SETFD, 1);
     args->clear();
