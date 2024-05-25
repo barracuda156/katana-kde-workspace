@@ -133,7 +133,8 @@ bool Client::manage(xcb_window_t w, bool isMapped)
 
     original_skip_taskbar = skip_taskbar = (info->state() & NET::SkipTaskbar) != 0;
     skip_pager = (info->state() & NET::SkipPager) != 0;
-    bool init_demand_attention = rules()->checkDemandAttention(info->state() & NET::DemandsAttention, !isMapped);
+    bool init_demand_attention = (info->state() & NET::DemandsAttention) != 0;
+    kDebug(1212) << "State NET::DemandsAttention" << init_demand_attention;
 
     setupCompositing();
 
@@ -149,12 +150,16 @@ bool Client::manage(xcb_window_t w, bool isMapped)
     SessionInfo* session = workspace()->takeSessionInfo(this);
     if (session) {
         init_minimize = session->minimized;
+        init_demand_attention = session->demandAttention;
+        kDebug(1212) << "Session NET::DemandsAttention" << init_demand_attention;
         noborder = session->noBorder;
     }
 
     setShortcut(rules()->checkShortcut(session ? session->shortcut : QString(), true));
 
     init_minimize = rules()->checkMinimize(init_minimize, !isMapped);
+    init_demand_attention = rules()->checkDemandAttention(init_demand_attention, !isMapped);
+    kDebug(1212) << "Rules NET::DemandsAttention" << init_demand_attention;
     noborder = rules()->checkNoBorder(noborder, !isMapped);
 
     // Initial desktop placement
@@ -558,8 +563,9 @@ bool Client::manage(xcb_window_t w, bool isMapped)
             } else if (!session && !isSpecialWindow())
                 init_demand_attention = true;
         }
-    } else
+    } else {
         updateVisibility();
+    }
     assert(mapping_state != Withdrawn);
     m_managed = true;
     blockGeometryUpdates(false);
@@ -582,7 +588,11 @@ bool Client::manage(xcb_window_t w, bool isMapped)
     RuleBook::self()->discardUsed(this, false);   // Remove ApplyNow rules
     updateWindowRules(Rules::All); // Was blocked while !isManaged()
 
+    kDebug(1212) << "Final NET::DemandsAttention" << init_demand_attention;
     demandAttention(init_demand_attention);
+    if (init_demand_attention) {
+        QTimer::singleShot(2000, this, SLOT(delayedDemandAttention()));
+    }
 
     updateCompositeBlocking(true);
 
@@ -591,6 +601,17 @@ bool Client::manage(xcb_window_t w, bool isMapped)
     // be only done in addClient()
     emit clientManaging(this);
     return true;
+}
+
+void Client::delayedDemandAttention()
+{
+    // HACK: do it again if the client still demands attention, it is one of those hacks like the
+    // one for KMainWindow in the method above - off first and then again for things to detect the
+    // change in state
+    if (isDemandingAttention()) {
+        demandAttention(false);
+        demandAttention(true);
+    }
 }
 
 // Called only from manage()

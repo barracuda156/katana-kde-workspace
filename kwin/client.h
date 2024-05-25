@@ -622,6 +622,7 @@ private slots:
     void shadeUnhover();
     void shortcutActivated();
     void delayedMoveResize();
+    void delayedDemandAttention();
 
 private:
     friend class Bridge; // FRAME
