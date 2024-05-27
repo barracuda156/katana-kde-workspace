@@ -1359,8 +1359,7 @@ int KFileItemModel::sortRoleCompare(const ItemData* a, const ItemData* b) const
     }
 
     // Fallback #2: KFileItem::text() may not be unique in case UDS_DISPLAY_NAME is used
-    result = stringCompare(itemA.name(m_caseSensitivity == Qt::CaseInsensitive),
-                           itemB.name(m_caseSensitivity == Qt::CaseInsensitive));
+    result = stringCompare(itemA.name(), itemB.name());
     if (result != 0) {
         return result;
     }
