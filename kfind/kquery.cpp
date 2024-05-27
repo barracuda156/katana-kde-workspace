@@ -113,7 +113,7 @@ void KQuery::slotListEntries(KIO::Job*, const KIO::UDSEntryList& list)
   const KIO::UDSEntryList::ConstIterator end = list.constEnd();
   
   for (KIO::UDSEntryList::ConstIterator it = list.constBegin(); it != end; ++it)
-    m_fileItems.enqueue(KFileItem(*it, m_url, true, true));
+    m_fileItems.enqueue(KFileItem(*it, m_url));
       
   checkEntries();
 }
@@ -122,7 +122,7 @@ void KQuery::checkEntries()
 {
   if (m_insideCheckEntries) return;
       
-  m_insideCheckEntries=true;
+  m_insideCheckEntries = true;
   
   metaKeyRx = QRegExp(m_metainfokey);
   metaKeyRx.setPatternSyntax( QRegExp::Wildcard );

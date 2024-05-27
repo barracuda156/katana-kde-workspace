@@ -61,7 +61,6 @@ KFileItemModel::KFileItemModel(QObject* parent) :
     m_groups()
 {
     m_dirLister = new KFileItemModelDirLister(this);
-    m_dirLister->setDelayedMimeTypes(true);
 
     const QWidget* parentWidget = qobject_cast<QWidget*>(parent);
     if (parentWidget) {
@@ -983,13 +982,6 @@ void KFileItemModel::removeItems(const KItemRangeList& itemRanges, RemoveItemsBe
 
 QList<KFileItemModel::ItemData*> KFileItemModel::createItemDataList(const KUrl& parentUrl, const KFileItemList& items) const
 {
-    if (m_sortRole == TypeRole) {
-        // Try to resolve the MIME-types synchronously to prevent a reordering of
-        // the items when sorting by type (per default MIME-types are resolved
-        // asynchronously by KFileItemModelRolesUpdater).
-        determineMimeTypes(items, 200);
-    }
-
     const int parentIndex = index(parentUrl);
     ItemData* parentItem = parentIndex < 0 ? 0 : m_itemData.at(parentIndex);
 
@@ -1028,7 +1020,7 @@ void KFileItemModel::prepareItemsForSorting(QList<ItemData*>& itemDataList)
         foreach (ItemData* itemData, itemDataList) {
             if (itemData->values.isEmpty()) {
                 const KFileItem item = itemData->item;
-                if (item.isDir() || item.isMimeTypeKnown()) {
+                if (item.isDir() || !item.mimeTypePtr().isNull()) {
                     itemData->values = retrieveData(itemData->item, itemData->parent);
                 }
             }
@@ -1220,7 +1212,7 @@ QHash<QByteArray, QVariant> KFileItemModel::retrieveData(const KFileItem& item, 
         data.insert(sharedValue("path"), path);
     }
 
-    if (item.isMimeTypeKnown()) {
+    if (!item.mimeTypePtr().isNull()) {
         data.insert(sharedValue("iconName"), item.iconName());
 
         if (m_requestRole[TypeRole]) {
@@ -1682,28 +1674,6 @@ const KFileItemModel::RoleInfoMap* KFileItemModel::rolesInfoMap(int& count)
 
     count = sizeof(rolesInfoMap) / sizeof(RoleInfoMap);
     return rolesInfoMap;
-}
-
-void KFileItemModel::determineMimeTypes(const KFileItemList& items, int timeout)
-{
-    QElapsedTimer timer;
-    timer.start();
-    foreach (const KFileItem& item, items) { // krazy:exclude=foreach
-        // Only determine mime types for files here. For directories,
-        // KFileItem::determineMimeType() reads the .directory file inside to
-        // load the icon, but this is not necessary at all if we just need the
-        // type. Some special code for setting the correct mime type for
-        // directories is in retrieveData().
-        if (!item.isDir()) {
-            item.determineMimeType();
-        }
-
-        if (timer.elapsed() > timeout) {
-            // Don't block the user interface, let the remaining items
-            // be resolved asynchronously.
-            return;
-        }
-    }
 }
 
 QByteArray KFileItemModel::sharedValue(const QByteArray& value)

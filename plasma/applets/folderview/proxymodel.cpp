@@ -229,9 +229,7 @@ inline bool ProxyModel::matchMimeType(const KFileItem &item) const
     if (m_mimeSet.isEmpty()) {
         return false;
     }
-
-    const QString mimeType = item.determineMimeType()->name();
-    return m_mimeSet.contains(mimeType);
+    return m_mimeSet.contains(item.mimetype());
 }
 
 inline bool ProxyModel::matchPattern(const KFileItem &item) const

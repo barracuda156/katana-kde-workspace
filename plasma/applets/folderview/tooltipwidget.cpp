@@ -121,7 +121,7 @@ void ToolTipWidget::setContent()
         KDesktopFile file(m_item.localPath());
         subText = file.readComment();
     } else {
-        if (m_item.isMimeTypeKnown()) {
+        if (!m_item.mimeTypePtr().isNull()) {
             subText = m_item.mimeComment();
         }
 

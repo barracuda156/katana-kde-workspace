@@ -181,7 +181,6 @@ void PopupView::init()
     m_view->show();
 
     DirLister *lister = new DirLister(this);
-    lister->setDelayedMimeTypes(true);
     lister->setAutoErrorHandlingEnabled(false, 0);
     lister->openUrl(m_url);
 

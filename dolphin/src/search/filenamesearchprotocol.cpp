@@ -84,7 +84,6 @@ void FileNameSearchProtocol::searchDirectory(const KUrl& directory)
 
     // Get all items of the directory
     KDirLister *dirLister = new KDirLister();
-    dirLister->setDelayedMimeTypes(false);
     dirLister->setAutoUpdate(false);
     dirLister->setAutoErrorHandlingEnabled(false, 0);
 
@@ -104,14 +103,14 @@ void FileNameSearchProtocol::searchDirectory(const KUrl& directory)
             if (!m_checkType.isEmpty()) {
                 addItem = false;
                 const QStringList types = m_checkType.split(";");
-                const KSharedPtr<KMimeType> mime = item.determineMimeType();
+                const KSharedPtr<KMimeType> mime = item.mimeTypePtr();
                 foreach (const QString& t, types) {
                     if (mime->is(t)) {
                         addItem = true;
                     }
                 }
             }
-        } else if (!m_checkContent.isEmpty() && item.determineMimeType()->is(QLatin1String("text/plain"))) {
+        } else if (!m_checkContent.isEmpty() && item.mimeTypePtr()->is(QLatin1String("text/plain"))) {
             addItem = contentContainsPattern(item.url());
         }
 

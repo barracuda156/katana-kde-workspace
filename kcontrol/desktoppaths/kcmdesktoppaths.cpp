@@ -344,7 +344,7 @@ void DesktopPathConfig::slotEntries(KIO::Job*, const KIO::UDSEntryList& list)
 {
     QListIterator<KIO::UDSEntry> it(list);
     while (it.hasNext()) {
-        KFileItem file(it.next(), m_copyFromSrc, true, true);
+        KFileItem file(it.next(), m_copyFromSrc);
         kDebug() << file.url();
         if (file.url() == m_copyFromSrc || file.url().fileName() == "..") {
             continue;

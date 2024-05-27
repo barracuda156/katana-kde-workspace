@@ -714,14 +714,14 @@ void KFileItemModelRolesUpdater::startPreviewJob()
     KFileItemList itemSubSet;
     itemSubSet.reserve(count);
 
-    if (m_pendingPreviewItems.first().isMimeTypeKnown()) {
+    if (!m_pendingPreviewItems.first().mimeTypePtr().isNull()) {
         // Some mime types are known already, probably because they were
         // determined when loading the icons for the visible items. Start
         // a preview job for all items at the beginning of the list which
         // have a known mime type.
         do {
             itemSubSet.append(m_pendingPreviewItems.takeFirst());
-        } while (!m_pendingPreviewItems.isEmpty() && m_pendingPreviewItems.first().isMimeTypeKnown());
+        } while (!m_pendingPreviewItems.isEmpty() && !m_pendingPreviewItems.first().mimeTypePtr().isNull());
     } else {
         // Determine mime types for MaxBlockTimeout ms, and start a preview
         // job for the corresponding items.
@@ -730,7 +730,6 @@ void KFileItemModelRolesUpdater::startPreviewJob()
 
         do {
             const KFileItem item = m_pendingPreviewItems.takeFirst();
-            item.determineMimeType();
             itemSubSet.append(item);
         } while (!m_pendingPreviewItems.isEmpty() && timer.elapsed() < MaxBlockTimeout);
     }
@@ -829,10 +828,6 @@ void KFileItemModelRolesUpdater::applySortRole(int index)
     const KFileItem item = m_model->fileItem(index);
 
     if (m_model->sortRole() == "type") {
-        if (!item.isMimeTypeKnown()) {
-            item.determineMimeType();
-        }
-
         data.insert("type", item.mimeComment());
     } else if (m_model->sortRole() == "size" && item.isLocalFile() && item.isDir()) {
         const QString path = item.localPath();
@@ -863,8 +858,7 @@ bool KFileItemModelRolesUpdater::applyResolvedRoles(int index, ResolveHint hint)
     const bool resolveAll = (hint == ResolveAll);
 
     bool iconChanged = false;
-    if (!item.isMimeTypeKnown() || !item.isFinalIconKnown()) {
-        item.determineMimeType();
+    if (item.mimeTypePtr().isNull()) {
         iconChanged = true;
     } else if (!m_model->data(index).contains("iconName")) {
         iconChanged = true;

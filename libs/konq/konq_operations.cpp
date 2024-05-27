@@ -963,7 +963,7 @@ QPair<bool, QString> KonqOperations::pasteInfo(const KUrl& targetUrl)
         ret.first = KFileItemListProperties(KFileItemList() << item).supportsWriting();
 
         if (urls.count() == 1) {
-            const KFileItem item(KFileItem::Unknown, KFileItem::Unknown, urls.first(), true);
+            const KFileItem item(KFileItem::Unknown, KFileItem::Unknown, urls.first());
             ret.second = item.isDir() ? i18nc("@action:inmenu", "Paste One Folder") :
                                         i18nc("@action:inmenu", "Paste One File");
 

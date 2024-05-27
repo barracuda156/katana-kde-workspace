@@ -257,13 +257,6 @@ void KFileItemModelTest::testChangeSortRole()
     QVERIFY(QTest::kWaitForSignal(m_model, SIGNAL(itemsInserted(KItemRangeList)), DefaultTimeout));
     QCOMPARE(itemsInModel(), QStringList() << "a.txt" << "b.jpg" << "c.txt");
 
-    // Simulate that KFileItemModelRolesUpdater determines the mime type.
-    // Resorting the files by 'type' will only work immediately if their
-    // mime types are known.
-    for (int index = 0; index < m_model->count(); ++index) {
-        m_model->fileItem(index).determineMimeType();
-    }
-
     // Now: sort by type.
     QSignalSpy spyItemsMoved(m_model, SIGNAL(itemsMoved(KItemRange,QList<int>)));
     m_model->setSortRole("type");
@@ -690,15 +683,15 @@ void KFileItemModelTest::testChangeSortRoleWhileFiltering()
 
     entry.insert(KIO::UDSEntry::UDS_NAME, "a.txt");
     entry.insert(KIO::UDSEntry::UDS_USER, "user-b");
-    items.append(KFileItem(entry, m_testDir->url(), false, true));
+    items.append(KFileItem(entry, m_testDir->url()));
 
     entry.insert(KIO::UDSEntry::UDS_NAME, "b.txt");
     entry.insert(KIO::UDSEntry::UDS_USER, "user-c");
-    items.append(KFileItem(entry, m_testDir->url(), false, true));
+    items.append(KFileItem(entry, m_testDir->url()));
 
     entry.insert(KIO::UDSEntry::UDS_NAME, "c.txt");
     entry.insert(KIO::UDSEntry::UDS_USER, "user-a");
-    items.append(KFileItem(entry, m_testDir->url(), false, true));
+    items.append(KFileItem(entry, m_testDir->url()));
 
     m_model->slotItemsAdded(items);
     m_model->slotCompleted();

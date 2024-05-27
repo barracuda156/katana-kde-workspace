@@ -418,7 +418,6 @@ void FolderView::init()
     m_model->sort(m_sortColumn != int(FolderView::Unsorted) ? m_sortColumn : KDirModel::Name, m_sortOrder);
 
     m_dirLister = new DirLister(this);
-    m_dirLister->setDelayedMimeTypes(true);
     m_dirLister->setAutoErrorHandlingEnabled(false, 0);
 
     m_dirModel->setDirLister(m_dirLister);

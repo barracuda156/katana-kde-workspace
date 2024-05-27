@@ -1183,7 +1183,7 @@ KUrl DolphinView::openItemAsFolderUrl(const KFileItem& item)
         return url;
     }
 
-    if (item.isMimeTypeKnown()) {
+    if (!item.mimeTypePtr().isNull()) {
         if (item.mimetype() == QLatin1String("application/x-desktop")) {
             // Redirect to the URL in Type=Link desktop files, unless it is a http(s) URL.
             KDesktopFile desktopFile(url.toLocalFile());
@@ -1607,7 +1607,7 @@ void DolphinView::updateWritableState()
     if (item.isNull()) {
         // Try to find out if the URL is writable even if the "root item" is
         // null, see https://bugs.kde.org/show_bug.cgi?id=330001
-        item = KFileItem(KFileItem::Unknown, KFileItem::Unknown, url(), true);
+        item = KFileItem(KFileItem::Unknown, KFileItem::Unknown, url());
     }
 
     KFileItemListProperties capabilities(KFileItemList() << item);
