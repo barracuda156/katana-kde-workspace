@@ -113,7 +113,7 @@ void StartupSettingsPage::applySettings()
     GeneralSettings* settings = GeneralSettings::self();
 
     const KUrl url(m_homeUrl->text());
-    KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, url);
+    KFileItem fileItem(url);
     if (url.isValid() && fileItem.isDir()) {
         settings->setHomeUrl(url.prettyUrl());
     } else {

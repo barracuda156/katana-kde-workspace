@@ -216,7 +216,7 @@ QVariant BackgroundListModel::data(const QModelIndex &index, int role) const
         KUrl file(b->filePath("preferred"));
         if (!m_previewJobs.contains(file) && file.isValid()) {
             KFileItemList list;
-            list.append(KFileItem(file, QString(), 0));
+            list.append(KFileItem(file));
             KIO::PreviewJob* job = KIO::filePreview(list,
                                                     QSize(BackgroundDelegate::SCREENSHOT_SIZE,
                                                     BackgroundDelegate::SCREENSHOT_SIZE/1.6));

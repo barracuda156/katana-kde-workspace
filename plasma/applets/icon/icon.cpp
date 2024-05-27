@@ -160,7 +160,7 @@ void IconApplet::setUrl(const KUrl& url, bool fromConfigDialog)
         connect(m_watcher, SIGNAL(dirty(QString)), this, SLOT(delayedDestroy()));
 
         QFileInfo fi(m_url.toLocalFile());
-        KFileItem fileItem(KFileItem::Unknown, KFileItem::Unknown, m_url.toLocalFile());
+        KFileItem fileItem(m_url.toLocalFile());
 
         if (fileItem.isDesktopFile()) {
             m_hasDesktopFile = true;

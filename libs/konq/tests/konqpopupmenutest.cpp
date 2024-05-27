@@ -197,9 +197,8 @@ void KonqPopupMenuTest::testFileInReadOnlyDirectory()
         QSKIP("/etc/passwd file is writable", SkipSingle);
     }
 
-    const KFileItem item(KFileItem::Unknown, KFileItem::Unknown, KUrl(notwritablefile));
     KFileItemList itemList;
-    itemList << item;
+    itemList << KFileItem(KUrl(notwritablefile));
 
     KFileItemListProperties capabilities(itemList);
     QVERIFY(!capabilities.supportsMoving());

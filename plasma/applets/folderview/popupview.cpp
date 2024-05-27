@@ -591,9 +591,7 @@ void PopupView::contextMenuEvent(QContextMenuEvent *event)
     if (!m_itemActions) {
         // Create a new KFileItem to prevent the target URL in the root item
         // from being used. In this case we want the configured URL instead.
-        KFileItem item(rootItem.mode(), rootItem.permissions(), m_url);
-
-        KFileItemListProperties itemList(KFileItemList() << item);
+        KFileItemListProperties itemList(KFileItemList() << KFileItem(m_url));
 
         m_itemActions = new KFileItemActions(this);
         m_itemActions->setItemListProperties(itemList);

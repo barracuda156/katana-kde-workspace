@@ -572,10 +572,7 @@ void KonqOperations::doDropFileCopy()
         //now initialize the drop plugins
         KFileItemList fileItems;
         foreach(const KUrl& url, lst) {
-            fileItems.append(KFileItem(
-                        KFileItem::Unknown,
-                        KFileItem::Unknown,
-                        url));
+            fileItems.append(KFileItem(url));
 
         }
 
@@ -959,11 +956,11 @@ QPair<bool, QString> KonqOperations::pasteInfo(const KUrl& targetUrl)
 
     if (!urls.isEmpty() || canPasteData) {
         // disable the paste action if no writing is supported
-        KFileItem item(KFileItem::Unknown, KFileItem::Unknown, targetUrl);
-        ret.first = KFileItemListProperties(KFileItemList() << item).supportsWriting();
+        ;
+        ret.first = KFileItemListProperties(KFileItemList() << KFileItem(targetUrl)).supportsWriting();
 
         if (urls.count() == 1) {
-            const KFileItem item(KFileItem::Unknown, KFileItem::Unknown, urls.first());
+            const KFileItem item(urls.first());
             ret.second = item.isDir() ? i18nc("@action:inmenu", "Paste One Folder") :
                                         i18nc("@action:inmenu", "Paste One File");
 

@@ -54,7 +54,7 @@ void AsyncFileTester::checkIfFolder(const QModelIndex &index, QObject *object, c
         if (file.readType() == "Link") {
             url = file.readUrl();
             if (url.isLocalFile()) {
-                KFileItem destItem(KFileItem::Unknown, KFileItem::Unknown, url);
+                KFileItem destItem(url);
                 callResultMethod(object, method, index, destItem.isDir());
                 return;
             }

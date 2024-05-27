@@ -1607,7 +1607,7 @@ void DolphinView::updateWritableState()
     if (item.isNull()) {
         // Try to find out if the URL is writable even if the "root item" is
         // null, see https://bugs.kde.org/show_bug.cgi?id=330001
-        item = KFileItem(KFileItem::Unknown, KFileItem::Unknown, url());
+        item = KFileItem(url());
     }
 
     KFileItemListProperties capabilities(KFileItemList() << item);

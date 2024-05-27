@@ -170,7 +170,7 @@ void KQuery::slotListEntries( QStringList list )
 
   m_foundFilesList.clear();
   for (; it != end; ++it)
-    processQuery( KFileItem( KFileItem::Unknown, KFileItem::Unknown, KUrl(*it)) );
+    processQuery( KFileItem(KUrl(*it)) );
 
   if( m_foundFilesList.size() > 0 )
     emit foundFileList( m_foundFilesList );

@@ -660,7 +660,7 @@ void KateMainWindow::slotDropEvent( QDropEvent * event )
     for (KUrl::List::Iterator i = textlist.begin(); i != textlist.end(); ++i)
     {
       // if url has no file component, try and recursively scan dir
-      KFileItem kitem( KFileItem::Unknown, KFileItem::Unknown, *i );
+      KFileItem kitem(*i );
       if( kitem.isDir() ) {
         KIO::ListJob *list_job = KIO::listRecursive(*i, KIO::DefaultFlags, false);
         connect(list_job, SIGNAL(entries(KIO::Job*,KIO::UDSEntryList)),

@@ -576,7 +576,7 @@ static int directCommand(KCmdLineArgs *args)
         // copied from KFileDialog::getSaveFileName(), so we can add geometry
         bool specialDir = ( startDir.at(0) == ':' );
         if ( !specialDir ) {
-            KFileItem kfi(KFileItem::Unknown, KFileItem::Unknown, KUrl(startDir));
+            KFileItem kfi = KFileItem(KUrl(startDir));
             specialDir = kfi.isDir();
         }
         KFileDialog dlg( specialDir ? startDir : QString(), filter, 0 );

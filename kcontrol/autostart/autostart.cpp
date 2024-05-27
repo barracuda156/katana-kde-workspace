@@ -280,8 +280,7 @@ void Autostart::slotEditCMD(QTreeWidgetItem* ent)
     if (!ent) return;
     AutoStartItem *entry = dynamic_cast<AutoStartItem*>( ent );
     if (entry) {
-        const KFileItem kfi = KFileItem( KFileItem::Unknown, KFileItem::Unknown, KUrl(entry->fileName()));
-        if (!slotEditCMD(kfi)) {
+        if (!slotEditCMD(KFileItem(KUrl(entry->fileName())))) {
             return;
         }
 

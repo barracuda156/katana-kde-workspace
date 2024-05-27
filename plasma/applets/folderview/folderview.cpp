@@ -1749,8 +1749,7 @@ QList<QAction*> FolderView::contextualActions()
 
         // Create a new KFileItem to prevent the target URL in the root item
         // from being used. In this case we want the configured URL instead.
-        KFileItem item(rootItem.mode(), rootItem.permissions(), m_url);
-        KFileItemListProperties itemList(KFileItemList() << item);
+        KFileItemListProperties itemList(KFileItemList() << KFileItem(m_url));
         m_itemActions->setItemListProperties(itemList);
 
         // FIXME: The actions instanciated by KFileItemActions::preferredOpenWithAction()

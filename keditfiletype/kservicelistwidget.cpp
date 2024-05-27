@@ -320,7 +320,7 @@ void KServiceListWidget::editService()
     // path from KStandardDirs.
     path = KStandardDirs::locate("apps", path); // TODO use xdgdata-apps instead?
 
-    KFileItem item(KUrl(path), "application/x-desktop", KFileItem::Unknown);
+    KFileItem item = KFileItem(KUrl(path));
     KPropertiesDialog dlg(item, this);
     if (dlg.exec() != QDialog::Accepted)
         return;
