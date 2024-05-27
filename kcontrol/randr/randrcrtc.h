@@ -75,7 +75,6 @@ private:
     float m_currentRate;
     int m_currentRotation;
 
-
     QRect m_originalRect;
     float m_originalRate;
     int m_originalRotation;

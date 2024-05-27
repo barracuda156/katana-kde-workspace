@@ -24,7 +24,7 @@
 class RandRMode
 {
 public:
-    RandRMode(XRRModeInfo *info = 0);
+    RandRMode(XRRModeInfo *info = nullptr);
     ~RandRMode();
 
     RRMode id() const;
@@ -32,6 +32,7 @@ public:
     bool isValid() const;
     QSize size() const;
     float refreshRate() const;
+
 private:
     bool m_valid;
     QString m_name;

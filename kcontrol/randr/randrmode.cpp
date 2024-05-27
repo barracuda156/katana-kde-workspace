@@ -18,15 +18,15 @@
 
 #include "randrmode.h"
 
+#include <QX11Info>
 
 RandRMode::RandRMode(XRRModeInfo *info)
-    : m_size(0, 0)
+    : m_valid(false),
+    m_name("Invalid mode"),
+    m_size(0, 0),
+    m_rate(0.0),
+    m_id(0)
 {
-    m_valid = false;
-    m_rate = 0;
-    m_id = 0;
-    m_name = "Invalid mode";
-    
     if (info) {
         m_valid = true;
     } else {
@@ -45,7 +45,6 @@ RandRMode::RandRMode(XRRModeInfo *info)
     } else {
         m_rate = 0;
     }
-
 }
 
 RandRMode::~RandRMode()

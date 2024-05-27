@@ -52,28 +52,27 @@ public:
     // and that confuses GCC.
 
     bool isActive() const;
-    QPoint position(void) const;
-    QSize resolution(void) const;
+    QPoint position() const;
+    QSize resolution() const;
     QRect rect() const;
-    float refreshRate(void) const;
-    int rotation(void) const;
-    
-    static QString positionName(Relation position);
-    RandROutput *output(void) const;
+    float refreshRate() const;
+    int rotation() const;
 
-    bool hasPendingChanges( const QPoint& normalizePos ) const;
+    RandROutput *output() const;
+
+    bool hasPendingChanges(const QPoint &normalizePos) const;
     void setUnifyOutput(bool unified);
 public slots:
     void load();
-    void updateSizeList(void);
+    void updateSizeList();
 
 protected slots:
-    void setConfigDirty(void);
+    void setConfigDirty();
     
-    void updatePositionList(void);
-    void updatePositionListDelayed(void);
-    void updateRotationList(void);
-    void updateRateList(void);
+    void updatePositionList();
+    void updatePositionListDelayed();
+    void updateRotationList();
+    void updateRateList();
     void updateRateList(int resolutionIndex);
     
     void positionComboChanged(int item);	
@@ -85,7 +84,8 @@ signals:
     void connectedChanged(bool);
 
 private:
-    static bool isRelativeTo(QRect rect, QRect to, Relation rel);
+    static QString positionName(Relation position);
+    static bool isRelativeTo(const QRect &rect, const QRect &to, const Relation rel);
     bool m_changed;
     bool m_unified;
     QPoint m_pos;

@@ -79,10 +79,13 @@ Window RandRScreen::rootWindow() const
 void RandRScreen::loadSettings(bool notify)
 {
     bool changed = false;
-    int minW, minH, maxW, maxH;
+    int minW = 0;
+    int minH = 0;
+    int maxW = 0;
+    int maxH = 0;
 
     Status status = XRRGetScreenSizeRange(QX11Info::display(), rootWindow(), &minW, &minH, &maxW, &maxH);
-    //FIXME: we should check the status here
+    // FIXME: should check the status here
     Q_UNUSED(status);
     QSize minSize = QSize(minW, minH);
     QSize maxSize = QSize(maxW, maxH);
@@ -217,7 +220,7 @@ RandRCrtc* RandRScreen::crtc(RRCrtc id) const
     if (m_crtcs.contains(id)) {
         return m_crtcs[id];
     }
-    return 0;
+    return nullptr;
 }
 
 OutputMap RandRScreen::outputs() const
@@ -230,7 +233,7 @@ RandROutput* RandRScreen::output(RROutput id) const
     if (m_outputs.contains(id)) {
         return m_outputs[id];
     }
-    return 0;
+    return nullptr;
 }
 
 void RandRScreen::setPrimaryOutput(RandROutput* output)
@@ -263,7 +266,7 @@ RandRMode RandRScreen::mode(RRMode id) const
         return m_modes[id];
     }
 
-    return RandRMode(0);
+    return RandRMode();
 }
 
 bool RandRScreen::adjustSize(const QRect &minimumSize)
@@ -342,9 +345,28 @@ bool RandRScreen::outputsUnified() const
 void RandRScreen::setOutputsUnified(bool unified)
 {
     m_outputsUnified = unified;
-    
-    // should this be called here?
-    slotUnifyOutputs(unified);
+
+    KConfig cfg("krandrrc");
+
+    if (!unified || m_connectedCount <= 1) {
+        foreach(RandROutput *output, m_outputs) {
+            if (output->isConnected()) {
+                output->load(cfg);
+                output->applyProposed();
+            }
+        }
+    } else {
+        SizeList sizes = unifiedSizes();
+
+        if (!sizes.count()) {
+            // FIXME: this should be better handle
+            return;
+        }
+
+        m_unifiedRect.setTopLeft(QPoint(0,0));
+        m_unifiedRect.setSize(sizes.first());
+        unifyOutputs();
+    }
 }
 
 int RandRScreen::unifiedRotations() const
@@ -412,7 +434,7 @@ void RandRScreen::load(KConfig& config, bool skipOutputs)
         : group.readEntry("UnifiedRect", QRect());
     m_unifiedRotation = group.readEntry("UnifiedRotation", (int) RandR::Rotate0);
 
-    // slotUnifyOutputs(m_outputsUnified);
+    // setOutputsUnified(m_outputsUnified);
 
     if (skipOutputs) {
             return;
@@ -592,51 +614,13 @@ void RandRScreen::unifyOutputs()
     emit configChanged();
 }
 
-void RandRScreen::slotResizeUnified(QAction *action)
-{
-    m_unifiedRect.setSize(action->data().toSize()); 
-    unifyOutputs();
-}
-
-void RandRScreen::slotUnifyOutputs(bool unified)
-{
-    m_outputsUnified = unified;
-    KConfig cfg("krandrrc");
-
-    if (!unified || m_connectedCount <= 1) {
-        foreach(RandROutput *output, m_outputs) {
-            if (output->isConnected()) {
-                output->load(cfg);
-                output->applyProposed();
-            }
-        }
-    } else {
-        SizeList sizes = unifiedSizes();
-
-        if (!sizes.count()) {
-            // FIXME: this should be better handle
-            return;
-        }
-
-        m_unifiedRect.setTopLeft(QPoint(0,0));
-        m_unifiedRect.setSize(sizes.first());
-        unifyOutputs();
-    }
-}
-
-void RandRScreen::slotRotateUnified(QAction *action)
-{
-    m_unifiedRotation = action->data().toInt();
-
-    unifyOutputs();
-}
-
 void RandRScreen::slotOutputChanged(RROutput id, int changes)
 {
     Q_UNUSED(id);
     Q_UNUSED(changes);
 
-    int connected = 0, active = 0;
+    int connected = 0;
+    int active = 0;
     foreach (RandROutput *output, m_outputs) {
         if (output->isConnected()) {
             connected++;

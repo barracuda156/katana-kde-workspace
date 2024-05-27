@@ -108,8 +108,8 @@ void RandROutput::queryOutputInfo(void)
         m_rotations |= crtc->rotations();
     }
     m_originalRotation = m_crtc->rotation();
-    m_originalRate     = m_crtc->refreshRate();
-    m_originalRect     = m_crtc->rect();
+    m_originalRate = m_crtc->refreshRate();
+    m_originalRect = m_crtc->rect();
     
     if (isConnected()) {
         kDebug() << "Current configuration for output" << m_name << ":";
@@ -125,7 +125,7 @@ void RandROutput::loadSettings(bool notify)
 {
     Q_UNUSED(notify);
     queryOutputInfo();
-    
+
     kDebug() << "STUB: calling queryOutputInfo instead. Check if this has "
                 "any undesired effects. ";
 
@@ -176,10 +176,7 @@ void RandROutput::handleEvent(XRROutputChangeNotifyEvent *event)
     kDebug() << "       rotation: " << event->rotation;
     kDebug() << "       connection: " << event->connection;
 
-    // FIXME: handling these events incorrectly, causing an X11 I/O error...
-    // Disable for now.
-    // kWarning() << "FIXME: Output event ignored!";
-    // return;
+    // NOTE: handling these events incorrectly causing an X11 I/O error...
 
     RRCrtc currentCrtc = m_crtc->id();
     if (event->crtc != currentCrtc) {
@@ -195,8 +192,9 @@ void RandROutput::handleEvent(XRROutputChangeNotifyEvent *event)
         }
     }
 
-    if (event->mode != mode().id())
-            changed |= RandR::ChangeMode;
+    if (event->mode != mode().id()) {
+        changed |= RandR::ChangeMode;
+    }
     
     if (event->rotation != rotation()) {
         changed |= RandR::ChangeRotation;
@@ -337,7 +335,6 @@ float RandROutput::refreshRate() const
     if (!m_crtc->isValid()) {
         return 0;
     }
-
     return m_crtc->mode().refreshRate();
 }
 
@@ -475,7 +472,7 @@ QStringList RandROutput::startupCommands() const
         }
         command += QString(" --mode %1x%2").arg(modeSize.width()).arg(modeSize.height());
     }
-    command += QString(" --refresh %1").arg( m_crtc->refreshRate());
+    command += QString(" --refresh %1").arg(m_crtc->refreshRate());
     return QStringList() << command;
 }
 
@@ -509,27 +506,6 @@ void RandROutput::proposeRotation(int r)
     m_proposedRotation = r;
 }
 
-void RandROutput::slotChangeSize(QAction *action)
-{
-    QSize size = action->data().toSize();
-    m_proposedRect.setSize(size);
-    applyProposed(RandR::ChangeRect, true);
-}
-
-void RandROutput::slotChangeRotation(QAction *action)
-{
-    m_proposedRotation = action->data().toInt();
-    applyProposed(RandR::ChangeRotation, true);
-}
-
-void RandROutput::slotChangeRefreshRate(QAction *action)
-{
-    float rate = action->data().toDouble();
-
-    m_proposedRate = rate;
-    applyProposed(RandR::ChangeRate, true);
-}
-
 void RandROutput::slotDisable()
 {
     m_originalRect = rect();
@@ -553,31 +529,18 @@ void RandROutput::slotEnable()
     }
 }
 
-void RandROutput::slotSetAsPrimary(bool primary)
+RandRCrtc* RandROutput::findEmptyCrtc()
 {
-    if (!primary) {
-        if (m_screen->primaryOutput() == this) {
-            kDebug() << "Removing" << m_name << "as primary output";
-            m_screen->setPrimaryOutput(0);
-        }
-    } else if (m_connected) {
-        kDebug() << "Setting" << m_name << "as primary output";
-        m_screen->setPrimaryOutput(this);
-    }
-}
+    RandRCrtc *crtc = nullptr;
 
-RandRCrtc *RandROutput::findEmptyCrtc()
-{
-    RandRCrtc *crtc = 0;
-
-    foreach(RRCrtc c, m_possibleCrtcs) {
+    foreach (const RRCrtc c, m_possibleCrtcs) {
         crtc = m_screen->crtc(c);
         if (crtc->connectedOutputs().count() == 0) {
             return crtc;
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 bool RandROutput::tryCrtc(RandRCrtc *crtc, int changes)
@@ -604,9 +567,9 @@ bool RandROutput::tryCrtc(RandRCrtc *crtc, int changes)
     }
 
     if (crtc->applyProposed()) {
-            kDebug() << "Changed output" << m_name << "to CRTC" << crtc->id();
-            kDebug() << "   ( from old CRTC" << oldCrtc->id() << ")";
-            return true;
+        kDebug() << "Changed output" << m_name << "to CRTC" << crtc->id();
+        kDebug() << "   ( from old CRTC" << oldCrtc->id() << ")";
+        return true;
     }
 
     // revert changes if we didn't succeed
@@ -636,7 +599,7 @@ bool RandROutput::applyProposed(int changes, bool confirm)
     if (m_crtc->isValid()
         && (m_crtc->rect() == m_proposedRect || !(changes & RandR::ChangeRect))
         && (m_crtc->rotation() == m_proposedRotation || !(changes & RandR::ChangeRotation))
-        && ((m_crtc->refreshRate() == m_proposedRate || !m_proposedRate || !(changes & RandR::ChangeRate)))) {
+        && (m_crtc->refreshRate() == m_proposedRate || !m_proposedRate || !(changes & RandR::ChangeRate))) {
         return true;
     }
     kDebug() << "Applying proposed changes for output" << m_name << "...";
@@ -694,7 +657,10 @@ bool RandROutput::setCrtc(RandRCrtc *crtc, bool applyNow)
              << "on output" << m_name;
 
     if (m_crtc && m_crtc->isValid()) {
-        disconnect(m_crtc, SIGNAL(crtcChanged(RRCrtc,int)), this, SLOT(slotCrtcChanged(RRCrtc,int)));
+        disconnect(
+            m_crtc, SIGNAL(crtcChanged(RRCrtc,int)),
+            this, SLOT(slotCrtcChanged(RRCrtc,int))
+        );
                             
         m_crtc->removeOutput(m_id);
         if (applyNow) {
@@ -707,7 +673,10 @@ bool RandROutput::setCrtc(RandRCrtc *crtc, bool applyNow)
     }
 
     m_crtc->addOutput(m_id);
-    connect(m_crtc, SIGNAL(crtcChanged(RRCrtc,int)), this, SLOT(slotCrtcChanged(RRCrtc,int)));
+    connect(
+        m_crtc, SIGNAL(crtcChanged(RRCrtc,int)),
+        this, SLOT(slotCrtcChanged(RRCrtc,int))
+    );
                 
     return true;
 }

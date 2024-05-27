@@ -31,7 +31,11 @@
 #include "randrscreen.h"
 
 RandRDisplay::RandRDisplay()
-    : m_valid(true)
+    : m_valid(true),
+    m_numScreens(0),
+    m_currentScreenIndex(0),
+    m_eventBase(0),
+    m_errorBase(0)
 {
     m_dpy = QX11Info::display();
     
@@ -41,7 +45,8 @@ RandRDisplay::RandRDisplay()
         return;
     }
 
-    int major_version, minor_version;
+    int major_version = 0;
+    int minor_version = 0;
     XRRQueryVersion(m_dpy, &major_version, &minor_version);
 
     m_version = i18n("X Resize and Rotate extension version %1.%2", major_version, minor_version);
@@ -102,8 +107,8 @@ void RandRDisplay::setCurrentScreen(int index)
 
 int RandRDisplay::screenIndexOfWidget(QWidget* widget)
 {
-    //int ret = QApplication::desktop()->screenNumber(widget);
-    //return ret != -1 ? ret : QApplication::desktop()->primaryScreen();
+    // int ret = QApplication::desktop()->screenNumber(widget);
+    // return ret != -1 ? ret : QApplication::desktop()->primaryScreen();
     
     // get info from Qt's X11 info directly; QDesktopWidget seems to use
     // Xinerama by default, which doesn't work properly with randr.
@@ -160,11 +165,11 @@ void RandRDisplay::handleEvent(XEvent *e)
             }
         }
     } else if (e->type == m_eventBase + RRNotify) {
-        //forward the event to the right screen
+        // forward the event to the right screen
         XRRNotifyEvent *event = (XRRNotifyEvent*)e;
         for (int i=0; i < m_screens.count(); ++i) {
-                RandRScreen *screen = m_screens.at(i);
-            if ( screen->rootWindow() == event->window ) {
+            RandRScreen *screen = m_screens.at(i);
+            if (screen->rootWindow() == event->window ) {
                 screen->handleRandREvent(event);
             }
         }
@@ -205,17 +210,17 @@ void RandRDisplay::saveStartup(KConfig& config)
     KConfigGroup group = config.group("Display");
     group.writeEntry("ApplyOnStartup", true);
     QStringList commands;
-    foreach(RandRScreen *s, m_screens) {
+    foreach(const RandRScreen *s, m_screens) {
         commands += s->startupCommands();
     }
-    group.writeEntry( "StartupCommands", commands.join( "\n" ));
+    group.writeEntry("StartupCommands", commands.join( "\n"));
 }
 
 void RandRDisplay::disableStartup(KConfig& config)
 {
     KConfigGroup group = config.group("Display");
     group.writeEntry("ApplyOnStartup", false);
-    group.deleteEntry( "StartupCommands" );
+    group.deleteEntry("StartupCommands");
 }
 
 void RandRDisplay::applyProposed(bool confirm)

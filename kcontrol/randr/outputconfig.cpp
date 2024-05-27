@@ -25,8 +25,8 @@
 #include <kdebug.h>
 
 OutputConfig::OutputConfig(QWidget* parent, RandROutput* output, OutputConfigList preceding, bool unified)
-	: QWidget(parent)
-	, precedingOutputConfigs( preceding )
+    : QWidget(parent),
+    precedingOutputConfigs(preceding)
 {
     m_output = output;
     m_unified = unified;
@@ -58,65 +58,74 @@ OutputConfig::OutputConfig(QWidget* parent, RandROutput* output, OutputConfigLis
     connect(absolutePosX, SIGNAL(valueChanged(int)), this, SIGNAL(updateView()));
     connect(absolutePosY, SIGNAL(valueChanged(int)), this, SIGNAL(updateView()));
     // make sure to update option for relative position when other outputs get enabled/disabled
-    foreach( OutputConfig* config, precedingOutputConfigs ) {
-        connect( config, SIGNAL(updateView()), this, SLOT(updatePositionList()));
+    foreach (OutputConfig* config, precedingOutputConfigs) {
+        connect(config, SIGNAL(updateView()), this, SLOT(updatePositionList()));
     }
 
-    updatePositionListTimer.setSingleShot( true );
-    connect( &updatePositionListTimer, SIGNAL(timeout()), SLOT(updatePositionListDelayed()));
+    updatePositionListTimer.setSingleShot(true);
+    connect(&updatePositionListTimer, SIGNAL(timeout()), SLOT(updatePositionListDelayed()));
 }
 
 OutputConfig::~OutputConfig()
 {
 }
 
-RandROutput *OutputConfig::output(void) const
+RandROutput *OutputConfig::output() const
 {
     return m_output;
 }
 
-QPoint OutputConfig::position(void) const
+QPoint OutputConfig::position() const
 {
     if( !isActive()) {
         return QPoint();
     }
     int index = positionCombo->currentIndex();
-    if((Relation)positionCombo->itemData(index).toInt() == Absolute) {
+    Relation rel = static_cast<Relation>(positionCombo->itemData(index).toInt());
+    if(rel == Absolute) {
         return QPoint(absolutePosX->value(), absolutePosY->value());
     }
 
     foreach(OutputConfig *config, precedingOutputConfigs) {
-        if( config->output()->id() == positionOutputCombo->itemData( positionOutputCombo->currentIndex()).toUInt()) {
+        if (config->output()->id() == positionOutputCombo->itemData(positionOutputCombo->currentIndex()).toUInt()) {
             QPoint pos = config->position();
-            switch( (Relation)positionCombo->itemData(index).toInt()) {
-                case LeftOf:
-                    return QPoint( pos.x() - resolution().width(), pos.y());
-                case RightOf:
-                    return QPoint( pos.x() + config->resolution().width(), pos.y());
-                case Over:
-                    return QPoint( pos.x(), pos.y() - resolution().height());
-                case Under:
-                    return QPoint( pos.x(), pos.y() + config->resolution().height());
-                case SameAs:
+            switch(rel) {
+                case LeftOf: {
+                    return QPoint(pos.x() - resolution().width(), pos.y());
+                }
+                case RightOf: {
+                    return QPoint(pos.x() + config->resolution().width(), pos.y());
+                }
+                case Over: {
+                    return QPoint(pos.x(), pos.y() - resolution().height());
+                }
+                case Under: {
+                    return QPoint(pos.x(), pos.y() + config->resolution().height());
+                }
+                case SameAs: {
                     return pos;
-                default:
-                    abort();
+                }
+                default: {
+                    Q_ASSERT(false);
+                    break;
+                }
             }
         }
     }
     return QPoint(0, 0);
 }
 
-QSize OutputConfig::resolution(void) const
+QSize OutputConfig::resolution() const
 {
-    if( sizeCombo->count() == 0 )
+    if (sizeCombo->count() == 0) {
         return QSize();
+    }
     return sizeCombo->itemData(sizeCombo->currentIndex()).toSize();
 }
 
 QRect OutputConfig::rect() const
 {
-    return QRect( position(), resolution());
+    return QRect(position(), resolution());
 }
 
 bool OutputConfig::isActive() const
@@ -124,10 +133,10 @@ bool OutputConfig::isActive() const
     return sizeCombo->count() != 0 && !resolution().isEmpty();
 }
 
-float OutputConfig::refreshRate(void) const
+float OutputConfig::refreshRate() const
 {
     if( !isActive()) {
-        return 0;
+        return 0.0f;
     }
     float rate = float(refreshCombo->itemData(refreshCombo->currentIndex()).toDouble());
     if (rate == 0.0f) {
@@ -139,17 +148,17 @@ float OutputConfig::refreshRate(void) const
     return rate;
 }
 
-int OutputConfig::rotation(void) const
+int OutputConfig::rotation() const
 {
-    if( !isActive()) {
+    if (!isActive()) {
         return 0;
     }
     return orientationCombo->itemData(orientationCombo->currentIndex()).toInt();
 }
 
-bool OutputConfig::hasPendingChanges( const QPoint& normalizePos ) const
+bool OutputConfig::hasPendingChanges(const QPoint &normalizePos) const
 {
-    if (m_output->rect().translated( -normalizePos ) != QRect(position(), resolution())) {
+    if (m_output->rect().translated(-normalizePos) != QRect(position(), resolution())) {
         return true;
     } else if (m_output->rotation() != rotation()) {
         return true;
@@ -162,14 +171,15 @@ bool OutputConfig::hasPendingChanges( const QPoint& normalizePos ) const
 void OutputConfig::setUnifyOutput(bool unified)
 {
     m_unified = unified;
-    updatePositionListTimer.start( 0 );
+    updatePositionListTimer.start(0);
 }
 
 void OutputConfig::outputChanged(RROutput output, int changes)
 {
-    Q_ASSERT(m_output->id() == output); Q_UNUSED(output);
+    Q_ASSERT(m_output->id() == output);
+    Q_UNUSED(output);
     kDebug() << "Output" << m_output->name() << "changed. ( mask =" << QString::number(changes) << ")";
-    
+
     disconnect(absolutePosX, SIGNAL(valueChanged(int)), this, SLOT(setConfigDirty()));
     disconnect(absolutePosY, SIGNAL(valueChanged(int)), this, SLOT(setConfigDirty()));
     if (changes & RandR::ChangeOutputs) {
@@ -189,7 +199,7 @@ void OutputConfig::outputChanged(RROutput output, int changes)
         kDebug() << "Output rect changed:" << r;
         updatePositionList();
     }
-    
+
     if (changes & RandR::ChangeRotation) {
         kDebug() << "Output rotation changed.";
         updateRotationList();
@@ -211,7 +221,7 @@ void OutputConfig::outputChanged(RROutput output, int changes)
         updateSizeList();
         
         // This NEEDS to be fixed..
-        //QSize modeSize = m_output->screen()->mode(m_output->mode()).size();
+        // QSize modeSize = m_output->screen()->mode(m_output->mode()).size();
         QSize modeSize = m_output->mode().size();
         updateRateList(sizeCombo->findData(modeSize));
     }
@@ -222,12 +232,24 @@ void OutputConfig::outputChanged(RROutput output, int changes)
 QString OutputConfig::positionName(Relation position)
 {
     switch(position) {
-        case LeftOf:    return i18n("Left of");
-        case RightOf:   return i18n("Right of");
-        case Over:      return i18nc("Output is placed above another one", "Above");
-        case Under:     return i18nc("Output is placed below another one", "Below");
-        case SameAs:    return i18n("Clone of");
-        case Absolute:  return i18nc("Fixed, abitrary position", "Absolute");
+        case LeftOf: {
+            return i18n("Left of");
+        }
+        case RightOf: {
+            return i18n("Right of");
+        }
+        case Over: {
+            return i18nc("Output is placed above another one", "Above");
+        }
+        case Under: {
+            return i18nc("Output is placed below another one", "Below");
+        }
+        case SameAs: {
+            return i18n("Clone of");
+        }
+        case Absolute: {
+            return i18nc("Fixed, abitrary position", "Absolute");
+        }
     }
     
     return i18n("No relative position");
@@ -236,7 +258,7 @@ QString OutputConfig::positionName(Relation position)
 void OutputConfig::load()
 {
     kDebug() << "Loading output configuration for" << m_output->name();
-    setEnabled( m_output->isConnected() );
+    setEnabled(m_output->isConnected());
 
     orientationCombo->clear();
 
@@ -260,30 +282,35 @@ void OutputConfig::setConfigDirty(void)
     emit optionChanged();
 }
 
-bool OutputConfig::isRelativeTo( QRect rect, QRect to, Relation rel )
+bool OutputConfig::isRelativeTo(const QRect &rect, const QRect &to, const Relation rel)
 {
-    switch( rel ) {
-        case LeftOf:
+    switch(rel) {
+        case LeftOf: {
             return rect.x() + rect.width() == to.x() && rect.y() == to.y();
-        case RightOf:
+        }
+        case RightOf: {
             return rect.x() == to.x() + to.width() && rect.y() == to.y();
-        case Over:
+        }
+        case Over: {
             return rect.x() == to.x() && rect.y() + rect.height() == to.y();
-        case Under:
+        }
+        case Under: {
             return rect.x() == to.x() && rect.y() == to.y() + to.height();
-        case SameAs:
+        }
+        case SameAs: {
             return rect.topLeft() == to.topLeft();
+        }
         case Absolute:
-        default:
+        default: {
             return false;
+        }
     }
 }
 
 void OutputConfig::positionComboChanged(int item)
 {
-    Relation rel = (Relation)positionCombo->itemData(item).toInt();
-    
-    bool isAbsolute = (rel == Absolute);
+    const Relation rel = static_cast<Relation>(positionCombo->itemData(item).toInt());
+    const bool isAbsolute = (rel == Absolute);
     
     positionOutputCombo->setVisible(!isAbsolute);
     absolutePosX->setVisible(isAbsolute);
@@ -319,24 +346,24 @@ void OutputConfig::updatePositionListDelayed()
     absolutePosX->setVisible(true);
     absolutePosY->setVisible(true);
 
-    disconnect(positionCombo,    SIGNAL(currentIndexChanged(int)), this, SLOT(setConfigDirty()));
-    disconnect(positionOutputCombo,    SIGNAL(currentIndexChanged(int)), this, SLOT(setConfigDirty()));
+    disconnect(positionCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(setConfigDirty()));
+    disconnect(positionOutputCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(setConfigDirty()));
     disconnect(absolutePosX, SIGNAL(valueChanged(int)), this, SLOT(setConfigDirty()));
     disconnect(absolutePosY, SIGNAL(valueChanged(int)), this, SLOT(setConfigDirty()));
 
     bool enable = !resolution().isEmpty();
-    positionCombo->setEnabled( enable );
-    positionLabel->setEnabled( enable );
-    positionOutputCombo->setEnabled( enable );
-    absolutePosX->setEnabled( enable );
-    absolutePosY->setEnabled( enable );
+    positionCombo->setEnabled(enable);
+    positionLabel->setEnabled(enable);
+    positionOutputCombo->setEnabled(enable);
+    absolutePosX->setEnabled(enable);
+    absolutePosY->setEnabled(enable);
 
     positionCombo->clear();
     positionOutputCombo->clear();
 
     OutputConfigList cleanList;
     foreach (OutputConfig *config, precedingOutputConfigs) {
-        if ( config->resolution().isEmpty()) {
+        if (config->resolution().isEmpty()) {
             continue; // ignore disabled outputs
         }
         cleanList.append(config);
@@ -348,7 +375,7 @@ void OutputConfig::updatePositionListDelayed()
         positionCombo->addItem(OutputConfig::positionName(OutputConfig::SameAs), OutputConfig::SameAs);
     } else {
         for(int i = -1; i < 5; i++) {
-            positionCombo->addItem(OutputConfig::positionName((Relation)i), i);
+            positionCombo->addItem(OutputConfig::positionName(static_cast<Relation>(i)), i);
         }
     }
     
@@ -365,16 +392,16 @@ void OutputConfig::updatePositionListDelayed()
         positionOutputCombo->addItem(QIcon(output->icon()), output->name(), (int)output->id());
         if (!m_unified) {
             for( int rel = -1; rel < 5; ++rel ) {
-                if( isRelativeTo( m_output->rect(), QRect( config->position(), config->resolution()), (Relation) rel )) {
-                    positionCombo->setCurrentIndex( positionCombo->findData( rel ));
+                if(isRelativeTo(m_output->rect(), QRect(config->position(), config->resolution()), static_cast<Relation>(rel))) {
+                    positionCombo->setCurrentIndex(positionCombo->findData(rel));
                 }
             }
         }
     }
-    if( positionOutputCombo->count() == 0 ) {
-        positionOutputCombo->setEnabled( false );
-        while( positionCombo->count() > 1 ) { // keep only 'Absolute'
-            positionCombo->removeItem( positionCombo->count() - 1 );
+    if( positionOutputCombo->count() == 0) {
+        positionOutputCombo->setEnabled(false);
+        while (positionCombo->count() > 1) { // keep only 'Absolute'
+            positionCombo->removeItem(positionCombo->count() - 1);
         }
     }
 
@@ -411,8 +438,8 @@ void OutputConfig::updateRotationList(void)
     }
 
     bool enable = !resolution().isEmpty();
-    orientationCombo->setEnabled( enable );
-    orientationLabel->setEnabled( enable );
+    orientationCombo->setEnabled(enable);
+    orientationLabel->setEnabled(enable);
     orientationCombo->clear();
     int rotations = m_output->rotations();
     for (int i = 0; i < 6; ++i) {
@@ -424,7 +451,7 @@ void OutputConfig::updateRotationList(void)
     
     int index = orientationCombo->findData(m_output->rotation());
     if (index != -1) {
-        orientationCombo->setCurrentIndex( index );
+        orientationCombo->setCurrentIndex(index);
     }
 }
 
@@ -445,7 +472,7 @@ void OutputConfig::updateSizeList(void)
     }
     RandRMode preferredMode = m_output->preferredMode();
     sizeCombo->clear();
-    sizeCombo->addItem( i18nc("Screen size", "Disabled"), QSize(0, 0) );
+    sizeCombo->addItem(i18nc("Screen size", "Disabled"), QSize(0, 0));
     
     foreach (const QSize &s, sizes) {
         QString sizeDesc = QString("%1x%2").arg(s.width()).arg(s.height());
@@ -460,13 +487,13 @@ void OutputConfig::updateSizeList(void)
     // if output is rotated 90 or 270 degrees, swap width and height before searching in combobox data
     // otherwise 90 or 270 degrees rotated outputs will be set as "Disabled" in GUI
     if (m_output->rotation() == RandR::Rotate90 || m_output->rotation() == RandR::Rotate270) {
-        index = sizeCombo->findData( QSize(m_output->rect().height(), m_output->rect().width()) );
+        index = sizeCombo->findData(QSize(m_output->rect().height(), m_output->rect().width()));
     } else {
-        index = sizeCombo->findData( m_output->rect().size() );
+        index = sizeCombo->findData(m_output->rect().size());
     }
 
     if (index != -1) {
-        sizeCombo->setCurrentIndex( index );
+        sizeCombo->setCurrentIndex(index);
     } else if (!sizes.isEmpty()) {
         kDebug() << "Output size cannot be matched! fallbacking to the first size";
         sizeCombo->setCurrentIndex(index = sizeCombo->findData(sizes.first()));
@@ -481,7 +508,7 @@ void OutputConfig::updateSizeList(void)
 void OutputConfig::updateRateList(int resolutionIndex)
 {
     QSize resolution = sizeCombo->itemData(resolutionIndex).toSize();
-    if ((resolution == QSize(0, 0)) || !resolution.isValid()) {
+    if (resolution == QSize(0, 0) || !resolution.isValid()) {
         refreshCombo->setEnabled(false);
         rateLabel->setEnabled(false);
         return;

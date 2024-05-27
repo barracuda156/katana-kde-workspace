@@ -49,7 +49,7 @@ public:
     void handleEvent(XRRScreenChangeNotifyEvent* event);
     void handleRandREvent(XRRNotifyEvent* event);
 
-    CrtcMap  crtcs() const;
+    CrtcMap crtcs() const;
     RandRCrtc *crtc(RRCrtc id) const;
     
     OutputMap outputs() const;
@@ -91,10 +91,6 @@ public:
     QStringList startupCommands() const;
 
 public slots:
-    void slotUnifyOutputs(bool unify);
-    void slotResizeUnified(QAction *action);
-    void slotRotateUnified(QAction *action);
-
     void slotOutputChanged(RROutput id, int changes);
 
     void save();
@@ -103,10 +99,9 @@ public slots:
 signals:
     void configChanged();
 
-protected slots:
+private:
     void unifyOutputs();
 
-private:
     int m_index;
     QSize m_minSize;
     QSize m_maxSize;

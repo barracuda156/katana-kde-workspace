@@ -239,7 +239,7 @@ void RandRConfig::apply()
             // a better way with this codebase, definitely not with the time I have now.
             output->disconnectFromCrtc();
 
-            output->proposeRect(configuredRect.translated( normalizePos ));
+            output->proposeRect(configuredRect.translated(normalizePos));
             output->proposeRotation(config->rotation());
             output->proposeRefreshRate(config->refreshRate());
         } else { // user wants to disable this output
@@ -289,12 +289,12 @@ void RandRConfig::saveStartup()
     int primaryOutputIndex = primaryDisplayBox->currentIndex();
     if (primaryOutputIndex > 0) {
         QString primaryOutput = primaryDisplayBox->itemText(primaryOutputIndex);
-        commands += QString("xrandr --output %1 --primary").arg( KShell::quoteArg( primaryOutput ));
+        commands += QString("xrandr --output %1 --primary").arg(KShell::quoteArg(primaryOutput));
     } else {
         commands += QString("xrandr --noprimary");
     }
     group.writeEntry("StartupCommands",commands.join("\n"));
-    KMessageBox::information( window(), i18n( "Configuration has been set as the desktop default." ));
+    KMessageBox::information(window(), i18n("Configuration has been set as the desktop default."));
 }
 
 void RandRConfig::disableStartup()

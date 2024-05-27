@@ -127,12 +127,8 @@ public:
     QStringList startupCommands() const;
 
 public slots:
-    void slotChangeSize(QAction *action);
-    void slotChangeRotation(QAction *action);
-    void slotChangeRefreshRate(QAction *action);
     void slotDisable();
     void slotEnable();
-    void slotSetAsPrimary(bool primary);
 
 private slots:
     void slotCrtcChanged(RRCrtc c, int changes);
