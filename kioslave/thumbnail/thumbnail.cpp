@@ -572,8 +572,6 @@ bool ThumbnailProtocol::createSubThumbnail(QImage& thumbnail, const QString& fil
         const QString thumbName = hash + modTime + thumbExt;
         if (m_thumbBasePath.isEmpty()) {
             m_thumbBasePath = QDir::homePath() + "/.thumbnails/";
-            KStandardDirs::makeDir(m_thumbBasePath + "normal/", 0700);
-            KStandardDirs::makeDir(m_thumbBasePath + "large/", 0700);
         }
 
         QString thumbPath = m_thumbBasePath;
@@ -599,9 +597,9 @@ bool ThumbnailProtocol::createSubThumbnail(QImage& thumbnail, const QString& fil
             } else {
                 return false;
             }
-            if(savedCorrectly)
-            {
+            if (savedCorrectly) {
                 Q_ASSERT(!tempFileName.isEmpty());
+                KStandardDirs::makeDir(thumbPath, 0700);
                 KDE::rename(tempFileName, thumbPath + thumbName);
             }
         }
