@@ -35,14 +35,10 @@
 
 namespace Quicklaunch {
 
+// KUrl::url() takes care of improperly escaped characters and
+// resolves pure paths into file:/// URLs
 LauncherData::LauncherData(const KUrl& url)
-:
-    // KUrl::url() takes care of improperly escaped characters and
-    // resolves pure paths into file:/// URLs
-    m_url(url.url()),
-    m_name(),
-    m_description(),
-    m_icon()
+    : m_url(url.url())
 {
     if (m_url.isLocalFile() &&
         KDesktopFile::isDesktopFile(m_url.toLocalFile())) {
@@ -67,12 +63,8 @@ LauncherData::LauncherData(const KUrl& url)
 }
 
 LauncherData::LauncherData()
-:
-    m_url(),
-    m_name(),
-    m_description(),
-    m_icon()
-{}
+{
+}
 
 KUrl LauncherData::url() const
 {
@@ -96,11 +88,12 @@ QString LauncherData::icon() const
 
 bool LauncherData::operator==(const LauncherData& other) const
 {
-    return
+    return (
         m_url == other.m_url &&
         m_name == other.m_name &&
         m_description == other.m_description &&
-        m_icon == other.m_icon;
+        m_icon == other.m_icon
+    );
 }
 
 bool LauncherData::operator!=(const LauncherData& other) const
@@ -113,8 +106,7 @@ void LauncherData::populateMimeData(QMimeData *mimeData)
     // Use the bookmarks API to do the heavy lifting
     KBookmark::List bookmarkList;
 
-    KBookmark bookmark =
-        KBookmark::standaloneBookmark(m_name, m_url, m_icon);
+    KBookmark bookmark = KBookmark::standaloneBookmark(m_name, m_url, m_icon);
 
     bookmark.setDescription(m_description);
 

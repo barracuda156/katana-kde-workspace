@@ -29,7 +29,7 @@
 #include <KIcon>
 #include <KProtocolInfo>
 #include <KUriFilter>
-
+#include <kio/global.h>
 
 LocationsRunner::LocationsRunner(QObject *parent, const QVariantList& args)
     : Plasma::AbstractRunner(parent, args)
@@ -55,7 +55,7 @@ void LocationsRunner::match(Plasma::RunnerContext &context)
         match.setText(i18n("Open %1", term));
 
         if (type == Plasma::RunnerContext::File) {
-            match.setIcon(KIcon(KMimeType::iconNameForUrl(KUrl(term))));
+            match.setIcon(KIcon(KIO::pixmapForUrl(KUrl(term))));
         } else {
             match.setIcon(KIcon("system-file-manager"));
         }
