@@ -297,8 +297,7 @@ void DolphinMainWindow::changeUrl(const KUrl& url)
         updateGoActions();
         setUrlAsCaption(url);
 
-        const QString iconName = KMimeType::iconNameForUrl(url);
-        m_tabBar->setTabIcon(m_tabIndex, KIcon(iconName));
+        m_tabBar->setTabIcon(m_tabIndex, QIcon(KIO::pixmapForUrl(url)));
         m_tabBar->setTabText(m_tabIndex, squeezedText(tabName(view->url())));
 
         emit urlChanged(url);
@@ -397,8 +396,7 @@ void DolphinMainWindow::openNewTab(const KUrl& primaryUrl, const KUrl& secondary
 
     tabPage->hide();
 
-    m_tabBar->addTab(KIcon(KMimeType::iconNameForUrl(primaryUrl)),
-                     squeezedText(tabName(primaryUrl)));
+    m_tabBar->addTab(QIcon(KIO::pixmapForUrl(primaryUrl)), squeezedText(tabName(primaryUrl)));
 
     if (m_viewTab.count() > 1) {
         actionCollection()->action("close_tab")->setEnabled(true);
@@ -1229,7 +1227,7 @@ void DolphinMainWindow::setActiveViewContainer(DolphinViewContainer* viewContain
     const KUrl url = m_activeViewContainer->url();
     setUrlAsCaption(url);
     m_tabBar->setTabText(m_tabIndex, squeezedText(tabName(url)));
-    m_tabBar->setTabIcon(m_tabIndex, KIcon(KMimeType::iconNameForUrl(url)));
+    m_tabBar->setTabIcon(m_tabIndex, QIcon(KIO::pixmapForUrl(url)));
 
     emit urlChanged(url);
 }

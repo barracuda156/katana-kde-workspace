@@ -24,6 +24,7 @@
 #include <KMimeType>
 #include <KMenu>
 #include <KIcon>
+#include <kio/global.h>
 
 DolphinRecentTabsMenu::DolphinRecentTabsMenu(QObject* parent) :
     KActionMenu(KIcon("edit-undo"), i18n("Recently Closed Tabs"), parent)
@@ -46,8 +47,7 @@ void DolphinRecentTabsMenu::rememberClosedTab(const KUrl& primaryUrl, const KUrl
     QAction* action = new QAction(menu());
     action->setText(primaryUrl.path());
 
-    const QString iconName = KMimeType::iconNameForUrl(primaryUrl);
-    action->setIcon(KIcon(iconName));
+    action->setIcon(QIcon(KIO::pixmapForUrl(primaryUrl)));
 
     KUrl::List urls;
     urls << primaryUrl;

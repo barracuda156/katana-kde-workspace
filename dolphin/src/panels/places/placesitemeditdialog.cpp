@@ -32,6 +32,7 @@
 #include <KLocale>
 #include <KMimeType>
 #include <KUrlRequester>
+#include <kio/global.h>
 #include <QCheckBox>
 #include <QEvent>
 #include <QFormLayout>
@@ -140,7 +141,7 @@ void PlacesItemEditDialog::initialize()
     m_iconButton->setIconSize(IconSize(KIconLoader::Desktop));
     m_iconButton->setIconType(KIconLoader::NoGroup, KIconLoader::Place);
     if (m_icon.isEmpty()) {
-        m_iconButton->setIcon(KMimeType::iconNameForUrl(m_url));
+        m_iconButton->setIcon(KIO::pixmapForUrl(m_url));
     } else {
         m_iconButton->setIcon(m_icon);
     }
