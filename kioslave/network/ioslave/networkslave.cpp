@@ -120,13 +120,16 @@ void NetworkSlave::stat(const KUrl &url)
     foreach (const KDNSSDService &kdnssdservice, m_kdnssd->services()) {
         if (kdnssdservice.name == urlfilename) {
             const QString servicemimetype = mimeForService(kdnssdservice);
+            const QString serviceurl = urlForService(kdnssdservice);
             KIO::UDSEntry kioudsentry;
             kioudsentry.insert(KIO::UDSEntry::UDS_NAME, kdnssdservice.name);
             kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFLNK);
             kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, S_IRWXU | S_IRWXG | S_IRWXO);
             kioudsentry.insert(KIO::UDSEntry::UDS_ICON_NAME, iconForService(servicemimetype));
             kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, servicemimetype);
-            kioudsentry.insert(KIO::UDSEntry::UDS_TARGET_URL, urlForService(kdnssdservice));
+            // NOTE: UDS_URL is set because KFileItem concats UDS_NAME with itself otherwise
+            kioudsentry.insert(KIO::UDSEntry::UDS_URL, serviceurl);
+            kioudsentry.insert(KIO::UDSEntry::UDS_TARGET_URL, serviceurl);
             statEntry(kioudsentry);
             finished();
             return;
@@ -157,13 +160,15 @@ void NetworkSlave::listDir(const KUrl &url)
     KIO::UDSEntry kioudsentry;
     foreach (const KDNSSDService &kdnssdservice, m_kdnssd->services()) {
         const QString servicemimetype = mimeForService(kdnssdservice);
+        const QString serviceurl = urlForService(kdnssdservice);
         kioudsentry.clear();
         kioudsentry.insert(KIO::UDSEntry::UDS_NAME, kdnssdservice.name);
         kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFLNK);
         kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, S_IRWXU | S_IRWXG | S_IRWXO);
         kioudsentry.insert(KIO::UDSEntry::UDS_ICON_NAME, iconForService(servicemimetype));
         kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, servicemimetype);
-        kioudsentry.insert(KIO::UDSEntry::UDS_TARGET_URL, urlForService(kdnssdservice));
+        kioudsentry.insert(KIO::UDSEntry::UDS_URL, serviceurl);
+        kioudsentry.insert(KIO::UDSEntry::UDS_TARGET_URL, serviceurl);
         listEntry(kioudsentry, false);
     }
     kioudsentry.clear();
