@@ -116,9 +116,9 @@ void NetworkSlave::stat(const KUrl &url)
         error(KIO::ERR_SLAVE_DEFINED, m_kdnssd->errorString());
         return;
     }
+    const QString urlfilename = url.fileName();
     foreach (const KDNSSDService &kdnssdservice, m_kdnssd->services()) {
-        // qDebug() << Q_FUNC_INFO << kdnssdservice.url << url.prettyUrl();
-        if (kdnssdservice.url == url.prettyUrl()) {
+        if (kdnssdservice.name == urlfilename) {
             const QString servicemimetype = mimeForService(kdnssdservice);
             KIO::UDSEntry kioudsentry;
             kioudsentry.insert(KIO::UDSEntry::UDS_NAME, kdnssdservice.name);
