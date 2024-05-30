@@ -53,11 +53,11 @@ typedef struct {
   FILE* out;
 } ClientInfo;
 
-static int ServerSocket;
+static int ServerSocket = 0;
 static ClientInfo ClientList[ MAX_CLIENTS ];
 static int SocketPort = -1;
 static unsigned char BindToAllInterfaces = 0;
-static int CurrentSocket;
+static int CurrentSocket = 0;
 static const char LockFile[] = "/var/run/ksysguardd.pid";
 static const char *ConfigFile = KSYSGUARDDRCFILE;
 
