@@ -36,8 +36,7 @@ FileNameSearchProtocol::FileNameSearchProtocol( const QByteArray &app ) :
     SlaveBase("search", app),
     m_checkContent(""),
     m_checkType(""),
-    m_regExp(0),
-    m_iteratedDirs()
+    m_regExp(0)
 {
 }
 
@@ -49,6 +48,15 @@ FileNameSearchProtocol::~FileNameSearchProtocol()
 void FileNameSearchProtocol::listDir(const KUrl& url)
 {
     cleanup();
+
+    const KUrl directory = KUrl(url.queryItemValue("url"));
+    // Don't try to iterate the pseudo filesystem directories of Linux
+    if (directory.path() == QLatin1String("/dev")
+        || directory.path() == QLatin1String("/proc")
+        || directory.path() == QLatin1String("/sys")) {
+        finished();
+        return;
+    }
 
     m_checkContent = url.queryItemValue("checkContent");
 
@@ -66,22 +74,6 @@ void FileNameSearchProtocol::listDir(const KUrl& url)
         m_regExp = new QRegExp(search, Qt::CaseInsensitive);
     }
 
-    const QString urlString = url.queryItemValue("url");
-    searchDirectory(KUrl(urlString));
-
-    cleanup();
-    finished();
-}
-
-void FileNameSearchProtocol::searchDirectory(const KUrl& directory)
-{
-    // Don't try to iterate the pseudo filesystem directories of Linux
-    if (directory.path() == QLatin1String("/dev")
-        || directory.path() == QLatin1String("/proc")
-        || directory.path() == QLatin1String("/sys")) {
-        return;
-    }
-
     // Get all items of the directory
     KDirLister *dirLister = new KDirLister();
     dirLister->setAutoUpdate(false);
@@ -90,7 +82,7 @@ void FileNameSearchProtocol::searchDirectory(const KUrl& directory)
     QEventLoop eventLoop;
     QObject::connect(dirLister, SIGNAL(canceled()), &eventLoop, SLOT(quit()));
     QObject::connect(dirLister, SIGNAL(completed()), &eventLoop, SLOT(quit()));
-    dirLister->openUrl(directory);
+    dirLister->openUrl(directory, true);
     eventLoop.exec();
 
     // Visualize all items that match the search pattern
@@ -116,35 +108,19 @@ void FileNameSearchProtocol::searchDirectory(const KUrl& directory)
 
         if (addItem) {
             KIO::UDSEntry entry = item.entry();
+            entry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.url().fileName());
             entry.insert(KIO::UDSEntry::UDS_URL, item.url().url());
             entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, item.mimetype());
             listEntry(entry, false);
         }
-
-        if (item.isDir()) {
-            if (item.isLink()) {
-                // Assure that no endless searching is done in directories that
-                // have already been iterated.
-                const KUrl linkDest(item.url(), item.linkDest());
-                if (!m_iteratedDirs.contains(linkDest.path())) {
-                    pendingDirs.append(linkDest);
-                }
-            } else {
-                pendingDirs.append(item.url());
-            }
-        }
     }
     listEntry(KIO::UDSEntry(), true);
-
-    m_iteratedDirs.insert(directory.path());
 
     delete dirLister;
     dirLister = 0;
 
-    // Recursively iterate all sub directories
-    foreach (const KUrl& pendingDir, pendingDirs) {
-        searchDirectory(pendingDir);
-    }
+    cleanup();
+    finished();
 }
 
 bool FileNameSearchProtocol::contentContainsPattern(const KUrl& fileName) const
@@ -191,7 +167,6 @@ void FileNameSearchProtocol::cleanup()
 {
     delete m_regExp;
     m_regExp = 0;
-    m_iteratedDirs.clear();
 }
 
 int main( int argc, char **argv )

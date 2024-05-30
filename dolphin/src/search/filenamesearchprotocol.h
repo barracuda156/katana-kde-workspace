@@ -45,8 +45,6 @@ public:
     void listDir(const KUrl &url) final;
 
 private:
-    void searchDirectory(const KUrl &directory);
-
     /**
      * @return True, if the pattern m_searchPattern is part of
      *         the file \a fileName.
@@ -59,7 +57,6 @@ private:
     QString m_literal;
     QString m_checkType;
     QRegExp* m_regExp;
-    QSet<QString> m_iteratedDirs;
 };
 
 #endif
