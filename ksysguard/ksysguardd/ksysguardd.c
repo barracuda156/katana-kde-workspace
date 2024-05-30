@@ -193,6 +193,13 @@ static void dropPrivileges( void )
   }
 }
 
+void signalHandler( int sig )
+{
+    log_error( "Signal caught: %d", sig );
+    signal(sig, SIG_DFL);
+    QuitApp = 1;
+}
+
 void makeDaemon( void )
 {
   int fd = -1;
@@ -542,6 +549,10 @@ int main( int argc, char* argv[] )
   parseConfigFile( ConfigFile );
 
   initModules();
+
+  signal(SIGTERM, signalHandler);
+  signal(SIGHUP, signalHandler);
+  signal(SIGINT, signalHandler);
 
   if ( RunAsDaemon ) {
     makeDaemon();
