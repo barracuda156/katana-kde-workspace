@@ -11,34 +11,6 @@
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0" colspan="3">
-    <widget class="QCheckBox" name="kcfg_DimPanels">
-     <property name="text">
-      <string>Apply effect to &amp;panels</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="3">
-    <widget class="QCheckBox" name="kcfg_DimDesktop">
-     <property name="text">
-      <string>Apply effect to the desk&amp;top</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="3">
-    <widget class="QCheckBox" name="kcfg_DimKeepAbove">
-     <property name="text">
-      <string>Apply effect to &amp;keep-above windows</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="3">
-    <widget class="QCheckBox" name="kcfg_DimByGroup">
-     <property name="text">
-      <string>Apply effect to &amp;groups</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
@@ -50,28 +22,6 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QSlider" name="kcfg_sliderStrength">
-     <property name="minimumSize">
-      <size>
-       <width>120</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="minimum">
-      <number>1</number>
-     </property>
-     <property name="maximum">
-      <number>100</number>
-     </property>
-     <property name="value">
-      <number>25</number>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
     <widget class="KIntNumInput" name="kcfg_Strength">
      <property name="minimum">
       <number>1</number>
@@ -82,9 +32,40 @@
      <property name="value">
       <number>25</number>
      </property>
+     <property name="sliderEnabled">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
-   <item row="5" column="0" colspan="3">
+   <item row="1" column="0" colspan="2">
+    <widget class="QCheckBox" name="kcfg_DimPanels">
+     <property name="text">
+      <string>Apply effect to &amp;panels</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QCheckBox" name="kcfg_DimDesktop">
+     <property name="text">
+      <string>Apply effect to the desk&amp;top</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QCheckBox" name="kcfg_DimKeepAbove">
+     <property name="text">
+      <string>Apply effect to &amp;keep-above windows</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <widget class="QCheckBox" name="kcfg_DimByGroup">
+     <property name="text">
+      <string>Apply effect to &amp;groups</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="2">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -107,44 +88,10 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>kcfg_sliderStrength</tabstop>
   <tabstop>kcfg_Strength</tabstop>
   <tabstop>kcfg_DimPanels</tabstop>
   <tabstop>kcfg_DimDesktop</tabstop>
   <tabstop>kcfg_DimByGroup</tabstop>
  </tabstops>
- <connections>
-  <connection>
-   <sender>kcfg_Strength</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>kcfg_sliderStrength</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>288</x>
-     <y>29</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>195</x>
-     <y>26</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>kcfg_sliderStrength</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>kcfg_Strength</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>136</x>
-     <y>26</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>288</x>
-     <y>29</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
