@@ -118,7 +118,7 @@ KCMPasswdStore::KCMPasswdStore(QWidget* parent, const QVariantList& args)
     m_timeoutinput = new KIntNumInput(generalgroup);
     m_timeoutinput->setRange(1, 255);
     m_timeoutinput->setSliderEnabled(true);
-    m_timeoutinput->setSuffix(i18n(" minute(s)"));
+    m_timeoutinput->setSuffix(ki18np(" minute", " minutes"));
     m_timeoutinput->setToolTip(i18n("The timeout in minutes of inactivity after which stores are automatically closed."));
     connect(
         m_timeoutinput, SIGNAL(valueChanged(int)),
