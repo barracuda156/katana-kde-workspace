@@ -156,8 +156,11 @@ QList<QAction*> KillRunner::actionsForMatch(const Plasma::QueryMatch &match)
     QList<QAction*> ret;
 
     if (!action("SIGTERM")) {
-        (addAction("SIGTERM", KIcon("application-exit"), i18n("Send SIGTERM")))->setData(15);
-        (addAction("SIGKILL", KIcon("process-stop"), i18n("Send SIGKILL")))->setData(9);
+        QAction* action = addAction("SIGTERM", KIcon("application-exit"), i18n("Send SIGTERM"));
+        action->setData(int(SIGTERM));
+
+        action = addAction("SIGKILL", KIcon("process-stop"), i18n("Send SIGKILL"));
+        action->setData(int(SIGKILL));
     }
     ret << action("SIGTERM") << action("SIGKILL");
     return ret;
