@@ -19,11 +19,11 @@
 
 #include "trash.h"
 
-//QT
-#include <QtGui/qgraphicssceneevent.h>
+// Katie
+#include <QGraphicsSceneDragDropEvent>
 #include <QGraphicsLinearLayout>
 
-//KDE
+// KDE
 #include <KCModuleProxy>
 #include <KConfigDialog>
 #include <KDebug>
@@ -33,20 +33,16 @@
 #include <KMessageBox>
 #include <KLocale>
 #include <KNotification>
-#include <QProcess>
 #include <KToolInvocation>
 #include <KSharedConfig>
 #include <KStandardDirs>
 #include <KUrl>
-#include <KWindowSystem>
-
 #include <KIO/CopyJob>
 #include <KIO/JobUiDelegate>
-
-//Plasma
 #include <Plasma/IconWidget>
 #include <Plasma/Containment>
 #include <Plasma/ToolTipManager>
+#include <konq_operations.h>
 
 //Solid
 #include <solid/devicenotifier.h>
@@ -60,14 +56,13 @@
 
 Trash::Trash(QObject *parent, const QVariantList &args)
     : Plasma::Applet(parent, args),
-      m_icon(0),
-      m_dirLister(0),
-      m_emptyAction(0),
-      m_count(0),
-      m_showText(false),
-      m_places(0),
-      m_proxy(0),
-      m_emptyProcess(0)
+    m_icon(0),
+    m_dirLister(0),
+    m_emptyAction(0),
+    m_count(0),
+    m_showText(false),
+    m_places(0),
+    m_proxy(0)
 {
     setHasConfigurationInterface(true);
     setAspectRatioMode(Plasma::ConstrainedSquare);
@@ -106,8 +101,10 @@ void Trash::init()
     m_dirLister->openUrl(KUrl("trash:/"));
 
     connect(m_icon, SIGNAL(activated()), this, SLOT(open()));
-    connect(KGlobalSettings::self(), SIGNAL(iconChanged(int)),
-            this, SLOT(iconSizeChanged(int)));
+    connect(
+        KGlobalSettings::self(), SIGNAL(iconChanged(int)),
+        this, SLOT(iconSizeChanged(int))
+    );
 }
 
 void Trash::createConfigurationInterface(KConfigDialog *parent)
@@ -191,55 +188,9 @@ void Trash::open()
 
 void Trash::empty()
 {
-    if (m_emptyProcess) {
-        return;
-    }
-
-    if (m_confirmEmptyDialog) {
-        KWindowSystem::forceActiveWindow(m_confirmEmptyDialog.data()->winId());
-    } else {
-        const QString text(i18nc("@info", "Do you really want to empty the trash? All items will be deleted."));
-        KDialog *dialog = new KDialog;
-        dialog->setWindowTitle(i18nc("@title:window", "Empty Trash"));
-        dialog->setButtons(KDialog::Yes|KDialog::No);
-        dialog->setButtonText(KDialog::Yes, i18n("Empty Trash"));
-        dialog->setButtonText(KDialog::No, i18n("Cancel"));
-        dialog->setAttribute(Qt::WA_DeleteOnClose);
-        connect(dialog, SIGNAL(yesClicked()), this, SLOT(emptyTrash()));
-
-        KMessageBox::createKMessageBox(dialog, KIcon("user-trash"), text, QStringList(), QString(), 0, KMessageBox::NoExec);
-
-        dialog->setModal(false);
-        m_confirmEmptyDialog = dialog;
-        dialog->show();
-    }
-}
-
-void Trash::emptyTrash()
-{
-    // We can't use KonqOperations here. To avoid duplicating its code (small, though),
-    // we can simply call ktrash.
-    //KonqOperations::emptyTrash(&m_menu);
     m_emptyAction->setEnabled(false);
     m_emptyAction->setText(i18n("Emptying Trashcan..."));
-    m_emptyProcess = new QProcess(this);
-    connect(m_emptyProcess, SIGNAL(finished(int,QProcess::ExitStatus)),
-            this, SLOT(emptyFinished(int,QProcess::ExitStatus)));
-    QString ktrash = KStandardDirs::findExe("ktrash");
-    m_emptyProcess->start(ktrash, QStringList() << "--empty");
-}
-
-void Trash::emptyFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
-    Q_UNUSED(exitCode)
-    Q_UNUSED(exitStatus)
-
-    KNotification::event("kde/TrashEmptied");
-
-    //TODO: check the exit status and let the user know if it fails
-    delete m_emptyProcess;
-    m_emptyProcess = 0;
-    m_emptyAction->setEnabled(false);
+    KonqOperations::emptyTrash(&m_menu);
     m_emptyAction->setText(i18n("&Empty Trashcan"));
 }
 

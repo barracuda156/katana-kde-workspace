@@ -21,19 +21,13 @@
 #ifndef TRASH_H
 #define TRASH_H
 
-#include <QtGui/qaction.h>
-#include <QtCore/qprocess.h>
-#include <QtGui/qgraphicsview.h>
+#include <QAction>
 #include <KMenu>
 #include <KFileItem>
 #include <KDirLister>
-
 #include <Plasma/Applet>
 
-#include <QAction>
-
 class KCModuleProxy;
-class KDialog;
 class KFilePlacesModel;
 
 namespace Plasma
@@ -44,49 +38,45 @@ namespace Plasma
 class Trash : public Plasma::Applet
 {
     Q_OBJECT
-    public:
-        Trash(QObject *parent, const QVariantList &args);
-        virtual QList<QAction*> contextualActions();
-        ~Trash();
+public:
+    Trash(QObject *parent, const QVariantList &args);
+    ~Trash();
 
-        void init();
-        void constraintsEvent(Plasma::Constraints constraints);
+    void init();
+    void constraintsEvent(Plasma::Constraints constraints);
+    QList<QAction*> contextualActions();
 
-    protected:
-        void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
-        void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);
-        void dropEvent(QGraphicsSceneDragDropEvent *event);
-        void createConfigurationInterface(KConfigDialog *parent);
-        void createMenu();
-        void updateIcon();
-        QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint = QSizeF()) const;
+protected:
+    void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
+    void dragLeaveEvent(QGraphicsSceneDragDropEvent *event);
+    void dropEvent(QGraphicsSceneDragDropEvent *event);
+    void createConfigurationInterface(KConfigDialog *parent);
+    void createMenu();
+    void updateIcon();
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint = QSizeF()) const;
 
-    protected slots:
-        void popup();
-        void open();
-        void empty();
-        void clear();
-        void completed();
-        void itemsDeleted(const KFileItemList &items);
-        void applyConfig();
-        void emptyTrash();
-        void emptyFinished(int exitCode, QProcess::ExitStatus exitStatus);
+protected slots:
+    void popup();
+    void open();
+    void empty();
+    void clear();
+    void completed();
+    void itemsDeleted(const KFileItemList &items);
+    void applyConfig();
 
-    private slots:
-        void iconSizeChanged(int group);
+private slots:
+    void iconSizeChanged(int group);
 
-    private:
-        Plasma::IconWidget* m_icon;
-        QList<QAction*> actions;
-        KDirLister *m_dirLister;
-        KMenu m_menu;
-        QAction *m_emptyAction;
-        QWeakPointer<KDialog> m_confirmEmptyDialog;
-        int m_count;
-        bool m_showText;
-        KFilePlacesModel *m_places;
-        KCModuleProxy *m_proxy;
-        QProcess *m_emptyProcess;
+private:
+    Plasma::IconWidget* m_icon;
+    QList<QAction*> actions;
+    KDirLister *m_dirLister;
+    KMenu m_menu;
+    QAction *m_emptyAction;
+    int m_count;
+    bool m_showText;
+    KFilePlacesModel *m_places;
+    KCModuleProxy *m_proxy;
 };
 
 K_EXPORT_PLASMA_APPLET(trash, Trash)
