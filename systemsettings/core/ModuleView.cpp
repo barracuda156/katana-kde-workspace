@@ -23,8 +23,7 @@
 
 #include <QMap>
 #include <QList>
-#include <QProcess>
-#include <QtGui/qevent.h>
+#include <QKeyEvent>
 #include <QWhatsThis>
 #include <QScrollArea>
 #include <QVBoxLayout>
