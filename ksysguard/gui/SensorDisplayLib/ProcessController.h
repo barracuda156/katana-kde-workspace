@@ -29,7 +29,6 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QList>
-#include <QProcess>
 
 
 #include <kapplication.h>

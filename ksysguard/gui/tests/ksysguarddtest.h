@@ -3,7 +3,6 @@
 #include <QtCore/qnamespace.h>
 
 #include <QObject>
-#include <QProcess>
 #include "ksysguard/ksgrd/SensorManager.h"
 #include "ksysguard/ksgrd/SensorAgent.h"
 #include "ksysguard/ksgrd/SensorClient.h"
