@@ -82,7 +82,7 @@ void KillRunner::match(Plasma::RunnerContext &context)
 
         const QString name = process->name;
         if (!name.contains(term, Qt::CaseInsensitive)) {
-            //Process doesn't match the search term
+            // Process doesn't match the search term
             continue;
         }
 
@@ -97,14 +97,11 @@ void KillRunner::match(Plasma::RunnerContext &context)
             user = QLatin1String("root");
         }
 
-        QVariantList data;
-        data << pid << user;
-
         Plasma::QueryMatch match(this);
         match.setText(i18n("Terminate %1", name));
         match.setSubtext(i18n("Process ID: %1\nRunning as user: %2", QString::number(pid), user));
         match.setIcon(KIcon("application-exit"));
-        match.setData(data);
+        match.setData(pid);
         match.setId(name);
 
         // Set the relevance
@@ -129,10 +126,7 @@ void KillRunner::match(Plasma::RunnerContext &context)
 
 void KillRunner::run(const Plasma::QueryMatch &match)
 {
-    QVariantList data = match.data().value<QVariantList>();
-    quint64 pid = data[0].toUInt();
-    QString user = data[1].toString();
-
+    const quint64 pid = match.data().toULongLong();
     int signal = SIGKILL;
     if (match.selectedAction() != NULL) {
         signal = match.selectedAction()->data().toInt();
