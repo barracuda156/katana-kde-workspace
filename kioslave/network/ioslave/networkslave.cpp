@@ -102,6 +102,7 @@ void NetworkSlave::stat(const KUrl &url)
         // fake the root entry, whenever listed it will list all services
         KIO::UDSEntry kioudsentry;
         kioudsentry.insert(KIO::UDSEntry::UDS_NAME, ".");
+        kioudsentry.insert(KIO::UDSEntry::UDS_URL, "network:/");
         kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
         kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, S_IRWXU | S_IRWXG | S_IRWXO);
         kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, "inode/directory");
@@ -123,12 +124,11 @@ void NetworkSlave::stat(const KUrl &url)
             const QString serviceurl = urlForService(kdnssdservice);
             KIO::UDSEntry kioudsentry;
             kioudsentry.insert(KIO::UDSEntry::UDS_NAME, kdnssdservice.name);
+            kioudsentry.insert(KIO::UDSEntry::UDS_URL, serviceurl);
             kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFLNK);
             kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, S_IRWXU | S_IRWXG | S_IRWXO);
             kioudsentry.insert(KIO::UDSEntry::UDS_ICON_NAME, iconForService(servicemimetype));
             kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, servicemimetype);
-            // NOTE: UDS_URL is set because KFileItem concats UDS_NAME with itself otherwise
-            kioudsentry.insert(KIO::UDSEntry::UDS_URL, serviceurl);
             kioudsentry.insert(KIO::UDSEntry::UDS_TARGET_URL, serviceurl);
             statEntry(kioudsentry);
             finished();
@@ -163,11 +163,11 @@ void NetworkSlave::listDir(const KUrl &url)
         const QString serviceurl = urlForService(kdnssdservice);
         kioudsentry.clear();
         kioudsentry.insert(KIO::UDSEntry::UDS_NAME, kdnssdservice.name);
+        kioudsentry.insert(KIO::UDSEntry::UDS_URL, serviceurl);
         kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFLNK);
         kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, S_IRWXU | S_IRWXG | S_IRWXO);
         kioudsentry.insert(KIO::UDSEntry::UDS_ICON_NAME, iconForService(servicemimetype));
         kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, servicemimetype);
-        kioudsentry.insert(KIO::UDSEntry::UDS_URL, serviceurl);
         kioudsentry.insert(KIO::UDSEntry::UDS_TARGET_URL, serviceurl);
         listEntry(kioudsentry, false);
     }

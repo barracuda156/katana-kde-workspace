@@ -767,7 +767,7 @@ void KonqOperations::slotStatResult( KJob * job )
     else
     {
         KIO::StatJob * statJob = static_cast<KIO::StatJob*>(job);
-        KFileItem item( statJob->statResult(), statJob->url() );
+        KFileItem item( statJob->statResult() );
         emit statFinished( item );
     }
     // If we're only here for a stat, we're done. But not if we used _statUrl internally

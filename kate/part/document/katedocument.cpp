@@ -2145,7 +2145,7 @@ bool KateDocument::saveFile()
       KIO::UDSEntry fentry;
       if (KIO::NetAccess::stat (url(), fentry, QApplication::activeWindow())) {
         // do a evil copy which will overwrite target if possible
-        KFileItem item (fentry, url());
+        KFileItem item (fentry);
         KIO::FileCopyJob *job = KIO::file_copy ( url(), u, item.permissions(), KIO::Overwrite );
         backupSuccess = KIO::NetAccess::synchronousRun(job, QApplication::activeWindow());
       }

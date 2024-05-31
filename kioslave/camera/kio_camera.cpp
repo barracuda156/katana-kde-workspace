@@ -382,6 +382,7 @@ void KameraProtocol::statRoot(void)
 {
     KIO::UDSEntry entry;
     entry.insert(KIO::UDSEntry::UDS_NAME, QString::fromLatin1("/"));
+    entry.insert(KIO::UDSEntry::UDS_URL, "camera:/");
     entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
     entry.insert(KIO::UDSEntry::UDS_ACCESS, (S_IRUSR | S_IRGRP | S_IROTH));
     entry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/directory"));
@@ -392,7 +393,7 @@ void KameraProtocol::statRoot(void)
     idletime = MAXIDLETIME;
 }
 
-void KameraProtocol::split_url2camerapath(QString url, QString &directory, QString &file) {
+void KameraProtocol::split_url2camerapath(const QString &url, QString &directory, QString &file) {
     QStringList components, camarr;
     QString cam, camera, port;
 
@@ -436,6 +437,7 @@ void KameraProtocol::statRegular(const KUrl &xurl)
 
         QString xname = current_camera + "@" + current_port;
         entry.insert(KIO::UDSEntry::UDS_NAME, path_quote(xname));
+        entry.insert(KIO::UDSEntry::UDS_URL, xurl.url());
         entry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, current_camera);
         entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
         entry.insert(KIO::UDSEntry::UDS_ACCESS, (S_IRUSR | S_IRGRP | S_IROTH));
@@ -539,12 +541,12 @@ void KameraProtocol::del(const KUrl &url, bool isFile)
 }
 
 // The KIO slave "listDir" function.
-void KameraProtocol::listDir(const KUrl &yurl)
+void KameraProtocol::listDir(const KUrl &xurl)
 {
     QString directory, file;
-    kDebug(7123) << "KameraProtocol::listDir(" << yurl.path() << ")";
+    kDebug(7123) << "KameraProtocol::listDir(" << xurl.path() << ")";
 
-    split_url2camerapath(yurl.path(), directory, file);
+    split_url2camerapath(xurl.path(), directory, file);
 
     if (!file.isEmpty()) {
         if (directory == "/") {
@@ -554,8 +556,7 @@ void KameraProtocol::listDir(const KUrl &yurl)
         }
     }
 
-    if (yurl.path() == "/") {
-        KUrl xurl;
+    if (xurl.path() == "/") {
         // List the available cameras
         QStringList groupList = m_config->groupList();
         kDebug(7123) << "Found cameras: " << groupList.join(", ");
@@ -640,6 +641,7 @@ void KameraProtocol::listDir(const KUrl &yurl)
             entry.insert(KIO::UDSEntry::UDS_ACCESS,(S_IRUSR | S_IRGRP | S_IROTH |S_IWUSR | S_IWGRP | S_IWOTH));
             xname = (*it) + "@" + m_cfgPath;
             entry.insert(KIO::UDSEntry::UDS_NAME, path_quote(xname));
+            // TODO: entry.insert(KIO::UDSEntry::UDS_URL, xurl.url());
             // do not confuse regular users with the @usb... 
             entry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, *it);
             listEntry(entry, false);
@@ -648,10 +650,11 @@ void KameraProtocol::listDir(const KUrl &yurl)
         QMap<QString,QString>::iterator portsit;
         for (portsit = ports.begin(); portsit != ports.end(); portsit++) {
             entry.clear();
-            entry.insert(KIO::UDSEntry::UDS_FILE_TYPE,S_IFDIR);
+            entry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
             // do not confuse regular users with the @usb... 
-            entry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME,portsit.value());
+            entry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, portsit.value());
             entry.insert(KIO::UDSEntry::UDS_NAME, path_quote(portsit.value() + "@" + portsit.key()));
+            // TODO: entry.insert(KIO::UDSEntry::UDS_URL, xurl.url());
 
             entry.insert(KIO::UDSEntry::UDS_ACCESS,(S_IRUSR | S_IRGRP | S_IROTH |S_IWUSR | S_IWGRP | S_IWOTH));
             listEntry(entry, false);
@@ -663,7 +666,7 @@ void KameraProtocol::listDir(const KUrl &yurl)
     }
 
     if (directory.isEmpty()) {
-        KUrl rooturl(yurl);
+        KUrl rooturl(xurl);
 
         kDebug(7123) << "redirecting to /";
         if (!current_camera.isEmpty() && !current_port.isEmpty()) {
@@ -677,7 +680,7 @@ void KameraProtocol::listDir(const KUrl &yurl)
     }
 
     if (!openCamera()) {
-        error(KIO::ERR_COULD_NOT_READ, yurl.path());
+        error(KIO::ERR_COULD_NOT_READ, xurl.path());
         return;
     }
 
@@ -860,8 +863,9 @@ void KameraProtocol::translateTextToUDS(KIO::UDSEntry &udsEntry, const QString &
     udsEntry.clear();
 
     udsEntry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFREG);
-    udsEntry.insert(KIO::UDSEntry::UDS_NAME,path_quote(fn));
-    udsEntry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME,fn);
+    udsEntry.insert(KIO::UDSEntry::UDS_NAME, path_quote(fn));
+    // TODO: udsEntry.insert(KIO::UDSEntry::UDS_URL, path_quote(fn));
+    udsEntry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, fn);
     udsEntry.insert(KIO::UDSEntry::UDS_SIZE,strlen(text));
     udsEntry.insert(KIO::UDSEntry::UDS_ACCESS,(S_IRUSR | S_IRGRP | S_IROTH));
 }
@@ -874,6 +878,7 @@ void KameraProtocol::translateFileToUDS(KIO::UDSEntry &udsEntry, const CameraFil
 
     udsEntry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFREG);
     udsEntry.insert(KIO::UDSEntry::UDS_NAME, path_quote(name));
+    // TODO: udsEntry.insert(KIO::UDSEntry::UDS_URL, path_quote(fn));
     udsEntry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, name);
 
     if (info.file.fields & GP_FILE_INFO_SIZE) {
@@ -907,6 +912,7 @@ void KameraProtocol::translateDirectoryToUDS(KIO::UDSEntry &udsEntry, const QStr
 
     udsEntry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
     udsEntry.insert(KIO::UDSEntry::UDS_NAME, path_quote(dirname));
+    // TODO: udsEntry.insert(KIO::UDSEntry::UDS_URL, path_quote(dirname));
     udsEntry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, dirname);
     udsEntry.insert(KIO::UDSEntry::UDS_ACCESS,S_IRUSR | S_IRGRP | S_IROTH |S_IWUSR | S_IWGRP | S_IWOTH | S_IXUSR | S_IXOTH | S_IXGRP);
     udsEntry.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString("inode/directory"));

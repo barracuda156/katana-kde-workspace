@@ -38,9 +38,9 @@ LIBMTP_filetype_t getFiletype(const QString &filename);
 QMap<QString, LIBMTP_devicestorage_t*> getDevicestorages(LIBMTP_mtpdevice_t *&device);
 QMap<QString, LIBMTP_file_t*> getFiles(LIBMTP_mtpdevice_t *&device, uint32_t storage_id, uint32_t parent_id = 0xFFFFFFFF);
 
-void getEntry(UDSEntry &entry, LIBMTP_mtpdevice_t* device);
-void getEntry(UDSEntry &entry, const LIBMTP_devicestorage_t* storage);
-void getEntry(UDSEntry &entry, const LIBMTP_file_t* file);
+void getEntry(UDSEntry &entry, LIBMTP_mtpdevice_t* device, const QString &url);
+void getEntry(UDSEntry &entry, const LIBMTP_devicestorage_t* storage, const QString &url);
+void getEntry(UDSEntry &entry, const LIBMTP_file_t* file, const QString &url);
 
 void resetDeviceStack(LIBMTP_mtpdevice_t* device);
 

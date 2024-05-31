@@ -198,7 +198,7 @@ void InformationPanel::slotFolderStatFinished(KJob* job)
 {
     m_folderStatJob = 0;
     const KIO::UDSEntry entry = static_cast<KIO::StatJob*>(job)->statResult();
-    m_content->showItem(KFileItem(entry, m_shownUrl));
+    m_content->showItem(KFileItem(entry));
 }
 
 void InformationPanel::slotInfoTimeout()

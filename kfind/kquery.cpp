@@ -113,7 +113,7 @@ void KQuery::slotListEntries(KIO::Job*, const KIO::UDSEntryList& list)
   const KIO::UDSEntryList::ConstIterator end = list.constEnd();
   
   for (KIO::UDSEntryList::ConstIterator it = list.constBegin(); it != end; ++it)
-    m_fileItems.enqueue(KFileItem(*it, m_url));
+    m_fileItems.enqueue(KFileItem(*it));
       
   checkEntries();
 }

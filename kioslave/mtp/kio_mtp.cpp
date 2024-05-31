@@ -262,7 +262,7 @@ void MTPSlave::listDir(const KUrl& url)
         {
             LIBMTP_mtpdevice_t *device = cachedDevice->getDevice();
 
-            getEntry(entry, device);
+            getEntry(entry, device, url.url());
 
             listEntry(entry, false);
             entry.clear();
@@ -289,7 +289,7 @@ void MTPSlave::listDir(const KUrl& url)
 
                 if (storages.size() > 0) {
                     foreach (const QString &storageName, storages.keys()) {
-                        getEntry(entry, storages.value(storageName));
+                        getEntry(entry, storages.value(storageName), url.url());
 
                         listEntry(entry, false);
                         entry.clear();
@@ -327,7 +327,7 @@ void MTPSlave::listDir(const KUrl& url)
                     QString filePath = url.path(KUrl::AddTrailingSlash).append(it.key());
                     fileCache->addPath(filePath, file->item_id);
                     
-                    getEntry(entry, file);
+                    getEntry(entry, file, url.url());
                     
                     listEntry(entry, false);
                     entry.clear();
@@ -380,18 +380,19 @@ void MTPSlave::stat(const KUrl& url)
         // Root
         if (pathItems.size() < 1) {
             entry.insert(UDSEntry::UDS_NAME, QLatin1String("mtp:///"));
+            entry.insert(UDSEntry::UDS_URL, QLatin1String("mtp:///"));
             entry.insert(UDSEntry::UDS_FILE_TYPE, S_IFDIR );
             entry.insert(UDSEntry::UDS_ACCESS, S_IRUSR | S_IRGRP | S_IROTH | S_IXUSR | S_IXGRP | S_IXOTH);
             entry.insert(UDSEntry::UDS_MIME_TYPE, QLatin1String("inode/directory"));
         // Device
         } else if (pathItems.size() < 2) {
-            getEntry(entry, pair.second);
+            getEntry(entry, pair.second, url.url());
         // Storage
         } else if (pathItems.size() < 3) {
-            getEntry (entry, (LIBMTP_devicestorage_t*)pair.first);
+            getEntry (entry, (LIBMTP_devicestorage_t*)pair.first, url.url());
         // Folder/File
         } else {
-            getEntry(entry, (LIBMTP_file_t*)pair.first);
+            getEntry(entry, (LIBMTP_file_t*)pair.first, url.url());
         }
     }
     statEntry(entry);

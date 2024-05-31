@@ -292,7 +292,7 @@ QMap<QString, LIBMTP_file_t*> getFiles(LIBMTP_mtpdevice_t *&device, uint32_t sto
     return fileMap;
 }
 
-void getEntry(UDSEntry &entry, LIBMTP_mtpdevice_t* device)
+void getEntry(UDSEntry &entry, LIBMTP_mtpdevice_t* device, const QString &url)
 {
     char *charName = LIBMTP_Get_Friendlyname(device);
     char *charModel = LIBMTP_Get_Modelname(device);
@@ -306,13 +306,14 @@ void getEntry(UDSEntry &entry, LIBMTP_mtpdevice_t* device)
     }
 
     entry.insert(UDSEntry::UDS_NAME, deviceName);
+    entry.insert(UDSEntry::UDS_URL, url);
     entry.insert(UDSEntry::UDS_ICON_NAME, QLatin1String("multimedia-player"));
     entry.insert(UDSEntry::UDS_FILE_TYPE, S_IFDIR);
     entry.insert(UDSEntry::UDS_ACCESS, S_IRUSR | S_IRGRP | S_IROTH | S_IXUSR | S_IXGRP | S_IXOTH);
     entry.insert(UDSEntry::UDS_MIME_TYPE, QLatin1String("inode/directory"));
 }
 
-void getEntry(UDSEntry &entry, const LIBMTP_devicestorage_t* storage)
+void getEntry(UDSEntry &entry, const LIBMTP_devicestorage_t* storage, const QString &url)
 {
 //     char *charIdentifier = storage->VolumeIdentifier;
     char *charDescription = storage->StorageDescription;
@@ -325,15 +326,17 @@ void getEntry(UDSEntry &entry, const LIBMTP_devicestorage_t* storage)
     // }
 
     entry.insert(UDSEntry::UDS_NAME, storageName);
+    entry.insert(UDSEntry::UDS_URL, url);
     entry.insert(UDSEntry::UDS_ICON_NAME, QLatin1String("drive-removable-media"));
     entry.insert(UDSEntry::UDS_FILE_TYPE, S_IFDIR );
     entry.insert(UDSEntry::UDS_ACCESS, S_IRUSR | S_IRGRP | S_IROTH | S_IXUSR | S_IXGRP | S_IXOTH);
     entry.insert(UDSEntry::UDS_MIME_TYPE, QLatin1String("inode/directory"));
 }
 
-void getEntry(UDSEntry &entry, const LIBMTP_file_t* file)
+void getEntry(UDSEntry &entry, const LIBMTP_file_t* file, const QString &url)
 {
     entry.insert(UDSEntry::UDS_NAME, QString::fromUtf8(file->filename));
+    entry.insert(UDSEntry::UDS_URL, url);
     if (file->filetype == LIBMTP_FILETYPE_FOLDER) {
         entry.insert(UDSEntry::UDS_FILE_TYPE, S_IFDIR);
         entry.insert(UDSEntry::UDS_ACCESS, S_IRWXU | S_IRWXG | S_IRWXO);
