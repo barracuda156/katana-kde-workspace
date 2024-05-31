@@ -33,7 +33,6 @@ class KillRunner : public Plasma::AbstractRunner
 
 public:
     KillRunner(QObject *parent, const QVariantList& args);
-    ~KillRunner();
 
     void match(Plasma::RunnerContext &context);
     void run(const Plasma::QueryMatch &match);

@@ -20,7 +20,6 @@
 #include "killrunner.h"
 
 #include <QAction>
-#include <QProcess>
 #include <KDebug>
 #include <KIcon>
 #include <KUser>
@@ -34,10 +33,6 @@ KillRunner::KillRunner(QObject *parent, const QVariantList& args)
     Q_UNUSED(args);
     setObjectName(QLatin1String("Kill Runner"));
     reloadConfiguration();
-}
-
-KillRunner::~KillRunner()
-{
 }
 
 void KillRunner::reloadConfiguration()
@@ -106,15 +101,18 @@ void KillRunner::match(Plasma::RunnerContext &context)
 
         // Set the relevance
         switch (m_sorting) {
-        case KillRunnerSort::CPU:
-            match.setRelevance((process->userUsage + process->sysUsage) / 100);
-            break;
-        case KillRunnerSort::CPUI:
-            match.setRelevance(1 - (process->userUsage + process->sysUsage) / 100);
-            break;
-        case KillRunnerSort::NONE:
-            match.setRelevance(name.compare(term, Qt::CaseInsensitive) == 0 ? 1 : 9);
-            break;
+            case KillRunnerSort::CPU: {
+                match.setRelevance((process->userUsage + process->sysUsage) / 100);
+                break;
+            }
+            case KillRunnerSort::CPUI: {
+                match.setRelevance(1 - (process->userUsage + process->sysUsage) / 100);
+                break;
+            }
+            case KillRunnerSort::NONE: {
+                match.setRelevance(name.compare(term, Qt::CaseInsensitive) == 0 ? 1 : 9);
+                break;
+            }
         }
 
         matches << match;
@@ -127,28 +125,21 @@ void KillRunner::match(Plasma::RunnerContext &context)
 void KillRunner::run(const Plasma::QueryMatch &match)
 {
     const quint64 pid = match.data().toULongLong();
-    int signal = SIGKILL;
+    int sig = SIGKILL;
     if (match.selectedAction() != NULL) {
-        signal = match.selectedAction()->data().toInt();
+        sig = match.selectedAction()->data().toInt();
     }
 
-    QStringList args;
-    args << QString("-%1").arg(signal) << QString::number(pid);
-
-    QProcess killproc(this);
-    killproc.start("kill", args);
-    if (!killproc.waitForFinished() || killproc.exitCode() != 0) {
-        const QString errorstring = QString::fromLocal8Bit(killproc.readAllStandardError());
-        KMessageBox::error(nullptr, errorstring);
+    if (::kill(pid, sig) == -1) {
+        const int savederrno = errno;
+        KMessageBox::error(nullptr, qt_error_string(savederrno));
     }
 }
 
 QList<QAction*> KillRunner::actionsForMatch(const Plasma::QueryMatch &match)
 {
     Q_UNUSED(match)
-
     QList<QAction*> ret;
-
     if (!action("SIGTERM")) {
         QAction* action = addAction("SIGTERM", KIcon("application-exit"), i18n("Send SIGTERM"));
         action->setData(int(SIGTERM));
