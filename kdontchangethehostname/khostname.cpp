@@ -34,7 +34,6 @@
 #include <kstandarddirs.h>
 #include <ktoolinvocation.h>
 #include <kde_file.h>
-#include <QtDBus/QtDBus>
 
 static const char appName[] = "kdontchangethehostname";
 static const char appVersion[] = "1.1";
