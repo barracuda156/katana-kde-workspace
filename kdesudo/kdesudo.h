@@ -47,10 +47,6 @@ public:
     KdeSudo(const QString &icon = QString(), const QString &generic = QString());
     ~KdeSudo();
 
-    enum ResultCodes {
-        AsUser = 10
-    };
-
 private slots:
     /**
      * This slot gets executed if sudo creates some output
