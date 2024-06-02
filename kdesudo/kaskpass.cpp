@@ -59,6 +59,11 @@ int main(int argc, char **argv)
         KAboutData::License_GPL,
         ki18n("(C) 2024 Ivailo Monev")
     );
+    const QByteArray caller = qgetenv("KASKPASS_CALLER");
+    if (!caller.isEmpty()) {
+        about.setAppName(caller.toLower());
+        about.setProgramName(ki18n(caller.constData()));
+    }
     KCmdLineArgs::init(&about);
 
     KApplication app;

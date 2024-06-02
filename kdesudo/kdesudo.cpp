@@ -174,6 +174,7 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
     processEnv.insert("DISPLAY", disp);
     processEnv.insert("XAUTHORITY", m_tmpName);
     processEnv.insert("SUDO_ASKPASS", kaskpass);
+    processEnv.insert("KASKPASS_CALLER", "KdeSudo");
     processEnv.insert("KASKPASS_ICON", icon);
     if (args->isSet("attach")) {
         processEnv.insert("KASKPASS_MAINWINDOW", args->getOption("attach"));
