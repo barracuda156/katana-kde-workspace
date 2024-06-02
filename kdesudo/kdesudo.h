@@ -71,14 +71,14 @@ private slots:
      **/
     void pushPassword(const QString &);
     void slotCancel();
-    QString validArg(QString arg);
 
 private:
+    static QString validArg(QString arg);
     void error(const QString &);
+
     QProcess *m_process;
     bool m_error;
     QString m_tmpName;
-
     KPasswordDialog *m_dialog;
 };
 
