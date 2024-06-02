@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *********************************************************************/
 
 #include "diminactive/diminactive_config.h"
+#include "dimscreen/dimscreen_config.h"
 #include "presentwindows/presentwindows_config.h"
 #include "resize/resize_config.h"
 #include "showfps/showfps_config.h"
@@ -41,6 +42,7 @@ namespace KWin
 
 KWIN_EFFECT_CONFIG_MULTIPLE(builtins,
     KWIN_EFFECT_CONFIG_SINGLE(diminactive, DimInactiveEffectConfig)
+    KWIN_EFFECT_CONFIG_SINGLE(dimscreen, DimScreenEffectConfig)
     KWIN_EFFECT_CONFIG_SINGLE(presentwindows, PresentWindowsEffectConfig)
     KWIN_EFFECT_CONFIG_SINGLE(resize, ResizeEffectConfig)
     KWIN_EFFECT_CONFIG_SINGLE(showfps, ShowFpsEffectConfig)

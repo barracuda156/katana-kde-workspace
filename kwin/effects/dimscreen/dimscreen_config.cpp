@@ -2,7 +2,7 @@
  KWin - the KDE window manager
  This file is part of the KDE project.
 
- Copyright (C) 2008, 2009 Martin Gräßlin <mgraesslin@kde.org>
+Copyright (C) 2024 Ivailo Monev <xakepa10@gmail.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,40 +18,44 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *********************************************************************/
 
-#ifndef KWIN_DIMSCREEN_H
-#define KWIN_DIMSCREEN_H
+#include "dimscreen_config.h"
+#include "dimscreenconfig.h"
 
 #include <kwineffects.h>
-#include <QTimeLine>
+
+#include <kdebug.h>
 
 namespace KWin
 {
 
-class DimScreenEffect
-    : public Effect
+KWIN_EFFECT_CONFIG_FACTORY
+
+DimScreenEffectConfigForm::DimScreenEffectConfigForm(QWidget *parent)
+    : QWidget(parent)
 {
-    Q_OBJECT
-public:
-    DimScreenEffect();
+    setupUi(this);
+}
 
-    void reconfigure(ReconfigureFlags) final;
-    void prePaintScreen(ScreenPrePaintData& data, int time) final;
-    void postPaintScreen();
-    void paintWindow(EffectWindow *w, int mask, QRegion region, WindowPaintData &data) final;
-    bool isActive() const final;
+DimScreenEffectConfig::DimScreenEffectConfig(QWidget *parent, const QVariantList &args)
+    : KCModule(EffectFactory::componentData(), parent, args)
+{
+    m_ui = new DimScreenEffectConfigForm(this);
 
-public Q_SLOTS:
-    void slotWindowActivated(KWin::EffectWindow *w);
+    QVBoxLayout* layout = new QVBoxLayout(this);
 
-private:
-    bool mActivated;
-    bool mActivateAnimation;
-    bool mDeactivateAnimation;
-    QTimeLine mTimeline;
-    EffectWindow* mWindow;
-    QStringList mWindowClasses;
-};
+    layout->addWidget(m_ui);
+
+    addConfig(DimScreenConfig::self(), m_ui);
+
+    load();
+}
+
+void DimScreenEffectConfig::save()
+{
+    KCModule::save();
+    EffectsHandler::sendReloadMessage("dimscreen");
+}
 
 } // namespace
 
-#endif
+#include "moc_dimscreen_config.cpp"

@@ -17,7 +17,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *********************************************************************/
+
 #include "dimscreen.h"
+#include "dimscreenconfig.h"
 
 namespace KWin
 {
@@ -28,12 +30,6 @@ DimScreenEffect::DimScreenEffect()
     , mDeactivateAnimation(false)
     , mWindow(nullptr)
 {
-    mCheck << "kdesu kdesu";
-    mCheck << "kdesudo kdesudo";
-    mCheck << "polkit-kde-manager polkit-kde-manager";
-    mCheck << "polkit-kde-authentication-agent-1 polkit-kde-authentication-agent-1";
-    mCheck << "pinentry pinentry";
-
     reconfigure(ReconfigureAll);
     connect(
         effects, SIGNAL(windowActivated(KWin::EffectWindow*)),
@@ -43,6 +39,11 @@ DimScreenEffect::DimScreenEffect()
 
 void DimScreenEffect::reconfigure(ReconfigureFlags)
 {
+    mWindowClasses.clear();
+    DimScreenConfig::self()->readConfig();
+    foreach (const QString &windowClass, DimScreenConfig::windowClasses()) {
+        mWindowClasses << QString::fromLatin1("%1 %2").arg(windowClass).arg(windowClass);
+    }
     mTimeline.setDuration(animationTime(250));
 }
 
@@ -97,7 +98,7 @@ void DimScreenEffect::slotWindowActivated(EffectWindow *w)
     if (!w) {
         return;
     }
-    if (mCheck.contains(w->windowClass())) {
+    if (mWindowClasses.contains(w->windowClass())) {
         mActivated = true;
         mActivateAnimation = true;
         mDeactivateAnimation = false;

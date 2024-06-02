@@ -2,7 +2,7 @@
  KWin - the KDE window manager
  This file is part of the KDE project.
 
- Copyright (C) 2008, 2009 Martin Gräßlin <mgraesslin@kde.org>
+Copyright (C) 2024 Ivailo Monev <xakepa10@gmail.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,38 +18,33 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *********************************************************************/
 
-#ifndef KWIN_DIMSCREEN_H
-#define KWIN_DIMSCREEN_H
+#ifndef KWIN_DIMSCREEN_CONFIG_H
+#define KWIN_DIMSCREEN_CONFIG_H
 
-#include <kwineffects.h>
-#include <QTimeLine>
+#include <kcmodule.h>
+
+#include "ui_dimscreen_config.h"
 
 namespace KWin
 {
 
-class DimScreenEffect
-    : public Effect
+class DimScreenEffectConfigForm : public QWidget, public Ui::DimScreenEffectConfigForm
 {
     Q_OBJECT
 public:
-    DimScreenEffect();
+    explicit DimScreenEffectConfigForm(QWidget *parent);
+};
 
-    void reconfigure(ReconfigureFlags) final;
-    void prePaintScreen(ScreenPrePaintData& data, int time) final;
-    void postPaintScreen();
-    void paintWindow(EffectWindow *w, int mask, QRegion region, WindowPaintData &data) final;
-    bool isActive() const final;
+class DimScreenEffectConfig : public KCModule
+{
+    Q_OBJECT
+public:
+    explicit DimScreenEffectConfig(QWidget *parent = 0, const QVariantList &args = QVariantList());
 
-public Q_SLOTS:
-    void slotWindowActivated(KWin::EffectWindow *w);
+    virtual void save();
 
 private:
-    bool mActivated;
-    bool mActivateAnimation;
-    bool mDeactivateAnimation;
-    QTimeLine mTimeline;
-    EffectWindow* mWindow;
-    QStringList mWindowClasses;
+    DimScreenEffectConfigForm* m_ui;
 };
 
 } // namespace

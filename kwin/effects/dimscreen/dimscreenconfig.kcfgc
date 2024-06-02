@@ -1,0 +1,5 @@
+File=dimscreen.kcfg
+ClassName=DimScreenConfig
+NameSpace=KWin
+Singleton=true
+Mutators=true
