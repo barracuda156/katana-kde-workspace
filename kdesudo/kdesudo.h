@@ -37,7 +37,7 @@ class KdeSudo : QObject
 {
     Q_OBJECT
 public:
-    KdeSudo(const QString &icon = QString(), const QString &generic = QString());
+    KdeSudo(const QString &icon, const QString &appname);
     ~KdeSudo();
 
 private slots:
