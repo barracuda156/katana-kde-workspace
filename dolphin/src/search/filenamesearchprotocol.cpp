@@ -45,7 +45,26 @@ FileNameSearchProtocol::~FileNameSearchProtocol()
     cleanup();
 }
 
-void FileNameSearchProtocol::listDir(const KUrl& url)
+void FileNameSearchProtocol::stat(const KUrl &url)
+{
+    const QString urlpath = url.path();
+    if (urlpath.isEmpty() || urlpath == QLatin1String("/")) {
+        // fake the root entry (for the icon)
+        KIO::UDSEntry kioudsentry;
+        kioudsentry.insert(KIO::UDSEntry::UDS_NAME, ".");
+        kioudsentry.insert(KIO::UDSEntry::UDS_URL, "filenamesearch:/");
+        kioudsentry.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
+        kioudsentry.insert(KIO::UDSEntry::UDS_ACCESS, S_IRWXU | S_IRWXG | S_IRWXO);
+        kioudsentry.insert(KIO::UDSEntry::UDS_ICON_NAME, "edit-find");
+        kioudsentry.insert(KIO::UDSEntry::UDS_MIME_TYPE, "inode/directory");
+        statEntry(kioudsentry);
+        finished();
+        return;
+    }
+    error(KIO::ERR_DOES_NOT_EXIST, url.prettyUrl());
+}
+
+void FileNameSearchProtocol::listDir(const KUrl &url)
 {
     cleanup();
 
@@ -59,9 +78,7 @@ void FileNameSearchProtocol::listDir(const KUrl& url)
     }
 
     m_checkContent = url.queryItemValue("checkContent");
-
     m_literal = url.queryItemValue("literal");
-
     m_checkType = url.queryItemValue("checkType");
 
 
@@ -94,9 +111,8 @@ void FileNameSearchProtocol::listDir(const KUrl& url)
             addItem = true;
             if (!m_checkType.isEmpty()) {
                 addItem = false;
-                const QStringList types = m_checkType.split(";");
                 const KSharedPtr<KMimeType> mime = item.mimeTypePtr();
-                foreach (const QString& t, types) {
+                foreach (const QString &t, m_checkType.split(";")) {
                     if (mime->is(t)) {
                         addItem = true;
                     }

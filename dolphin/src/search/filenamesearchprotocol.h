@@ -42,6 +42,7 @@ public:
     FileNameSearchProtocol(const QByteArray &app);
     virtual ~FileNameSearchProtocol();
 
+    void stat(const KUrl &url) final;
     void listDir(const KUrl &url) final;
 
 private:
