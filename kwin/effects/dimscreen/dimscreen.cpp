@@ -28,7 +28,10 @@ DimScreenEffect::DimScreenEffect()
     , deactivateAnimation(false)
 {
     reconfigure(ReconfigureAll);
-    connect(effects, SIGNAL(windowActivated(KWin::EffectWindow*)), this, SLOT(slotWindowActivated(KWin::EffectWindow*)));
+    connect(
+        effects, SIGNAL(windowActivated(KWin::EffectWindow*)),
+        this, SLOT(slotWindowActivated(KWin::EffectWindow*))
+    );
 }
 
 DimScreenEffect::~DimScreenEffect()
@@ -83,7 +86,9 @@ void DimScreenEffect::paintWindow(EffectWindow *w, int mask, QRegion region, Win
 
 void DimScreenEffect::slotWindowActivated(EffectWindow *w)
 {
-    if (!w) return;
+    if (!w) {
+        return;
+    }
     QStringList check;
     check << "kdesu kdesu";
     check << "kdesudo kdesudo";
