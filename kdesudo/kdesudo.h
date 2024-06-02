@@ -24,15 +24,11 @@
 #include <QProcess>
 #include <QWidget>
 
-#include <kpassworddialog.h>
-#include <knewpassworddialog.h>
-
 /*
 * KdeSudo is the base class of the project
 *
 * @version 3.1
 */
-
 class KdeSudo : QObject
 {
     Q_OBJECT
@@ -40,35 +36,19 @@ public:
     KdeSudo(const QString &icon, const QString &appname);
     ~KdeSudo();
 
-private slots:
-    /**
-     * This slot gets executed if sudo creates some output
-     * -- well, in theory it should. Even though the code
-     *  seems to be doing what the API says, it doesn't
-     *  yet do what we need.
-     **/
-    void parseOutput();
-
+private Q_SLOTS:
     /**
      * This slot gets exectuted when sudo exits
      **/
     void procExited(int exitCode);
 
-    /**
-     * This slot overrides the slot from KPasswordDialog
-     * @see KPasswordDialog
-     **/
-    void pushPassword(const QString &);
-    void slotCancel();
-
 private:
     static QString validArg(QString arg);
-    void error(const QString &);
+    void error(const QString &msg);
 
     QProcess *m_process;
     bool m_error;
     QString m_tmpName;
-    KPasswordDialog *m_dialog;
 };
 
 #endif // KDESUDO_H

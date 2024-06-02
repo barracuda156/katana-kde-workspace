@@ -21,32 +21,37 @@
  *                                                                         *
  ***************************************************************************/
 
+#include "config.h"
 #include "kdesudo.h"
 
-#include <QtCore/QDataStream>
-#include <QtCore/QDir>
-#include <QtCore/QFile>
-#include <QtCore/QProcess>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
+#include <QFile>
+#include <QFileInfo>
+#include <QProcess>
+#include <QString>
+#include <QStringList>
 
+#include <kiconloader.h>
+#include <kicontheme.h>
+#include <kglobal.h>
 #include <kapplication.h>
 #include <kcmdlineargs.h>
-#include <kdebug.h>
+#include <kaboutdata.h>
 #include <klocale.h>
 #include <kmessagebox.h>
-#include <kpassworddialog.h>
-#include <kpushbutton.h>
+#include <kdesktopfile.h>
 #include <kshell.h>
 #include <kstandarddirs.h>
-#include <kwindowsystem.h>
 #include <ktemporaryfile.h>
+#include <kdebug.h>
 
 #include <sys/stat.h>
-#include <sys/types.h>
 
-#include <cstdio>
-#include <cstdlib>
+#if defined(HAVE_PR_SET_DUMPABLE)
+#  include <sys/prctl.h>
+#elif defined(HAVE_PROCCTL)
+#  include <unistd.h>
+#  include <sys/procctl.h>
+#endif
 
 KdeSudo::KdeSudo(const QString &icon, const QString &appname)
     : QObject(),
@@ -61,7 +66,6 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
     bool changeUID = true;
     QString runas = args->getOption("u");
     QString cmd;
-    bool attach = args->isSet("attach");
 
     if (!args->isSet("c") && !args->count()) {
         KMessageBox::information(
@@ -75,20 +79,7 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
         exit(0);
     }
 
-    m_dialog = new KPasswordDialog();
-    m_dialog->setDefaultButton(KDialog::Ok);
-
-    if (attach) {
-        const WId winid = args->getOption("attach").toULong();
-        KWindowSystem::setMainWindow(m_dialog, winid);
-    }
-
     m_process = new QProcess(this);
-
-    /* load the icon */
-    m_dialog->setPixmap(icon);
-
-    // Parsins args
 
     /* Get the comment out of cli args */
     QString comment = args->getOption("comment");
@@ -116,32 +107,30 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
         }
     }
 
-    connect(m_process, SIGNAL(readyReadStandardOutput()),
-            this, SLOT(parseOutput()));
-
-    connect(m_process, SIGNAL(readyReadStandardError()),
-            this, SLOT(parseOutput()));
-
-    connect(m_process, SIGNAL(finished(int)),
-            this, SLOT(procExited(int)));
-
-    connect(m_dialog, SIGNAL(gotPassword(const QString & , bool)),
-            this, SLOT(pushPassword(const QString &)));
-
-    connect(m_dialog, SIGNAL(rejected()),
-            this, SLOT(slotCancel()));
-
-    // Generate the xauth cookie and put it in a tempfile
-    // set the environment variables to reflect that.
-    // Default cookie-timeout is 60 sec. .
-    // 'man xauth' for more info on xauth cookies.
-    m_tmpName = KTemporaryFile::filePath("/tmp/kdesudo-XXXXXXXXXX-xauth");
+    connect(
+        m_process, SIGNAL(finished(int)),
+        this, SLOT(procExited(int))
+    );
 
     const QString disp = QString::fromLocal8Bit(qgetenv("DISPLAY"));
     if (disp.isEmpty()) {
         kError() << "$DISPLAY is not set.";
         exit(1);
     }
+
+    const QString kaskpass = KStandardDirs::findExe("kaskpass");
+    if (kaskpass.isEmpty()) {
+        error(i18n("Could not find kaskpass program"));
+        // no application loop yet
+        exit(1);
+        return;
+    }
+
+    // Generate the xauth cookie and put it in a tempfile
+    // set the environment variables to reflect that.
+    // Default cookie-timeout is 60 sec. .
+    // 'man xauth' for more info on xauth cookies.
+    m_tmpName = KTemporaryFile::filePath("/tmp/kdesudo-XXXXXXXXXX-xauth");
 
     // Create two processes, one for each xauth call
     QProcess xauth_ext;
@@ -184,7 +173,11 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
     processEnv.insert("LC_ALL", "C");
     processEnv.insert("DISPLAY", disp);
     processEnv.insert("XAUTHORITY", m_tmpName);
-    m_process->setProcessEnvironment(processEnv);
+    processEnv.insert("SUDO_ASKPASS", kaskpass);
+    processEnv.insert("KASKPASS_ICON", icon);
+    if (args->isSet("attach")) {
+        processEnv.insert("KASKPASS_MAINWINDOW", args->getOption("attach"));
+    }
 
     QStringList processArgs;
     {
@@ -193,8 +186,12 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
         // potentially in such a way that it uses the cached credentials of a
         // previously kdesudo run in that same scope.
         processArgs << "-k";
+        // Preserve all possible kaskpass environment variables
+        processArgs << "--preserve-env=KASKPASS_ICON,KASKPASS_MAINWINDOW,KASKPASS_LABEL0,KASKPASS_COMMENT0,KASKPASS_LABEL1,KASKPASS_COMMENT1,KASKPASS_PROMPT";
+        // Always use kaskpass
+        processArgs << "-A";
         if (changeUID) {
-            processArgs << "-H" << "-S" << "-p" << "passprompt";
+            processArgs << "-H";
 
             if (!runas.isEmpty()) {
                 processArgs << "-u" << runas;
@@ -204,8 +201,8 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
 
         if (realtime) {
             processArgs << "nice" << "-n" << "10";
-            m_dialog->addCommentLine(i18n("Priority:"), i18n("realtime:") +
-                                     QChar(' ') + QString("50/100"));
+            processEnv.insert("KASKPASS_LABEL0", i18n("Priority:"));
+            processEnv.insert("KASKPASS_COMMENT0", QString::fromLatin1("50/100"));
             processArgs << "--";
         } else if (priority) {
             QString n = args->getOption("p");
@@ -213,7 +210,8 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
             intn = (intn * 40 / 100) - (20 + 0.5);
 
             processArgs << "nice" << "-n" << QString::number(intn);
-            m_dialog->addCommentLine(i18n("Priority:"), n + QString("/100"));
+            processEnv.insert("KASKPASS_LABEL0", i18n("Priority:"));
+            processEnv.insert("KASKPASS_COMMENT0", QString::fromLatin1("%1/100").arg(n));
             processArgs << "--";
         }
 
@@ -227,9 +225,7 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
             processArgs << "sh";
             processArgs << "-c";
             processArgs << command;
-        }
-
-        else if (args->count()) {
+        } else if (args->count()) {
             for (int i = 0; i < args->count(); i++) {
                 if ((!args->isSet("c")) && (i == 0)) {
                     QStringList argsSplit = KShell::splitArgs(args->arg(i));
@@ -249,7 +245,8 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
         }
         // strcmd needs to be defined
         if (showCommand && !cmd.isEmpty()) {
-            m_dialog->addCommentLine(i18n("Command:"), cmd);
+            processEnv.insert("KASKPASS_LABEL1", i18n("Command:"));
+            processEnv.insert("KASKPASS_COMMENT1", cmd);
         }
     }
 
@@ -263,22 +260,21 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
         }
 
         if (!appname.isEmpty()) {
-            m_dialog->setPrompt(defaultComment.arg(appname));
+            processEnv.insert("KASKPASS_PROMPT", defaultComment.arg(appname));
         } else {
-            m_dialog->setPrompt(defaultComment.arg(cmd));
+            processEnv.insert("KASKPASS_PROMPT", defaultComment.arg(cmd));
         }
     } else {
-        m_dialog->setPrompt(comment);
+        processEnv.insert("KASKPASS_PROMPT", comment);
     }
 
-    m_process->setProcessChannelMode(QProcess::MergedChannels);
+    m_process->setProcessEnvironment(processEnv);
 
     m_process->start("sudo", processArgs);
 }
 
 KdeSudo::~KdeSudo()
 {
-    delete m_dialog;
     if (m_process) {
         m_process->terminate();
         m_process->waitForFinished(3000);
@@ -295,58 +291,11 @@ void KdeSudo::error(const QString &msg)
     KApplication::kApplication()->exit(1);
 }
 
-void KdeSudo::parseOutput()
-{
-    QString strOut = m_process->readAllStandardOutput();
-
-    static int badpass = 0;
-
-    if (strOut.contains("try again")) {
-        badpass++;
-        if (badpass == 1) {
-            m_dialog->addCommentLine(i18n("<b>Warning: </b>"), i18n("<b>Incorrect password, please try again.</b>"));
-            m_dialog->show();
-        } else if (badpass == 2) {
-            m_dialog->show();
-        } else {
-            error(i18n("Wrong password! Exiting..."));
-        }
-    // NOTE: "command not found" comes from `sudo` while "No such file or directory" comes from
-    // either `nice` or `dbus-run-session`
-    } else if (strOut.contains("command not found") || strOut.contains("No such file or directory")) {
-        error(i18n("Command not found!"));
-    } else if (strOut.contains("is not in the sudoers file")) {
-        error(i18n("Your username is unknown to sudo!"));
-    } else if (strOut.contains("is not allowed to execute")) {
-        error(i18n("Your user is not allowed to run the specified command!"));
-    } else if (strOut.contains("is not allowed to run sudo on")) {
-        error(i18n("Your user is not allowed to run sudo on this host!"));
-    } else if (strOut.contains("may not run sudo on")) {
-        error(i18n("Your user is not allowed to run sudo on this host!"));
-    } else if (strOut.contains("passprompt") || strOut.contains("PIN (CHV2)")) {
-        m_dialog->setPassword(QString());
-        m_dialog->show();
-    } else {
-        const QByteArray bytesOut = strOut.toLocal8Bit();
-        fprintf(stdout, "%s", bytesOut.constData());
-    }
-}
-
 void KdeSudo::procExited(int exitCode)
 {
     if (!m_error) {
         KApplication::kApplication()->exit(exitCode);
     }
-}
-
-void KdeSudo::pushPassword(const QString &pwd)
-{
-    m_process->write(pwd.toLocal8Bit() + "\n");
-}
-
-void KdeSudo::slotCancel()
-{
-    KApplication::kApplication()->exit(1);
 }
 
 QString KdeSudo::validArg(QString arg)
@@ -359,4 +308,109 @@ QString KdeSudo::validArg(QString arg)
         arg = arg.remove(arg.length() - 1, 1);
     }
     return arg;
+}
+
+int main(int argc, char **argv)
+{
+    // Disable tracing to prevent arbitrary apps reading password out of memory.
+#if defined(HAVE_PR_SET_DUMPABLE)
+    prctl(PR_SET_DUMPABLE, 0);
+#elif defined(HAVE_PROCCTL)
+    int ctldata = PROC_TRACE_CTL_DISABLE;
+    procctl(P_PID, ::getpid(), PROC_TRACE_CTL, &ctldata);
+#endif
+
+    KAboutData about(
+        "kdesudo", 0, ki18n("KdeSudo"),
+        "3.4.2.3", ki18n("Sudo frontend for KDE"),
+        KAboutData::License_GPL,
+        ki18n("(C) 2007 - 2008 Anthony Mercatante")
+    );
+
+    about.addAuthor(ki18n("Robert Gruber"), KLocalizedString(),
+                    "rgruber@users.sourceforge.net", "http://test.com");
+    about.addAuthor(ki18n("Anthony Mercatante"), KLocalizedString(),
+                    "tonio@ubuntu.com");
+    about.addAuthor(ki18n("Martin Böhm"), KLocalizedString(),
+                    "martin.bohm@kubuntu.org");
+    about.addAuthor(ki18n("Jonathan Riddell"), KLocalizedString(),
+                    "jriddell@ubuntu.com");
+    about.addAuthor(ki18n("Harald Sitter"), KLocalizedString(),
+                    "apachelogger@ubuntu.com");
+
+    KCmdLineArgs::init(argc, argv, &about);
+
+    KCmdLineOptions options;
+    options.add("u <runas>", ki18n("sets a runas user"));
+    options.add("c <command>", ki18n("The command to execute"));
+    options.add("i <icon name>", ki18n("Specify icon to use in the password dialog"));
+    options.add("d", ki18n("Do not show the command to be run in the dialog"));
+    options.add("p <priority>", ki18n("Process priority, between 0 and 100, 0 the lowest [50]"));
+    options.add("r", ki18n("Use realtime scheduling"));
+    options.add("f <file>", ki18n("Use target UID if <file> is not writeable"));
+    options.add("nodbus", ki18n("Do not start a message bus"));
+    options.add("comment <dialog text>", ki18n("The comment that should be "
+                "displayed in the dialog"));
+    options.add("attach <winid>", ki18n("Makes the dialog transient for an X app specified by winid"));
+    options.add("desktop <desktop file>", ki18n("Manual override for automatic desktop file detection"));
+
+    options.add("+command", ki18n("The command to execute"));
+
+    KCmdLineArgs::addCmdLineOptions(options);
+    KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+
+    KApplication a;
+    a.disableSessionManagement();
+
+    QString executable;
+    QStringList executableList;
+    KDesktopFile *desktopFile = nullptr;
+
+    if (args->isSet("c")) {
+        executable = args->getOption("c");
+    }
+
+    if (args->count() && executable.isEmpty()) {
+        QString command = args->arg(0);
+        QStringList commandlist = command.split(" ");
+        executable = commandlist[0];
+    }
+
+    /* Have to make sure the executable is only the binary name */
+    executableList = executable.split(" ");
+    executable = executableList[0];
+
+    executableList = executable.split("/");
+    executable = executableList[executableList.count() - 1];
+
+    /* Kubuntu has a bug in it - this is a workaround for it */
+    KGlobal::dirs()->addResourceDir("apps", "/usr/share/applications/kde4");
+    KGlobal::dirs()->addResourceDir("apps", "/usr/share/kde4/services");
+    KGlobal::dirs()->addResourceDir("apps", "/usr/share/applications");
+
+    QString path = getenv("PATH");
+    QStringList pathList = path.split(":");
+    for (int i = 0; i < pathList.count(); i++) {
+        executable.remove(pathList[i]);
+    }
+
+    if (args->isSet("desktop")) {
+        desktopFile = new KDesktopFile(args->getOption("desktop"));
+    } else {
+        desktopFile = new KDesktopFile(executable + ".desktop");
+    }
+
+    /* icon parsing */
+    QString icon;
+    if (args->isSet("i")) {
+        icon = args->getOption("i");
+    } else {
+        QString iconName = desktopFile->readIcon();
+        KIconLoader *loader = KIconLoader::global();
+        icon = loader->iconPath(iconName, -1 * KIconLoader::StdSizes(KIconLoader::SizeHuge), true);
+    }
+
+    a.setQuitOnLastWindowClosed(false);
+    KdeSudo kdesudo(icon, desktopFile->readName());
+    return a.exec();
 }
