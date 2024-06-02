@@ -284,6 +284,9 @@ KdeSudo::~KdeSudo()
         m_process->terminate();
         m_process->waitForFinished(3000);
     }
+    if (!m_tmpName.isEmpty()) {
+        QFile::remove(m_tmpName);
+    }
 }
 
 void KdeSudo::error(const QString &msg)
@@ -333,9 +336,6 @@ void KdeSudo::parseOutput()
 void KdeSudo::procExited(int exitCode)
 {
     if (!m_error) {
-        if (!m_tmpName.isEmpty()) {
-            QFile::remove(m_tmpName);
-        }
         KApplication::kApplication()->exit(exitCode);
     }
 }
