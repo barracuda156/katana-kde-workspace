@@ -24,9 +24,16 @@ namespace KWin
 
 DimScreenEffect::DimScreenEffect()
     : mActivated(false)
-    , activateAnimation(false)
-    , deactivateAnimation(false)
+    , mActivateAnimation(false)
+    , mDeactivateAnimation(false)
+    , mWindow(nullptr)
 {
+    mCheck << "kdesu kdesu";
+    mCheck << "kdesudo kdesudo";
+    mCheck << "polkit-kde-manager polkit-kde-manager";
+    mCheck << "polkit-kde-authentication-agent-1 polkit-kde-authentication-agent-1";
+    mCheck << "pinentry pinentry";
+
     reconfigure(ReconfigureAll);
     connect(
         effects, SIGNAL(windowActivated(KWin::EffectWindow*)),
@@ -34,42 +41,43 @@ DimScreenEffect::DimScreenEffect()
     );
 }
 
-DimScreenEffect::~DimScreenEffect()
-{
-}
-
 void DimScreenEffect::reconfigure(ReconfigureFlags)
 {
-    timeline.setDuration(animationTime(250));
+    mTimeline.setDuration(animationTime(250));
 }
 
 void DimScreenEffect::prePaintScreen(ScreenPrePaintData& data, int time)
 {
-    if (mActivated && activateAnimation && !effects->activeFullScreenEffect())
-        timeline.setCurrentTime(timeline.currentTime() + time);
-    if (mActivated && deactivateAnimation)
-        timeline.setCurrentTime(timeline.currentTime() - time);
-    if (mActivated && effects->activeFullScreenEffect())
-        timeline.setCurrentTime(timeline.currentTime() - time);
-    if (mActivated && !activateAnimation && !deactivateAnimation && !effects->activeFullScreenEffect() && timeline.currentValue() != 1.0)
-        timeline.setCurrentTime(timeline.currentTime() + time);
+    if (mActivated && mActivateAnimation && !effects->activeFullScreenEffect()) {
+        mTimeline.setCurrentTime(mTimeline.currentTime() + time);
+    }
+    if (mActivated && mDeactivateAnimation) {
+        mTimeline.setCurrentTime(mTimeline.currentTime() - time);
+    }
+    if (mActivated && effects->activeFullScreenEffect()) {
+        mTimeline.setCurrentTime(mTimeline.currentTime() - time);
+    }
+    if (mActivated && !mActivateAnimation && !mDeactivateAnimation &&
+        !effects->activeFullScreenEffect() && mTimeline.currentValue() != 1.0) {
+        mTimeline.setCurrentTime(mTimeline.currentTime() + time);
+    }
     effects->prePaintScreen(data, time);
 }
 
 void DimScreenEffect::postPaintScreen()
 {
     if (mActivated) {
-        if (activateAnimation && timeline.currentValue() == 1.0) {
-            activateAnimation = false;
+        if (mActivateAnimation && mTimeline.currentValue() == 1.0) {
+            mActivateAnimation = false;
             effects->addRepaintFull();
         }
-        if (deactivateAnimation && timeline.currentValue() == 0.0) {
-            deactivateAnimation = false;
+        if (mDeactivateAnimation && mTimeline.currentValue() == 0.0) {
+            mDeactivateAnimation = false;
             mActivated = false;
             effects->addRepaintFull();
         }
         // still animating
-        if (timeline.currentValue() > 0.0 && timeline.currentValue() < 1.0)
+        if (mTimeline.currentValue() > 0.0 && mTimeline.currentValue() < 1.0)
             effects->addRepaintFull();
     }
     effects->postPaintScreen();
@@ -77,9 +85,9 @@ void DimScreenEffect::postPaintScreen()
 
 void DimScreenEffect::paintWindow(EffectWindow *w, int mask, QRegion region, WindowPaintData &data)
 {
-    if (mActivated && (w != window) && w->isManaged()) {
-        data.multiplyBrightness((1.0 - 0.33 * timeline.currentValue()));
-        data.multiplySaturation((1.0 - 0.33 * timeline.currentValue()));
+    if (mActivated && (w != mWindow) && w->isManaged()) {
+        data.multiplyBrightness((1.0 - 0.33 * mTimeline.currentValue()));
+        data.multiplySaturation((1.0 - 0.33 * mTimeline.currentValue()));
     }
     effects->paintWindow(w, mask, region, data);
 }
@@ -89,22 +97,16 @@ void DimScreenEffect::slotWindowActivated(EffectWindow *w)
     if (!w) {
         return;
     }
-    QStringList check;
-    check << "kdesu kdesu";
-    check << "kdesudo kdesudo";
-    check << "polkit-kde-manager polkit-kde-manager";
-    check << "polkit-kde-authentication-agent-1 polkit-kde-authentication-agent-1";
-    check << "pinentry pinentry";
-    if (check.contains(w->windowClass())) {
+    if (mCheck.contains(w->windowClass())) {
         mActivated = true;
-        activateAnimation = true;
-        deactivateAnimation = false;
-        window = w;
+        mActivateAnimation = true;
+        mDeactivateAnimation = false;
+        mWindow = w;
         effects->addRepaintFull();
     } else {
         if (mActivated) {
-            activateAnimation = false;
-            deactivateAnimation = true;
+            mActivateAnimation = false;
+            mDeactivateAnimation = true;
             effects->addRepaintFull();
         }
     }

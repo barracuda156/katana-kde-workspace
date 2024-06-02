@@ -33,7 +33,6 @@ class DimScreenEffect
     Q_OBJECT
 public:
     DimScreenEffect();
-    ~DimScreenEffect();
 
     void reconfigure(ReconfigureFlags) final;
     void prePaintScreen(ScreenPrePaintData& data, int time) final;
@@ -46,10 +45,11 @@ public Q_SLOTS:
 
 private:
     bool mActivated;
-    bool activateAnimation;
-    bool deactivateAnimation;
-    QTimeLine timeline;
-    EffectWindow* window;
+    bool mActivateAnimation;
+    bool mDeactivateAnimation;
+    QTimeLine mTimeline;
+    EffectWindow* mWindow;
+    QStringList mCheck;
 };
 
 } // namespace
