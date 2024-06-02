@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>KWin::DimScreenEffectConfigForm</class>
+ <widget class="QWidget" name="KWin::DimScreenEffectConfigForm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>298</width>
+    <height>161</height>
+   </rect>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0" colspan="1">
+    <widget class="QLabel" name="windowClassesLabel">
+     <property name="text">
+      <string>&amp;Window Classes:</string>
+     </property>
+     <property name="buddy">
+      <cstring>kcfg_WindowClasses</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="1">
+    <widget class="KLineEdit" name="kcfg_WindowClasses">
+     <property name="placeholderText">
+      <string>Apply effect to the win&amp;dow classes</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>kcfg_WindowClasses</tabstop>
+ </tabstops>
+ <connections/>
+</ui>
