@@ -61,7 +61,6 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
     bool changeUID = true;
     QString runas = args->getOption("u");
     QString cmd;
-    int winid = -1;
     bool attach = args->isSet("attach");
 
     if (!args->isSet("c") && !args->count()) {
@@ -80,8 +79,8 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
     m_dialog->setDefaultButton(KDialog::Ok);
 
     if (attach) {
-        winid = args->getOption("attach").toInt(&attach, 0);
-        KWindowSystem::setMainWindow(m_dialog, (WId)winid);
+        const WId winid = args->getOption("attach").toULong();
+        KWindowSystem::setMainWindow(m_dialog, winid);
     }
 
     m_process = new QProcess(this);
