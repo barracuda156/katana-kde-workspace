@@ -21,12 +21,8 @@
 #ifndef KDESUDO_H
 #define KDESUDO_H
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include <QtCore/QProcess>
-#include <QtGui/QWidget>
+#include <QProcess>
+#include <QWidget>
 
 #include <kpassworddialog.h>
 #include <knewpassworddialog.h>
@@ -36,9 +32,6 @@
 *
 * @version 3.1
 */
-
-/* buffer is used when reading from the QProcess child */
-#define BUFSIZE 1024
 
 class KdeSudo : QObject
 {
