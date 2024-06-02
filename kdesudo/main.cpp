@@ -77,19 +77,16 @@ int main(int argc, char **argv)
     KCmdLineOptions options;
     options.add("u <runas>", ki18n("sets a runas user"));
     options.add("c <command>", ki18n("The command to execute"));
-    options.add("i <icon name>", ki18n("Specify icon to use in the password"
-                                       " dialog"));
+    options.add("i <icon name>", ki18n("Specify icon to use in the password dialog"));
     options.add("d", ki18n("Do not show the command to be run in the dialog"));
-    options.add("p <priority>", ki18n("Process priority, between 0 and 100,"
-                                      " 0 the lowest [50]"));
+    options.add("p <priority>", ki18n("Process priority, between 0 and 100, 0 the lowest [50]"));
     options.add("r", ki18n("Use realtime scheduling"));
     options.add("f <file>", ki18n("Use target UID if <file> is not writeable"));
     options.add("nodbus", ki18n("Do not start a message bus"));
     options.add("comment <dialog text>", ki18n("The comment that should be "
                 "displayed in the dialog"));
     options.add("attach <winid>", ki18n("Makes the dialog transient for an X app specified by winid"));
-    options.add("desktop <desktop file>", ki18n("Manual override for "
-                "automatic desktop file detection"));
+    options.add("desktop <desktop file>", ki18n("Manual override for automatic desktop file detection"));
 
     options.add("+command", ki18n("The command to execute"));
 
@@ -99,9 +96,9 @@ int main(int argc, char **argv)
     KApplication a;
     a.disableSessionManagement();
 
-    QString executable, icon;
-    QStringList executableList, commandlist;
-    KDesktopFile *desktopFile;
+    QString executable;
+    QStringList executableList;
+    KDesktopFile *desktopFile = nullptr;
 
     if (args->isSet("c")) {
         executable = args->getOption("c");
@@ -109,7 +106,7 @@ int main(int argc, char **argv)
 
     if (args->count() && executable.isEmpty()) {
         QString command = args->arg(0);
-        commandlist = command.split(" ");
+        QStringList commandlist = command.split(" ");
         executable = commandlist[0];
     }
 
@@ -138,19 +135,16 @@ int main(int argc, char **argv)
     }
 
     /* icon parsing */
+    QString icon;
     if (args->isSet("i")) {
         icon = args->getOption("i");
     } else {
         QString iconName = desktopFile->readIcon();
         KIconLoader *loader = KIconLoader::global();
-        icon = loader->iconPath(iconName, -1 * KIconLoader::StdSizes(
-                                    KIconLoader::SizeHuge), true);
+        icon = loader->iconPath(iconName, -1 * KIconLoader::StdSizes(KIconLoader::SizeHuge), true);
     }
 
-    /* generic name parsing */
-    QString name = desktopFile->readName();
-
     a.setQuitOnLastWindowClosed(false);
-    KdeSudo kdesudo(icon, name);
+    KdeSudo kdesudo(icon, desktopFile->readName());
     return a.exec();
 }
