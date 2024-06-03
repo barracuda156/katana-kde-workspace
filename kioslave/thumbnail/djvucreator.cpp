@@ -125,5 +125,5 @@ bool DjVuCreator::create(const QString &path, int width, int height, QImage &img
 
 ThumbCreator::Flags DjVuCreator::flags() const
 {
-    return ThumbCreator::Flags(ThumbCreator::DrawFrame | ThumbCreator::BlendIcon);
+    return ThumbCreator::Flags(ThumbCreator::DrawFrame);
 }

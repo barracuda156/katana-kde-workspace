@@ -31,8 +31,7 @@
 // kdelibs/kio/kio/previewjob.cpp
 enum PreviewDefaults {
     MaxLocalSize = 20, // 20 MB
-    MaxRemoteSize = 5, // 5 MB
-    IconAlpha = 125
+    MaxRemoteSize = 5  // 5 MB
 };
 
 class ThumbCreator;
@@ -47,7 +46,6 @@ public:
 
 protected:
     ThumbCreator* getThumbCreator(const QString& plugin);
-    const QImage getIcon();
     bool isOpaque(const QImage &image) const;
     void drawPictureFrame(QPainter *painter, const QPoint &pos, const QImage &image,
                           int frameWidth, QSize imageTargetSize) const;
@@ -76,15 +74,10 @@ private:
     bool drawSubThumbnail(QPainter& p, const QString& filePath, int width, int height,
                           int xPos, int yPos, int frameWidth);
 private:
-    QString m_mimeType;
     int m_width;
     int m_height;
-    int m_iconSize;
-    int m_iconAlpha;
     // Thumbnail creators
     QHash<QString, ThumbCreator*> m_creators;
-    // transparent icon cache
-    QHash<QString, QImage> m_iconDict;
     QStringList m_enabledPlugins;
     QSet<QString> m_propagationDirectories;
     QString m_thumbBasePath;

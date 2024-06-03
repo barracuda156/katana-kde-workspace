@@ -59,11 +59,8 @@
 #include <iostream>
 
 // Recognized metadata entries:
-// mimeType     - the mime type of the file, used for the overlay icon if any
 // width        - maximum width for the thumbnail
 // height       - maximum height for the thumbnail
-// iconSize     - the size of the overlay icon to use if any
-// iconAlpha    - the transparency value used for icon overlays
 // plugin       - the name of the plugin library to be used for thumbnail creation.
 //                Provided by the application to save an addition KTrader
 //                query here.
@@ -105,63 +102,55 @@ int main(int argc, char **argv)
 
 ThumbnailProtocol::ThumbnailProtocol(const QByteArray &app)
     : SlaveBase("thumbnail", app),
-      m_iconSize(0),
-      m_maxFileSize(0)
+    m_maxFileSize(0)
 {
-
 }
 
 ThumbnailProtocol::~ThumbnailProtocol()
 {
-    qDeleteAll( m_creators );
+    qDeleteAll(m_creators);
     m_creators.clear();
 }
 
 void ThumbnailProtocol::get(const KUrl &url)
 {
-    m_mimeType = metaData("mimeType");
-    kDebug(7115) << "Wanting MIME Type:" << m_mimeType;
+    const QString mimeType = metaData("mimeType");
+    kDebug(7115) << "Wanting MIME Type:" << mimeType;
 
-    if (m_mimeType.isEmpty()) {
+    if (mimeType.isEmpty()) {
         error(KIO::ERR_INTERNAL, i18n("No MIME Type specified."));
         return;
     }
 
     m_width = metaData("width").toInt();
     m_height = metaData("height").toInt();
-    int iconSize = metaData("iconSize").toInt();
 
     if (m_width < 0 || m_height < 0) {
         error(KIO::ERR_INTERNAL, i18n("No or invalid size specified."));
         return;
     }
 
-    if (!iconSize) {
-        iconSize = KIconLoader::global()->currentSize(KIconLoader::Desktop);
+    QString plugin = metaData("plugin");
+    if (plugin.isEmpty() && mimeType == QLatin1String("inode/directory")) {
+        // the directorythumbnail plugin is builtin
+        plugin = QLatin1String("directorythumbnail");
     }
-    if (iconSize != m_iconSize) {
-        m_iconDict.clear();
-    }
-    m_iconSize = iconSize;
 
-    m_iconAlpha = metaData("iconAlpha").toInt();
+    if (plugin.isEmpty()) {
+        error(KIO::ERR_INTERNAL, i18n("No plugin specified."));
+        return;
+    }
 
     QImage img;
     ThumbCreator::Flags flags = ThumbCreator::None;
 
-    QString plugin = metaData("plugin");
-    if ((plugin.isEmpty() || plugin == "directorythumbnail") && m_mimeType == "inode/directory") {
+    if (plugin == QLatin1String("directorythumbnail")) {
         img = thumbForDirectory(url);
-        if(img.isNull()) {
+        if (img.isNull()) {
             error(KIO::ERR_INTERNAL, i18n("Cannot create thumbnail for directory"));
             return;
         }
     } else {
-        if (plugin.isEmpty()) {
-            error(KIO::ERR_INTERNAL, i18n("No plugin specified."));
-            return;
-        }
-
         ThumbCreator* creator = getThumbCreator(plugin);
         if(!creator) {
             error(KIO::ERR_INTERNAL, i18n("Cannot load ThumbCreator %1", plugin));
@@ -192,24 +181,6 @@ void ThumbnailProtocol::get(const KUrl &url)
         p.end();
     }
 
-    if ((flags & ThumbCreator::BlendIcon) && KIconLoader::global()->alphaBlending(KIconLoader::Desktop)) {
-        // blending the mimetype icon in
-        QImage icon = getIcon();
-        const qreal widthratio = (qreal(img.width()) / icon.width());
-        const qreal heightratio = (qreal(img.height()) / icon.height());
-        // but only if it will not cover too much of the thumbnail
-        if (widthratio >= s_iconratio && heightratio >= s_iconratio) {
-
-            int x = img.width() - icon.width() - 4;
-            x = qMax( x, 0 );
-            int y = img.height() - icon.height() - 6;
-            y = qMax( y, 0 );
-            QPainter p(&img);
-            p.setOpacity(m_iconAlpha/255.0);
-            p.drawImage(x, y, icon);
-        }
-    }
-
     if (img.isNull()) {
         error(KIO::ERR_INTERNAL, i18n("Failed to create a thumbnail."));
         return;
@@ -221,14 +192,14 @@ void ThumbnailProtocol::get(const KUrl &url)
     finished();
 }
 
-QString ThumbnailProtocol::pluginForMimeType(const QString& mimeType) {
-    KService::List offers = KMimeTypeTrader::self()->query( mimeType, QLatin1String("ThumbCreator"));
+QString ThumbnailProtocol::pluginForMimeType(const QString &mimeType) {
+    KService::List offers = KMimeTypeTrader::self()->query(mimeType, QLatin1String("ThumbCreator"));
     if (!offers.isEmpty()) {
         const KService::Ptr serv = offers.first();
         return serv->library();
     }
 
-    //Match group mimetypes
+    // Match group mimetypes
     ///@todo Move this into some central location together with the related matching code in previewjob.cpp. This doesn't handle inheritance and such
     const KService::List plugins = KServiceTypeTrader::self()->query("ThumbCreator");
     foreach(KService::Ptr plugin, plugins) {
@@ -334,12 +305,8 @@ QImage ThumbnailProtocol::thumbForDirectory(const KUrl& directory)
 
     //Use the current (custom) folder icon
     KUrl tempDirectory = directory;
-    tempDirectory.setScheme("file"); //iconNameForUrl will not work with the "thumbnail:/" scheme
-    QString iconName = KMimeType::iconNameForUrl(tempDirectory, S_IFDIR);
-
-    const QPixmap folder = KIconLoader::global()->loadMimeTypeIcon(iconName,
-                                                                   KIconLoader::Desktop,
-                                                                   qMin(m_width, m_height));
+    tempDirectory.setScheme("file"); // KMimeType will not work with the "thumbnail:/" scheme
+    const QPixmap folder = KIO::pixmapForUrl(tempDirectory, KIconLoader::Desktop, qMin(m_width, m_height));
     const int folderWidth  = folder.width();
     const int folderHeight = folder.height();
 
@@ -516,21 +483,6 @@ ThumbCreator* ThumbnailProtocol::getThumbCreator(const QString& plugin)
     }
 
     return creator;
-}
-
-
-const QImage ThumbnailProtocol::getIcon()
-{
-    ///@todo Can we really do this? It doesn't seem to respect the size
-    if (!m_iconDict.contains(m_mimeType)) { // generate it
-        QImage icon( KIconLoader::global()->loadMimeTypeIcon( KMimeType::mimeType(m_mimeType)->iconName(), KIconLoader::Desktop, m_iconSize ).toImage() );
-        icon = icon.convertToFormat(QImage::Format_ARGB32);
-        m_iconDict.insert(m_mimeType, icon);
-
-        return icon;
-    }
-
-    return m_iconDict.value(m_mimeType);
 }
 
 bool ThumbnailProtocol::createSubThumbnail(QImage& thumbnail, const QString& filePath,

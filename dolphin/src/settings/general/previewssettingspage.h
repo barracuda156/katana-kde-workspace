@@ -64,7 +64,6 @@ private:
     QStringList m_enabledPreviewPlugins;
     KIntNumInput* m_localFileSizeBox;
     KIntNumInput* m_remoteFileSizeBox;
-    KIntNumInput* m_iconAlphaBox;
 };
 
 #endif
