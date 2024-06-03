@@ -416,7 +416,7 @@ KStandardItemListWidget::Layout KStandardItemListWidget::layout() const
 
 void KStandardItemListWidget::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
-    const_cast<KStandardItemListWidget*>(this)->triggerCacheRefreshing();
+    triggerCacheRefreshing();
 
     KItemListWidget::paint(painter, option, widget);
 
