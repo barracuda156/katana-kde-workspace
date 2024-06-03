@@ -240,7 +240,7 @@ static QByteArray contentForDirectory(const QString &path, const QString &basedi
     data.append(sheetForContent());
     data.append("  <form action=\"/kdirsharesearch.html\">\n");
     data.append("    <label for=\"match\">Search for:</label>\n");
-    data.append("    <input type=\"text\" name=\"match\" value=\"\">\n");
+    data.append("    <input type=\"text\" id=\"match\" name=\"match\" value=\"\">\n");
     data.append("    <input type=\"submit\" value=\"Search\">\n");
     data.append("  </form>\n");
     data.append("  <body>\n");
