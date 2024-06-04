@@ -732,7 +732,7 @@ void PresentWindowsEffect::grabbedKeyboardEvent(QKeyEvent *e)
             }
             break;
         case 0:
-            return; // HACK: Workaround for Qt bug on unbound keys (#178547)
+            return; // HACK: Workaround for unbound keys (#178547)
         default:
             if (!e->text().isEmpty()) {
                 m_windowFilter.append(e->text());
