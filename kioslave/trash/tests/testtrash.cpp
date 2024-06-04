@@ -122,11 +122,14 @@ static void removeDirRecursive( const QString& dir )
         KFileItemList fileItemList;
         fileItemList.append( fileItem );
         KIO::ChmodJob* chmodJob = KIO::chmod( fileItemList, 0200, 0200, QString(), QString(), true /*recursive*/, KIO::HideProgressInfo );
-        KIO::NetAccess::synchronousRun( chmodJob, 0 );
+        if (!KIO::NetAccess::synchronousRun(chmodJob, 0)) {
+            kFatal() << "Couldn't chmod " << dir << KIO::NetAccess::lastError() << KIO::NetAccess::lastErrorString();
+        }
 
         KIO::Job* delJob = KIO::del(u, KIO::HideProgressInfo);
-        if (!KIO::NetAccess::synchronousRun(delJob, 0))
-            kFatal() << "Couldn't delete " << dir ;
+        if (!KIO::NetAccess::synchronousRun(delJob, 0)) {
+            kFatal() << "Couldn't delete " << dir << KIO::NetAccess::lastError() << KIO::NetAccess::lastErrorString();
+        }
     }
 }
 
