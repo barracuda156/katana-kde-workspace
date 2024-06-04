@@ -216,9 +216,8 @@ int MTPSlave::checkUrl(const KUrl& url, bool redirect)
             redirection(newUrl);
             
             return 1;
-        } else {
-            return 2;
         }
+        return 2;
     } else if (url.path().startsWith(QLatin1Char('/'))) {
         return 0;
     }
@@ -376,16 +375,16 @@ void MTPSlave::stat(const KUrl& url)
     QPair<void*, LIBMTP_mtpdevice_t*> pair = getPath(url.path());
     UDSEntry entry;
 
-    if (pair.first) {
         // Root
-        if (pathItems.size() < 1) {
-            entry.insert(UDSEntry::UDS_NAME, QLatin1String("mtp:///"));
-            entry.insert(UDSEntry::UDS_URL, QLatin1String("mtp:///"));
-            entry.insert(UDSEntry::UDS_FILE_TYPE, S_IFDIR );
-            entry.insert(UDSEntry::UDS_ACCESS, S_IRUSR | S_IRGRP | S_IROTH | S_IXUSR | S_IXGRP | S_IXOTH);
-            entry.insert(UDSEntry::UDS_MIME_TYPE, QLatin1String("inode/directory"));
+    if (pathItems.size() < 1) {
+        entry.insert(UDSEntry::UDS_NAME, QLatin1String("mtp:/"));
+        entry.insert(UDSEntry::UDS_URL, QLatin1String("mtp:/"));
+        entry.insert(UDSEntry::UDS_FILE_TYPE, S_IFDIR );
+        entry.insert(UDSEntry::UDS_ACCESS, S_IRUSR | S_IRGRP | S_IROTH | S_IXUSR | S_IXGRP | S_IXOTH);
+        entry.insert(UDSEntry::UDS_MIME_TYPE, QLatin1String("inode/directory"));
+    } else if (pair.first) {
         // Device
-        } else if (pathItems.size() < 2) {
+        if (pathItems.size() < 2) {
             getEntry(entry, pair.second, url.url());
         // Storage
         } else if (pathItems.size() < 3) {
