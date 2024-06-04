@@ -426,20 +426,7 @@ void KFileItemModelRolesUpdater::slotGotPreview(const KFileItem& item, const QPi
 
     QHash<QByteArray, QVariant> data = rolesData(item);
 
-    const QStringList overlays = data["iconOverlays"].toStringList();
-    // Strangely KFileItem::overlays() returns empty string-values, so
-    // we need to check first whether an overlay must be drawn at all.
-    // It is more efficient to do it here, as KIconLoader::drawOverlays()
-    // assumes that an overlay will be drawn and has some additional
-    // setup time.
-    foreach (const QString& overlay, overlays) {
-        if (!overlay.isEmpty()) {
-            // There is at least one overlay, draw all overlays above m_pixmap
-            // and cancel the check
-            KIconLoader::global()->drawOverlays(overlays, scaledPixmap, KIconLoader::Desktop);
-            break;
-        }
-    }
+    // TODO: version plugin (KVersionControlPlugin) overlays
 
     data.insert("iconPixmap", scaledPixmap);
 
@@ -911,6 +898,8 @@ QHash<QByteArray, QVariant> KFileItemModelRolesUpdater::rolesData(const KFileIte
     if (m_roles.contains("type")) {
         data.insert("type", item.mimeComment());
     }
+
+    data.insert("iconOverlays", item.overlays());
 
     return data;
 }
