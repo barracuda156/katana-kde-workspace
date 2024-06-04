@@ -252,5 +252,3 @@ NET::WindowType Workspace::txtToWindowType(const char* txt)
 }
 
 } // namespace
-
-#include "moc_sm.cpp"
