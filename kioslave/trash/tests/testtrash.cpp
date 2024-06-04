@@ -118,7 +118,7 @@ static void removeDirRecursive( const QString& dir )
         // Make it work even with readonly dirs, like trashReadOnlyDirFromHome() creates
         KUrl u = KUrl::fromPath( dir );
         //kDebug() << "chmod +0200 on" << u;
-        KFileItem fileItem(u, QString::fromLatin1("inode/directory"), KFileItem::Unknown);
+        KFileItem fileItem(u);
         KFileItemList fileItemList;
         fileItemList.append( fileItem );
         KIO::ChmodJob* chmodJob = KIO::chmod( fileItemList, 0200, 0200, QString(), QString(), true /*recursive*/, KIO::HideProgressInfo );
@@ -666,7 +666,7 @@ void TestTrash::statRoot()
     KIO::UDSEntry entry;
     bool ok = MyNetAccess_stat( url, entry );
     QVERIFY( ok );
-    KFileItem item( entry, url );
+    KFileItem item( entry );
     QVERIFY( item.isDir() );
     QVERIFY( !item.isLink() );
     QVERIFY( item.isReadable() );
@@ -681,7 +681,7 @@ void TestTrash::statFileInRoot()
     KIO::UDSEntry entry;
     bool ok = MyNetAccess_stat( url, entry );
     QVERIFY( ok );
-    KFileItem item( entry, url );
+    KFileItem item( entry );
     QVERIFY( item.isFile() );
     QVERIFY( !item.isDir() );
     QVERIFY( !item.isLink() );
@@ -697,7 +697,7 @@ void TestTrash::statDirectoryInRoot()
     KIO::UDSEntry entry;
     bool ok = MyNetAccess_stat( url, entry );
     QVERIFY( ok );
-    KFileItem item( entry, url );
+    KFileItem item( entry );
     QVERIFY( item.isDir() );
     QVERIFY( !item.isLink() );
     QVERIFY( item.isReadable() );
@@ -712,7 +712,7 @@ void TestTrash::statSymlinkInRoot()
     KIO::UDSEntry entry;
     bool ok = MyNetAccess_stat( url, entry );
     QVERIFY( ok );
-    KFileItem item( entry, url );
+    KFileItem item( entry );
     QVERIFY( item.isLink() );
     QCOMPARE(item.linkDest(), QString::fromLatin1("/tmp"));
     QVERIFY( item.isReadable() );
@@ -727,7 +727,7 @@ void TestTrash::statFileInDirectory()
     KIO::UDSEntry entry;
     bool ok = MyNetAccess_stat( url, entry );
     QVERIFY( ok );
-    KFileItem item( entry, url );
+    KFileItem item( entry );
     QVERIFY( item.isFile() );
     QVERIFY( !item.isLink() );
     QVERIFY( item.isReadable() );

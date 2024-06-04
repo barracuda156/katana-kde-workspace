@@ -491,7 +491,7 @@ void KFileItemModelTest::testEmptyPath()
     const KUrl url("file:///test/");
 
     KFileItemList items;
-    items << KFileItem(emptyUrl, QString(), KFileItem::Unknown) << KFileItem(url, QString(), KFileItem::Unknown);
+    items << KFileItem(emptyUrl) << KFileItem(url);
     m_model->slotItemsAdded(items);
     m_model->slotCompleted();
 }
@@ -682,16 +682,19 @@ void KFileItemModelTest::testChangeSortRoleWhileFiltering()
     entry.insert(KIO::UDSEntry::UDS_ACCESS_TIME, 0);
 
     entry.insert(KIO::UDSEntry::UDS_NAME, "a.txt");
+    entry.insert(KIO::UDSEntry::UDS_URL, m_testDir->url().url(KUrl::RemoveTrailingSlash) + "/a.txt");
     entry.insert(KIO::UDSEntry::UDS_USER, "user-b");
-    items.append(KFileItem(entry, m_testDir->url()));
+    items.append(KFileItem(entry));
 
     entry.insert(KIO::UDSEntry::UDS_NAME, "b.txt");
+    entry.insert(KIO::UDSEntry::UDS_URL, m_testDir->url().url(KUrl::RemoveTrailingSlash) + "/b.txt");
     entry.insert(KIO::UDSEntry::UDS_USER, "user-c");
-    items.append(KFileItem(entry, m_testDir->url()));
+    items.append(KFileItem(entry));
 
     entry.insert(KIO::UDSEntry::UDS_NAME, "c.txt");
+    entry.insert(KIO::UDSEntry::UDS_URL, m_testDir->url().url(KUrl::RemoveTrailingSlash) + "/c.txt");
     entry.insert(KIO::UDSEntry::UDS_USER, "user-a");
-    items.append(KFileItem(entry, m_testDir->url()));
+    items.append(KFileItem(entry));
 
     m_model->slotItemsAdded(items);
     m_model->slotCompleted();

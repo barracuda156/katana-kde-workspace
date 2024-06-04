@@ -215,8 +215,7 @@ KFileItemList KFileItemModelBenchmark::createFileItemList(const QStringList& fil
     KFileItemList result;
     foreach (const QString& name, fileNames) {
         const KUrl url(prefix + name);
-        const KFileItem item(url, QString(), KFileItem::Unknown);
-        result << item;
+        result << KFileItem(url);
     }
     return result;
 }
