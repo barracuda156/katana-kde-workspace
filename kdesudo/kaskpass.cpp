@@ -24,6 +24,7 @@
 #include <kaboutdata.h>
 #include <kpassworddialog.h>
 #include <kwindowsystem.h>
+#include <kstartupinfo.h>
 
 #include <stdio.h>
 
@@ -97,6 +98,9 @@ int main(int argc, char **argv)
     if (!prompt.isEmpty()) {
         dialog.setPrompt(kLocalString(prompt));
     }
+
+    // finish startup before showing the dialog
+    KStartupInfo::appStarted();
 
     const int result = dialog.exec();
     if (result == QDialog::Accepted) {
