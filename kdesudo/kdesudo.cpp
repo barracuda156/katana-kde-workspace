@@ -42,6 +42,7 @@
 #include <kshell.h>
 #include <kstandarddirs.h>
 #include <ktemporaryfile.h>
+#include <kstartupinfo.h>
 #include <kdebug.h>
 
 #include <sys/stat.h>
@@ -270,6 +271,9 @@ KdeSudo::KdeSudo(const QString &icon, const QString &appname)
     }
 
     m_process->setProcessEnvironment(processEnv);
+
+    // kdesudo has no window so finish startup before kaskpass shows the dialog
+    KStartupInfo::appStarted();
 
     m_process->start("sudo", processArgs);
 }
