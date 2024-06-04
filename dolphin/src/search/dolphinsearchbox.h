@@ -161,6 +161,7 @@ private:
     QToolButton* m_fromHereButton;
     QToolButton* m_everywhereButton;
     QCheckBox* m_literalBox;
+    QCheckBox* m_caseSensitiveBox;
     QToolButton* m_facetsToggleButton;
     DolphinFacetsWidget* m_facetsWidget;
 

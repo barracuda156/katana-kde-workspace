@@ -54,6 +54,7 @@ DolphinSearchBox::DolphinSearchBox(QWidget* parent) :
     m_fromHereButton(0),
     m_everywhereButton(0),
     m_literalBox(0),
+    m_caseSensitiveBox(0),
     m_facetsToggleButton(0),
     m_facetsWidget(0),
     m_searchPath(),
@@ -115,8 +116,12 @@ KUrl DolphinSearchBox::urlForSearching() const
         url.addQueryItem("checkContent", "yes");
     }
 
-    if(m_literalBox->isChecked()) {
+    if (m_literalBox->isChecked()) {
         url.addQueryItem("literal", "yes");
+    }
+
+    if (m_caseSensitiveBox->isChecked()) {
+        url.addQueryItem("caseSensitive", "yes");
     }
 
     if (!m_facetsWidget->types().isEmpty()) {
@@ -144,6 +149,7 @@ void DolphinSearchBox::fromSearchUrl(const KUrl& url)
         setSearchPath(url.queryItemValue("url"));
         m_contentButton->setChecked(url.queryItemValue("checkContent") == "yes");
         m_literalBox->setChecked(url.queryItemValue("literal") == "yes");
+        m_caseSensitiveBox->setChecked(url.queryItemValue("caseSensitive") == "yes");
     } else {
         setText(QString());
         setSearchPath(url);
@@ -290,6 +296,7 @@ void DolphinSearchBox::loadSettings()
     }
 
     m_literalBox->setChecked(SearchSettings::literal());
+    m_caseSensitiveBox->setChecked(SearchSettings::caseSensitive());
 
     m_facetsWidget->setVisible(SearchSettings::showFacetsWidget());
 }
@@ -299,6 +306,7 @@ void DolphinSearchBox::saveSettings()
     SearchSettings::setLocation(m_fromHereButton->isChecked() ? "FromHere" : "Everywhere");
     SearchSettings::setWhat(m_fileNameButton->isChecked() ? "FileName" : "Content");
     SearchSettings::setLiteral(m_literalBox->isChecked());
+    SearchSettings::setCaseSensitive(m_caseSensitiveBox->isChecked());
     SearchSettings::setShowFacetsWidget(m_facetsToggleButton->isChecked());
     SearchSettings::self()->writeConfig();
 }
@@ -370,6 +378,12 @@ void DolphinSearchBox::init()
     m_literalBox->setToolTip(i18nc("@info:tooltip", "Escape the regular expression sequence"));
     connect(m_literalBox, SIGNAL(stateChanged(int)), this, SLOT(slotConfigurationChanged()));
 
+    // Create "Case Sensitive" widget
+    m_caseSensitiveBox = new QCheckBox(this);
+    m_caseSensitiveBox->setText(i18nc("action:button", "Case-sensitive"));
+    m_caseSensitiveBox->setToolTip(i18nc("@info:tooltip", "Do not ignore the case of the pattern"));
+    connect(m_caseSensitiveBox, SIGNAL(stateChanged(int)), this, SLOT(slotConfigurationChanged()));
+
     // Create "Facets" widgets
     m_facetsToggleButton = new QToolButton(this);
     m_facetsToggleButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -391,6 +405,7 @@ void DolphinSearchBox::init()
     optionsLayout->addWidget(m_everywhereButton);
     optionsLayout->addWidget(m_separator);
     optionsLayout->addWidget(m_literalBox);
+    optionsLayout->addWidget(m_caseSensitiveBox);
     optionsLayout->addStretch(1);
     optionsLayout->addWidget(m_facetsToggleButton);
 

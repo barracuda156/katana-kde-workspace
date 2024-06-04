@@ -34,9 +34,7 @@
 
 FileNameSearchProtocol::FileNameSearchProtocol( const QByteArray &app ) :
     SlaveBase("search", app),
-    m_checkContent(""),
-    m_checkType(""),
-    m_regExp(0)
+    m_regExp(nullptr)
 {
 }
 
@@ -77,18 +75,18 @@ void FileNameSearchProtocol::listDir(const KUrl &url)
         return;
     }
 
-    m_checkContent = url.queryItemValue("checkContent");
-    m_literal = url.queryItemValue("literal");
-    m_checkType = url.queryItemValue("checkType");
-
+    bool checkContent = (url.queryItemValue("checkContent") == QLatin1String("yes"));
+    bool literal = (url.queryItemValue("literal") == QLatin1String("yes"));
+    bool caseSensitive = (url.queryItemValue("caseSensitive") == QLatin1String("yes"));
+    QString checkType = url.queryItemValue("checkType");
 
     QString search = url.queryItemValue("search");
-    if (!search.isEmpty() && m_literal == "yes") {
+    if (!search.isEmpty() && literal) {
         search = QRegExp::escape(search);
     }
 
     if (!search.isEmpty()) {
-        m_regExp = new QRegExp(search, Qt::CaseInsensitive);
+        m_regExp = new QRegExp(search, caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
     }
 
     // Get all items of the directory
@@ -109,16 +107,16 @@ void FileNameSearchProtocol::listDir(const KUrl &url)
         bool addItem = false;
         if (!m_regExp || item.name().contains(*m_regExp)) {
             addItem = true;
-            if (!m_checkType.isEmpty()) {
+            if (!checkType.isEmpty()) {
                 addItem = false;
                 const KSharedPtr<KMimeType> mime = item.mimeTypePtr();
-                foreach (const QString &t, m_checkType.split(";")) {
+                foreach (const QString &t, checkType.split(";")) {
                     if (mime->is(t)) {
                         addItem = true;
                     }
                 }
             }
-        } else if (!m_checkContent.isEmpty() && item.mimeTypePtr()->is(QLatin1String("text/plain"))) {
+        } else if (checkContent && item.mimeTypePtr()->is(QLatin1String("text/plain"))) {
             addItem = contentContainsPattern(item.url());
         }
 
