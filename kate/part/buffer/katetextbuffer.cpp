@@ -34,6 +34,10 @@
 #include <KSaveFile>
 #include <kdeversion.h>
 
+#ifdef __APPLE__
+#undef HAVE_FDATASYNC
+#endif
+
 #if 0
 #define EDIT_DEBUG kDebug()
 #else

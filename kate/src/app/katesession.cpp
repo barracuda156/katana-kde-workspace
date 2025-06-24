@@ -53,12 +53,16 @@
 #include <unistd.h>
 #include <time.h>
 
+#ifdef __APPLE__
+#undef HAVE_FDATASYNC
+#endif
+
 
 bool katesessions_compare_sessions_ptr(const KateSession::Ptr &s1, const KateSession::Ptr &s2) {
     return KStringHandler::naturalCompare(s1->sessionName(),s2->sessionName())==-1;
 }
 
-//BEGIN KateSession
+// BEGIN KateSession
 
 KateSession::KateSession (KateSessionManager *manager, const QString &fileName)
     : m_sessionFileRel (fileName)
@@ -68,7 +72,7 @@ KateSession::KateSession (KateSessionManager *manager, const QString &fileName)
     , m_writeConfig (0)
 {
   m_sessionName = QUrl::fromPercentEncoding(QFile::encodeName(fileName));
-  m_sessionName.chop(12);//.katesession==12
+  m_sessionName.chop(12); //.katesession==12
   init ();
 }
 

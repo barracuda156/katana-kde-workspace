@@ -37,6 +37,10 @@
 #include <QDir>
 #include <QApplication>
 
+#ifdef __APPLE__
+#undef HAVE_FDATASYNC
+#endif
+
 
 // swap file version header
 const static char * const swapFileVersionString = "Kate Swap File 2.0";
