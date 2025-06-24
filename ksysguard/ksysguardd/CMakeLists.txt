@@ -25,8 +25,6 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "(NetBSD|OpenBSD)")
     add_definitions(-DOSTYPE_${CMAKE_SYSTEM_NAME})
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${CMAKE_SYSTEM_NAME})
     include(${CMAKE_SYSTEM_NAME}/${CMAKE_SYSTEM_NAME}.cmake)
-else()
-    message(FATAL_ERROR "ksysguardd does not support: ${CMAKE_SYSTEM_NAME}")
 endif()
 
 ########### next target ###############
