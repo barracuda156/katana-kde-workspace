@@ -36,7 +36,7 @@
 #include <kdialog.h>
 #include <kdebug.h>
 
-#include <sys/param.h>		/* for BSD */
+#include <sys/param.h>        /* for BSD */
 
 #include <klocale.h>
 #include <kglobal.h>
@@ -62,240 +62,233 @@ static t_memsize memoryInfos[MEM_LAST_ENTRY];
 
 static QLabel *memorySizeLabels[MEM_LAST_ENTRY][2];
 
-
 K_PLUGIN_FACTORY(KCMMemoryFactory,
-		registerPlugin<KCMMemory>();
+        registerPlugin<KCMMemory>();
 )
 K_EXPORT_PLUGIN(KCMMemoryFactory("kcm_memory"))
 
 KCMMemory::KCMMemory(QWidget *parent, const QVariantList &) :
-	KCModule(KCMMemoryFactory::componentData(), parent) {
+    KCModule(KCMMemoryFactory::componentData(), parent) {
 
-	KAboutData *about = new KAboutData(I18N_NOOP("kcm_memory"), 0,
-			ki18n("KDE Panel Memory Information Control Module"),
-			0, KLocalizedString(), KAboutData::License_GPL,
-			ki18n("(c) 1998 - 2002 Helge Deller"));
+    KAboutData *about = new KAboutData(I18N_NOOP("kcm_memory"), 0,
+            ki18n("KDE Panel Memory Information Control Module"),
+            0, KLocalizedString(), KAboutData::License_GPL,
+            ki18n("(c) 1998 - 2002 Helge Deller"));
 
-	about->addAuthor(ki18n("Helge Deller"), KLocalizedString(), "deller@gmx.de");
-	setAboutData(about);
+    about->addAuthor(ki18n("Helge Deller"), KLocalizedString(), "deller@gmx.de");
+    setAboutData(about);
 
-	QString title, initial_str;
+    QString title, initial_str;
 
-	setButtons(Help);
+    setButtons(Help);
 
-	QVBoxLayout *top = new QVBoxLayout(this);
-	top->setMargin(0);
-	top->setSpacing(1);
+    QVBoxLayout *top = new QVBoxLayout(this);
+    top->setMargin(0);
+    top->setSpacing(1);
 
-	QGroupBox* informationGroup = initializeText();
-	top->addWidget(informationGroup, 1);
+    QGroupBox* informationGroup = initializeText();
+    top->addWidget(informationGroup, 1);
 
-	// Now the Graphics
-	QGroupBox* graphicsGroup = initializeCharts();
-	top->addWidget(graphicsGroup, 2);
+    // Now the Graphics
+    QGroupBox* graphicsGroup = initializeCharts();
+    top->addWidget(graphicsGroup, 2);
 
-	timer = new QTimer(this);
-	timer->start(100);
+    timer = new QTimer(this);
+    timer->start(100);
 
-	connect(timer, SIGNAL(timeout()), this, SLOT(updateDatas()));
-	
-	updateDatas();
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateDatas()));
+    
+    updateDatas();
 }
 
 KCMMemory::~KCMMemory() {
-	/* stop the timer */
-	timer->stop();
+    /* stop the timer */
+    timer->stop();
 }
 
 QString KCMMemory::quickHelp() const {
-	return i18n("This display shows you the current memory usage of your system."
-		" The values are updated on a regular basis and give you an"
-		" overview of the physical and virtual memory being used.");
+    return i18n("This display shows you the current memory usage of your system."
+        " The values are updated on a regular basis and give you an"
+        " overview of the physical and virtual memory being used.");
 }
 
 QGroupBox* KCMMemory::initializeText() {
-	QGroupBox* informationGroup = new QGroupBox(i18n("Memory"));
+    QGroupBox* informationGroup = new QGroupBox(i18n("Memory"));
 
-	QHBoxLayout *hbox = new QHBoxLayout(informationGroup);
+    QHBoxLayout *hbox = new QHBoxLayout(informationGroup);
 
-	/* stretch the left side */
-	hbox->addStretch();
+    /* stretch the left side */
+    hbox->addStretch();
 
-	QString title;
+    QString title;
 
-	//TODO Use the more smart QGridLayout !!!
+    //TODO Use the more smart QGridLayout !!!
 
-	/* first create the Informationtext-Widget */
-	QVBoxLayout *vbox = new QVBoxLayout();
-	hbox->addLayout(vbox);
-	vbox->setSpacing(0);
-	for (int i = TOTAL_MEM; i < MEM_LAST_ENTRY; ++i) {
-		switch (i) {
-		case TOTAL_MEM:
-			title = i18n("Total physical memory:");
-			break;
-		case FREE_MEM:
-			title = i18n("Free physical memory:");
-			break;
+    /* first create the Informationtext-Widget */
+    QVBoxLayout *vbox = new QVBoxLayout();
+    hbox->addLayout(vbox);
+    vbox->setSpacing(0);
+    for (int i = TOTAL_MEM; i < MEM_LAST_ENTRY; ++i) {
+        switch (i) {
+        case TOTAL_MEM:
+            title = i18n("Total physical memory:");
+            break;
+        case FREE_MEM:
+            title = i18n("Free physical memory:");
+            break;
 #if !defined(Q_OS_SOLARIS) && !defined(Q_OS_NETBSD) && !defined(Q_OS_OPENBSD)
-		case SHARED_MEM:
-			title = i18n("Shared memory:");
-			break;
-		case BUFFER_MEM:
-			title = i18n("Disk buffers:");
-			break;
+        case SHARED_MEM:
+            title = i18n("Shared memory:");
+            break;
+        case BUFFER_MEM:
+            title = i18n("Disk buffers:");
+            break;
 #else
-			case ACTIVE_MEM:
-			title = i18n("Active memory:");
-			break;
-			case INACTIVE_MEM:
-			title = i18n("Inactive memory:");
-			break;
+            case ACTIVE_MEM:
+            title = i18n("Active memory:");
+            break;
+            case INACTIVE_MEM:
+            title = i18n("Inactive memory:");
+            break;
 #endif
-		case CACHED_MEM:
-			title = i18n("Disk cache:");
-			break;
-		case SWAP_MEM:
-			vbox->addSpacing(SPACING);
-			title = i18n("Total swap memory:");
-			break;
-		case FREESWAP_MEM:
-			title = i18n("Free swap memory:");
-			break;
-		default:
-			title = "";
-			break;
-		};
-		QLabel* labelWidget = new QLabel(title, this);
-		labelWidget->setTextInteractionFlags(Qt::TextSelectableByMouse);
-		labelWidget->setAlignment(Qt::AlignLeft);
-		vbox->addWidget(labelWidget);
-	}
+        case CACHED_MEM:
+            title = i18n("Disk cache:");
+            break;
+        case SWAP_MEM:
+            vbox->addSpacing(SPACING);
+            title = i18n("Total swap memory:");
+            break;
+        case FREESWAP_MEM:
+            title = i18n("Free swap memory:");
+            break;
+        default:
+            title = "";
+            break;
+        };
+        QLabel* labelWidget = new QLabel(title, this);
+        labelWidget->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        labelWidget->setAlignment(Qt::AlignLeft);
+        vbox->addWidget(labelWidget);
+    }
 
-	vbox->addStretch();
+    vbox->addStretch();
 
-	/* then the memory-content-widgets */
-	for (int j = 0; j < 2; j++) {
-		vbox = new QVBoxLayout();
-		hbox->addLayout(vbox);
-		vbox->setSpacing(0);
-		for (int i = TOTAL_MEM; i < MEM_LAST_ENTRY; ++i) {
-			if (i == SWAP_MEM)
-				vbox->addSpacing(SPACING);
-			QLabel* labelWidget = new QLabel(this);
-			labelWidget->setTextInteractionFlags(Qt::TextSelectableByMouse);
-			labelWidget->setAlignment(Qt::AlignRight);
-			memorySizeLabels[i][j] = labelWidget;
-			vbox->addWidget(labelWidget);
-		}
+    /* then the memory-content-widgets */
+    for (int j = 0; j < 2; j++) {
+        vbox = new QVBoxLayout();
+        hbox->addLayout(vbox);
+        vbox->setSpacing(0);
+        for (int i = TOTAL_MEM; i < MEM_LAST_ENTRY; ++i) {
+            if (i == SWAP_MEM)
+                vbox->addSpacing(SPACING);
+            QLabel* labelWidget = new QLabel(this);
+            labelWidget->setTextInteractionFlags(Qt::TextSelectableByMouse);
+            labelWidget->setAlignment(Qt::AlignRight);
+            memorySizeLabels[i][j] = labelWidget;
+            vbox->addWidget(labelWidget);
+        }
 
-		vbox->addStretch();
+        vbox->addStretch();
+    }
 
-	}
+    /* stretch the right side */
+    hbox->addStretch();
 
-	/* stretch the right side */
-	hbox->addStretch();
-
-	return informationGroup;
-
+    return informationGroup;
 }
 
 QGroupBox* KCMMemory::initializeCharts() {
-	QGroupBox* chartsGroup = new QGroupBox(i18n("Charts"));
+    QGroupBox* chartsGroup = new QGroupBox(i18n("Charts"));
 
-	QHBoxLayout* chartsLayout = new QHBoxLayout(chartsGroup);
-	chartsLayout->setSpacing(1);
-	chartsLayout->setMargin(1);
+    QHBoxLayout* chartsLayout = new QHBoxLayout(chartsGroup);
+    chartsLayout->setSpacing(1);
+    chartsLayout->setMargin(1);
 
-	//chartsLayout->addStretch(1);
-
-
-	
-	totalMemory = new ChartWidget(i18n("Total Memory"), 
-			i18n("This graph gives you an overview of the "
-			"<b>total sum of physical and virtual memory</b> "
-			"in your system."), 
-			new TotalMemoryChart(this), this);
-	
-	chartsLayout->addWidget(totalMemory);
-	chartsLayout->addSpacing(SPACING);
+    //chartsLayout->addStretch(1);
 
 
-	physicalMemory = new ChartWidget(i18n("Physical Memory"), 
-			i18n("This graph gives you an overview of "
-					"the <b>usage of physical memory</b> in your system."
-					"<p>Most operating systems (including Linux) "
-					"will use as much of the available physical "
-					"memory as possible as disk cache, "
-					"to speed up the system performance.</p>"
-					"<p>This means that if you have a small amount "
-					"of <b>Free Physical Memory</b> and a large amount of "
-					"<b>Disk Cache Memory</b>, your system is well "
-					"configured.</p>"), 
-			new PhysicalMemoryChart(this), this);
-	
-	chartsLayout->addWidget(physicalMemory);
-	chartsLayout->addSpacing(SPACING);
+    totalMemory = new ChartWidget(i18n("Total Memory"),
+            i18n("This graph gives you an overview of the "
+            "<b>total sum of physical and virtual memory</b> "
+            "in your system."),
+            new TotalMemoryChart(this), this);
 
-	swapMemory = new ChartWidget(i18n("Swap Space"), 
-			i18n("<p>The swap space is the <b>virtual memory</b> "
-				"available to the system.</p> "
-				"<p>It will be used on demand and is provided "
-				"through one or more swap partitions and/or swap files.</p>"), 
-			new SwapMemoryChart(this), this);
+    chartsLayout->addWidget(totalMemory);
+    chartsLayout->addSpacing(SPACING);
 
-	
-	chartsLayout->addWidget(swapMemory);
+    physicalMemory = new ChartWidget(i18n("Physical Memory"),
+            i18n("This graph gives you an overview of "
+                    "the <b>usage of physical memory</b> in your system."
+                    "<p>Most operating systems (including Linux) "
+                    "will use as much of the available physical "
+                    "memory as possible as disk cache, "
+                    "to speed up the system performance.</p>"
+                    "<p>This means that if you have a small amount "
+                    "of <b>Free Physical Memory</b> and a large amount of "
+                    "<b>Disk Cache Memory</b>, your system is well "
+                    "configured.</p>"),
+            new PhysicalMemoryChart(this), this);
 
-	//chartsLayout->addStretch(1);
+    chartsLayout->addWidget(physicalMemory);
+    chartsLayout->addSpacing(SPACING);
 
-	return chartsGroup;
+    swapMemory = new ChartWidget(i18n("Swap Space"),
+            i18n("<p>The swap space is the <b>virtual memory</b> "
+                "available to the system.</p> "
+                "<p>It will be used on demand and is provided "
+                "through one or more swap partitions and/or swap files.</p>"),
+            new SwapMemoryChart(this), this);
+
+    chartsLayout->addWidget(swapMemory);
+
+    //chartsLayout->addStretch(1);
+
+    return chartsGroup;
 }
 
 void KCMMemory::updateDatas() {
 
-	/* get the Information from memory_linux, memory_fbsd */
-	fetchValues(); 
-	
-	updateMemoryText();
-	updateMemoryGraphics();
+    /* get the Information from memory_linux, memory_fbsd */
+    fetchValues(); 
+    
+    updateMemoryText();
+    updateMemoryGraphics();
 }
 
-
 void KCMMemory::updateMemoryText() {
-	/* update the byte-strings */
-	for (int i = TOTAL_MEM; i < MEM_LAST_ENTRY; i++) {
-		QLabel* label = memorySizeLabels[i][0];
-		if (memoryInfos[i] == NO_MEMORY_INFO)
-			label->clear();
-		else
-			label->setText(i18np("1 byte =", "%1 bytes =", memoryInfos[i]));
-	}
+    /* update the byte-strings */
+    for (int i = TOTAL_MEM; i < MEM_LAST_ENTRY; i++) {
+        QLabel* label = memorySizeLabels[i][0];
+        if (memoryInfos[i] == NO_MEMORY_INFO)
+            label->clear();
+        else
+            label->setText(i18np("1 byte =", "%1 bytes =", memoryInfos[i]));
+    }
 
-	/* update the MB-strings */
-	for (int i = TOTAL_MEM; i < MEM_LAST_ENTRY; i++) {
-		QLabel* label = memorySizeLabels[i][1];
-		label->setText((memoryInfos[i] != NO_MEMORY_INFO) ? Chart::formattedUnit(memoryInfos[i]) : i18n("Not available."));
-	}
-
+    /* update the MB-strings */
+    for (int i = TOTAL_MEM; i < MEM_LAST_ENTRY; i++) {
+        QLabel* label = memorySizeLabels[i][1];
+        label->setText((memoryInfos[i] != NO_MEMORY_INFO) ? Chart::formattedUnit(memoryInfos[i]) : i18n("Not available."));
+    }
 }
 
 void KCMMemory::updateMemoryGraphics() {
-	totalMemory->setMemoryInfos(memoryInfos);
-	totalMemory->refresh();
+    totalMemory->setMemoryInfos(memoryInfos);
+    totalMemory->refresh();
 
-	physicalMemory->setMemoryInfos(memoryInfos);
-	physicalMemory->refresh();
+    physicalMemory->setMemoryInfos(memoryInfos);
+    physicalMemory->refresh();
 
-	swapMemory->setMemoryInfos(memoryInfos);
-	swapMemory->refresh();
-
+    swapMemory->setMemoryInfos(memoryInfos);
+    swapMemory->refresh();
 }
 
 /* Include system-specific code */
 
 #ifdef Q_OS_LINUX
 #include "memory_linux.cpp"
+#elif defined(__APPLE__)
+#include "memory_osx.cpp"
 #elif defined(Q_OS_SOLARIS)
 #include "memory_solaris.cpp"
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_DRAGONFLY)
@@ -306,10 +299,10 @@ void KCMMemory::updateMemoryGraphics() {
 
 /* Default for unsupported systems */
 void KCMMemory::fetchValues() {
-	int i;
-	for (i = TOTAL_MEM; i < MEM_LAST_ENTRY; ++i) {
-		memoryInfos[i] = NO_MEMORY_INFO;
-	}
+    int i;
+    for (i = TOTAL_MEM; i < MEM_LAST_ENTRY; ++i) {
+        memoryInfos[i] = NO_MEMORY_INFO;
+    }
 }
 
 #endif

@@ -24,15 +24,17 @@ License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "os_base.h"
 
 #ifdef Q_OS_LINUX
-	#include "info_linux.cpp"
+    #include "info_linux.cpp"
 #elif defined(Q_OS_FREEBSD) || defined(Q_OS_DRAGONFLY)
-	#include "info_fbsd.cpp"
+    #include "info_fbsd.cpp"
 #elif defined(Q_OS_NETBSD)
-	#include "info_netbsd.cpp"
+    #include "info_netbsd.cpp"
 #elif defined(Q_OS_OPENBSD)
-	#include "info_openbsd.cpp"
+    #include "info_openbsd.cpp"
 #elif defined(Q_OS_SOLARIS)
-	#include "info_solaris.cpp"
+    #include "info_solaris.cpp"
+#elif defined(__APPLE__)
+    #include "info_osx.cpp"
 #else
-	#include "info_generic.cpp"	/* Default for unsupported systems.... */
+    #include "info_generic.cpp" /* Default for unsupported systems. */
 #endif
