@@ -8,7 +8,7 @@ include(FeatureSummary)
 find_package(KDELibs4 4.23.0 REQUIRED)
 
 # kdelibs requires 0.91
-find_package(SharedMimeInfo 0.91)
+find_package(SharedMimeInfo)
 set_package_properties(SharedMimeInfo PROPERTIES
     DESCRIPTION "Shared Mime Info"
     URL "http://freedesktop.org/wiki/Software/shared-mime-info"
