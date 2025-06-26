@@ -191,7 +191,7 @@ void ViewManager::setupActions()
         connect(shrinkActiveAction , SIGNAL(triggered()) , this , SLOT(shrinkActiveContainer()));
 
         multiViewOnlyActions << shrinkActiveAction;
-
+#ifndef __APPLE__
         KAction* detachViewAction = collection->addAction("detach-view");
         detachViewAction->setIcon(KIcon("tab-detach"));
         detachViewAction->setText(i18nc("@action:inmenu", "D&etach Current Tab"));
@@ -201,7 +201,7 @@ void ViewManager::setupActions()
 
         connect(this , SIGNAL(splitViewToggle(bool)) , this , SLOT(updateDetachViewState()));
         connect(detachViewAction , SIGNAL(triggered()) , this , SLOT(detachActiveView()));
-
+#endif
         // Next / Previous View , Next Container
         collection->addAction("next-view", nextViewAction);
         collection->addAction("previous-view", previousViewAction);

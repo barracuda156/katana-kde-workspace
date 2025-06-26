@@ -270,11 +270,11 @@ TabbedViewContainer::TabbedViewContainer(NavigationPosition position, ViewManage
 
     // The context menu of tab bar
     _contextPopupMenu = new KMenu(_tabBar);
-
+#ifndef __APPLE__
     _contextPopupMenu->addAction(KIcon("tab-detach"),
                                  i18nc("@action:inmenu", "&Detach Tab"), this,
                                  SLOT(tabContextMenuDetachTab()));
-
+#endif
     _contextPopupMenu->addAction(KIcon("edit-rename"),
                                  i18nc("@action:inmenu", "&Rename Tab..."), this,
                                  SLOT(tabContextMenuRenameTab()));
